@@ -19,17 +19,39 @@ def createProject(sName):
 	return sDirectory
 
 def setProject(sDirectory):
-	mel.eval('setProject /"' + sDirectory + '/"')
+	mel.eval('setProject \"' + sDirectory + '\"')
+	cmds.workspace(sDirectory, openWorkspace=True)
 
 def createAsset(sName, sType = 'model'):
 	sDirectory = _getProject()
 	if sPathLocal not in sDirectory:
-		raise Exception('This project is not set to the proper path, you need to save the project under %s to link to the server' %sPathLocal)
+		raise RuntimeError('This project is not set to the proper path, you need to save the project under %s to link to the server' %sPathLocal)
 	sAssetDir = os.path.join(sDirectory, 'assets')
 	sAssetDir = os.path.join(sAssetDir, sName)
+	sAssetDir = os.path.join(sAssetDir, sType)
 	sAssetWipDir = os.path.join(sAssetDir, 'wipFiles')
 	_createFolder(sAssetDir)
 	_createFolder(sAssetWipDir)
+
+	dAssetInfo = {
+	'assetInfo':{'sName': sName, 'sType': sType},
+	'versionInfo':{}
+	}
+
+	writeJsonFile(os.path.join(sAssetDir, 'assetInfo.version'), dAssetInfo)
+
+def writeJsonFile(sPath, data):
+	with open(sPath, 'w') as sOutfile:
+		json.dump(data, sOutfile)
+	file.close(sOutfile)
+
+def readJsonFile(sPath):
+	if not os.path.exists(sPath):
+		raise RuntimeError('The file is not exist')
+	with open(sPath, 'r') as sInfile:
+		data = json.loads(sInfile)
+	file.close(sInfile)
+	return data
 
 
 
@@ -46,5 +68,5 @@ def _createProjectFiles(sProjectDir):
 		_createFolder(sFileDir)
 
 def _getProject():
-	sDirectory = cmds.workspace(q=True, directory=True)
+	sDirectory = cmds.workspace(q=True, directory=True, rd = True)
 	return sDirectory
