@@ -3,10 +3,43 @@
 	{
 		"selected_items":
 		[
+			[
+				"sA",
+				"sAssetDir"
+			],
+			[
+				"d",
+				"dAssetInfo"
+			],
+			[
+				"s",
+				"sType"
+			],
+			[
+				"sP",
+				"sPath"
+			],
+			[
+				"_",
+				"_createProjectFiles"
+			],
+			[
+				"sFile",
+				"sFileDir"
+			]
 		]
 	},
 	"buffers":
 	[
+		{
+			"file": "commonAPI.py",
+			"settings":
+			{
+				"buffer_size": 1961,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -40,6 +73,8 @@
 	},
 	"file_history":
 	[
+		"/C/_works/maya/Test/assets/chrHarris01/model/assetInfo.version",
+		"/C/_pipeline/maya/pipelineMaya.sublime-project",
 		"/C/_pipeline/__init__.py"
 	],
 	"find":
@@ -75,8 +110,37 @@
 	"groups":
 	[
 		{
+			"selected": 0,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "commonAPI.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1961,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								392,
+								392
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 350.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
 			]
 		}
 	],
