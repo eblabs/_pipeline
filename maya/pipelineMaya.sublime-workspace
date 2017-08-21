@@ -4,6 +4,46 @@
 		"selected_items":
 		[
 			[
+				"sF",
+				"sFileName"
+			],
+			[
+				"dV",
+				"dVersionCurrent"
+			],
+			[
+				"iV",
+				"iVersionCurrent"
+			],
+			[
+				"l",
+				"lVersions"
+			],
+			[
+				"i",
+				"iVersions"
+			],
+			[
+				"sT",
+				"sType"
+			],
+			[
+				"sS",
+				"sString"
+			],
+			[
+				"sAsset",
+				"sAssetDir"
+			],
+			[
+				"_",
+				"_getFoldersFromPath"
+			],
+			[
+				"sP",
+				"sPathDir"
+			],
+			[
 				"sA",
 				"sAssetDir"
 			],
@@ -16,14 +56,6 @@
 				"sType"
 			],
 			[
-				"sP",
-				"sPath"
-			],
-			[
-				"_",
-				"_createProjectFiles"
-			],
-			[
 				"sFile",
 				"sFileDir"
 			]
@@ -32,10 +64,19 @@
 	"buffers":
 	[
 		{
-			"file": "commonAPI.py",
+			"file": "common/workspace.py",
 			"settings":
 			{
-				"buffer_size": 1961,
+				"buffer_size": 3345,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "common/files.py",
+			"settings":
+			{
+				"buffer_size": 773,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -73,6 +114,7 @@
 	},
 	"file_history":
 	[
+		"/C/_pipeline/maya/commonAPI.py",
 		"/C/_works/maya/Test/assets/chrHarris01/model/assetInfo.version",
 		"/C/_pipeline/maya/pipelineMaya.sublime-project",
 		"/C/_pipeline/__init__.py"
@@ -110,24 +152,53 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "commonAPI.py",
+					"file": "common/workspace.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1961,
+						"buffer_size": 3345,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								392,
-								392
+								2737,
+								2737
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 555.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "common/files.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 773,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								391,
+								416
 							]
 						],
 						"settings":
@@ -135,7 +206,7 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 350.0,
+						"translation.y": 391.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
