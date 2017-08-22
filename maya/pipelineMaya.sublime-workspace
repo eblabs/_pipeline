@@ -4,16 +4,56 @@
 		"selected_items":
 		[
 			[
+				"sP",
+				"sProject"
+			],
+			[
+				"se",
+				"setProject"
+			],
+			[
 				"sF",
 				"sFileName"
 			],
 			[
-				"dV",
-				"dVersionCurrent"
+				"sFile",
+				"sFileName"
+			],
+			[
+				"sFi",
+				"sFileName"
+			],
+			[
+				"sAsset",
+				"sAsset"
+			],
+			[
+				"_get",
+				"_getAssetDirectory"
 			],
 			[
 				"iV",
-				"iVersionCurrent"
+				"iVersion"
+			],
+			[
+				"sAss",
+				"sAsset"
+			],
+			[
+				"_c",
+				"_createFolder"
+			],
+			[
+				"sA",
+				"sAsset"
+			],
+			[
+				"_crea",
+				"_createVersionFile"
+			],
+			[
+				"dV",
+				"dVersionCurrent"
 			],
 			[
 				"l",
@@ -32,20 +72,8 @@
 				"sString"
 			],
 			[
-				"sAsset",
-				"sAssetDir"
-			],
-			[
 				"_",
 				"_getFoldersFromPath"
-			],
-			[
-				"sP",
-				"sPathDir"
-			],
-			[
-				"sA",
-				"sAssetDir"
 			],
 			[
 				"d",
@@ -54,20 +82,16 @@
 			[
 				"s",
 				"sType"
-			],
-			[
-				"sFile",
-				"sFileDir"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "common/workspace.py",
+			"file": "common/workspaces.py",
 			"settings":
 			{
-				"buffer_size": 3345,
+				"buffer_size": 5332,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -76,7 +100,7 @@
 			"file": "common/files.py",
 			"settings":
 			{
-				"buffer_size": 773,
+				"buffer_size": 781,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -114,14 +138,15 @@
 	},
 	"file_history":
 	[
-		"/C/_pipeline/maya/commonAPI.py",
 		"/C/_works/maya/Test/assets/chrHarris01/model/assetInfo.version",
+		"/C/_pipeline/maya/common/workspace.py",
+		"/C/_pipeline/maya/commonAPI.py",
 		"/C/_pipeline/maya/pipelineMaya.sublime-project",
 		"/C/_pipeline/__init__.py"
 	],
 	"find":
 	{
-		"height": 0.0
+		"height": 53.0
 	},
 	"find_in_files":
 	{
@@ -135,6 +160,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"cmds.warning"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -152,24 +178,24 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "common/workspace.py",
+					"file": "common/workspaces.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3345,
+						"buffer_size": 5332,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2737,
-								2737
+								320,
+								320
 							]
 						],
 						"settings":
@@ -178,10 +204,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 555.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -190,15 +216,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 773,
+						"buffer_size": 781,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								391,
-								416
+								277,
+								277
 							]
 						],
 						"settings":
@@ -206,10 +232,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 391.0,
+						"translation.y": 111.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -217,7 +243,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 0.0
+		"height": 45.0
 	},
 	"input":
 	{
@@ -254,7 +280,7 @@
 	"project": "pipelineMaya.sublime-project",
 	"replace":
 	{
-		"height": 0.0
+		"height": 86.0
 	},
 	"save_all_on_build": true,
 	"select_file":

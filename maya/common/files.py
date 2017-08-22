@@ -1,6 +1,6 @@
 ## External Import
 import json
-
+import os
 
 #### Functions
 def writeJsonFile(sPath, data):
@@ -12,7 +12,7 @@ def readJsonFile(sPath):
 	if not os.path.exists(sPath):
 		raise RuntimeError('The file is not exist')
 	with open(sPath, 'r') as sInfile:
-		data = json.loads(sInfile)
+		data = json.load(sInfile)
 	file.close(sInfile)
 	return data
 
