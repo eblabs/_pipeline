@@ -4,8 +4,24 @@
 		"selected_items":
 		[
 			[
+				"QL",
+				"QLayout_project"
+			],
+			[
+				"Qt",
+				"QtGui"
+			],
+			[
+				"Ql",
+				"QLayout_project"
+			],
+			[
+				"QT",
+				"QtGui"
+			],
+			[
 				"sP",
-				"sProject"
+				"sPathServer"
 			],
 			[
 				"se",
@@ -97,6 +113,23 @@
 			}
 		},
 		{
+			"file": "common/workspacesUI.py",
+			"settings":
+			{
+				"buffer_size": 1619,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/harri/Dropbox/Projects/SCRIPTS/Tools/wip_ui4.py",
+			"settings":
+			{
+				"buffer_size": 11549,
+				"line_ending": "Windows"
+			}
+		},
+		{
 			"file": "common/files.py",
 			"settings":
 			{
@@ -138,6 +171,7 @@
 	},
 	"file_history":
 	[
+		"/C/Users/harri/Dropbox/Projects/SCRIPTS/Tools/symmetricalTool.py",
 		"/C/_works/maya/Test/assets/chrHarris01/model/assetInfo.version",
 		"/C/_pipeline/maya/common/workspace.py",
 		"/C/_pipeline/maya/commonAPI.py",
@@ -178,7 +212,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -194,8 +228,8 @@
 						"selection":
 						[
 							[
-								320,
-								320
+								156,
+								129
 							]
 						],
 						"settings":
@@ -204,14 +238,72 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 444.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "common/workspacesUI.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1619,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1182,
+								1182
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1369.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
+					"buffer": 2,
+					"file": "/C/Users/harri/Dropbox/Projects/SCRIPTS/Tools/wip_ui4.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11549,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5941,
+								5911
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 7270.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
 					"file": "common/files.py",
 					"semi_transient": false,
 					"settings":
@@ -223,8 +315,8 @@
 						"selection":
 						[
 							[
-								277,
-								277
+								41,
+								41
 							]
 						],
 						"settings":
@@ -232,10 +324,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 111.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 3,
 					"type": "text"
 				}
 			]
