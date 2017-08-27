@@ -16,6 +16,26 @@ def readJsonFile(sPath):
 	file.close(sInfile)
 	return data
 
+def getFilesFromPath(sPath, sType = None):
+	lFiles = os.listdir(sPath)
+	os.chdir(sPath)
+	lFilesReturn = []
+	if not sType:
+		lFilesReturn = lFiles
+	else:
+		for sFile in lFiles:
+			if sType == 'folder':
+				if not os.path.isfile(sFile):
+					lFilesReturn.append(sFile)
+			elif sType == 'file':
+				if os.path.isfile(sFile):
+					lFilesReturn.append(sFile)
+			else:
+				if sFile.endswith(sType):
+					lFilesReturn.append(sFile)
+	return lFilesReturn
+
+
 #### sub Functions
 def _convertStringToCamelcase(sString):
 	if '_' in sString:

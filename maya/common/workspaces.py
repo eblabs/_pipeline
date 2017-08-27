@@ -93,9 +93,9 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 
 	copyfile(os.path.join(sDirectory, sFileName), os.path.join(sWipDirectory, sFileName))
 
-	lFiles = os.listdir(sDirectory)
+	lFiles = files.getFilesFromPath(sDirectory, sType = sFileType)
 	for sFile in lFiles:
-		if sFileType in sFile and sFile != sFileName:
+		if sFile != sFileName:
 			os.remove(os.path.join(sDirectory, sFile))
 
 	sEndTime = time.time()

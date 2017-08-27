@@ -14,13 +14,14 @@ except:
 
 ## libs Import
 import workspaces
-
+import files
+reload(files)
 ## Assets Manager UI
 class assetsManagerUI(QtGui.QWidget):
 	"""docstring for assetsManagerUI"""
 	def __init__(self, sParent = None):
 		super(assetsManagerUI, self).__init__()
-		
+
 		#Parent widget under Maya main window        
 		self.setParent(sParent)       
 		self.setWindowFlags(QtCore.Qt.Window)
@@ -32,30 +33,69 @@ class assetsManagerUI(QtGui.QWidget):
 		self.initUI()  
 
 	def initUI(self):
-		QLayout = QtGui.QHBoxLayout(self)
-		self.setLayout(QLayout)
+		self.QLayoutBase = QtGui.QHBoxLayout(self)
+		self.setLayout(self.QLayoutBase)
 
-		#Project Layout
-		QLayout_project = QtGui.QVBoxLayout()
-		QLayout.addLayout(QLayout_project)
+		## Project
+		QLayout_projectList, QSourceModel_project, self.QProxyModel_project, self.QFilterEdit_project = self.setBaseLayout('Projects')
+		self.rebuildListModel(QSourceModel_project, workspaces.sPathLocal, sType = 'folder')
+		self.QFilterEdit_project.textChanged.connect(self.filterRegExpChanged_project)
 
-		## create/check out button
-		QLayout_projectButton = QtGui.QHBoxLayout()
-		QLayout_project.addLayout(QLayout_projectButton)
+		## Asset
+		QLayout_assetList, QSourceModel_asset, self.QProxyModel_asset, self.QFilterEdit_asset = self.setBaseLayout('Assets')
 
-		btn = QtGui.QPushButton('New Project')
-		QLayout_projectButton.addWidget(btn)
-		btn = QtGui.QPushButton('Check out')
-		QLayout_projectButton.addWidget(btn)
 
-		## Projects List
-		QLayout_projectList = QtGui.QVBoxLayout()
-		QLayout_project.addLayout(QLayout_projectList)
+	def setBaseLayout(self, sName, bFilter = True):
+		#Layout
+		QLayout = QtGui.QVBoxLayout()
+		self.QLayoutBase.addLayout(QLayout)
 
-		label = QtGui.QLabel('Projects:')
-		QLayout_projectList.addWidget(label)
-		
+		##List Layout
+		QLayout_list = QtGui.QVBoxLayout()
+		QLayout.addLayout(QLayout_list)
 
+		label = QtGui.QLabel('%s:' %sName)
+		QLayout_list.addWidget(label)
+
+		#### filter
+		if bFilter:
+			QFilterEdit = QtGui.QLineEdit()
+			QLayout_list.addWidget(QFilterEdit)
+		else:
+			QFilterEdit = None
+		#### List
+		QSourceModel = QtGui.QStandardItemModel()
+		if bFilter:
+			QProxyModel = QtGui.QSortFilterProxyModel()
+			QProxyModel.setDynamicSortFilter(True)
+			QProxyModel.setSourceModel(QSourceModel)
+		else:
+			QProxyModel = None
+
+		QListView = QtGui.QListView()
+		if bFilter:
+			QListView.setModel(QProxyModel)
+		else:
+			QListView.setModel(QSourceModel)
+		QLayout_list.addWidget(QListView)
+
+		return QLayout_list, QSourceModel, QProxyModel, QFilterEdit
+
+	def rebuildListModel(self, QModel, sPath, sType = 'folder'):
+		lFiles = files.getFilesFromPath(sPath, sType = sType)
+		if len(lFiles) > 1: lFiles.sort()
+		for sFile in lFiles:
+			sFile_item = QtGui.QStandardItem(sFile)
+			QModel.appendRow(sFile_item)
+
+	def filterRegExpChanged_project(self):
+		regExp = QtCore.QRegExp(self.QFilterEdit_project.text(), QtCore.Qt.CaseInsensitive)
+		self.QProxyModel_project.setFilterRegExp(regExp)
+
+## List widget
+class fileListView(QtGui.QListView):
+	def __init__(self, type, parent=None):
+		super(fileListView, self).__init__(parent)
 
 ## Functions
 def getMayaWindow():
