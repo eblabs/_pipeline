@@ -30,7 +30,7 @@ class assetsManagerUI(QtGui.QWidget):
 		#Set the object name     
 		self.setObjectName('assetsManager_uniqueId')        
 		self.setWindowTitle('Assets Manager')        
-		self.setGeometry(100, 100, 600, 300) 
+		self.setGeometry(100, 100, 1000, 500) 
 		self.initUI()
 
 	def initUI(self):
@@ -50,47 +50,52 @@ class assetsManagerUI(QtGui.QWidget):
 		self.oLayout_asset.initUI()
 
 		## File Layout
-		self.oLayout_file = assetsManagerBaseLayout(QLayoutBase)
-		self.oLayout_file.sName = 'File'
-		self.oLayout_file.bFilter = False
-		self.oLayout_file.bListItemRightClick = False
-		self.oLayout_file.sLayoutStyle = 'QHBoxLayout'
-
-		#### type enum
-		self.QLayout_fileType = QtGui.QHBoxLayout()
-		self.oLayout_file.QLayout.addLayout(self.QLayout_fileType)
-		QLabel = QtGui.QLabel('Asset Type:')
-		self.QLayout_fileType.addWidget(QLabel)
+		self._fileLayout(QLayoutBase)
 		
+	def _fileLayout(self, QLayoutBase):
+		QLayout = QtGui.QVBoxLayout()
+		QLayoutBase.addLayout(QLayout)
+
+		QLabel = QtGui.QLabel('File:')
+		QLayout.addWidget(QLabel)
+
+		## type enum
+		QLayout_fileType = QtGui.QHBoxLayout()
+		QLayout.addLayout(QLayout_fileType)
 		self.QComboBox_file = QtGui.QComboBox()
-		### add asset type
+		self.QComboBox_file.setMaximumWidth(80)
+		#### add asset type
 		for sType in files.lAssetTypes:
 			self.QComboBox_file.addItem(sType.title())
-		self.QLayout_fileType.addWidget(self.QComboBox_file)
-		
+		QLayout_fileType.addWidget(self.QComboBox_file)
+
 		#### file
-		self.oLayout_file.initUI()
-		self.oLayout_file.QListView.setMaximumHeight(20)
+		self.QLabel_file = QtGui.QLabel()
+		self.QLabel_file.setStyleSheet("border: 1px solid black;")
+		QLayout_fileType.addWidget(self.QLabel_file)
+		#self.QListView_file.setMaximumHeight(20)
+
 		#### versions		
 		self.QCheckBox_version = QtGui.QCheckBox('Versions')
-		self.oLayout_file.QLayout.addWidget(self.QCheckBox_version)
+		QLayout.addWidget(self.QCheckBox_version)
 
 		self.QListView_version = fileListView()
-		self.oLayout_file.QLayout.addWidget(self.QListView_version)
+		QLayout.addWidget(self.QListView_version)
 
 		#### comment
 		self.QLabel_comment = QtGui.QLabel()
 		self.QLabel_comment.setStyleSheet("border: 1px solid black;")
 		self.QLabel_comment.setMinimumHeight(80)
 		self.QLabel_comment.setScaledContents(True)
-		self.oLayout_file.QLayout.addWidget(self.QLabel_comment)
+		QLayout.addWidget(self.QLabel_comment)
 
 		#### button
-		self.QLayout_open = QtGui.QHBoxLayout()
-		self.oLayout_file.QLayout.addLayout(self.QLayout_open)
-		self.QLayout_open.setDirection(QtGui.QBoxLayout.RightToLeft)
 		self.QPushButton_open = QtGui.QPushButton('Open File')
-		self.QLayout_open.addWidget(self.QPushButton_open)
+		QLayout.addWidget(self.QPushButton_open)
+
+
+
+
 
 		
 
@@ -108,12 +113,10 @@ class assetsManagerBaseLayout():
 		self.bListItemRightClick = True
 		self.oLayout = None
 		self.bListItemClick = False
-		self.sLayoutStyle = None
 
 	def initUI(self):
 		self.setBaseLayout()
-		if self.bFilter:
-			self.QFilterEdit.textChanged.connect(self._filterRegExpChanged)
+		
 		if self.bListItemRightClick:
 			self.QListView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 			self.QListView.connect(self.QListView, QtCore.SIGNAL("customContextMenuRequested(QPoint)" ), self._listItemRightClicked)
@@ -123,40 +126,25 @@ class assetsManagerBaseLayout():
 			QSelectionModel.currentChanged.connect(self._listItemClick)
 
 	def setBaseLayout(self):
-		if self.sLayoutStyle:
-			if self.sLayoutStyle == 'QHBoxLayout':
-				QLayoutList = QtGui.QHBoxLayout()
-			elif self.sLayoutStyle == 'QVBoxLayout':
-				QLayoutList = QtGui.QVBoxLayout()
-			self.QLayout.addLayout(QLayoutList)
-		else:
-			QLayoutList = self.QLayout
 		QLabel = QtGui.QLabel('%s:' %self.sName)
-		QLayoutList.addWidget(QLabel)
+		self.QLayout.addWidget(QLabel)
 
 		#### filter
-		if self.bFilter:
-			self.QFilterEdit = QtGui.QLineEdit()
-			QLayoutList.addWidget(self.QFilterEdit)
-		else:
-			self.QFilterEdit = None
+		self.QFilterEdit = QtGui.QLineEdit()
+		self.QLayout.addWidget(self.QFilterEdit)
 
 		#### List
 		self.QSourceModel = QtGui.QStandardItemModel()
-		if self.bFilter:
-			self.QProxyModel = QtGui.QSortFilterProxyModel()
-			self.QProxyModel.setDynamicSortFilter(True)
-			self.QProxyModel.setSourceModel(self.QSourceModel)
-		else:
-			self.QProxyModel = None
+		self.QProxyModel = QtGui.QSortFilterProxyModel()
+		self.QProxyModel.setDynamicSortFilter(True)
+		self.QProxyModel.setSourceModel(self.QSourceModel)
 
 		#QListView = QtGui.QListView()
 		self.QListView = fileListView()
-		if self.bFilter:
-			self.QListView.setModel(self.QProxyModel)
-		else:
-			self.QListView.setModel(self.QSourceModel)
-		QLayoutList.addWidget(self.QListView)
+		self.QListView.setModel(self.QProxyModel)
+		self.QLayout.addWidget(self.QListView)
+
+		self.QFilterEdit.textChanged.connect(self._filterRegExpChanged)
 
 	def rebuildListModel(self):
 		self.QSourceModel.clear()

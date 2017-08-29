@@ -4,8 +4,16 @@
 		"selected_items":
 		[
 			[
+				"Q",
+				"QComboBox"
+			],
+			[
+				"QLa",
+				"QLayoutBase"
+			],
+			[
 				"QL",
-				"QLayout"
+				"QListView"
 			],
 			[
 				"QV",
@@ -18,10 +26,6 @@
 			[
 				"QLayou",
 				"QLayout"
-			],
-			[
-				"QLa",
-				"QLabel_comment"
 			],
 			[
 				"oL",
@@ -90,10 +94,6 @@
 			[
 				"s",
 				"sPath"
-			],
-			[
-				"Q",
-				"QMenuItem_delete"
 			],
 			[
 				"QMenu",
@@ -284,7 +284,7 @@
 			"file": "common/workspacesUI.py",
 			"settings":
 			{
-				"buffer_size": 7210,
+				"buffer_size": 6502,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -365,7 +365,7 @@
 	],
 	"find":
 	{
-		"height": 53.0
+		"height": 45.0
 	},
 	"find_in_files":
 	{
@@ -458,15 +458,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7210,
+						"buffer_size": 6502,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1516,
-								1516
+								373,
+								373
 							]
 						],
 						"settings":
@@ -474,7 +474,7 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1366.0,
+						"translation.y": 222.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
