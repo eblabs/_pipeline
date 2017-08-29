@@ -2,6 +2,9 @@
 import json
 import os
 
+## Vars
+lAssetTypes = ['model', 'rig']
+
 #### Functions
 def writeJsonFile(sPath, data):
 	with open(sPath, 'w') as sOutfile:

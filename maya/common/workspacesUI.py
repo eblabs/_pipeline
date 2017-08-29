@@ -16,6 +16,7 @@ except:
 import workspaces
 import files
 reload(files)
+
 ## Assets Manager UI
 class assetsManagerUI(QtGui.QWidget):
 	"""docstring for assetsManagerUI"""
@@ -30,57 +31,158 @@ class assetsManagerUI(QtGui.QWidget):
 		self.setObjectName('assetsManager_uniqueId')        
 		self.setWindowTitle('Assets Manager')        
 		self.setGeometry(100, 100, 600, 300) 
-		self.initUI()  
+		self.initUI()
 
 	def initUI(self):
-		self.QLayoutBase = QtGui.QHBoxLayout(self)
-		self.setLayout(self.QLayoutBase)
+		QLayoutBase = QtGui.QHBoxLayout(self)
+		self.setLayout(QLayoutBase)
 
-		## Project
-		QLayout_projectList, QSourceModel_project, self.QProxyModel_project, self.QFilterEdit_project, self.QListView_project = self._setBaseLayout('Projects')
-		self.rebuildListModel(QSourceModel_project, workspaces.sPathLocal, sType = 'folder')
-		self.QFilterEdit_project.textChanged.connect(self._filterRegExpChanged_project)
-		self.QListView_project.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.QListView_project.connect(self.QListView_project, QtCore.SIGNAL("customContextMenuRequested(QPoint)" ), self.listItemRightClicked_project)
-		## Asset
-		QLayout_assetList, self.QSourceModel_asset, self.QProxyModel_asset, self.QFilterEdit_asset, self.QListView_asset = self._setBaseLayout('Assets')
-		QSelectionModel_asset = self.QListView_project.selectionModel()
-		QSelectionModel_asset.currentChanged.connect(self.listItemClick_asset)
-		self.QFilterEdit_asset.textChanged.connect(self._filterRegExpChanged_asset)
+		## Project Layout
+		self.oLayout_project = assetsManagerBaseLayout(QLayoutBase)
+		self.oLayout_project.initUI()
+		self.oLayout_project.rebuildListModel()
 
-	def rebuildListModel(self, QModel, sPath, sType = 'folder'):
-		QModel.clear()
-		lFiles = files.getFilesFromPath(sPath, sType = sType)
+		## Asset Layout
+		self.oLayout_asset = assetsManagerBaseLayout(QLayoutBase)
+		self.oLayout_asset.sName = 'Assets'
+		self.oLayout_asset.oLayout = self.oLayout_project
+		self.oLayout_asset.bListItemClick = True
+		self.oLayout_asset.initUI()
+
+		## File Layout
+		self.oLayout_file = assetsManagerBaseLayout(QLayoutBase)
+		self.oLayout_file.sName = 'File'
+		self.oLayout_file.bFilter = False
+		self.oLayout_file.bListItemRightClick = False
+		self.oLayout_file.sLayoutStyle = 'QHBoxLayout'
+
+		#### type enum
+		self.QLayout_fileType = QtGui.QHBoxLayout()
+		self.oLayout_file.QLayout.addLayout(self.QLayout_fileType)
+		QLabel = QtGui.QLabel('Asset Type:')
+		self.QLayout_fileType.addWidget(QLabel)
+		
+		self.QComboBox_file = QtGui.QComboBox()
+		### add asset type
+		for sType in files.lAssetTypes:
+			self.QComboBox_file.addItem(sType.title())
+		self.QLayout_fileType.addWidget(self.QComboBox_file)
+		
+		#### file
+		self.oLayout_file.initUI()
+		self.oLayout_file.QListView.setMaximumHeight(20)
+		#### versions		
+		self.QCheckBox_version = QtGui.QCheckBox('Versions')
+		self.oLayout_file.QLayout.addWidget(self.QCheckBox_version)
+
+		self.QListView_version = fileListView()
+		self.oLayout_file.QLayout.addWidget(self.QListView_version)
+
+		#### comment
+		self.QLabel_comment = QtGui.QLabel()
+		self.QLabel_comment.setStyleSheet("border: 1px solid black;")
+		self.QLabel_comment.setMinimumHeight(80)
+		self.QLabel_comment.setScaledContents(True)
+		self.oLayout_file.QLayout.addWidget(self.QLabel_comment)
+
+		#### button
+		self.QLayout_open = QtGui.QHBoxLayout()
+		self.oLayout_file.QLayout.addLayout(self.QLayout_open)
+		self.QLayout_open.setDirection(QtGui.QBoxLayout.RightToLeft)
+		self.QPushButton_open = QtGui.QPushButton('Open File')
+		self.QLayout_open.addWidget(self.QPushButton_open)
+
+		
+
+
+## BaseLayout
+class assetsManagerBaseLayout():
+	def __init__(self, QLayoutBase):
+		self.QLayoutBase = QLayoutBase
+		self.QLayout = QtGui.QVBoxLayout()
+		self.QLayoutBase.addLayout(self.QLayout)
+		self.sName = 'Projects'
+		self.bFilter = True
+		self.sPath = workspaces.sPathLocal
+		self.sType = 'folder'
+		self.bListItemRightClick = True
+		self.oLayout = None
+		self.bListItemClick = False
+		self.sLayoutStyle = None
+
+	def initUI(self):
+		self.setBaseLayout()
+		if self.bFilter:
+			self.QFilterEdit.textChanged.connect(self._filterRegExpChanged)
+		if self.bListItemRightClick:
+			self.QListView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+			self.QListView.connect(self.QListView, QtCore.SIGNAL("customContextMenuRequested(QPoint)" ), self._listItemRightClicked)
+
+		if self.bListItemClick and self.oLayout:
+			QSelectionModel = self.oLayout.QListView.selectionModel()
+			QSelectionModel.currentChanged.connect(self._listItemClick)
+
+	def setBaseLayout(self):
+		if self.sLayoutStyle:
+			if self.sLayoutStyle == 'QHBoxLayout':
+				QLayoutList = QtGui.QHBoxLayout()
+			elif self.sLayoutStyle == 'QVBoxLayout':
+				QLayoutList = QtGui.QVBoxLayout()
+			self.QLayout.addLayout(QLayoutList)
+		else:
+			QLayoutList = self.QLayout
+		QLabel = QtGui.QLabel('%s:' %self.sName)
+		QLayoutList.addWidget(QLabel)
+
+		#### filter
+		if self.bFilter:
+			self.QFilterEdit = QtGui.QLineEdit()
+			QLayoutList.addWidget(self.QFilterEdit)
+		else:
+			self.QFilterEdit = None
+
+		#### List
+		self.QSourceModel = QtGui.QStandardItemModel()
+		if self.bFilter:
+			self.QProxyModel = QtGui.QSortFilterProxyModel()
+			self.QProxyModel.setDynamicSortFilter(True)
+			self.QProxyModel.setSourceModel(self.QSourceModel)
+		else:
+			self.QProxyModel = None
+
+		#QListView = QtGui.QListView()
+		self.QListView = fileListView()
+		if self.bFilter:
+			self.QListView.setModel(self.QProxyModel)
+		else:
+			self.QListView.setModel(self.QSourceModel)
+		QLayoutList.addWidget(self.QListView)
+
+	def rebuildListModel(self):
+		self.QSourceModel.clear()
+		lFiles = files.getFilesFromPath(self.sPath, sType = self.sType)
 		if len(lFiles) > 1: lFiles.sort()
 		for sFile in lFiles:
 			sFile_item = QtGui.QStandardItem(sFile)
-			QModel.appendRow(sFile_item)
+			self.QSourceModel.appendRow(sFile_item)
 
-	def listItemClick_asset(self):
-		currentItem = self.QListView_project.currentIndex().data()
-		if currentItem:
-			sPath = os.path.join(workspaces.sPathLocal, str(currentItem))
-			sPath = os.path.join(sPath, 'assets')
-			if os.path.exists(sPath):
-				self.rebuildListModel(self.QSourceModel_asset, sPath)
-			else:
-				self.QSourceModel_asset.clear()
-		else:
-			self.QSourceModel_asset.clear()
+	def _filterRegExpChanged(self):
+		regExp = QtCore.QRegExp(self.QFilterEdit.text(), QtCore.Qt.CaseInsensitive)
+		self.QProxyModel.setFilterRegExp(regExp)
 
-	def listItemRightClicked_project(self, QPos):
-		QListMenu= QtGui.QMenu(self)
+	def _listItemRightClicked(self, QPos):
+		QListMenu= QtGui.QMenu(self.QListView)
 		QMenuItem_create = QListMenu.addAction("Create")
 		QMenuItem_rename = QListMenu.addAction("Rename")
 		QMenuItem_delete = QListMenu.addAction("Delete")
 		#self.connect(menu_item_rename, QtCore.SIGNAL("triggered()"), self.renameItem) 
 		#self.connect(menu_item_delete, QtCore.SIGNAL("triggered()"), self.menuItemClicked) 
 
-		parentPosition = self.QListView_project.mapToGlobal(QtCore.QPoint(0, 0))        
+		parentPosition = self.QListView.mapToGlobal(QtCore.QPoint(0, 0))        
 		QListMenu.move(parentPosition + QPos)
 
 		try:
-			currentItem = self.QListView_project.currentIndex().data()
+			currentItem = self.QListView.currentIndex().data()
 			if not currentItem:
 				QMenuItem_rename.setEnabled(False)
 				QMenuItem_delete.setEnabled(False)			
@@ -88,52 +190,22 @@ class assetsManagerUI(QtGui.QWidget):
 		except:
 			pass
 
-	def _setBaseLayout(self, sName, bFilter = True):
-		#Layout
-		QLayout = QtGui.QVBoxLayout()
-		self.QLayoutBase.addLayout(QLayout)
-
-		##List Layout
-		QLayout_list = QtGui.QVBoxLayout()
-		QLayout.addLayout(QLayout_list)
-
-		label = QtGui.QLabel('%s:' %sName)
-		QLayout_list.addWidget(label)
-
-		#### filter
-		if bFilter:
-			QFilterEdit = QtGui.QLineEdit()
-			QLayout_list.addWidget(QFilterEdit)
+	## controlled from other list's item click
+	def _listItemClick(self):
+		QListViewSource = self.oLayout.QListView
+		sPathSource = self.oLayout.sPath
+		currentItem = QListViewSource.currentIndex().data()
+		if currentItem:
+			sPath = os.path.join(sPathSource, str(currentItem))
+			sPath = os.path.join(sPath, self.sName.lower())
+			self.sPath = sPath
+			if os.path.exists(sPath):
+				self.rebuildListModel()
+			else:
+				self.QSourceModel.clear()
 		else:
-			QFilterEdit = None
-		#### List
-		QSourceModel = QtGui.QStandardItemModel()
-		if bFilter:
-			QProxyModel = QtGui.QSortFilterProxyModel()
-			QProxyModel.setDynamicSortFilter(True)
-			QProxyModel.setSourceModel(QSourceModel)
-		else:
-			QProxyModel = None
+			self.QSourceModel.clear()
 
-		#QListView = QtGui.QListView()
-		QListView = fileListView()
-		if bFilter:
-			QListView.setModel(QProxyModel)
-		else:
-			QListView.setModel(QSourceModel)
-		QLayout_list.addWidget(QListView)
-
-		return QLayout_list, QSourceModel, QProxyModel, QFilterEdit, QListView
-
-	def _filterRegExpChanged_project(self):
-		regExp = QtCore.QRegExp(self.QFilterEdit_project.text(), QtCore.Qt.CaseInsensitive)
-		self.QProxyModel_project.setFilterRegExp(regExp)
-
-	def _filterRegExpChanged_asset(self):
-		regExp = QtCore.QRegExp(self.QFilterEdit_asset.text(), QtCore.Qt.CaseInsensitive)
-		self.QProxyModel_asset.setFilterRegExp(regExp)
-
-## List widget
 class fileListView(QtGui.QListView):
 	def __init__(self, parent=None):
 		super(fileListView, self).__init__(parent)
@@ -158,4 +230,3 @@ class fileListView(QtGui.QListView):
 def getMayaWindow():
 	ptr = OpenMayaUI.MQtUtil.mainWindow()
 	return wrapInstance(long(ptr), QtGui.QMainWindow)
-
