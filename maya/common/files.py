@@ -38,6 +38,27 @@ def getFilesFromPath(sPath, sType = None):
 					lFilesReturn.append(sFile)
 	return lFilesReturn
 
+def getFileFromPath(sPath, sName, sType = None):
+	lFiles = getFilesFromPath(sPath, sType = sType)
+	sFileReturn = None
+	if not sType:
+		for sFile in lFiles:
+			if sFile == sName:
+				sFileReturn = sFile
+				break
+			elif '.' in sFile:
+				if sFile.split('.')[0] == sName:
+					sFileReturn = sFile
+					break
+	elif sType == 'folder':
+		if sName in lFiles:
+			sFileReturn = sName
+	else:
+		if '%s%s' %(sName, sType) in lFiles:
+			sFileReturn = '%s%s' %(sName, sType)
+	return sFileReturn
+			
+
 
 #### sub Functions
 def _convertStringToCamelcase(sString):

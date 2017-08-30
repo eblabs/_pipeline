@@ -76,26 +76,27 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 		sComment = 'initial'
 	iVersionCurrent = iVersions + 1
 
-	sFileName = '%s_%s_%s_v%03d%s' %(sAsset, sType, sTag, iVersionCurrent, sFileType)
+	sFileName = '%s_%s_%s_v%03d' %(sAsset, sType, sTag, iVersionCurrent)
+	dAssetInfo['assetInfo']['sCurrentVersionName'] = sFileName
 
-	cmds.file(rename = os.path.join(sDirectory, sFileName))
+	cmds.file(rename = os.path.join(sDirectory, '%s%s' %(sFileName, sFileType)))
 	cmds.file(save = True, f = True)
 
 	if iVersions >= iBackup:
 		iMin = min(lVersions)
 		sBackUpName = dVersions[iMin]['sVersionName']
 		dVersions.pop(iMin, None)		
-		cmds.remove(os.path.join(sWipDirectory, sBackUpName))
+		cmds.remove(os.path.join(sWipDirectory, '%s%s' %(sBackUpName, sFileType)))
 
-	dVersionCurrent = {iVersionCurrent: {'sVersionName': sFileName, 'sComment': sComment}}
+	dVersionCurrent = {iVersionCurrent: {'sVersionName': sFileName, 'sComment': sComment, 'sFileType': sFileType}}
 	dVersions.update(dVersionCurrent)
 	files.writeJsonFile(os.path.join(sDirectory, 'assetInfo.version'), dAssetInfo)
 
-	copyfile(os.path.join(sDirectory, sFileName), os.path.join(sWipDirectory, sFileName))
+	copyfile(os.path.join(sDirectory, '%s%s'%(sFileName, sFileType)), os.path.join(sWipDirectory, '%s%s'%(sFileName, sFileType)))
 
 	lFiles = files.getFilesFromPath(sDirectory, sType = sFileType)
 	for sFile in lFiles:
-		if sFile != sFileName:
+		if sFile != '%s%s'%(sFileName, sFileType):
 			os.remove(os.path.join(sDirectory, sFile))
 
 	sEndTime = time.time()
@@ -110,9 +111,9 @@ def openAsset(sAsset, sType, sProject, iVersion = 0):
 		raise RuntimeError('assetInfo.version does not exist in %s, can not read the asset' %(sAsset, os.path.abspath(sDirectory)))
 	dAssetInfo = files.readJsonFile(os.path.join(sDirectory, 'assetInfo.version'))
 	if iVersion == 0:
-		sFileName = dAssetInfo['assetInfo']['sCurrentVersionName']
+		sFileName = '%s%s' %(dAssetInfo['assetInfo']['sCurrentVersionName'], dAssetInfo['assetInfo']['sFileType'])
 	else:
-		sFileName = dAssetInfo['versionInfo'][iVersion]['sVersionName']
+		sFileName = '%s%s' %(dAssetInfo['versionInfo'][iVersion]['sVersionName'], dAssetInfo['assetInfo']['sFileType'])
 		sDirectory = sWipDirectory
 	if os.path.isfile(os.path.join(sDirectory, sFileName)):
 		setProject(os.path.join(sPathLocal, sProject))
@@ -153,7 +154,7 @@ def _getFoldersFromPath(sPath):
 
 def _createVersionFile(sAsset, sType, sProject, sDirectory):
 	dAssetInfo = {
-	'assetInfo':{'sAsset': sAsset, 'sType': sType, 'sProject': sProject, 'sCurrentVersionName': None},
+	'assetInfo':{'sAsset': sAsset, 'sType': sType, 'sProject': sProject, 'sCurrentVersionName': None, 'sFileType': sFileType},
 	'versionInfo':{}
 	}
 

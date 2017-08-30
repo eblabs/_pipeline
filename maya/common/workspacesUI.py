@@ -19,9 +19,11 @@ reload(files)
 
 ## Assets Manager UI
 class assetsManagerUI(QtGui.QWidget):
+	VERSION, FILENAME = range(2)
 	"""docstring for assetsManagerUI"""
 	def __init__(self, sParent = None):
 		super(assetsManagerUI, self).__init__()
+
 
 		#Parent widget under Maya main window        
 		self.setParent(sParent)       
@@ -65,8 +67,10 @@ class assetsManagerUI(QtGui.QWidget):
 		self.QComboBox_file = QtGui.QComboBox()
 		self.QComboBox_file.setMaximumWidth(80)
 		#### add asset type
-		for sType in files.lAssetTypes:
-			self.QComboBox_file.addItem(sType.title())
+		#for sType in files.lAssetTypes:
+		#	self.QComboBox_file.addItem(sType.title())
+		QSelectionModel = self.oLayout_asset.QListView.selectionModel()
+		QSelectionModel.currentChanged.connect(self._addItem_QComboBox_file)
 		QLayout_fileType.addWidget(self.QComboBox_file)
 
 		#### file
@@ -74,13 +78,20 @@ class assetsManagerUI(QtGui.QWidget):
 		self.QLabel_file.setStyleSheet("border: 1px solid black;")
 		QLayout_fileType.addWidget(self.QLabel_file)
 		#self.QListView_file.setMaximumHeight(20)
+		self.QComboBox_file.currentIndexChanged.connect(self._getVersionInfo)
 
 		#### versions		
 		self.QCheckBox_version = QtGui.QCheckBox('Versions')
 		QLayout.addWidget(self.QCheckBox_version)
 
-		self.QListView_version = fileListView()
-		QLayout.addWidget(self.QListView_version)
+		self.QSourceModel_version = QtGui.QStandardItemModel(0,2)
+		self.QSourceModel_version.setHeaderData(assetsManagerUI.VERSION, QtCore.Qt.Horizontal, "Version")
+		self.QSourceModel_version.setHeaderData(assetsManagerUI.FILENAME, QtCore.Qt.Horizontal, "File Name")
+		self.QTreeView_version = fileTreeView()
+		self.QTreeView_version.setRootIsDecorated(False)
+		self.QTreeView_version.setAlternatingRowColors(True)
+		self.QTreeView_version.setModel(self.QSourceModel_version)
+		QLayout.addWidget(self.QTreeView_version)
 
 		#### comment
 		self.QLabel_comment = QtGui.QLabel()
@@ -92,6 +103,79 @@ class assetsManagerUI(QtGui.QWidget):
 		#### button
 		self.QPushButton_open = QtGui.QPushButton('Open File')
 		QLayout.addWidget(self.QPushButton_open)
+
+	def _addItem_QComboBox_file(self):
+		currentItem = self.oLayout_asset.QListView.currentIndex().data()
+		if currentItem:
+			self.sPathAsset = os.path.join(self.oLayout_asset.sPath, currentItem)
+			if os.path.exists(self.sPathAsset):
+				lFolders = files.getFilesFromPath(self.sPathAsset, sType = 'folder')
+				if lFolders:
+					for sFolder in lFolders:
+						self.QComboBox_file.addItem(sFolder.title())
+				else:
+					self.QComboBox_file.clear()
+			else:
+				self.QComboBox_file.clear()
+		else:
+			self.QComboBox_file.clear()
+
+	def _getVersionInfo(self):
+		currentItem = self.QComboBox_file.currentText()
+		if currentItem:
+			sPathSource = os.path.join(self.sPathAsset, currentItem.lower())
+			if os.path.exists(sPathSource):
+				## get version file
+				sVersionFile = files.getFileFromPath(sPathSource, 'assetInfo', sType = '.version')
+				if sVersionFile:
+					dAssetData = files.readJsonFile(os.path.join(sPathSource, sVersionFile))
+
+					sFileLatest = dAssetData['assetInfo']['sCurrentVersionName']
+					sFileTypeLatest = dAssetData['assetInfo']['sFileType']
+					sPathFile = os.path.join(sPathSource, '%s%s' %(sFileLatest, sFileTypeLatest))
+					if sFileLatest and os.path.exists(sPathFile):
+						self.QLabel_file.setText(sFileLatest)
+
+						dVersions = dAssetData['versionInfo']
+						lVersions = dVersions.keys()
+						lVersions.sort(reverse = True)
+
+						self._refreshVersion()
+						for iVersion in lVersions:
+							sFileVersion = dVersions[iVersion]['sVersionName']
+							sFileTypeVersion = dVersions[iVersion]['sFileType']
+							sPathFile = os.path.join(sPathSource, 'wipFiles')
+							sPathFile = os.path.join(sPathFile, '%s%s' %(sFileVersion, sFileTypeVersion))
+							if sFileVersion and os.path.exists(sPathFile):
+								self._addVersion(iVersion, sFileVersion)
+					else:
+						self.QLabel_file.clear()
+						self._refreshVersion()
+				else:
+					self.QLabel_file.clear()
+					self._refreshVersion()
+			else:
+				self.QLabel_file.clear()
+				self._refreshVersion()
+		else:
+			self.QLabel_file.clear()
+			self._refreshVersion()
+
+	def _addVersion(self, iVersion, sFileName):
+		self.QSourceModel_version.insertRow(0)
+		self.QSourceModel_version.setData(self.QSourceModel_version.index(0, assetsManagerUI.VERSION), iVersion)
+		self.QSourceModel_version.setData(self.QSourceModel_version.index(0, assetsManagerUI.FILENAME), sFileName)
+
+	def _refreshVersion(self):
+		iRowCount = self.QSourceModel_version.rowCount()
+		for i in range(0, iRowCount + 1):
+			self.QSourceModel_version.removeRow(i)
+		#self.QSourceModel_version.clear()
+		
+
+					
+
+
 
 
 
@@ -213,6 +297,26 @@ class fileListView(QtGui.QListView):
 			self.clearFocus()
 			self.setCurrentIndex(QtCore.QModelIndex())
 		QtGui.QListView.mousePressEvent(self, event)
+
+class fileTreeView(QtGui.QTreeView):
+	def __init__(self, parent=None):
+		super(fileTreeView, self).__init__(parent)
+
+	def keyPressEvent(self, event):
+		if (event.key() == QtCore.Qt.Key_Escape and
+			event.modifiers() == QtCore.Qt.NoModifier):
+			self.clearSelection()
+			self.clearFocus()
+			self.setCurrentIndex(QtCore.QModelIndex())
+		else:
+			QtGui.QTreeView.keyPressEvent(self, event)
+
+	def mousePressEvent(self, event):
+		if not self.indexAt(event.pos()).isValid():
+			self.clearSelection()
+			self.clearFocus()
+			self.setCurrentIndex(QtCore.QModelIndex())
+		QtGui.QTreeView.mousePressEvent(self, event)
 
 ## Functions
 def getMayaWindow():
