@@ -24,6 +24,7 @@ class assetsManagerUI(QtGui.QWidget):
 	def __init__(self, sParent = None):
 		super(assetsManagerUI, self).__init__()
 
+		self.dAssetData = None
 
 		#Parent widget under Maya main window        
 		self.setParent(sParent)       
@@ -93,12 +94,21 @@ class assetsManagerUI(QtGui.QWidget):
 		self.QTreeView_version.setModel(self.QSourceModel_version)
 		QLayout.addWidget(self.QTreeView_version)
 
+		#### connect version with QTreeView
+		self.QTreeView_version.setEnabled(False)
+		self.QCheckBox_version.stateChanged.connect(self._setVersionEnabled)
+
 		#### comment
 		self.QLabel_comment = QtGui.QLabel()
 		self.QLabel_comment.setStyleSheet("border: 1px solid black;")
 		self.QLabel_comment.setMinimumHeight(80)
 		self.QLabel_comment.setScaledContents(True)
 		QLayout.addWidget(self.QLabel_comment)
+
+		self.QLabel_comment.setAlignment(QtCore.Qt.AlignTop)
+
+		QSelectionModel = self.QTreeView_version.selectionModel()
+		QSelectionModel.currentChanged.connect(self._setVersionComment)
 
 		#### button
 		self.QPushButton_open = QtGui.QPushButton('Open File')
@@ -128,15 +138,15 @@ class assetsManagerUI(QtGui.QWidget):
 				## get version file
 				sVersionFile = files.getFileFromPath(sPathSource, 'assetInfo', sType = '.version')
 				if sVersionFile:
-					dAssetData = files.readJsonFile(os.path.join(sPathSource, sVersionFile))
+					self.dAssetData = files.readJsonFile(os.path.join(sPathSource, sVersionFile))
 
-					sFileLatest = dAssetData['assetInfo']['sCurrentVersionName']
-					sFileTypeLatest = dAssetData['assetInfo']['sFileType']
+					sFileLatest = self.dAssetData['assetInfo']['sCurrentVersionName']
+					sFileTypeLatest = self.dAssetData['assetInfo']['sFileType']
 					sPathFile = os.path.join(sPathSource, '%s%s' %(sFileLatest, sFileTypeLatest))
 					if sFileLatest and os.path.exists(sPathFile):
 						self.QLabel_file.setText(sFileLatest)
 
-						dVersions = dAssetData['versionInfo']
+						dVersions = self.dAssetData['versionInfo']
 						lVersions = dVersions.keys()
 						lVersions.sort(reverse = True)
 
@@ -170,7 +180,23 @@ class assetsManagerUI(QtGui.QWidget):
 		iRowCount = self.QSourceModel_version.rowCount()
 		for i in range(0, iRowCount + 1):
 			self.QSourceModel_version.removeRow(i)
-		#self.QSourceModel_version.clear()
+	
+	def _setVersionEnabled(self):
+		bVersion = self.QCheckBox_version.isChecked()
+		self.QTreeView_version.setEnabled(bVersion)
+		if not bVersion:
+			self.QTreeView_version.clearSelection()
+			self.QTreeView_version.clearFocus()
+			self.QTreeView_version.setCurrentIndex(QtCore.QModelIndex())
+
+	def _setVersionComment(self):
+		iVersion = self.QTreeView_version.currentIndex().data()
+		if iVersion and self.dAssetData:
+			sComment = self.dAssetData['versionInfo'][str(iVersion)]['sComment']
+			self.QLabel_comment.setText(sComment)
+		else:
+			self.QLabel_comment.clear()
+
 		
 
 					
@@ -298,6 +324,9 @@ class fileListView(QtGui.QListView):
 			self.setCurrentIndex(QtCore.QModelIndex())
 		QtGui.QListView.mousePressEvent(self, event)
 
+	def mouseDoubleClickEvent(self, event):
+		pass
+
 class fileTreeView(QtGui.QTreeView):
 	def __init__(self, parent=None):
 		super(fileTreeView, self).__init__(parent)
@@ -317,6 +346,9 @@ class fileTreeView(QtGui.QTreeView):
 			self.clearFocus()
 			self.setCurrentIndex(QtCore.QModelIndex())
 		QtGui.QTreeView.mousePressEvent(self, event)
+
+	def mouseDoubleClickEvent(self, event):
+		pass
 
 ## Functions
 def getMayaWindow():
