@@ -4,16 +4,36 @@
 		"selected_items":
 		[
 			[
+				"sP",
+				"sPathListItem"
+			],
+			[
+				"oL",
+				"oLayout_asset"
+			],
+			[
+				"sPa",
+				"sPath"
+			],
+			[
+				"b",
+				"bListItemClick"
+			],
+			[
+				"QLa",
+				"QLayoutBase"
+			],
+			[
+				"ass",
+				"assetsManagerBaseLayout"
+			],
+			[
 				"lV",
 				"lVersionFiles"
 			],
 			[
 				"l",
 				"lVersionFiles"
-			],
-			[
-				"sP",
-				"sPathLocal"
 			],
 			[
 				"lF",
@@ -30,10 +50,6 @@
 			[
 				"w",
 				"writeJsonFile"
-			],
-			[
-				"b",
-				"bInput"
 			],
 			[
 				"QM",
@@ -62,10 +78,6 @@
 			[
 				"Q",
 				"QTreeView"
-			],
-			[
-				"QLa",
-				"QLabel_comment"
 			],
 			[
 				"cl",
@@ -108,16 +120,8 @@
 				"_refreshVersion"
 			],
 			[
-				"ass",
-				"assetsManagerUI"
-			],
-			[
 				"asse",
 				"assetsManagerUI"
-			],
-			[
-				"sPa",
-				"sPathFile"
 			],
 			[
 				"sFileP",
@@ -166,10 +170,6 @@
 			[
 				"QLayou",
 				"QLayout"
-			],
-			[
-				"oL",
-				"oLayout_asset"
 			],
 			[
 				"QCheck",
@@ -368,7 +368,7 @@
 			"file": "common/workspacesUI.py",
 			"settings":
 			{
-				"buffer_size": 12570,
+				"buffer_size": 12464,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -530,7 +530,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -556,10 +556,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6530.0,
+						"translation.y": 6086.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -568,15 +568,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12570,
+						"buffer_size": 12464,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4494,
-								4509
+								2065,
+								2065
 							]
 						],
 						"settings":
@@ -585,10 +585,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 4726.0,
+						"translation.y": 2440.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -616,7 +616,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{

@@ -51,7 +51,15 @@ class assetsManagerUI(QtGui.QWidget):
 		self.oLayout_asset.sName = 'Assets'
 		self.oLayout_asset.oLayout = self.oLayout_project
 		self.oLayout_asset.bListItemClick = True
+		self.oLayout_asset.sPathListItem = 'assets'
 		self.oLayout_asset.initUI()
+
+		## Type Layout
+		self.oLayout_type = assetsManagerBaseLayout(QLayoutBase)
+		self.oLayout_type.sName = 'Types'
+		self.oLayout_type.oLayout = self.oLayout_asset
+		self.oLayout_type.bListItemClick = True
+		self.oLayout_type.initUI()
 
 		## File Layout
 		self._fileLayout(QLayoutBase)
@@ -63,24 +71,11 @@ class assetsManagerUI(QtGui.QWidget):
 		QLabel = QtGui.QLabel('File:')
 		QLayout.addWidget(QLabel)
 
-		## type enum
-		QLayout_fileType = QtGui.QHBoxLayout()
-		QLayout.addLayout(QLayout_fileType)
-		self.QComboBox_file = QtGui.QComboBox()
-		self.QComboBox_file.setMaximumWidth(80)
-		#### add asset type
-		#for sType in files.lAssetTypes:
-		#	self.QComboBox_file.addItem(sType.title())
-		QSelectionModel = self.oLayout_asset.QListView.selectionModel()
-		QSelectionModel.currentChanged.connect(self._addItem_QComboBox_file)
-		QLayout_fileType.addWidget(self.QComboBox_file)
-
 		#### file
 		self.QLabel_file = QtGui.QLabel()
 		self.QLabel_file.setStyleSheet("border: 1px solid black;")
-		QLayout_fileType.addWidget(self.QLabel_file)
-		#self.QListView_file.setMaximumHeight(20)
-		self.QComboBox_file.currentIndexChanged.connect(self._getVersionInfo)
+		QLayout.addWidget(self.QLabel_file)
+		#self.QComboBox_file.currentIndexChanged.connect(self._getVersionInfo)
 
 		#### versions		
 		self.QCheckBox_version = QtGui.QCheckBox('Versions')
@@ -97,7 +92,7 @@ class assetsManagerUI(QtGui.QWidget):
 
 		#### connect version with QTreeView
 		self.QTreeView_version.setEnabled(False)
-		self.QCheckBox_version.stateChanged.connect(self._setVersionEnabled)
+		#self.QCheckBox_version.stateChanged.connect(self._setVersionEnabled)
 
 		#### comment
 		self.QLabel_comment = QtGui.QLabel()
@@ -108,8 +103,8 @@ class assetsManagerUI(QtGui.QWidget):
 
 		self.QLabel_comment.setAlignment(QtCore.Qt.AlignTop)
 
-		QSelectionModel = self.QTreeView_version.selectionModel()
-		QSelectionModel.currentChanged.connect(self._setVersionComment)
+		#QSelectionModel = self.QTreeView_version.selectionModel()
+		#QSelectionModel.currentChanged.connect(self._setVersionComment)
 
 		#### button
 		self.QPushButton_open = QtGui.QPushButton('Open File')
@@ -224,6 +219,7 @@ class assetsManagerBaseLayout():
 		self.bListItemRightClick = True
 		self.oLayout = None
 		self.bListItemClick = False
+		self.sPathListItem = None
 
 	def initUI(self):
 		self.setBaseLayout()
@@ -302,7 +298,8 @@ class assetsManagerBaseLayout():
 		currentItem = QListViewSource.currentIndex().data()
 		if currentItem:
 			sPath = os.path.join(sPathSource, str(currentItem))
-			sPath = os.path.join(sPath, self.sName.lower())
+			if self.sPathListItem:
+				sPath = os.path.join(sPath, self.sPathListItem)
 			self.sPath = sPath
 			if os.path.exists(sPath):
 				self.rebuildListModel()
@@ -316,6 +313,8 @@ class assetsManagerBaseLayout():
 			sCreateType = 'project'
 		elif 'asset' in self.sName.lower():
 			sCreateType = 'asset'
+		elif 'type' in self.sName.lower():
+			sCreateType = 'type'
 		else:
 			sCreateType = ''
 		sText = '%s %s:' %(sWinType.title(), sCreateType)
@@ -325,7 +324,7 @@ class assetsManagerBaseLayout():
 			sInput = True
 			bInput = True
 		if bInput:
-			bCheck = QtGui.QMessageBox.question(self.QListView, sWinType.title(), 'Are you sure to %s?' %sText.lower(), QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+			bCheck = QtGui.QMessageBox.question(self.QListView, sWinType.title(), 'Are you sure to %s this %s?' %(sWinType, sCreateType), QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 		else:
 			bCheck = False
 		if bCheck != QtGui.QMessageBox.Yes:
