@@ -3,6 +3,7 @@ import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMayaUI as OpenMayaUI
 import os
+import functools
 try:
 	from PySide import QtGui
 	from PySide import QtCore
@@ -275,7 +276,13 @@ class assetsManagerBaseLayout():
 		QMenuItem_delete = QListMenu.addAction("Delete")
 		#self.connect(menu_item_rename, QtCore.SIGNAL("triggered()"), self.renameItem) 
 		#self.connect(menu_item_delete, QtCore.SIGNAL("triggered()"), self.menuItemClicked) 
-
+		QInput_create = functools.partial(self.popWinRightClick, sWinType = 'create')
+		QInput_rename = functools.partial(self.popWinRightClick, sWinType = 'rename')
+		QInput_delete = functools.partial(self.popWinRightClick, sWinType = 'delete')
+		QMenuItem_create.connect(QMenuItem_create, QtCore.SIGNAL("triggered()"), QInput_create)
+		QMenuItem_rename.connect(QMenuItem_rename, QtCore.SIGNAL("triggered()"), QInput_rename)
+		QMenuItem_delete.connect(QMenuItem_delete, QtCore.SIGNAL("triggered()"), QInput_delete)
+		
 		parentPosition = self.QListView.mapToGlobal(QtCore.QPoint(0, 0))        
 		QListMenu.move(parentPosition + QPos)
 
@@ -303,6 +310,28 @@ class assetsManagerBaseLayout():
 				self.QSourceModel.clear()
 		else:
 			self.QSourceModel.clear()
+
+	def popWinRightClick(self, sWinType = 'create'):
+		if 'project' in self.sName.lower():
+			sCreateType = 'project'
+		elif 'asset' in self.sName.lower():
+			sCreateType = 'asset'
+		else:
+			sCreateType = ''
+		sText = '%s %s:' %(sWinType.title(), sCreateType)
+		if sWinType != 'delete':
+			sInput, bInput = QtGui.QInputDialog.getText(self.QListView, sWinType.title(), sText)
+		else:
+			sInput = True
+			bInput = True
+		if bInput:
+			bCheck = QtGui.QMessageBox.question(self.QListView, sWinType.title(), 'Are you sure to %s?' %sText.lower(), QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+		else:
+			bCheck = False
+		if bCheck != QtGui.QMessageBox.Yes:
+			sInput = None
+
+		return sInput
 
 class fileListView(QtGui.QListView):
 	def __init__(self, parent=None):

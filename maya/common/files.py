@@ -57,6 +57,21 @@ def getFileFromPath(sPath, sName, sType = None):
 		if '%s%s' %(sName, sType) in lFiles:
 			sFileReturn = '%s%s' %(sName, sType)
 	return sFileReturn
+
+def getFilesFromDirectoryAndSubDirectories(sPath, sType = None):
+	lFilesReturn = []
+	for sPathEach, lSubDirectories, lFiles in os.walk(sPath):
+		for sSubDirectory in lSubDirectories:
+			if not sType or sType == 'folder':
+				lFilesReturn.append(os.path.join(sPathEach, sSubDirectory))
+		for sFile in lFiles:
+			if not sType or sType == 'file':
+				lFilesReturn.append(os.path.join(sPathEach, sFile))
+			elif sType != 'folder':
+				if sFile.endswith(sType):
+					lFilesReturn.append(os.path.join(sPathEach, sFile))
+	return lFilesReturn
+
 			
 
 

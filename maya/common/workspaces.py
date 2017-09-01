@@ -125,6 +125,55 @@ def openAsset(sAsset, sType, sProject, iVersion = 0):
 
 	print 'loaded %s from %s, took %f seconds' %(sFileName, sDirectory, sEndTime - sStartTime)
 
+def renameProject(sProject, sName):
+	sStartTime = time.time()
+	# rename version file's sProject
+	lVersionFiles = files.getFilesFromDirectoryAndSubDirectories(os.path.join(sPathLocal, sProject), sType = '.version')
+	if lVersionFiles:
+		for sVersionFile in lVersionFiles:
+			dAssetInfo = files.readJsonFile(sVersionFile)
+			dAssetInfo['assetInfo']['sProject'] = sName
+			files.writeJsonFile(sVersionFile, dAssetInfo)
+	# rename project
+	os.rename(os.path.join(sPathLocal, sProject), os.path.join(sPathLocal, sName))
+
+	sEndTime = time.time()
+	print 'renamed %s to %s, took %f seconds' %(sProject, sName, sEndTime - sStartTime)
+
+
+def renameAsset(sAsset, sType, sProject, sName):
+	sStartTime = time.time()
+
+	sDirectory, sWipDirectory = _getAssetDirectory(sAsset, sType, sProject)
+	if not os.path.isfile(os.path.join(sDirectory, 'assetInfo.version')):
+		raise RuntimeError('assetInfo.version does not exist in %s, can not read the asset' %(sAsset, os.path.abspath(sDirectory)))
+	dAssetInfo = files.readJsonFile(os.path.join(sDirectory, 'assetInfo.version'))
+	# rename version file
+	if dAssetInfo['assetInfo']['sCurrentVersionName']:
+	 dAssetInfo['assetInfo']['sCurrentVersionName'] = dAssetInfo['assetInfo']['sCurrentVersionName'].replace(sAsset, sName)
+	dAssetInfo['assetInfo']['sAsset'] = sName
+
+	if dAssetInfo['versionInfo']:
+		for iVersion in dAssetInfo['versionInfo'].keys():
+			dAssetInfo['versionInfo'][iVersion]['sVersionName'] = dAssetInfo['versionInfo'][iVersion]['sVersionName'].replace(sAsset, sName)
+	files.writeJsonFile(os.path.join(sDirectory, 'assetInfo.version'), dAssetInfo)
+
+	# rename wip files
+	lFiles = files.getFilesFromPath(sWipDirectory, sType = sFileType)
+	for sFile in lFiles:
+		os.rename(os.path.join(sWipDirectory, sFile), os.path.join(sWipDirectory, sFile.replace(sAsset, sName)))
+	# rename file
+	lFiles = files.getFilesFromPath(sDirectory, sType = sFileType)
+	for sFile in lFiles:
+		os.rename(os.path.join(sDirectory, sFile), os.path.join(sDirectory, sFile.replace(sAsset, sName)))
+	# rename folder
+	sDirectory = sPathLocal
+	for sFolder in [sProject, 'assets']:
+		sDirectory = os.path.join(sDirectory, sFolder)
+	os.rename(os.path.join(sDirectory, sAsset), os.path.join(sDirectory, sName))
+
+	sEndTime = time.time()
+	print 'renamed %s to %s, took %f seconds' %(sAsset, sName, sEndTime - sStartTime)
 
 
 
