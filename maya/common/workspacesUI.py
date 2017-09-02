@@ -180,6 +180,7 @@ class assetsManagerUI(QtGui.QWidget):
 		else:
 			self.QLabel_comment.clear()
 
+
 		
 
 					
@@ -308,7 +309,9 @@ class assetsManagerBaseLayout():
 		else:
 			sCreateType = ''
 		sText = '%s %s:' %(sWinType.title(), sCreateType)
-		if sWinType != 'delete':
+		if sWinType == 'create' and sCreateType == 'type':
+			sInput, bInput = QtGui.QInputDialog.getItem(self.QListView, sWinType.title(), sText, files.lAssetTypes, 0, False) 
+		elif sWinType != 'delete':
 			sInput, bInput = QtGui.QInputDialog.getText(self.QListView, sWinType.title(), sText)
 		else:
 			sInput = True

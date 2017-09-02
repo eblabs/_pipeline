@@ -29,15 +29,13 @@ def setProject(sDirectory):
 	mel.eval('setProject \"' + sDirectory + '\"')
 	cmds.workspace(sDirectory, openWorkspace=True)
 
-def createAsset(sAsset, sType = 'model'):
-	sDirectory = _getProject()
-	if sPathLocal not in sDirectory:
-		raise RuntimeError('This project is not set to the proper path, you need to save the project under %s to link to the server' %sPathLocal)
-	sProject = _getFoldersFromPath(sDirectory)[-1]
-	sAssetDir = os.path.join(sDirectory, 'assets')
-	sAssetDir = os.path.join(sAssetDir, sAsset)
-	sAssetDir = os.path.join(sAssetDir, sType)
-	sAssetWipDir = os.path.join(sAssetDir, 'wipFiles')
+def createAsset(sAsset, sProject = None, sType = 'model'):
+	if not sProject:
+		sDirectory = _getProject()
+		if sPathLocal not in sDirectory:
+			raise RuntimeError('This project is not set to the proper path, you need to save the project under %s to link to the server' %sPathLocal)
+		sProject = _getFoldersFromPath(sDirectory)[-1]
+	sAssetDir, sAssetWipDir = _getAssetDirectory(sProject = sProject, sAsset = sAsset, sType = sType)
 	_createFolder(sAssetDir)
 	_createFolder(sAssetWipDir)
 	cmds.workspace(dir = sAssetDir)
@@ -47,7 +45,7 @@ def createAsset(sAsset, sType = 'model'):
 def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 	sStartTime = time.time()
 
-	sDirectory, sWipDirectory = _getAssetDirectory(sAsset, sType, sProject)
+	sDirectory, sWipDirectory = _getAssetDirectory(sProject = sProject, sAsset = sAsset, sType = sType)
 
 	# check if wip folder exists, create folder if not exists
 	_createFolder(sWipDirectory)
@@ -85,7 +83,7 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 	if iVersions >= iBackup:
 		iMin = min(lVersions)
 		sBackUpName = dVersions[iMin]['sVersionName']
-		dVersions.pop(iMin, None)		
+		dVersions.pop(iMin, None)       
 		cmds.remove(os.path.join(sWipDirectory, '%s%s' %(sBackUpName, sFileType)))
 
 	dVersionCurrent = {iVersionCurrent: {'sVersionName': sFileName, 'sComment': sComment, 'sFileType': sFileType}}
@@ -106,7 +104,7 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 def openAsset(sAsset, sType, sProject, iVersion = 0):
 	sStartTime = time.time()
 
-	sDirectory, sWipDirectory = _getAssetDirectory(sAsset, sType, sProject)
+	sDirectory, sWipDirectory = _getAssetDirectory(sProject = sProject, sAsset = sAsset, sType = sType)
 	if not os.path.isfile(os.path.join(sDirectory, 'assetInfo.version')):
 		raise RuntimeError('assetInfo.version does not exist in %s, can not read the asset' %(sAsset, os.path.abspath(sDirectory)))
 	dAssetInfo = files.readJsonFile(os.path.join(sDirectory, 'assetInfo.version'))
@@ -117,7 +115,7 @@ def openAsset(sAsset, sType, sProject, iVersion = 0):
 		sDirectory = sWipDirectory
 	if os.path.isfile(os.path.join(sDirectory, sFileName)):
 		setProject(os.path.join(sPathLocal, sProject))
-		cmds.file(os.path.join(sDirectory, sFileName), open = True)		
+		cmds.file(os.path.join(sDirectory, sFileName), open = True)     
 	else:
 		raise RuntimeError('%s did not exist in %s' %(sFileName, sDirectory))
 
@@ -141,36 +139,39 @@ def renameProject(sProject, sName):
 	print 'renamed %s to %s, took %f seconds' %(sProject, sName, sEndTime - sStartTime)
 
 
-def renameAsset(sAsset, sType, sProject, sName):
+def renameAsset(sAsset, sProject, sName):
 	sStartTime = time.time()
 
-	sDirectory, sWipDirectory = _getAssetDirectory(sAsset, sType, sProject)
-	if not os.path.isfile(os.path.join(sDirectory, 'assetInfo.version')):
-		raise RuntimeError('assetInfo.version does not exist in %s, can not read the asset' %(sAsset, os.path.abspath(sDirectory)))
-	dAssetInfo = files.readJsonFile(os.path.join(sDirectory, 'assetInfo.version'))
-	# rename version file
-	if dAssetInfo['assetInfo']['sCurrentVersionName']:
-	 dAssetInfo['assetInfo']['sCurrentVersionName'] = dAssetInfo['assetInfo']['sCurrentVersionName'].replace(sAsset, sName)
-	dAssetInfo['assetInfo']['sAsset'] = sName
+	sDirectory = _getAssetDirectory(sProject = sProject, sAsset = sAsset)
+	lAssetTypes = files.getFilesFromPath(sDirectory, sType = 'folder')
+	if lAssetTypes:
+		for sAssetType in lAssetTypes:
+			sDirectoryAsset = os.path.join(sDirectory, sAssetType)
+			if os.path.isfile(os.path.join(sDirectoryAsset, 'assetInfo.version')):
+				dAssetInfo = files.readJsonFile(os.path.join(sDirectoryAsset, 'assetInfo.version'))
+				# rename version file
+				if dAssetInfo['assetInfo']['sCurrentVersionName']:
+					dAssetInfo['assetInfo']['sCurrentVersionName'] = dAssetInfo['assetInfo']['sCurrentVersionName'].replace(sAsset, sName)
+					dAssetInfo['assetInfo']['sAsset'] = sName
 
-	if dAssetInfo['versionInfo']:
-		for iVersion in dAssetInfo['versionInfo'].keys():
-			dAssetInfo['versionInfo'][iVersion]['sVersionName'] = dAssetInfo['versionInfo'][iVersion]['sVersionName'].replace(sAsset, sName)
-	files.writeJsonFile(os.path.join(sDirectory, 'assetInfo.version'), dAssetInfo)
+				if dAssetInfo['versionInfo']:
+					for iVersion in dAssetInfo['versionInfo'].keys():
+						dAssetInfo['versionInfo'][iVersion]['sVersionName'] = dAssetInfo['versionInfo'][iVersion]['sVersionName'].replace(sAsset, sName)
+				files.writeJsonFile(os.path.join(sDirectoryAsset, 'assetInfo.version'), dAssetInfo)
 
-	# rename wip files
-	lFiles = files.getFilesFromPath(sWipDirectory, sType = sFileType)
-	for sFile in lFiles:
-		os.rename(os.path.join(sWipDirectory, sFile), os.path.join(sWipDirectory, sFile.replace(sAsset, sName)))
-	# rename file
-	lFiles = files.getFilesFromPath(sDirectory, sType = sFileType)
-	for sFile in lFiles:
-		os.rename(os.path.join(sDirectory, sFile), os.path.join(sDirectory, sFile.replace(sAsset, sName)))
+				# rename wip files
+				sWipDirectory = os.path.join(sDirectoryAsset, 'wipFiles')
+				if sWipDirectory:
+					lFiles = files.getFilesFromPath(sWipDirectory, sType = sFileType)
+					for sFile in lFiles:
+						os.rename(os.path.join(sWipDirectory, sFile), os.path.join(sWipDirectory, sFile.replace(sAsset, sName)))
+					# rename file
+					lFiles = files.getFilesFromPath(sDirectoryAsset, sType = sFileType)
+					for sFile in lFiles:
+						os.rename(os.path.join(sDirectory, sFile), os.path.join(sDirectory, sFile.replace(sAsset, sName)))
 	# rename folder
-	sDirectory = sPathLocal
-	for sFolder in [sProject, 'assets']:
-		sDirectory = os.path.join(sDirectory, sFolder)
-	os.rename(os.path.join(sDirectory, sAsset), os.path.join(sDirectory, sName))
+	sDirectory = _getAssetDirectory(sProject = sProject)
+	os.rename(sDirectoryAsset, os.path.join(sDirectory, sName))
 
 	sEndTime = time.time()
 	print 'renamed %s to %s, took %f seconds' %(sAsset, sName, sEndTime - sStartTime)
@@ -209,9 +210,14 @@ def _createVersionFile(sAsset, sType, sProject, sDirectory):
 
 	files.writeJsonFile(os.path.join(sDirectory, 'assetInfo.version'), dAssetInfo)
 
-def _getAssetDirectory(sAsset, sType, sProject):
+def _getAssetDirectory(sProject = None, sAsset = None, sType = None):
 	sDirectory = sPathLocal
-	for sFolder in [sProject, 'assets', sAsset, sType]:
-		sDirectory = os.path.join(sDirectory, sFolder)
-	sWipDirectory = os.path.join(sDirectory, 'wipFiles')
+	if sProject:
+		for sFolder in [sProject, 'assets', sAsset, sType]:
+			if sFolder:
+				sDirectory = os.path.join(sDirectory, sFolder)
+	if sProject and sAsset and sType:
+		sWipDirectory = os.path.join(sDirectory, 'wipFiles')
+	else:
+		sWipDirectory = None
 	return sDirectory, sWipDirectory

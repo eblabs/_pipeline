@@ -4,6 +4,38 @@
 		"selected_items":
 		[
 			[
+				"sA",
+				"sAsset"
+			],
+			[
+				"_",
+				"_getAssetDirectory"
+			],
+			[
+				"ge",
+				"_getAssetDirectory"
+			],
+			[
+				"sD",
+				"sDirectoryAsset"
+			],
+			[
+				"sAss",
+				"sAssetType"
+			],
+			[
+				"s",
+				"sType"
+			],
+			[
+				"sF",
+				"sFolder"
+			],
+			[
+				"sP",
+				"sProject"
+			],
+			[
 				"set",
 				"setEnabled"
 			],
@@ -30,10 +62,6 @@
 			[
 				"oL",
 				"oLayout_type"
-			],
-			[
-				"sP",
-				"sPathListItem"
 			],
 			[
 				"sPa",
@@ -66,10 +94,6 @@
 			[
 				"sS",
 				"sSubDirectory"
-			],
-			[
-				"sF",
-				"sFiles"
 			],
 			[
 				"w",
@@ -118,10 +142,6 @@
 			[
 				"QTr",
 				"QTreeView"
-			],
-			[
-				"_",
-				"_setVersionEnabled"
 			],
 			[
 				"QTree",
@@ -228,10 +248,6 @@
 				"QSourceModel_asset"
 			],
 			[
-				"s",
-				"sPath"
-			],
-			[
 				"QMenu",
 				"QMenuItem_rename"
 			],
@@ -336,16 +352,8 @@
 				"iVersion"
 			],
 			[
-				"sAss",
-				"sAsset"
-			],
-			[
 				"_c",
 				"_createFolder"
-			],
-			[
-				"sA",
-				"sAsset"
 			],
 			[
 				"_crea",
@@ -371,7 +379,7 @@
 			"file": "common/workspaces.py",
 			"settings":
 			{
-				"buffer_size": 7953,
+				"buffer_size": 8212,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -380,7 +388,7 @@
 			"file": "common/workspacesUI.py",
 			"settings":
 			{
-				"buffer_size": 12259,
+				"buffer_size": 12433,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -485,6 +493,10 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"os.path.join",
+			"_getAssetDirectory",
+			"Input_create",
+			"popWinRightClick",
 			"dAssetData",
 			"_listItemClick",
 			"QListView_version",
@@ -543,7 +555,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -552,15 +564,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7953,
+						"buffer_size": 8212,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5530,
-								5530
+								459,
+								459
 							]
 						],
 						"settings":
@@ -569,10 +581,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6308.0,
+						"translation.y": 359.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -581,15 +593,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12259,
+						"buffer_size": 12433,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								9459,
-								9459
+								621,
+								621
 							]
 						],
 						"settings":
@@ -598,10 +610,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 9855.0,
+						"translation.y": 451.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -629,7 +641,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -645,8 +657,8 @@
 						"selection":
 						[
 							[
-								867,
-								882
+								61,
+								50
 							]
 						],
 						"settings":
@@ -654,10 +666,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1332.0,
+						"translation.y": 481.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
