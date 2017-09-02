@@ -75,6 +75,8 @@ class assetsManagerUI(QtGui.QWidget):
 		self.QLabel_file = QtGui.QLabel()
 		self.QLabel_file.setStyleSheet("border: 1px solid black;")
 		QLayout.addWidget(self.QLabel_file)
+		QSelectionModel = self.oLayout_type.QListView.selectionModel()
+		QSelectionModel.currentChanged.connect(self._getVersionInfo)
 		#self.QComboBox_file.currentIndexChanged.connect(self._getVersionInfo)
 
 		#### versions		
@@ -92,44 +94,29 @@ class assetsManagerUI(QtGui.QWidget):
 
 		#### connect version with QTreeView
 		self.QTreeView_version.setEnabled(False)
-		#self.QCheckBox_version.stateChanged.connect(self._setVersionEnabled)
+		self.QCheckBox_version.stateChanged.connect(self._setVersionEnabled)
 
 		#### comment
 		self.QLabel_comment = QtGui.QLabel()
 		self.QLabel_comment.setStyleSheet("border: 1px solid black;")
 		self.QLabel_comment.setMinimumHeight(80)
-		self.QLabel_comment.setScaledContents(True)
+		self.QLabel_comment.setScaledContents(False)
+		self.QLabel_comment.setWordWrap(True)
 		QLayout.addWidget(self.QLabel_comment)
 
 		self.QLabel_comment.setAlignment(QtCore.Qt.AlignTop)
 
-		#QSelectionModel = self.QTreeView_version.selectionModel()
-		#QSelectionModel.currentChanged.connect(self._setVersionComment)
+		QSelectionModel = self.QTreeView_version.selectionModel()
+		QSelectionModel.currentChanged.connect(self._setVersionComment)
 
 		#### button
 		self.QPushButton_open = QtGui.QPushButton('Open File')
 		QLayout.addWidget(self.QPushButton_open)
 
-	def _addItem_QComboBox_file(self):
-		currentItem = self.oLayout_asset.QListView.currentIndex().data()
-		if currentItem:
-			self.sPathAsset = os.path.join(self.oLayout_asset.sPath, currentItem)
-			if os.path.exists(self.sPathAsset):
-				lFolders = files.getFilesFromPath(self.sPathAsset, sType = 'folder')
-				if lFolders:
-					for sFolder in lFolders:
-						self.QComboBox_file.addItem(sFolder.title())
-				else:
-					self.QComboBox_file.clear()
-			else:
-				self.QComboBox_file.clear()
-		else:
-			self.QComboBox_file.clear()
-
 	def _getVersionInfo(self):
-		currentItem = self.QComboBox_file.currentText()
+		currentItem = self.oLayout_type.QListView.currentIndex().data()
 		if currentItem:
-			sPathSource = os.path.join(self.sPathAsset, currentItem.lower())
+			sPathSource = os.path.join(os.path.join(self.oLayout_type.sPath, currentItem))
 			if os.path.exists(sPathSource):
 				## get version file
 				sVersionFile = files.getFileFromPath(sPathSource, 'assetInfo', sType = '.version')
@@ -238,6 +225,7 @@ class assetsManagerBaseLayout():
 
 		#### filter
 		self.QFilterEdit = QtGui.QLineEdit()
+		self.QFilterEdit.setPlaceholderText('Filter...')
 		self.QLayout.addWidget(self.QFilterEdit)
 
 		#### List
@@ -286,7 +274,9 @@ class assetsManagerBaseLayout():
 			currentItem = self.QListView.currentIndex().data()
 			if not currentItem:
 				QMenuItem_rename.setEnabled(False)
-				QMenuItem_delete.setEnabled(False)			
+				QMenuItem_delete.setEnabled(False)
+			if self.sName.lower() == 'types':
+				QMenuItem_rename.setEnabled(False)			
 			QListMenu.show() 
 		except:
 			pass

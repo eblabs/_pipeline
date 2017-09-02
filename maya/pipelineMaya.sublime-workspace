@@ -4,12 +4,36 @@
 		"selected_items":
 		[
 			[
-				"sP",
-				"sPathListItem"
+				"set",
+				"setEnabled"
+			],
+			[
+				"QLab",
+				"QLabel_comment"
+			],
+			[
+				"curr",
+				"currentItem"
+			],
+			[
+				"Q",
+				"QListView"
+			],
+			[
+				"currentI",
+				"currentIndex"
+			],
+			[
+				"QL",
+				"QListView"
 			],
 			[
 				"oL",
-				"oLayout_asset"
+				"oLayout_type"
+			],
+			[
+				"sP",
+				"sPathListItem"
 			],
 			[
 				"sPa",
@@ -76,16 +100,8 @@
 				"QPushButton"
 			],
 			[
-				"Q",
-				"QTreeView"
-			],
-			[
 				"cl",
 				"clear"
-			],
-			[
-				"set",
-				"setText"
 			],
 			[
 				"_set",
@@ -146,10 +162,6 @@
 			[
 				"QCOM",
 				"QComboBox_file"
-			],
-			[
-				"QL",
-				"QLabel_file"
 			],
 			[
 				"curren",
@@ -368,7 +380,7 @@
 			"file": "common/workspacesUI.py",
 			"settings":
 			{
-				"buffer_size": 12464,
+				"buffer_size": 12259,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -378,6 +390,7 @@
 			"settings":
 			{
 				"buffer_size": 283,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
@@ -458,7 +471,7 @@
 	],
 	"find":
 	{
-		"height": 45.0
+		"height": 53.0
 	},
 	"find_in_files":
 	{
@@ -556,7 +569,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6086.0,
+						"translation.y": 6308.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
@@ -568,15 +581,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12464,
+						"buffer_size": 12259,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2065,
-								2065
+								9459,
+								9459
 							]
 						],
 						"settings":
@@ -585,7 +598,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2440.0,
+						"translation.y": 9855.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -604,8 +617,8 @@
 						"selection":
 						[
 							[
-								129,
-								138
+								123,
+								123
 							]
 						],
 						"settings":
