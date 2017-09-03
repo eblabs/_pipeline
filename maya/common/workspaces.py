@@ -101,27 +101,19 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 
 	print 'asset saved at %s, took %f seconds' %(sDirectory, sEndTime - sStartTime)
 
-def openAsset(sAsset, sType, sProject, iVersion = 0):
+def openAsset(sProject, sAsset, sType, iVersion = 0):
 	sStartTime = time.time()
 
-	sDirectory, sWipDirectory = _getAssetDirectory(sProject = sProject, sAsset = sAsset, sType = sType)
-	if not os.path.isfile(os.path.join(sDirectory, 'assetInfo.version')):
-		raise RuntimeError('assetInfo.version does not exist in %s, can not read the asset' %(sAsset, os.path.abspath(sDirectory)))
-	dAssetInfo = files.readJsonFile(os.path.join(sDirectory, 'assetInfo.version'))
-	if iVersion == 0:
-		sFileName = '%s%s' %(dAssetInfo['assetInfo']['sCurrentVersionName'], dAssetInfo['assetInfo']['sFileType'])
-	else:
-		sFileName = '%s%s' %(dAssetInfo['versionInfo'][iVersion]['sVersionName'], dAssetInfo['assetInfo']['sFileType'])
-		sDirectory = sWipDirectory
-	if os.path.isfile(os.path.join(sDirectory, sFileName)):
+	sFilePath = _getAssetFile(sProject, sAsset, sType, iVersion = 0)
+	if sFilePath:
 		setProject(os.path.join(sPathLocal, sProject))
-		cmds.file(os.path.join(sDirectory, sFileName), open = True)     
+		cmds.file(sFilePath, open = True)     
 	else:
-		raise RuntimeError('%s did not exist in %s' %(sFileName, sDirectory))
+		raise RuntimeError('%s did not exist' %sFilePath)
 
 	sEndTime = time.time()
 
-	print 'loaded %s from %s, took %f seconds' %(sFileName, sDirectory, sEndTime - sStartTime)
+	print 'loaded %s, took %f seconds' %(sFilePath, sEndTime - sStartTime)
 
 def renameProject(sProject, sName):
 	sStartTime = time.time()
@@ -221,3 +213,21 @@ def _getAssetDirectory(sProject = None, sAsset = None, sType = None):
 	else:
 		sWipDirectory = None
 	return sDirectory, sWipDirectory
+
+def _getAssetFile(sProject, sAsset, sType, iVersion = 0):
+	sDirectory, sWipDirectory = _getAssetDirectory(sProject = sProject, sAsset = sAsset, sType = sType)
+	if not os.path.isfile(os.path.join(sDirectory, 'assetInfo.version')):
+		raise RuntimeError('assetInfo.version does not exist in %s, can not read the asset' %(sAsset, os.path.abspath(sDirectory)))
+	dAssetInfo = files.readJsonFile(os.path.join(sDirectory, 'assetInfo.version'))
+	if iVersion == 0:
+		sFileName = '%s%s' %(dAssetInfo['assetInfo']['sCurrentVersionName'], dAssetInfo['assetInfo']['sFileType'])
+	else:
+		sFileName = '%s%s' %(dAssetInfo['versionInfo'][iVersion]['sVersionName'], dAssetInfo['assetInfo']['sFileType'])
+		sDirectory = sWipDirectory
+	if os.path.isfile(os.path.join(sDirectory, sFileName)):
+		sFilePath = os.path.join(sDirectory, sFileName)
+		#setProject(os.path.join(sPathLocal, sProject))
+		#cmds.file(os.path.join(sDirectory, sFileName), open = True)     
+	else:
+		sFilePath = None
+	return sFilePath

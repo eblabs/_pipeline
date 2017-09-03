@@ -110,8 +110,13 @@ class assetsManagerUI(QtGui.QWidget):
 		QSelectionModel.currentChanged.connect(self._setVersionComment)
 
 		#### button
-		self.QPushButton_open = QtGui.QPushButton('Open File')
-		QLayout.addWidget(self.QPushButton_open)
+		QLayoutButton = QtGui.QHBoxLayout(self)
+		QLayout.addLayout(QLayoutButton)
+		self.QPushButton_setProject = self._addQPushButton(QLayoutButton, sName = 'Set Project')
+		self.QPushButton_open = self._addQPushButton(QLayoutButton, sName = 'Open File')
+		self.QPushButton_import = self._addQPushButton(QLayoutButton, sName = 'Import File')
+		QSelectionModel = self.oLayout_type.QListView.selectionModel()
+		QSelectionModel.currentChanged.connect(self._setPushButtonEnabled)
 
 	def _getVersionInfo(self):
 		currentItem = self.oLayout_type.QListView.currentIndex().data()
@@ -179,6 +184,32 @@ class assetsManagerUI(QtGui.QWidget):
 			self.QLabel_comment.setText(sComment)
 		else:
 			self.QLabel_comment.clear()
+
+	def _addQPushButton(self, QLayout, sName = 'Set Project'):
+		QPushButton = QtGui.QPushButton(sName)
+		QLayout.addWidget(QPushButton)
+		QPushButton.setEnabled(False)
+		return QPushButton
+
+	def _setPushButtonEnabled(self):
+		currentIndex = self.oLayout_type.QListView.currentIndex()
+		if currentIndex.isValid():
+			sFile = self.QLabel_file.text()
+			if not sFile:
+				self.QPushButton_setProject.setEnabled(True)
+				self.QPushButton_open.setEnabled(False)
+				self.QPushButton_import.setEnabled(False)
+			else:
+				self.QPushButton_setProject.setEnabled(False)
+				self.QPushButton_open.setEnabled(True)
+				self.QPushButton_import.setEnabled(True)
+		else:
+			self.QPushButton_setProject.setEnabled(False)
+			self.QPushButton_open.setEnabled(False)
+			self.QPushButton_import.setEnabled(False)
+
+
+
 
 
 		

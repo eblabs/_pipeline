@@ -4,12 +4,60 @@
 		"selected_items":
 		[
 			[
-				"sA",
-				"sAsset"
+				"Qp",
+				"QPushButton_import"
+			],
+			[
+				"QP",
+				"QPushButton_open"
+			],
+			[
+				"set",
+				"setEnabled"
+			],
+			[
+				"sF",
+				"sFile"
+			],
+			[
+				"QL",
+				"QLayoutButton"
+			],
+			[
+				"_ad",
+				"_addQPushButton"
+			],
+			[
+				"QPush",
+				"QPushButton_open"
+			],
+			[
+				"_se",
+				"_setPushButtonText"
+			],
+			[
+				"curr",
+				"currentChanged"
+			],
+			[
+				"QS",
+				"QSelectionModel"
+			],
+			[
+				"_set",
+				"_setPushButtonUnabled"
 			],
 			[
 				"_",
-				"_getAssetDirectory"
+				"_getAssetFile"
+			],
+			[
+				"sFile",
+				"sFilePath"
+			],
+			[
+				"sA",
+				"sAsset"
 			],
 			[
 				"ge",
@@ -28,24 +76,12 @@
 				"sType"
 			],
 			[
-				"sF",
-				"sFolder"
-			],
-			[
 				"sP",
 				"sProject"
 			],
 			[
-				"set",
-				"setEnabled"
-			],
-			[
 				"QLab",
 				"QLabel_comment"
-			],
-			[
-				"curr",
-				"currentItem"
 			],
 			[
 				"Q",
@@ -54,10 +90,6 @@
 			[
 				"currentI",
 				"currentIndex"
-			],
-			[
-				"QL",
-				"QListView"
 			],
 			[
 				"oL",
@@ -120,16 +152,8 @@
 				"sCreateType"
 			],
 			[
-				"QP",
-				"QPushButton"
-			],
-			[
 				"cl",
 				"clear"
-			],
-			[
-				"_set",
-				"_setVersionComment"
 			],
 			[
 				"QTre",
@@ -162,10 +186,6 @@
 			[
 				"sFileP",
 				"sFileTypeVersion"
-			],
-			[
-				"sFile",
-				"sFileVersion"
 			],
 			[
 				"QSou",
@@ -240,10 +260,6 @@
 				"rebuildListModel"
 			],
 			[
-				"QS",
-				"QSourceModel_project"
-			],
-			[
 				"QSo",
 				"QSourceModel_asset"
 			],
@@ -290,10 +306,6 @@
 			[
 				"setD",
 				"setDynamicSortFilter"
-			],
-			[
-				"Qp",
-				"QProxyModel_project"
 			],
 			[
 				"proj",
@@ -379,7 +391,7 @@
 			"file": "common/workspaces.py",
 			"settings":
 			{
-				"buffer_size": 8212,
+				"buffer_size": 8499,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -388,7 +400,7 @@
 			"file": "common/workspacesUI.py",
 			"settings":
 			{
-				"buffer_size": 12433,
+				"buffer_size": 13603,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -490,9 +502,11 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": true,
+		"case_sensitive": false,
 		"find_history":
 		[
+			"currentIndex",
+			"valid",
 			"os.path.join",
 			"_getAssetDirectory",
 			"Input_create",
@@ -555,7 +569,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -564,15 +578,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8212,
+						"buffer_size": 8499,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								459,
-								459
+								3641,
+								3641
 							]
 						],
 						"settings":
@@ -581,10 +595,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 359.0,
+						"translation.y": 3539.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -593,15 +607,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12433,
+						"buffer_size": 13603,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								621,
-								621
+								6805,
+								6805
 							]
 						],
 						"settings":
@@ -610,10 +624,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 451.0,
+						"translation.y": 7027.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -669,7 +683,7 @@
 						"translation.y": 481.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
