@@ -4,6 +4,46 @@
 		"selected_items":
 		[
 			[
+				"QLi",
+				"QListViewSource"
+			],
+			[
+				"_",
+				"_QMenuItemDelete"
+			],
+			[
+				"sT",
+				"sType"
+			],
+			[
+				"crea",
+				"createAsset"
+			],
+			[
+				"sP",
+				"sProject"
+			],
+			[
+				"sF",
+				"sFolders"
+			],
+			[
+				"files",
+				"getFilesFromPath"
+			],
+			[
+				"curr",
+				"currentItem"
+			],
+			[
+				"curre",
+				"currentItem"
+			],
+			[
+				"QMenu",
+				"QMenuItem_folder"
+			],
+			[
 				"Qp",
 				"QPushButton_import"
 			],
@@ -14,10 +54,6 @@
 			[
 				"set",
 				"setEnabled"
-			],
-			[
-				"sF",
-				"sFile"
 			],
 			[
 				"QL",
@@ -36,20 +72,12 @@
 				"_setPushButtonText"
 			],
 			[
-				"curr",
-				"currentChanged"
-			],
-			[
 				"QS",
 				"QSelectionModel"
 			],
 			[
 				"_set",
 				"_setPushButtonUnabled"
-			],
-			[
-				"_",
-				"_getAssetFile"
 			],
 			[
 				"sFile",
@@ -74,10 +102,6 @@
 			[
 				"s",
 				"sType"
-			],
-			[
-				"sP",
-				"sProject"
 			],
 			[
 				"QLab",
@@ -144,10 +168,6 @@
 				"partial"
 			],
 			[
-				"sT",
-				"sText"
-			],
-			[
 				"sC",
 				"sCreateType"
 			],
@@ -158,10 +178,6 @@
 			[
 				"QTre",
 				"QTreeView"
-			],
-			[
-				"curre",
-				"currentIndex"
 			],
 			[
 				"QTr",
@@ -262,10 +278,6 @@
 			[
 				"QSo",
 				"QSourceModel_asset"
-			],
-			[
-				"QMenu",
-				"QMenuItem_rename"
 			],
 			[
 				"current",
@@ -391,7 +403,7 @@
 			"file": "common/workspaces.py",
 			"settings":
 			{
-				"buffer_size": 8499,
+				"buffer_size": 8671,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -400,7 +412,7 @@
 			"file": "common/workspacesUI.py",
 			"settings":
 			{
-				"buffer_size": 13603,
+				"buffer_size": 15028,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -418,9 +430,17 @@
 			"file": "common/files.py",
 			"settings":
 			{
-				"buffer_size": 2294,
+				"buffer_size": 2954,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/harri/AppData/Local/Microsoft/Windows/INetCache/IE/PK6JRSZA/shutil[1].py",
+			"settings":
+			{
+				"buffer_size": 18435,
+				"line_ending": "Unix"
 			}
 		},
 		{
@@ -505,6 +525,13 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"deleteFileFromPath",
+			"getFilesFromPath",
+			"self.sPath",
+			"_getFoldersFromPath",
+			"createFolder",
+			"self.sPath",
+			"cmds.warning",
 			"currentIndex",
 			"valid",
 			"os.path.join",
@@ -569,7 +596,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -578,15 +605,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8499,
+						"buffer_size": 8671,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3641,
-								3641
+								3469,
+								3485
 							]
 						],
 						"settings":
@@ -595,10 +622,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3539.0,
+						"translation.y": 7999.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -607,15 +634,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 13603,
+						"buffer_size": 15028,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6805,
-								6805
+								13357,
+								13357
 							]
 						],
 						"settings":
@@ -624,10 +651,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 7027.0,
+						"translation.y": 13568.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -664,15 +691,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2294,
+						"buffer_size": 2954,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								61,
-								50
+								2217,
+								2237
 							]
 						],
 						"settings":
@@ -680,7 +707,7 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 481.0,
+						"translation.y": 2775.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
@@ -688,6 +715,36 @@
 				},
 				{
 					"buffer": 4,
+					"file": "/C/Users/harri/AppData/Local/Microsoft/Windows/INetCache/IE/PK6JRSZA/shutil[1].py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 18435,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7397,
+								7373
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 8619.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
 					"file": "/C/Users/harri/Dropbox/Projects/SCRIPTS/Tools/wip_ui4.py",
 					"semi_transient": false,
 					"settings":
@@ -708,15 +765,15 @@
 							"syntax": "Packages/Python/Python.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 519.0,
+						"translation.x": 0.0,
 						"translation.y": 10978.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 6,
 					"file": "/C/Users/harri/Downloads/PyQt4_gpl_win-4.12.1/examples/itemviews/basicsortfiltermodel.pyw",
 					"semi_transient": false,
 					"settings":
@@ -742,11 +799,11 @@
 						"translation.y": 2698.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 7,
 					"file": "/C/Users/harri/Downloads/PyQt4_gpl_win-4.12.1/examples/itemviews/customsortfiltermodel.pyw",
 					"semi_transient": false,
 					"settings":
@@ -772,7 +829,7 @@
 						"translation.y": 2460.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 7,
 					"type": "text"
 				}
 			]

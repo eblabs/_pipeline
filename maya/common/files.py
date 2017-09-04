@@ -1,9 +1,19 @@
 ## External Import
+import maya.cmds as cmds
 import json
 import os
-
+from shutil import rmtree
 ## Vars
 lAssetTypes = ['model', 'rig']
+import getpass
+sUser = getpass.getuser()
+sPathServer = 'C:/Users/%s/Dropbox/_works/' %sUser
+sPathLocal = 'C:/_works/maya/'
+
+iBackup = 20
+sFileType = '.mb'
+sFolderListName = 'folders.folderList'
+lProjectFolders = ['assets']
 
 #### Functions
 def writeJsonFile(sPath, data):
@@ -19,63 +29,30 @@ def readJsonFile(sPath):
 	file.close(sInfile)
 	return data
 
-def getFilesFromPath(sPath, sType = None):
-	lFiles = os.listdir(sPath)
-	os.chdir(sPath)
-	lFilesReturn = []
-	if not sType:
-		lFilesReturn = lFiles
+def createFolder(sDirectory):
+	if not os.path.exists(sDirectory):
+		os.makedirs(sDirectory)
+		cmds.warning('%s did not exist, created the folders' %sDirectory)
+
+def openFolderFromPath(sPath):
+	if os.path.exists(sPath):
+		os.startfile(sPath)
 	else:
-		for sFile in lFiles:
-			if sType == 'folder':
-				if not os.path.isfile(sFile):
-					lFilesReturn.append(sFile)
-			elif sType == 'file':
-				if os.path.isfile(sFile):
-					lFilesReturn.append(sFile)
-			else:
-				if sFile.endswith(sType):
-					lFilesReturn.append(sFile)
-	return lFilesReturn
+		cmds.warning('%s does not exist' %sPath)
 
-def getFileFromPath(sPath, sName, sType = None):
-	lFiles = getFilesFromPath(sPath, sType = sType)
-	sFileReturn = None
-	if not sType:
-		for sFile in lFiles:
-			if sFile == sName:
-				sFileReturn = sFile
-				break
-			elif '.' in sFile:
-				if sFile.split('.')[0] == sName:
-					sFileReturn = sFile
-					break
-	elif sType == 'folder':
-		if sName in lFiles:
-			sFileReturn = sName
-	else:
-		if '%s%s' %(sName, sType) in lFiles:
-			sFileReturn = '%s%s' %(sName, sType)
-	return sFileReturn
+def deleteFolderFromPath(sPath):
+	shutil.rmtree(sPath)
+	print 'Delete %s sucessfully' %sPath
 
-def getFilesFromDirectoryAndSubDirectories(sPath, sType = None):
-	lFilesReturn = []
-	for sPathEach, lSubDirectories, lFiles in os.walk(sPath):
-		for sSubDirectory in lSubDirectories:
-			if not sType or sType == 'folder':
-				lFilesReturn.append(os.path.join(sPathEach, sSubDirectory))
-		for sFile in lFiles:
-			if not sType or sType == 'file':
-				lFilesReturn.append(os.path.join(sPathEach, sFile))
-			elif sType != 'folder':
-				if sFile.endswith(sType):
-					lFilesReturn.append(os.path.join(sPathEach, sFile))
-	return lFilesReturn
-
-			
-
-
+	
 #### sub Functions
+
+def _getFoldersThroughPath(sPath):
+	sPathDir = os.path.dirname(sPath)
+	sPathDir = os.path.abspath(sPathDir)
+	lFolders = sPathDir.split('\\')
+	return lFolders	
+
 def _convertStringToCamelcase(sString):
 	if '_' in sString:
 		sStringParts = sString.split('_')
