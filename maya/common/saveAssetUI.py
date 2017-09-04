@@ -57,8 +57,6 @@ class saveAssetUI(QtGui.QWidget):
 			QLayoutLabel.addWidget(QLabel)
 			QLayoutPath.addLayout(QLayoutLabel)
 
-		self._getAssetFolders()
-
 		QPushButtonPath = QtGui.QPushButton('Change Path')
 		QLayoutBase.addWidget(QPushButtonPath)
 		QPushButtonPath.pressed.connect(self._setPathWinPop)
@@ -71,8 +69,8 @@ class saveAssetUI(QtGui.QWidget):
 		QLabelTag.setMaximumHeight(20)
 		QLayoutTag.addWidget(QLabelTag)
 
-		QLineEditTag = QtGui.QLineEdit()
-		QLayoutTag.addWidget(QLineEditTag)
+		self.QLineEditTag = QtGui.QLineEdit()
+		QLayoutTag.addWidget(self.QLineEditTag)
 
 		## comment
 		QLayoutComment = QtGui.QVBoxLayout(self)
@@ -82,16 +80,17 @@ class saveAssetUI(QtGui.QWidget):
 		QLabelComment.setMaximumHeight(20)
 		QLayoutComment.addWidget(QLabelComment)
 
-		QLineEditComment = QtGui.QLineEdit()
-		QLineEditComment.setMinimumHeight(100)
-		QLineEditComment.setAlignment(QtCore.Qt.AlignTop)
-		QLayoutComment.addWidget(QLineEditComment)
+		self.QLineEditComment = QtGui.QLineEdit()
+		self.QLineEditComment.setMinimumHeight(100)
+		self.QLineEditComment.setAlignment(QtCore.Qt.AlignTop)
+		QLayoutComment.addWidget(self.QLineEditComment)
 
 		## Save button
-		QPushButton = QtGui.QPushButton('Save Asset')
-		QLayoutBase.addWidget(QPushButton)
-
-
+		self.QPushButtonSave = QtGui.QPushButton('Save Asset')
+		QLayoutBase.addWidget(self.QPushButtonSave)
+		self.QPushButtonSave.setEnabled(False)
+		self._getAssetFolders()
+		self.QPushButtonSave.clicked.connect(self._saveAsset)
 
 	def _getAssetFolders(self):
 		sPath = workspaces._getProject(rootDirectory = False)
@@ -105,6 +104,8 @@ class saveAssetUI(QtGui.QWidget):
 				self.QLabelProject.setText(sFolders[0])
 				self.QLabelAsset.setText(sFolders[2])
 				self.QLabelType.setText(sFolders[3])
+				self.QPushButtonSave.setEnabled(True)
+
 
 	def _setPathWinPop(self):
 		try:
@@ -113,13 +114,28 @@ class saveAssetUI(QtGui.QWidget):
 			pass
 		self.setPathWin = setPathWin()
 		self.setPathWin.show()
-		self.setPathWin.QPushButtonPath.pressed.connect(self._resetPath)
+		self.setPathWin.QPushButtonPath.clicked.connect(self._resetPath)
 
 	def _resetPath(self):
 		if self.setPathWin.sProject and self.setPathWin.sAsset and self.setPathWin.sType:
 			self.QLabelProject.setText(self.setPathWin.sProject)
 			self.QLabelAsset.setText(self.setPathWin.sAsset)
 			self.QLabelType.setText(self.setPathWin.sType)
+			self.QPushButtonSave.setEnabled(True)
+
+	def _saveAsset(self):
+		sProject = self.QLabelProject.text()
+		sAsset = self.QLabelAsset.text()
+		sType = self.QLabelType.text()
+
+		sTag = self.QLineEditTag.text()
+		sComment = self.QLineEditComment.text()
+
+		bCheck = QtGui.QMessageBox.question(self, 'Save Asset', 'Project: %s\n\nAsset: %s\n\nType: %s\n\nTag: %s\n\nComment: %s' %(sProject, sAsset, sType, sTag, sComment), QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+
+		if bCheck == QtGui.QMessageBox.Yes:
+			workspaces.saveAsset(sAsset, sType, sProject, sTag = sTag, sComment = sComment)
+			self.close()
 
 	def closeEvent(self, event):
 		try:

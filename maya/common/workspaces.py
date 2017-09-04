@@ -114,6 +114,8 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 		sComment = 'initial'
 	iVersionCurrent = iVersions + 1
 
+	sFileDelete = '%s%s' %(dAssetInfo['assetInfo']['sCurrentVersionName'], dAssetInfo['assetInfo']['sFileType'])
+
 	sFileName = '%s_%s_%s_v%03d' %(sAsset, sType, sTag, iVersionCurrent)
 	dAssetInfo['assetInfo']['sCurrentVersionName'] = sFileName
 
@@ -124,7 +126,7 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 		iMin = min(lVersions)
 		sBackUpName = dVersions[iMin]['sVersionName']
 		dVersions.pop(iMin, None)       
-		cmds.remove(os.path.join(sWipDirectory, '%s%s' %(sBackUpName, sFileType)))
+		os.remove(os.path.join(sWipDirectory, '%s%s' %(sBackUpName, sFileType)))
 
 	dVersionCurrent = {iVersionCurrent: {'sVersionName': sFileName, 'sComment': sComment, 'sFileType': sFileType}}
 	dVersions.update(dVersionCurrent)
@@ -132,17 +134,34 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 
 	copyfile(os.path.join(sDirectory, '%s%s'%(sFileName, sFileType)), os.path.join(sWipDirectory, '%s%s'%(sFileName, sFileType)))
 
+	os.remove(os.path.join(sDirectory, sFileDelete))
+
+	setProject(sDirectory)
+
 	sEndTime = time.time()
 
 	print 'asset saved at %s, took %f seconds' %(sDirectory, sEndTime - sStartTime)
 
-def openAsset(sProject, sAsset, sType, iVersion = 0):
+def loadAsset(sProject, sAsset, sType, iVersion = 0, sLoadType = 'open', sNamespace = None):
 	sStartTime = time.time()
 
-	sFilePath = _getAssetFile(sProject, sAsset, sType, iVersion = 0)
+	sFilePath = _getAssetFile(sProject, sAsset, sType, iVersion = iVersion)
+	sProjectPath = os.path.abspath(sFilePath)
+	sProjectPath = os.path.dirname(sProjectPath)
 	if sFilePath:
-		setProject(os.path.join(sPathLocal, sProject))
-		cmds.file(sFilePath, open = True)     
+		setProject(sProjectPath)
+		if sLoadType == 'open':
+			cmds.file(new = True, force = True ) 
+			cmds.file(sFilePath, open = True)
+		elif sLoadType == 'import':
+			if sNamespace == None:
+				cmds.file(sFilePath, i = True)
+			else:
+				cmds.file(sFilePath, i = True, namespace = sNamespace)
+		else:
+			if sNamespace == None:
+				sNamespace = ''
+			cmds.file(sFilePath, r = True, namespace = sNamespace)    
 	else:
 		raise RuntimeError('%s did not exist' %sFilePath)
 
@@ -210,8 +229,9 @@ def renameAsset(sProject, sAsset, sName):
 	sEndTime = time.time()
 	print 'renamed %s to %s, took %f seconds' %(sAsset, sName, sEndTime - sStartTime)
 
-
-
+def checkCurrentSceneModified():
+	bModified = cmds.file(q=True, modified=True)
+	return bModified
 
 
 

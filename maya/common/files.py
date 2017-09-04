@@ -47,10 +47,12 @@ def deleteFolderFromPath(sPath):
 	
 #### sub Functions
 
-def _getFoldersThroughPath(sPath):
-	sPathDir = os.path.dirname(sPath)
-	sPathDir = os.path.abspath(sPathDir)
+def _getFoldersThroughPath(sPath):	
+	sPathDir = os.path.abspath(sPath)
+	sPathBase = os.path.basename(sPathDir)
+	sPathDir = os.path.dirname(sPathDir)
 	lFolders = sPathDir.split('\\')
+	lFolders.append(sPathBase)
 	return lFolders
 
 def _getBaseFileFromPath(sPath):
