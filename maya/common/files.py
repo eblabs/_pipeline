@@ -7,8 +7,8 @@ from shutil import rmtree
 lAssetTypes = ['model', 'rig']
 import getpass
 sUser = getpass.getuser()
-sPathServer = 'C:/Users/%s/Dropbox/_works/' %sUser
-sPathLocal = 'C:/_works/maya/'
+sPathServer = os.path.abspath('C:/Users/%s/Dropbox/_works/' %sUser)
+sPathLocal = os.path.abspath('C:/_works/maya/')
 
 iBackup = 20
 sFileType = '.mb'
@@ -51,7 +51,12 @@ def _getFoldersThroughPath(sPath):
 	sPathDir = os.path.dirname(sPath)
 	sPathDir = os.path.abspath(sPathDir)
 	lFolders = sPathDir.split('\\')
-	return lFolders	
+	return lFolders
+
+def _getBaseFileFromPath(sPath):
+	sPathDir = os.path.abspath(sPath)
+	sFile = os.path.basename(sPathDir)
+	return sFile
 
 def _convertStringToCamelcase(sString):
 	if '_' in sString:

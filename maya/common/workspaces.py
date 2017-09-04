@@ -42,6 +42,7 @@ def setProject(sDirectory):
 def createAsset(sAsset, sProject = None):
 	if not sProject:
 		sDirectory = _getProject()
+		sDirectory = os.path.abspath(sDirectory)
 		if sPathLocal not in sDirectory:
 			raise RuntimeError('This project is not set to the proper path, you need to save the project under %s to link to the server' %sPathLocal)
 		sProject = files._getFoldersThroughPath(sDirectory)[-1]
@@ -61,6 +62,7 @@ def createAsset(sAsset, sProject = None):
 def createAssetType(sAsset, sProject = None, sType = 'model'):
 	if not sProject:
 		sDirectory = _getProject()
+		sDirectory = os.path.abspath(sDirectory)
 		if sPathLocal not in sDirectory:
 			raise RuntimeError('This project is not set to the proper path, you need to save the project under %s to link to the server' %sPathLocal)
 		sProject = files._getFoldersThroughPath(sDirectory)[-1]

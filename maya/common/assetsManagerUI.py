@@ -3,7 +3,6 @@ import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMayaUI as OpenMayaUI
 import os
-import functools
 try:
 	from PySide import QtGui
 	from PySide import QtCore
