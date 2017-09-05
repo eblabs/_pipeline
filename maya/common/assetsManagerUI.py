@@ -285,7 +285,7 @@ class assetsManagerBaseLayout():
 		self.QLayoutBase.addLayout(self.QLayout)
 		self.sName = 'Projects'
 		self.bFilter = True
-		self.sPath = workspaces.sPathLocal
+		self.sPath = files.sPathLocal
 		self.sType = 'folder'
 		self.bListItemRightClick = True
 		self.oLayout = None
