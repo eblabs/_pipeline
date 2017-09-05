@@ -26,6 +26,7 @@ class syncAssetsUI(QtGui.QWidget):
 		super(syncAssetsUI, self).__init__()
 
 		self.dAssetData = getFileInfoFromLocalAndServer()
+		print self.dAssetData
 		
 		#Parent widget under Maya main window        
 		self.setParent(sParent)       
@@ -121,6 +122,12 @@ class syncAssetLayout():
 		self.QSourceModel.insertRow(0)
 		self.QSourceModel.setData(self.QSourceModel.index(0, syncAssetLayout.NAME), sName)
 		self.QSourceModel.setData(self.QSourceModel.index(0, syncAssetLayout.STATUS), sStatus)
+		if sStatus == 'Out of date':
+			self.QSourceModel.item(0, column = syncAssetLayout.STATUS).setForeground(QtGui.QBrush(QtGui.QColor('red')))
+		elif sStatus == 'Up to date':
+			self.QSourceModel.item(0, column = syncAssetLayout.STATUS).setForeground(QtGui.QBrush(QtGui.QColor('green')))
+		else:
+			self.QSourceModel.item(0, column = syncAssetLayout.STATUS).setForeground(QtGui.QBrush(QtGui.QColor('yellow')))
 
 
 
@@ -154,17 +161,49 @@ def getMayaWindow():
 def getFileInfoFromLocalAndServer():
 	dAssetData = {}
 	## get projects
-	lProjects_local = workspaces._getFoldersFromFolderList(files.sPathLocal)
-	lProjects_server = workspaces._getFoldersFromFolderList(files.sPathServer)
-	lProjects = list(set(lProjects_local + lProjects_server))
+	lProjectsData, lProjects = compareFilesLocalServer(files.sPathLocal, files.sPathServer)
+	for iProject, sProject in enumerate(lProjects):
+		dAssetData.update(lProjectsData[iProject])
 
-	for sProject in lProjects:
-		if sProject in lProjects_local and sProject in lProjects_server:
+		sPathLocal_asset = os.path.join(files.sPathLocal, sProject)
+		sPathLocal_asset = os.path.join(sPathLocal_asset, 'assets')
+		sPathServer_asset = os.path.join(files.sPathServer, sProject)
+		sPathServer_asset = os.path.join(sPathServer_asset, 'assets')
+
+		lAssetsData, lAssets = compareFilesLocalServer(sPathLocal_asset, sPathServer_asset)
+		for iAsset, sAsset in enumerate(lAssets):
+			dAssetData[sProject]['folders'].update(lAssetsData[iAsset])
+
+			sPathLocal_type = os.path.join(sPathLocal_asset, sAsset)
+			sPathServer_type = os.path.join(sPathServer_asset, sAsset)
+
+			lTypesData, lTypes = compareFilesLocalServer(sPathLocal_type, sPathServer_type)
+			for iType, sType in enumerate(lTypes):
+				dAssetData[sProject]['folders'][sAsset]['folders'].update(lTypesData[iType])
+
+	return dAssetData
+
+def compareFilesLocalServer(sPathLocal, sPathServer):
+	lReturn = []
+
+	if os.path.exists(sPathLocal):
+		lFiles_local = workspaces._getFoldersFromFolderList(sPathLocal)
+	else:
+		lFiles_local = []
+	if os.path.exists(sPathServer):
+		lFiles_server = workspaces._getFoldersFromFolderList(sPathServer)
+	else:
+		lFiles_server = []
+
+	lFiles = list(set(lFiles_local + lFiles_server))
+	for sFile in lFiles:
+		if sFile in lFiles_local and sFile in lFiles_server:
 			sStatus = 'Up to date'
-		elif sProject in lProjects_local:
+		elif sFile in lFiles_local:
 			sStatus = 'Out of date'
 		else:
 			sStatus = 'Not on local'
-		dProject = {sProject:{'status': sStatus}}
-		dAssetData.update(dProject)
-	return dAssetData
+		dFiles = {sFile: {'status': sStatus, 'folders': {}}}
+		lReturn.append(dFiles)
+
+	return lReturn, lFiles

@@ -311,8 +311,9 @@ def _deleteWorkspaceFolderFromPath(sPath, sFolder):
 def _getFoldersFromFolderList(sPath):
 	sFolderListPath = os.path.join(sPath, sFolderListName)
 	if not os.path.exists(sFolderListPath):
-		_createFolderListFile(sPath)
-	lFolders = files.readJsonFile(sFolderListPath)
+		lFolders = []
+	else:
+		lFolders = files.readJsonFile(sFolderListPath)
 	return lFolders
 
 def _getVersionFiles(sProject, sAsset = None, sType = None):
