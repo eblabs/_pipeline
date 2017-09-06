@@ -51,6 +51,9 @@ class syncAssetsUI(QtGui.QWidget):
 		self.oLayout_asset.sName = 'Assets'
 		self.oLayout_asset.initUI()
 
+		QSelectionModel = self.oLayout_project.QTreeView.selectionModel()
+		QSelectionModel.currentChanged.connect(self.setAssetList)
+
 		self.oLayout_type = syncAssetLayout(QLayoutBase)
 		self.oLayout_type.sName = 'Types'
 		self.oLayout_type.initUI()
@@ -71,7 +74,29 @@ class syncAssetsUI(QtGui.QWidget):
 		lStatus = []
 		for sProject in lProjects:
 			lStatus.append(self.dAssetData[sProject]['status'])
-		self.oLayout_project._setList(lProjects, lStatus)	
+		self.oLayout_project._setList(lProjects, lStatus)
+
+	def setAssetList(self):
+		self.oLayout_asset._refreshFileList()
+		iIndexProxy = self.oLayout_project.QTreeView.currentIndex()
+		if iIndexProxy.row() >= 0:
+			iIndexSource = self.oLayout_project.QProxyModel.mapToSource(iIndexProxy)
+		else:
+			iIndexSource = None
+
+		if iIndexSource:
+			sProject = self.oLayout_project.QSourceModel.item(iIndexSource.row(), column = syncAssetLayout.NAME).text()
+			if self.dAssetData[sProject]['folders']:
+				lAssets = self.dAssetData[sProject]['folders'].keys()
+				lStatus = []
+				for sAsset in lAssets:
+					lStatus.append(self.dAssetData[sProject]['folders'][sAsset]['status'])
+				self.oLayout_asset._setList(lAssets, lStatus)
+			else:
+				self.oLayout_asset._refreshFileList()
+		else:
+			self.oLayout_asset._refreshFileList()
+
 
 
 class syncAssetLayout():
@@ -111,24 +136,33 @@ class syncAssetLayout():
 		self.QTreeView.header().setStretchLastSection(False)
 		self.QLayout.addWidget(self.QTreeView)
 
-		#self.QFilterEdit.textChanged.connect(self._filterRegExpChanged)
+		self.QFilterEdit.textChanged.connect(self._filterRegExpChanged)
 
 	def _setList(self, lFiles, lStatus):
 		for i, sFile in enumerate(lFiles):
-			self._addVersion(sFile, lStatus[i])
+			self._addFile(sFile, lStatus[i])
 
-
-	def _addVersion(self, sName, sStatus):
-		self.QSourceModel.insertRow(0)
-		self.QSourceModel.setData(self.QSourceModel.index(0, syncAssetLayout.NAME), sName)
-		self.QSourceModel.setData(self.QSourceModel.index(0, syncAssetLayout.STATUS), sStatus)
+	def _refreshFileList(self):
+		iRowCount = self.QSourceModel.rowCount()
+		for i in range(0, iRowCount + 1):
+			self.QSourceModel.removeRow(0)
+	
+	def _addFile(self, sName, sStatus):
+		iRowCount = self.QSourceModel.rowCount()
+		self.QSourceModel.insertRow(iRowCount)
+		self.QSourceModel.setData(self.QSourceModel.index(iRowCount, syncAssetLayout.NAME), sName)
+		self.QSourceModel.setData(self.QSourceModel.index(iRowCount, syncAssetLayout.STATUS), sStatus)
 		if sStatus == 'Out of date':
-			self.QSourceModel.item(0, column = syncAssetLayout.STATUS).setForeground(QtGui.QBrush(QtGui.QColor('red')))
+			self.QSourceModel.item(iRowCount, column = syncAssetLayout.STATUS).setForeground(QtGui.QBrush(QtGui.QColor('red')))
 		elif sStatus == 'Up to date':
-			self.QSourceModel.item(0, column = syncAssetLayout.STATUS).setForeground(QtGui.QBrush(QtGui.QColor('green')))
+			self.QSourceModel.item(iRowCount, column = syncAssetLayout.STATUS).setForeground(QtGui.QBrush(QtGui.QColor('green')))
 		else:
-			self.QSourceModel.item(0, column = syncAssetLayout.STATUS).setForeground(QtGui.QBrush(QtGui.QColor('yellow')))
+			self.QSourceModel.item(iRowCount, column = syncAssetLayout.STATUS).setForeground(QtGui.QBrush(QtGui.QColor('yellow')))
 
+	def _filterRegExpChanged(self):
+		regExp = QtCore.QRegExp(self.QFilterEdit.text(), QtCore.Qt.CaseInsensitive)
+		self.QProxyModel.setFilterRegExp(regExp)
+	
 
 
 class fileTreeView(QtGui.QTreeView):

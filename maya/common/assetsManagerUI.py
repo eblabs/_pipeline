@@ -158,10 +158,12 @@ class assetsManagerUI(QtGui.QWidget):
 			else:
 				self.QLabel_file.clear()
 				self._refreshVersion()
+				self.QCheckBox_version.setChecked(False)
 				
 		else:
 			self.QLabel_file.clear()
 			self._refreshVersion()
+			self.QCheckBox_version.setChecked(False)
 			self.sPath = None
 
 
@@ -188,7 +190,10 @@ class assetsManagerUI(QtGui.QWidget):
 		if iIndex >= 0:
 			lVersions = self.dAssetData['versionInfo'].keys()
 			lVersions.sort()
-			iVersion = lVersions[iIndex]
+			if lVersions:
+				iVersion = lVersions[iIndex]
+			else:
+				iVersion = None
 		else:
 			iVersion = None
 		return iVersion
