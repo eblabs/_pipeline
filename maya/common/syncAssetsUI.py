@@ -58,6 +58,9 @@ class syncAssetsUI(QtGui.QWidget):
 		self.oLayout_type.sName = 'Types'
 		self.oLayout_type.initUI()
 
+		QSelectionModel = self.oLayout_asset.QTreeView.selectionModel()
+		QSelectionModel.currentChanged.connect(self.setTypeList)
+
 		QLayoutButton = QtGui.QVBoxLayout(self)
 		QLayoutButton.setAlignment(QtCore.Qt.AlignBottom)
 		QLayoutBase.addLayout(QLayoutButton)
@@ -72,30 +75,57 @@ class syncAssetsUI(QtGui.QWidget):
 	def setProjectList(self):
 		lProjects = self.dAssetData.keys()
 		lStatus = []
+		lProjects.sort()
 		for sProject in lProjects:
 			lStatus.append(self.dAssetData[sProject]['status'])
 		self.oLayout_project._setList(lProjects, lStatus)
 
 	def setAssetList(self):
 		self.oLayout_asset._refreshFileList()
-		iIndexProxy = self.oLayout_project.QTreeView.currentIndex()
-		if iIndexProxy.row() >= 0:
-			iIndexSource = self.oLayout_project.QProxyModel.mapToSource(iIndexProxy)
-		else:
-			iIndexSource = None
+		self.sProject = self._getSelectItem(self.oLayout_project)
 
-		if iIndexSource:
-			sProject = self.oLayout_project.QSourceModel.item(iIndexSource.row(), column = syncAssetLayout.NAME).text()
-			if self.dAssetData[sProject]['folders']:
-				lAssets = self.dAssetData[sProject]['folders'].keys()
+		if self.sProject:
+			if self.dAssetData[self.sProject]['folders']:
+				lAssets = self.dAssetData[self.sProject]['folders'].keys()
 				lStatus = []
+				lAssets.sort()
 				for sAsset in lAssets:
-					lStatus.append(self.dAssetData[sProject]['folders'][sAsset]['status'])
+					lStatus.append(self.dAssetData[self.sProject]['folders'][sAsset]['status'])
 				self.oLayout_asset._setList(lAssets, lStatus)
 			else:
 				self.oLayout_asset._refreshFileList()
 		else:
 			self.oLayout_asset._refreshFileList()
+
+	def setTypeList(self):
+		self.oLayout_type._refreshFileList()
+		self.sAsset = self._getSelectItem(self.oLayout_asset)
+
+		if self.sAsset:
+			if self.dAssetData[self.sProject]['folders'][self.sAsset]['folders']:
+				lTypes = self.dAssetData[self.sProject]['folders'][self.sAsset]['folders'].keys()
+				lStatus = []
+				lTypes.sort()
+				for sType in lTypes:
+					lStatus.append(self.dAssetData[self.sProject]['folders'][self.sAsset]['folders'][sType]['status'])
+				self.oLayout_type._setList(lTypes, lStatus)
+			else:
+				self.oLayout_type._refreshFileList()
+		else:
+			self.oLayout_type._refreshFileList()
+
+	def _getSelectItem(self, oLayout):
+		iIndexProxy = oLayout.QTreeView.currentIndex()
+		if iIndexProxy.row() >= 0:
+			iIndexSource = oLayout.QProxyModel.mapToSource(iIndexProxy)
+		else:
+			iIndexSource = None
+
+		if iIndexSource:
+			sSelect = oLayout.QSourceModel.item(iIndexSource.row(), column = syncAssetLayout.NAME).text()
+		else:
+			sSelect = None
+		return sSelect
 
 
 

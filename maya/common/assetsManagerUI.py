@@ -188,12 +188,7 @@ class assetsManagerUI(QtGui.QWidget):
 	def _getCurrentVersion(self):
 		iIndex = self.QTreeView_version.currentIndex().row()
 		if iIndex >= 0:
-			lVersions = self.dAssetData['versionInfo'].keys()
-			lVersions.sort()
-			if lVersions:
-				iVersion = lVersions[iIndex]
-			else:
-				iVersion = None
+			iVersion = self.QSourceModel_version.item(iIndex, column = assetsManagerUI.VERSION).text()
 		else:
 			iVersion = None
 		return iVersion

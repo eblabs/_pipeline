@@ -4,6 +4,22 @@
 		"selected_items":
 		[
 			[
+				"iI",
+				"iIndexSource"
+			],
+			[
+				"oL",
+				"oLayout_type"
+			],
+			[
+				"lTy",
+				"lTypes"
+			],
+			[
+				"ass",
+				"assetsManagerUI"
+			],
+			[
 				"iIndex",
 				"iIndexSource"
 			],
@@ -13,14 +29,6 @@
 			],
 			[
 				"ol",
-				"oLayout_project"
-			],
-			[
-				"iI",
-				"iIndex2"
-			],
-			[
-				"oL",
 				"oLayout_project"
 			],
 			[
@@ -46,10 +54,6 @@
 			[
 				"QTree",
 				"QTreeView"
-			],
-			[
-				"lTy",
-				"lTypesData"
 			],
 			[
 				"sP",
@@ -416,10 +420,6 @@
 				"currentIndex"
 			],
 			[
-				"ass",
-				"assetsManagerBaseLayout"
-			],
-			[
 				"sS",
 				"sSubDirectory"
 			],
@@ -541,7 +541,7 @@
 			"file": "common/assetsManagerUI.py",
 			"settings":
 			{
-				"buffer_size": 16890,
+				"buffer_size": 16832,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -550,7 +550,7 @@
 			"file": "common/syncAssetsUI.py",
 			"settings":
 			{
-				"buffer_size": 8016,
+				"buffer_size": 8924,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -637,6 +637,7 @@
 	},
 	"file_history":
 	[
+		"/C/_works/maya/folders.folderList",
 		"/C/_pipeline/maya/common/syncAssetUI.py",
 		"/C/_works/maya/testRename/assets/asset2/model/assetInfo.version",
 		"/C/Users/harri/Dropbox/Projects/SCRIPTS/uvBaseMeshRemapTool_forMaya02.py",
@@ -794,7 +795,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 3,
 			"sheets":
 			[
 				{
@@ -851,7 +852,7 @@
 						"translation.y": 7918.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -860,15 +861,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 16890,
+						"buffer_size": 16832,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6739,
-								6739
+								6639,
+								6639
 							]
 						],
 						"settings":
@@ -877,10 +878,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6608.0,
+						"translation.y": 6612.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -889,15 +890,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8016,
+						"buffer_size": 8924,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2163,
-								2163
+								3192,
+								3192
 							]
 						],
 						"settings":
@@ -906,10 +907,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2577.0,
+						"translation.y": 3570.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
