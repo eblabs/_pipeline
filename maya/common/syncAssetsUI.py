@@ -64,6 +64,13 @@ class syncAssetsUI(QtGui.QWidget):
 		QLayoutButton = QtGui.QVBoxLayout(self)
 		QLayoutButton.setAlignment(QtCore.Qt.AlignBottom)
 		QLayoutBase.addLayout(QLayoutButton)
+		self.QPushButtonRefresh = QtGui.QPushButton('Force to refresh')
+		self.QPushButtonRefresh.setMaximumWidth(150)
+		QLayoutButton.addWidget(self.QPushButtonRefresh)
+
+		QLabel = QtGui.QLabel()
+		QLayoutButton.addWidget(QLabel)
+		
 		self.QPushButtonPush = QtGui.QPushButton('Push to Server')
 		self.QPushButtonPush.setMaximumWidth(150)
 		QLayoutButton.addWidget(self.QPushButtonPush)
@@ -228,6 +235,7 @@ def getFileInfoFromLocalAndServer():
 	lProjectsData, lProjects = compareFilesLocalServer(files.sPathLocal, files.sPathServer)
 	for iProject, sProject in enumerate(lProjects):
 		dAssetData.update(lProjectsData[iProject])
+		sStatus_project = dAssetData[sProject]['status']
 
 		sPathLocal_asset = os.path.join(files.sPathLocal, sProject)
 		sPathLocal_asset = os.path.join(sPathLocal_asset, 'assets')
@@ -237,13 +245,37 @@ def getFileInfoFromLocalAndServer():
 		lAssetsData, lAssets = compareFilesLocalServer(sPathLocal_asset, sPathServer_asset)
 		for iAsset, sAsset in enumerate(lAssets):
 			dAssetData[sProject]['folders'].update(lAssetsData[iAsset])
+			sStatus_asset = dAssetData[sProject]['folders'][sAsset]['status']
 
 			sPathLocal_type = os.path.join(sPathLocal_asset, sAsset)
 			sPathServer_type = os.path.join(sPathServer_asset, sAsset)
 
 			lTypesData, lTypes = compareFilesLocalServer(sPathLocal_type, sPathServer_type)
+
 			for iType, sType in enumerate(lTypes):
 				dAssetData[sProject]['folders'][sAsset]['folders'].update(lTypesData[iType])
+				sPathLocal_file = os.path.join(sPathLocal_type, sType)
+				sPathServer_file = os.path.join(sPathServer_type, sType)
+				sStatus = compareFileVersion(sPathLocal_file, sPathServer_file)
+				dAssetData[sProject]['folders'][sAsset]['folders'][sType]['status'] = sStatus
+
+				if sStatus_asset == 'Out of date' or sStatus == 'Out of date':
+					sStatus_asset = 'Out of date'
+				elif sStatus_asset == 'Not on local' or sStatus == 'Not on local':
+					sStatus_asset = 'Not on local'
+				else:
+					sStatus_asset = 'Up to date'
+
+			dAssetData[sProject]['folders'][sAsset]['status'] = sStatus_asset
+
+			if sStatus_project == 'Out of date' or sStatus_asset == 'Out of date':
+				sStatus_project = 'Out of date'
+			elif sStatus_project == 'Not on local' or sStatus_asset == 'Not on local':
+				sStatus_project = 'Not on local'
+			else:
+				sStatus_project = 'Up to date'
+
+		dAssetData[sProject]['status'] = sStatus_project
 
 	return dAssetData
 
@@ -271,3 +303,41 @@ def compareFilesLocalServer(sPathLocal, sPathServer):
 		lReturn.append(dFiles)
 
 	return lReturn, lFiles
+
+def compareFileVersion(sPathLocal, sPathServer):
+	sVersionLocal = os.path.join(sPathLocal, 'assetInfo.version')
+	sVersionServer = os.path.join(sPathServer, 'assetInfo.version')
+
+	if os.path.exists(sVersionLocal) and os.path.exists(sVersionServer):
+		dAssetDataLocal = files.readJsonFile(sPathLocal)
+		dAssetDataServer = files.readJsonFile(sPathServer)
+
+		if dAssetDataLocal['versionInfo']:
+			lVersionsLocal = dAssetDataLocal['versionInfo'].keys()
+			iVersionLocal = int(max(lVersionsLocal))
+		else:
+			iVersionLocal = -1
+
+		if dAssetDataServer['versionInfo']:
+			lVersionsServer = dAssetDataServer['versionInfo'].keys()
+			iVersionServer = int(max(lVersionsServer))
+		else:
+			iVersionServer = -1
+
+		if iVersionLocal == iVersionServer:
+			sStatus = 'Up to date'
+		elif iVersionLocal > iVersionServer:
+			sStatus = 'Out of date'
+		else:
+			sStatus = 'Not on local'
+
+	elif os.path.exists(sVersionLocal):
+		sStatus = 'Out of date'
+	elif os.path.exists(sVersionServer):
+		sStatus = 'Not on local'
+	else:
+		sStatus = 'Up to date'
+
+	return sStatus
+
+
