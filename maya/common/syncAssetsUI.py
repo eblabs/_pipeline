@@ -89,7 +89,7 @@ class syncAssetsUI(QtGui.QWidget):
 
 	def setAssetList(self):
 		self.oLayout_asset._refreshFileList()
-		self.sProject = self._getSelectItem(self.oLayout_project)
+		self.sProject, sStatus = self._getSelectItem(self.oLayout_project)
 
 		if self.sProject:
 			if self.dAssetData[self.sProject]['folders']:
@@ -106,7 +106,7 @@ class syncAssetsUI(QtGui.QWidget):
 
 	def setTypeList(self):
 		self.oLayout_type._refreshFileList()
-		self.sAsset = self._getSelectItem(self.oLayout_asset)
+		self.sAsset, sStatus = self._getSelectItem(self.oLayout_asset)
 
 		if self.sAsset:
 			if self.dAssetData[self.sProject]['folders'][self.sAsset]['folders']:
@@ -130,9 +130,60 @@ class syncAssetsUI(QtGui.QWidget):
 
 		if iIndexSource:
 			sSelect = oLayout.QSourceModel.item(iIndexSource.row(), column = syncAssetLayout.NAME).text()
+			sStatus = oLayout.QSourceModel.item(iIndexSource.row(), column = syncAssetLayout.STATUS).text()
 		else:
 			sSelect = None
-		return sSelect
+			sStatus = None
+		return sSelect, sStatus
+
+	def _syncCmd(self, sMode):
+		bSync = True
+
+		sTypeSel, sStatusTypeSel = self._getSelectItem(self.oLayout_type)
+		sAssetSel, sStatusAssetSel = self._getSelectItem(self.oLayout_asset)
+		sProjectSel, sStatusProjectSel = self._getSelectItem(self.oLayout_project)
+		if sTypeSel:
+			workspaces.syncAsset(sProjectSel, sAssetSel, sTypeSel, sMode = sMode)
+		elif sAssetSel:
+			lTypes = self.dAssetData[sProjectSel]['folders'][sAssetSel]['folders'].keys()
+			if lTypes:
+				for sType in lTypes:
+					workspaces.syncAsset(sProjectSel, sAssetSel, sType, sMode = sMode)
+			else:
+				workspaces.syncAsset(sProjectSel, sAssetSel, None, sMode = sMode)
+		elif sProjectSel:
+			lAssets = self.dAssetData[sProjectSel]['folders'].keys()
+			if lAssets:
+				for sAsset in lAssets:
+					lTypes = self.dAssetData[sProjectSel]['folders'][sAsset]['folders'].keys()
+					if lTypes:
+						for sType in lTypes:
+							workspaces.syncAsset(sProjectSel, sAsset, sType, sMode = sMode)
+					else:
+						workspaces.syncAsset(sProjectSel, sAsset, None, sMode = sMode)
+			else:
+				workspaces.syncAsset(sProjectSel, None, None, sMode = sMode)
+		else:
+			lProjects = self.dAssetData.keys()
+			if lProjects:
+				for sProject in lProjects:
+					lAssets = self.dAssetData[sProject]['folders'].keys()
+					if lAssets:
+						for sAsset in lAssets:
+							lTypes = self.dAssetData[sProject]['folders'][sAsset]['folders'].keys()
+							if lTypes:
+								for sType in lTypes:
+									workspaces.syncAsset(sProject, sAsset, sType, sMode = sMode)
+							else:
+								workspaces.syncAsset(sProject, sAsset, None, sMode = sMode)
+					else:
+						workspaces.syncAsset(sProject, None, None, sMode = sMode)
+			
+
+	def _publishAsset(self, sProject, sAsset, sType):
+		pass
+
+
 
 
 

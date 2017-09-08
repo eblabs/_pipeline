@@ -4,6 +4,7 @@ import maya.mel as mel
 import os
 import json
 from shutil import copyfile
+from distutils.dir_util import copy_tree
 import time
 ## libs Import
 import files
@@ -233,6 +234,39 @@ def checkCurrentSceneModified():
 	bModified = cmds.file(q=True, modified=True)
 	return bModified
 
+def syncAsset(sProject, sAsset, sType, sMode = 'server'):
+	if sMode == 'server':
+		sPathSync = sPathServer
+	else:
+		sPathSync = sPathLocal
+	syncFolder(sPathSync, sProject)
+
+	if sAsset:
+		sPathAsset = os.path.join(sPathSync, sProject)
+		sPathAsset = os.path.join(sPathAsset, 'assets')
+		syncFolder(sPathAsset, sAsset)
+
+		if sType:
+			sPathType = os.path.join(sPathAsset, sAsset)
+			syncFolder(sPathType, sType)
+			if os.path.exists(os.path.join(sPathType, sType))
+				os.remove(os.path.join(sPathType, sType))
+
+				sPathTypeSync, sPathTemp = _getAssetDirectory(sProject = sProject, sAsset = sAsset, sType = sType, sMode = sMode)
+				copy_tree(sPathTypeSync, os.path.join(sPathType, sType))
+
+
+
+def syncFolder(sPath, sPathSource, sFolder):
+	sPathSourceFolderList = os.path.join(sPath, sFolderListName)
+	lFoldersSource = _getFoldersFromFolderList(sPathSourceFolderList, bCreate = False)
+	if sFolder in lFoldersSource:
+		sPathFolderList = os.path.join(sPath, sFolderListName)
+		lFolders = _getFoldersFromFolderList(sPathFolderList, bCreate = True)
+		if sFolder not in lFolders:
+			files.createFolder(os.path.join(sPath, sFolder))
+			_writeFolderListFile(sPathFolderList, sFolder)
+
 
 
 
@@ -256,8 +290,11 @@ def _createVersionFile(sAsset, sType, sProject, sDirectory):
 
 	files.writeJsonFile(os.path.join(sDirectory, 'assetInfo.version'), dAssetInfo)
 
-def _getAssetDirectory(sProject = None, sAsset = None, sType = None):
-	sDirectory = sPathLocal
+def _getAssetDirectory(sProject = None, sAsset = None, sType = None, sMode = 'local'):
+	if sMode == 'local':
+		sDirectory = sPathLocal
+	else:
+		sDirectory = sPathServer
 	if sProject:
 		for sFolder in [sProject, 'assets', sAsset, sType]:
 			if sFolder:
@@ -308,10 +345,12 @@ def _deleteWorkspaceFolderFromPath(sPath, sFolder):
 	_writeFolderListFile(sPath, sFolder, bRemove = True)
 	files.deleteFolderFromPath(os.path.join(sPath, sFolder))
 
-def _getFoldersFromFolderList(sPath):
+def _getFoldersFromFolderList(sPath, bCreate = False):
 	sFolderListPath = os.path.join(sPath, sFolderListName)
 	if not os.path.exists(sFolderListPath):
 		lFolders = []
+		if bCreate:
+			_createFolderListFile(sPath, sFolderListName)
 	else:
 		lFolders = files.readJsonFile(sFolderListPath)
 	return lFolders
