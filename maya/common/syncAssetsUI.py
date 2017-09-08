@@ -67,6 +67,7 @@ class syncAssetsUI(QtGui.QWidget):
 		self.QPushButtonRefresh = QtGui.QPushButton('Force to refresh')
 		self.QPushButtonRefresh.setMaximumWidth(150)
 		QLayoutButton.addWidget(self.QPushButtonRefresh)
+		self.QPushButtonRefresh.clicked.connect(self._refreshCmd)
 
 		QLabel = QtGui.QLabel()
 		QLayoutButton.addWidget(QLabel)
@@ -74,10 +75,12 @@ class syncAssetsUI(QtGui.QWidget):
 		self.QPushButtonPush = QtGui.QPushButton('Push to Server')
 		self.QPushButtonPush.setMaximumWidth(150)
 		QLayoutButton.addWidget(self.QPushButtonPush)
+		self.QPushButtonPush.clicked.connect(self._publishCmd)
 
 		self.QPushButtonPull = QtGui.QPushButton('Pull to Local')
 		self.QPushButtonPull.setMaximumWidth(150)
 		QLayoutButton.addWidget(self.QPushButtonPull)
+		self.QPushButtonPull.clicked.connect(self._checkoutCmd)
 
 	def setProjectList(self):
 		lProjects = self.dAssetData.keys()
@@ -136,9 +139,22 @@ class syncAssetsUI(QtGui.QWidget):
 			sStatus = None
 		return sSelect, sStatus
 
-	def _syncCmd(self, sMode):
-		bSync = True
+	def _publishCmd(self):
+		bCheck = QtGui.QMessageBox.question(self, 'Push To Server', 'Are you sure you want to push to server?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+		if bCheck == QtGui.QMessageBox.Yes:
+			self._syncCmd('server')
 
+	def _checkoutCmd(self):
+		bCheck = QtGui.QMessageBox.question(self, 'Pull To Local', 'Are you sure you want to pull to local?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+		if bCheck == QtGui.QMessageBox.Yes:
+			self._syncCmd('local')
+
+	def _refreshCmd(self):
+		self.oLayout_project._refreshFileList()
+		self.getFileInfoFromLocalAndServer()
+		self.setProjectList()
+			
+	def _syncCmd(self, sMode):
 		sTypeSel, sStatusTypeSel = self._getSelectItem(self.oLayout_type)
 		sAssetSel, sStatusAssetSel = self._getSelectItem(self.oLayout_asset)
 		sProjectSel, sStatusProjectSel = self._getSelectItem(self.oLayout_project)
@@ -178,13 +194,8 @@ class syncAssetsUI(QtGui.QWidget):
 								workspaces.syncAsset(sProject, sAsset, None, sMode = sMode)
 					else:
 						workspaces.syncAsset(sProject, None, None, sMode = sMode)
-			
 
-	def _publishAsset(self, sProject, sAsset, sType):
-		pass
-
-
-
+		self._refreshCmd()
 
 
 class syncAssetLayout():

@@ -4,6 +4,18 @@
 		"selected_items":
 		[
 			[
+				"pu",
+				"_publishCmd"
+			],
+			[
+				"QLa",
+				"QLayoutButton"
+			],
+			[
+				"ref",
+				"_refreshFileList"
+			],
+			[
 				"lF",
 				"lFoldersSource"
 			],
@@ -102,10 +114,6 @@
 			[
 				"QLay",
 				"QLayoutButton"
-			],
-			[
-				"QLa",
-				"QLabel"
 			],
 			[
 				"QPush",
@@ -484,10 +492,6 @@
 				"partial"
 			],
 			[
-				"ref",
-				"_refreshVersion"
-			],
-			[
 				"asse",
 				"assetsManagerUI"
 			],
@@ -510,10 +514,6 @@
 			[
 				"curren",
 				"currentIndex"
-			],
-			[
-				"QV",
-				"QVBoxLayout"
 			]
 		]
 	},
@@ -550,7 +550,7 @@
 			"file": "common/syncAssetsUI.py",
 			"settings":
 			{
-				"buffer_size": 13104,
+				"buffer_size": 13832,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -659,7 +659,7 @@
 	],
 	"find":
 	{
-		"height": 53.0
+		"height": 45.0
 	},
 	"find_in_files":
 	{
@@ -846,8 +846,8 @@
 						"selection":
 						[
 							[
-								7047,
-								7047
+								4090,
+								3880
 							]
 						],
 						"settings":
@@ -855,7 +855,7 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 7918.0,
+						"translation.y": 2701.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
@@ -896,15 +896,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 13104,
+						"buffer_size": 13832,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4209,
-								4209
+								2115,
+								2115
 							]
 						],
 						"settings":
@@ -913,7 +913,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 4511.0,
+						"translation.y": 2349.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
