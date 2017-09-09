@@ -7,7 +7,7 @@ from shutil import rmtree
 lAssetTypes = ['model', 'rig']
 import getpass
 sUser = getpass.getuser()
-sPathServer = os.path.abspath('C:/Users/%s/Dropbox/_works/' %sUser)
+sPathServer = os.path.abspath('C:/Users/%s/Dropbox/_works/maya/' %sUser)
 sPathLocal = os.path.abspath('C:/_works/maya/')
 
 iBackup = 20
@@ -24,6 +24,7 @@ def writeJsonFile(sPath, data):
 def readJsonFile(sPath):
 	if not os.path.exists(sPath):
 		raise RuntimeError('The file is not exist')
+	print sPath
 	with open(sPath, 'r') as sInfile:
 		data = json.load(sInfile)
 	file.close(sInfile)

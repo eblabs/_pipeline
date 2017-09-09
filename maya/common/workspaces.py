@@ -3,8 +3,7 @@ import maya.cmds as cmds
 import maya.mel as mel
 import os
 import json
-from shutil import copyfile
-from distutils.dir_util import copy_tree
+from shutil import copyfile, rmtree, copytree
 import time
 ## libs Import
 import files
@@ -84,7 +83,7 @@ def createAssetType(sAsset, sProject = None, sType = 'model'):
 	_createVersionFile(sAsset, sType, sProject, sAssetDir)
 
 def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
-	sStartTime = time.time()
+	fStartTime = time.time()
 
 	sDirectory, sWipDirectory = _getAssetDirectory(sProject = sProject, sAsset = sAsset, sType = sType)
 
@@ -139,12 +138,12 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 
 	setProject(sDirectory)
 
-	sEndTime = time.time()
+	fEndTime = time.time()
 
-	print 'asset saved at %s, took %f seconds' %(sDirectory, sEndTime - sStartTime)
+	print 'asset saved at %s, took %f seconds' %(sDirectory, fEndTime - fStartTime)
 
 def loadAsset(sProject, sAsset, sType, iVersion = 0, sLoadType = 'open', sNamespace = None):
-	sStartTime = time.time()
+	fStartTime = time.time()
 
 	sFilePath = _getAssetFile(sProject, sAsset, sType, iVersion = iVersion)
 	sProjectPath = os.path.abspath(sFilePath)
@@ -166,12 +165,12 @@ def loadAsset(sProject, sAsset, sType, iVersion = 0, sLoadType = 'open', sNamesp
 	else:
 		raise RuntimeError('%s did not exist' %sFilePath)
 
-	sEndTime = time.time()
+	fEndTime = time.time()
 
-	print 'loaded %s, took %f seconds' %(sFilePath, sEndTime - sStartTime)
+	print 'loaded %s, took %f seconds' %(sFilePath, fEndTime - fStartTime)
 
 def renameProject(sProject, sName):
-	sStartTime = time.time()
+	fStartTime = time.time()
 	# rename version file's sProject
 	lVersionFiles = _getVersionFiles(sProject)
 	if lVersionFiles:
@@ -185,12 +184,12 @@ def renameProject(sProject, sName):
 	# write file list
 	_writeFolderListFile(sPathLocal, sName, sReplace = sProject)
 
-	sEndTime = time.time()
-	print 'renamed %s to %s, took %f seconds' %(sProject, sName, sEndTime - sStartTime)
+	fEndTime = time.time()
+	print 'renamed %s to %s, took %f seconds' %(sProject, sName, fEndTime - fStartTime)
 
 
 def renameAsset(sProject, sAsset, sName):
-	sStartTime = time.time()
+	fStartTime = time.time()
 
 	#rename asset
 	sDirectory, sWipDirectory = _getAssetDirectory(sProject = sProject, sAsset = sAsset)
@@ -227,45 +226,62 @@ def renameAsset(sProject, sAsset, sName):
 	sDirectory, sWipDirectory = _getAssetDirectory(sProject = sProject)
 	_writeFolderListFile(sDirectory, sName, sReplace = sAsset)
 
-	sEndTime = time.time()
-	print 'renamed %s to %s, took %f seconds' %(sAsset, sName, sEndTime - sStartTime)
+	fEndTime = time.time()
+	print 'renamed %s to %s, took %f seconds' %(sAsset, sName, fEndTime - fStartTime)
 
 def checkCurrentSceneModified():
 	bModified = cmds.file(q=True, modified=True)
 	return bModified
 
 def syncAsset(sProject, sAsset, sType, sMode = 'server'):
+	fStartTime = time.time()
+
 	if sMode == 'server':
 		sPathSync = sPathServer
+		sPathSource = sPathLocal
+		sModeSource = 'local'
 	else:
 		sPathSync = sPathLocal
-	syncFolder(sPathSync, sProject)
+		sPathSource = sPathServer
+		sModeSource = 'server'
+	syncFolder(sPathSync, sPathSource, sProject)
 
 	if sAsset:
 		sPathAsset = os.path.join(sPathSync, sProject)
 		sPathAsset = os.path.join(sPathAsset, 'assets')
-		syncFolder(sPathAsset, sAsset)
+		files.createFolder(sPathAsset)
+		sPathSourceAsset = os.path.join(sPathSource, sProject)
+		sPathSourceAsset = os.path.join(sPathSourceAsset, 'assets')
+		syncFolder(sPathAsset, sPathSourceAsset, sAsset)
 
 		if sType:
 			sPathType = os.path.join(sPathAsset, sAsset)
-			syncFolder(sPathType, sType)
-			if os.path.exists(os.path.join(sPathType, sType))
-				os.remove(os.path.join(sPathType, sType))
+			sPathSourceType = os.path.join(sPathSourceAsset, sAsset)
+			syncFolder(sPathType, sPathSourceType, sType)
+			if os.path.exists(os.path.join(sPathType, sType)):
+				rmtree(os.path.join(sPathType, sType))
 
-				sPathTypeSync, sPathTemp = _getAssetDirectory(sProject = sProject, sAsset = sAsset, sType = sType, sMode = sMode)
-				copy_tree(sPathTypeSync, os.path.join(sPathType, sType))
+				sPathTypeSync, sPathTemp = _getAssetDirectory(sProject = sProject, sAsset = sAsset, sType = sType, sMode = sModeSource)
+				copytree(sPathTypeSync, os.path.join(sPathType, sType))
+
+	fEndTime = time.time()
+	sSyncName = ''
+	for sName in [sProject, sAsset, sType]:
+		if sName:
+			sSyncName += '%s'sName
+			if sName != sType:
+				sSyncName += '\\'
+	print 'synced %s, took %f seconds' %(sSyncName, fEndTime - fStartTime)
 
 
 
 def syncFolder(sPath, sPathSource, sFolder):
-	sPathSourceFolderList = os.path.join(sPath, sFolderListName)
-	lFoldersSource = _getFoldersFromFolderList(sPathSourceFolderList, bCreate = False)
+	lFoldersSource = _getFoldersFromFolderList(sPathSource, bCreate = False)
 	if sFolder in lFoldersSource:
-		sPathFolderList = os.path.join(sPath, sFolderListName)
-		lFolders = _getFoldersFromFolderList(sPathFolderList, bCreate = True)
+		lFolders = _getFoldersFromFolderList(sPath, bCreate = True)
 		if sFolder not in lFolders:
 			files.createFolder(os.path.join(sPath, sFolder))
-			_writeFolderListFile(sPathFolderList, sFolder)
+			_writeFolderListFile(sPath, sFolder)
 
 
 
@@ -350,7 +366,7 @@ def _getFoldersFromFolderList(sPath, bCreate = False):
 	if not os.path.exists(sFolderListPath):
 		lFolders = []
 		if bCreate:
-			_createFolderListFile(sPath, sFolderListName)
+			_createFolderListFile(sPath)
 	else:
 		lFolders = files.readJsonFile(sFolderListPath)
 	return lFolders

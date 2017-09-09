@@ -151,7 +151,7 @@ class syncAssetsUI(QtGui.QWidget):
 
 	def _refreshCmd(self):
 		self.oLayout_project._refreshFileList()
-		self.getFileInfoFromLocalAndServer()
+		self.dAssetData = getFileInfoFromLocalAndServer()
 		self.setProjectList()
 			
 	def _syncCmd(self, sMode):
@@ -371,8 +371,8 @@ def compareFileVersion(sPathLocal, sPathServer):
 	sVersionServer = os.path.join(sPathServer, 'assetInfo.version')
 
 	if os.path.exists(sVersionLocal) and os.path.exists(sVersionServer):
-		dAssetDataLocal = files.readJsonFile(sPathLocal)
-		dAssetDataServer = files.readJsonFile(sPathServer)
+		dAssetDataLocal = files.readJsonFile(sVersionLocal)
+		dAssetDataServer = files.readJsonFile(sVersionServer)
 
 		if dAssetDataLocal['versionInfo']:
 			lVersionsLocal = dAssetDataLocal['versionInfo'].keys()
