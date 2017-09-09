@@ -268,7 +268,7 @@ def syncAsset(sProject, sAsset, sType, sMode = 'server'):
 	sSyncName = ''
 	for sName in [sProject, sAsset, sType]:
 		if sName:
-			sSyncName += '%s'sName
+			sSyncName += '%s'%sName
 			if sName != sType:
 				sSyncName += '\\'
 	print 'synced %s, took %f seconds' %(sSyncName, fEndTime - fStartTime)
