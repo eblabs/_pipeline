@@ -287,10 +287,6 @@ class fileTreeView(QtGui.QTreeView):
 	def mouseDoubleClickEvent(self, event):
 		pass
 
-def getMayaWindow():
-	ptr = OpenMayaUI.MQtUtil.mainWindow()
-	return wrapInstance(long(ptr), QtGui.QMainWindow)
-
 def getFileInfoFromLocalAndServer():
 	dAssetData = {}
 	## get projects

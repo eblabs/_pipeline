@@ -230,14 +230,3 @@ class setPathWin(QtGui.QDialog):
 		self.sAsset = self.QComboBoxAsset.currentText()
 		self.sType = self.QComboBoxType.currentText()
 		self.close()
-
-
-
-
-
-
-
-## Functions
-def getMayaWindow():
-	ptr = OpenMayaUI.MQtUtil.mainWindow()
-	return wrapInstance(long(ptr), QtGui.QMainWindow)

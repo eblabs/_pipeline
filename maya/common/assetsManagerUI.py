@@ -258,25 +258,6 @@ class assetsManagerUI(QtGui.QWidget):
 		workspaces.loadAsset(sProject, sAsset, sType, iVersion = iVersion, sLoadType = 'import')
 		self.close()
 
-
-
-
-
-
-
-		
-
-					
-
-
-
-
-
-
-
-		
-
-
 ## BaseLayout
 class assetsManagerBaseLayout():
 	def __init__(self, QLayoutBase):
@@ -489,8 +470,3 @@ class fileTreeView(QtGui.QTreeView):
 
 	def mouseDoubleClickEvent(self, event):
 		pass
-
-## Functions
-def getMayaWindow():
-	ptr = OpenMayaUI.MQtUtil.mainWindow()
-	return wrapInstance(long(ptr), QtGui.QMainWindow)
