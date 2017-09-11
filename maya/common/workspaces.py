@@ -134,7 +134,8 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 
 	copyfile(os.path.join(sDirectory, '%s%s'%(sFileName, sFileType)), os.path.join(sWipDirectory, '%s%s'%(sFileName, sFileType)))
 
-	os.remove(os.path.join(sDirectory, sFileDelete))
+	if os.path.exists(os.path.join(sDirectory, sFileDelete)):
+		os.remove(os.path.join(sDirectory, sFileDelete))
 
 	setProject(sDirectory)
 
