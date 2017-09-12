@@ -210,13 +210,12 @@ class assetsManagerUI(QtGui.QWidget):
 	def _setPushButtonEnabled(self):
 		currentIndex = self.oLayout_type.QListView.currentIndex()
 		if currentIndex.isValid():
+			self.QPushButton_setProject.setEnabled(True)
 			sFile = self.QLabel_file.text()
-			if not sFile:
-				self.QPushButton_setProject.setEnabled(True)
+			if not sFile:				
 				self.QPushButton_open.setEnabled(False)
 				self.QPushButton_import.setEnabled(False)
 			else:
-				self.QPushButton_setProject.setEnabled(False)
 				self.QPushButton_open.setEnabled(True)
 				self.QPushButton_import.setEnabled(True)
 		else:

@@ -105,7 +105,7 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 		lVersions = None
 		iVersions = 0
 
-	if sTag != None:
+	if sTag:
 		sTag = files._convertStringToCamelcase(sTag)
 	else:
 		sTag = 'initial'
