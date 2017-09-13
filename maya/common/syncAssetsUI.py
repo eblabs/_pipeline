@@ -371,13 +371,17 @@ def compareFileVersion(sPathLocal, sPathServer):
 		dAssetDataServer = files.readJsonFile(sVersionServer)
 
 		if dAssetDataLocal['versionInfo']:
-			lVersionsLocal = dAssetDataLocal['versionInfo'].keys()
+			lVersionsLocal = []
+			for sKey in dAssetDataLocal['versionInfo'].keys():
+				lVersionsLocal.append(int(sKey))
 			iVersionLocal = int(max(lVersionsLocal))
 		else:
 			iVersionLocal = -1
 
 		if dAssetDataServer['versionInfo']:
-			lVersionsServer = dAssetDataServer['versionInfo'].keys()
+			lVersionsServer = []
+			for sKey in dAssetDataServer['versionInfo'].keys():
+				lVersionsServer.append(int(sKey))
 			iVersionServer = int(max(lVersionsServer))
 		else:
 			iVersionServer = -1
