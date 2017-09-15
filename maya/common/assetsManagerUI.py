@@ -144,13 +144,15 @@ class assetsManagerUI(QtGui.QWidget):
 				self.QLabel_file.setText(sFileLatest)
 
 				dVersions = self.dAssetData['versionInfo']
-				lVersions = dVersions.keys()
+				lVersions = []
+				for sKey in dVersions.keys():
+					lVersions.append(int(sKey))
 				lVersions.sort()
 
 				self._refreshVersion()
 				for iVersion in lVersions:
-					sFileVersion = dVersions[iVersion]['sVersionName']
-					sFileTypeVersion = dVersions[iVersion]['sFileType']
+					sFileVersion = dVersions[str(iVersion)]['sVersionName']
+					sFileTypeVersion = dVersions[str(iVersion)]['sFileType']
 					sPathFile = os.path.join(self.sPath, 'wipFiles')
 					sPathFile = os.path.join(sPathFile, '%s%s' %(sFileVersion, sFileTypeVersion))
 					if sFileVersion and os.path.exists(sPathFile):

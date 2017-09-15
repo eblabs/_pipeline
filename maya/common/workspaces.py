@@ -98,8 +98,10 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 	dAssetInfo = files.readJsonFile(os.path.join(sDirectory, 'assetInfo.version'))
 
 	dVersions = dAssetInfo['versionInfo']
+	lVersions = []
 	if dVersions:
-		lVersions = dVersions.keys()
+		for sKey in dVersions.keys():
+			lVersions.append(int(sKey))
 		iVersions = len(lVersions)
 	else:
 		lVersions = None
@@ -123,7 +125,7 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 	cmds.file(save = True, f = True)
 
 	if iVersions >= iBackup:
-		iMin = min(lVersions)
+		iMin = str(min(lVersions))
 		sBackUpName = dVersions[iMin]['sVersionName']
 		dVersions.pop(iMin, None)       
 		os.remove(os.path.join(sWipDirectory, '%s%s' %(sBackUpName, sFileType)))

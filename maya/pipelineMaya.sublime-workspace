@@ -523,7 +523,7 @@
 			"file": "common/workspaces.py",
 			"settings":
 			{
-				"buffer_size": 14177,
+				"buffer_size": 14230,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -541,7 +541,7 @@
 			"file": "common/assetsManagerUI.py",
 			"settings":
 			{
-				"buffer_size": 16632,
+				"buffer_size": 16695,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -641,7 +641,7 @@
 	],
 	"find":
 	{
-		"height": 45.0
+		"height": 53.0
 	},
 	"find_in_files":
 	{
@@ -655,6 +655,8 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"_addVersion",
+			"lVersions",
 			"sEndTime",
 			"sStartTime",
 			"print",
@@ -789,7 +791,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 2,
 			"sheets":
 			[
 				{
@@ -798,15 +800,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 14177,
+						"buffer_size": 14230,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3536,
-								3536
+								4144,
+								4144
 							]
 						],
 						"settings":
@@ -815,10 +817,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3422.0,
+						"translation.y": 4540.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -855,15 +857,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 16632,
+						"buffer_size": 16695,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7499,
-								7499
+								5300,
+								5300
 							]
 						],
 						"settings":
@@ -872,10 +874,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 7485.0,
+						"translation.y": 6264.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -904,7 +906,7 @@
 						"translation.y": 13523.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -932,7 +934,7 @@
 						"translation.y": 462.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
