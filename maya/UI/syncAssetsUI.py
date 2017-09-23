@@ -13,8 +13,8 @@ except:
 	from sip import wrapinstance as wrapInstance
 
 ## libs Import
-import workspaces
-import files
+import common.workspaces as workspaces
+import common.files as files
 reload(workspaces)
 reload(files)
 

@@ -13,8 +13,8 @@ except:
 	from sip import wrapinstance as wrapInstance
 
 ## libs Import
-import workspaces
-import files
+import common.workspaces as workspaces
+import common.files as files
 reload(workspaces)
 reload(files)
 
@@ -140,7 +140,7 @@ class assetsManagerUI(QtGui.QWidget):
 			sFileLatest = self.dAssetData['assetInfo']['sCurrentVersionName']
 			sFileTypeLatest = self.dAssetData['assetInfo']['sFileType']
 			sPathFile = os.path.join(self.sPath, '%s%s' %(sFileLatest, sFileTypeLatest))
-			if sFileLatest and os.path.exists(sPathFile):
+			if sFileLatest:
 				self.QLabel_file.setText(sFileLatest)
 
 				dVersions = self.dAssetData['versionInfo']

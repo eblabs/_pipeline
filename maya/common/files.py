@@ -14,6 +14,14 @@ iBackup = 20
 sFileType = '.mb'
 sFolderListName = 'folders.folderList'
 lProjectFolders = ['assets']
+dRiggingComponents = {
+						'buildScript': ['.py'], 
+						'blueprint': ['.blueprint'], 
+						'rigGeometry': [sFileType], 
+						'geoHierarchy': ['.geoHierarchy'], 
+						'deformer': ['.deformer'], 
+						'controlShape': ['.ctrlShape']
+					}
 
 #### Functions
 def writeJsonFile(sPath, data):

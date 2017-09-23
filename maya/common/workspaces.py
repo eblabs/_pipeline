@@ -82,6 +82,17 @@ def createAssetType(sAsset, sProject = None, sType = 'model'):
 
 	_createVersionFile(sAsset, sType, sProject, sAssetDir)
 
+	if sType == 'rig':
+		sComponentDir = os.path.join(sAssetDir, 'components')
+		files.createFolder(sComponentDir)
+		dSubFolders = files.dRiggingComponents
+		for sSubFolder in dSubFolders.keys():
+			sFolderDir = os.path.join(sComponentDir, sSubFolder)
+			files.createFolder(sFolderDir)
+			sWipDir = os.path.join(sFolderDir, 'wipFiles')
+			files.createFolder(sWipDir)
+			_createVersionFile(sAsset, sType, sProject, sWipDir, sFileType = dSubFolders[sSubFolder][0])
+
 def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 	fStartTime = time.time()
 
@@ -102,7 +113,7 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 	if dVersions:
 		for sKey in dVersions.keys():
 			lVersions.append(int(sKey))
-		iVersions = len(lVersions)
+		iVersions = max(lVersions)
 	else:
 		lVersions = None
 		iVersions = 0
@@ -121,8 +132,9 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 	sFileName = '%s_%s_%s_v%03d' %(sAsset, sType, sTag, iVersionCurrent)
 	dAssetInfo['assetInfo']['sCurrentVersionName'] = sFileName
 
-	cmds.file(rename = os.path.join(sDirectory, '%s%s' %(sFileName, sFileType)))
-	cmds.file(save = True, f = True)
+	if sType == 'model':
+		cmds.file(rename = os.path.join(sDirectory, '%s%s' %(sFileName, sFileType)))
+		cmds.file(save = True, f = True)
 
 	if iVersions >= iBackup:
 		iMin = str(min(lVersions))
@@ -134,7 +146,11 @@ def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 	dVersions.update(dVersionCurrent)
 	files.writeJsonFile(os.path.join(sDirectory, 'assetInfo.version'), dAssetInfo)
 
-	copyfile(os.path.join(sDirectory, '%s%s'%(sFileName, sFileType)), os.path.join(sWipDirectory, '%s%s'%(sFileName, sFileType)))
+	if sType == 'model':
+		copyfile(os.path.join(sDirectory, '%s%s'%(sFileName, sFileType)), os.path.join(sWipDirectory, '%s%s'%(sFileName, sFileType)))
+	elif sType == 'rig':
+		cmds.file(rename = os.path.join(sWipDirectory, '%s%s' %(sFileName, sFileType)))
+		cmds.file(save = True, f = True)
 
 	if os.path.exists(os.path.join(sDirectory, sFileDelete)):
 		os.remove(os.path.join(sDirectory, sFileDelete))
@@ -301,7 +317,7 @@ def _getProject(rootDirectory = True):
 	sDirectory = cmds.workspace(q=True, directory=True, rd = rootDirectory)
 	return sDirectory
 
-def _createVersionFile(sAsset, sType, sProject, sDirectory):
+def _createVersionFile(sAsset, sType, sProject, sDirectory, sFileType = sFileType):
 	dAssetInfo = {
 	'assetInfo':{'sAsset': sAsset, 'sType': sType, 'sProject': sProject, 'sCurrentVersionName': None, 'sFileType': sFileType},
 	'versionInfo':{}
@@ -331,6 +347,8 @@ def _getAssetFile(sProject, sAsset, sType, iVersion = 0):
 	dAssetInfo = files.readJsonFile(os.path.join(sDirectory, 'assetInfo.version'))
 	if iVersion == 0:
 		sFileName = '%s%s' %(dAssetInfo['assetInfo']['sCurrentVersionName'], dAssetInfo['assetInfo']['sFileType'])
+		if sType == 'rig':
+			sDirectory = sWipDirectory
 	else:
 		sFileName = '%s%s' %(dAssetInfo['versionInfo'][iVersion]['sVersionName'], dAssetInfo['assetInfo']['sFileType'])
 		sDirectory = sWipDirectory
