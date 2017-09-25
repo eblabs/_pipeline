@@ -4,8 +4,128 @@
 		"selected_items":
 		[
 			[
+				"sV",
+				"sVersionComponent"
+			],
+			[
+				"sComp",
+				"sComponentWipFolder"
+			],
+			[
+				"sv",
+				"sVersionName"
+			],
+			[
 				"sCom",
-				"sComponentFolder"
+				"sComponentWipFolder"
+			],
+			[
+				"sCurren",
+				"sCurrentVersionComponent"
+			],
+			[
+				"sCo",
+				"sComponentDir"
+			],
+			[
+				"sD",
+				"sDirectoryAsset"
+			],
+			[
+				"version",
+				"versionInfo"
+			],
+			[
+				"ass",
+				"assetInfo"
+			],
+			[
+				"sCurre",
+				"sCurrentVersionComponent"
+			],
+			[
+				"versi",
+				"versionInfo"
+			],
+			[
+				"vers",
+				"versionInfo"
+			],
+			[
+				"sC",
+				"sCurrentVersionName"
+			],
+			[
+				"compo",
+				"componentInfo"
+			],
+			[
+				"comonen",
+				"componentInfo"
+			],
+			[
+				"com",
+				"componentInfo"
+			],
+			[
+				"sA",
+				"sAssetWipDir"
+			],
+			[
+				"dCo",
+				"dComponents"
+			],
+			[
+				"list",
+				"listRelatives"
+			],
+			[
+				"lD",
+				"lDrivenVal"
+			],
+			[
+				"world",
+				"worldUpObject"
+			],
+			[
+				"atta",
+				"attachNodeToPntOnCrvInfo"
+			],
+			[
+				"sM",
+				"sMotionPath"
+			],
+			[
+				"att",
+				"attachNodeToMotionPath"
+			],
+			[
+				"mo",
+				"motionPath"
+			],
+			[
+				"path",
+				"pathAnimation"
+			],
+			[
+				"sCr",
+				"sCrv"
+			],
+			[
+				"crea",
+				"createChainJnt"
+			],
+			[
+				"f",
+				"fParameter"
+			],
+			[
+				"get",
+				"getMeshCenterPivot"
+			],
+			[
+				"fT",
+				"fTxAvg"
 			],
 			[
 				"sAss",
@@ -100,10 +220,6 @@
 				"sPathServer"
 			],
 			[
-				"get",
-				"_getAssetDirectory"
-			],
-			[
 				"sFolder",
 				"sFolder"
 			],
@@ -176,20 +292,12 @@
 				"dAssetDataLocal"
 			],
 			[
-				"sV",
-				"sVersionServer"
-			],
-			[
 				"iI",
 				"iIndexSource"
 			],
 			[
 				"lTy",
 				"lTypes"
-			],
-			[
-				"ass",
-				"assetsManagerUI"
 			],
 			[
 				"iIndex",
@@ -336,10 +444,6 @@
 				"QLineEditTag"
 			],
 			[
-				"sD",
-				"sDirectory"
-			],
-			[
 				"_set",
 				"_setPath"
 			],
@@ -404,116 +508,12 @@
 				"lVersions"
 			],
 			[
-				"sC",
-				"sCurrentVersion"
-			],
-			[
 				"l",
 				"lVersionFiles"
 			],
 			[
 				"sFolderL",
 				"sFolderListPath"
-			],
-			[
-				"sVersion",
-				"sVersionFile"
-			],
-			[
-				"_se",
-				"_setProject"
-			],
-			[
-				"sAsse",
-				"sAssetDir"
-			],
-			[
-				"crea",
-				"createFolder"
-			],
-			[
-				"_c",
-				"_createFileListFile"
-			],
-			[
-				"sA",
-				"sAsset"
-			],
-			[
-				"wri",
-				"_writeFileListFile"
-			],
-			[
-				"wr",
-				"_writeFileListFile"
-			],
-			[
-				"sfILEl",
-				"sFileListName"
-			],
-			[
-				"_w",
-				"_writeFileListFile"
-			],
-			[
-				"sFileLi",
-				"sFileListPath"
-			],
-			[
-				"sFileL",
-				"sFileListPath"
-			],
-			[
-				"exis",
-				"exists"
-			],
-			[
-				"QSou",
-				"QSourceModel"
-			],
-			[
-				"delete",
-				"deleteFolderFromPath"
-			],
-			[
-				"r",
-				"remtree"
-			],
-			[
-				"QLi",
-				"QListViewSource"
-			],
-			[
-				"files",
-				"getFilesFromPath"
-			],
-			[
-				"QMenu",
-				"QMenuItem_folder"
-			],
-			[
-				"Qp",
-				"QPushButton_import"
-			],
-			[
-				"_ad",
-				"_addQPushButton"
-			],
-			[
-				"ge",
-				"_getAssetDirectory"
-			],
-			[
-				"currentI",
-				"currentIndex"
-			],
-			[
-				"w",
-				"writeJsonFile"
-			],
-			[
-				"QI",
-				"QInput_rename"
 			]
 		]
 	},
@@ -532,8 +532,16 @@
 			"file": "common/workspaces.py",
 			"settings":
 			{
-				"buffer_size": 14951,
+				"buffer_size": 16707,
 				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/assetInfo.version",
+			"settings":
+			{
+				"buffer_size": 1353,
 				"line_ending": "Windows"
 			}
 		},
@@ -584,6 +592,7 @@
 	},
 	"file_history":
 	[
+		"/C/Users/harri/Desktop/retazRig.py",
 		"/C/_works/maya/BromProject/assets/chrBrom/rig/assetInfo.version",
 		"/C/_works/maya/BromProject/assets/chrBrom/folders.folderList",
 		"/C/_pipeline/maya/UI/saveAssetUI.py",
@@ -633,7 +642,7 @@
 	],
 	"find":
 	{
-		"height": 58.0
+		"height": 55.0
 	},
 	"find_in_files":
 	{
@@ -647,6 +656,10 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"_getFoldersFromFolderList",
+			"getFoldersThroughPath",
+			"_getVersionFiles",
+			"update",
 			"_getAssetFile",
 			"_getVersionInfo",
 			"sFileDelete",
@@ -787,7 +800,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -803,8 +816,8 @@
 						"selection":
 						[
 							[
-								555,
-								555
+								1844,
+								1865
 							]
 						],
 						"settings":
@@ -813,10 +826,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1110.0,
+						"translation.y": 118.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -825,15 +838,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 14951,
+						"buffer_size": 16707,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2807,
-								2807
+								8400,
+								8400
 							]
 						],
 						"settings":
@@ -842,14 +855,42 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2396.0,
+						"translation.y": 9101.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
+					"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/assetInfo.version",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1353,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								13,
+								2
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
 					"file": "UI/assetsManagerUI.py",
 					"semi_transient": false,
 					"settings":
@@ -871,10 +912,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 5467.0,
+						"translation.y": 1224.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 3,
 					"type": "text"
 				}
 			]
@@ -882,7 +923,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 45.0
+		"height": 42.0
 	},
 	"input":
 	{
@@ -919,7 +960,7 @@
 	"project": "pipelineMaya.sublime-project",
 	"replace":
 	{
-		"height": 86.0
+		"height": 80.0
 	},
 	"save_all_on_build": true,
 	"select_file":

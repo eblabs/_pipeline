@@ -80,18 +80,30 @@ def createAssetType(sAsset, sProject = None, sType = 'model'):
 	files.createFolder(sAssetWipDir)
 	setProject(sAssetDir)
 
-	_createVersionFile(sAsset, sType, sProject, sAssetDir)
-
 	if sType == 'rig':
 		sComponentDir = os.path.join(sAssetDir, 'components')
 		files.createFolder(sComponentDir)
 		dSubFolders = files.dRiggingComponents
+		dComponents = {'components':{}}
 		for sSubFolder in dSubFolders.keys():
 			sFolderDir = os.path.join(sComponentDir, sSubFolder)
 			files.createFolder(sFolderDir)
 			sWipDir = os.path.join(sFolderDir, 'wipFiles')
 			files.createFolder(sWipDir)
-			_createVersionFile(sAsset, sType, sProject, sWipDir, sFileType = dSubFolders[sSubFolder][0])
+			dComponentEach = {sSubFolder:
+								{'componentInfo': 
+									{'sCurrentVersionName': None, 'sFileType': dSubFolders[sSubFolder][0]}
+								},
+								{'versionInfo':{}}
+							}
+			dComponents.update(dComponentEach)
+		sAssetDir = sAssetWipDir
+
+	sAssetDir.update(dComponents)
+	_createVersionFile(sAsset, sType, sProject, sAssetDir)
+
+
+			
 
 def saveAsset(sAsset, sType, sProject, sTag = None, sComment = None):
 	fStartTime = time.time()
@@ -212,8 +224,6 @@ def renameAsset(sProject, sAsset, sName):
 
 	#rename asset
 	sDirectory, sWipDirectory = _getAssetDirectory(sProject = sProject, sAsset = sAsset)
-	lAssetTypes = _getFoldersFromFolderList(sDirectory)
-	lVersionFiles = _getVersionFiles(sProject, sAsset = sAsset)
 	for sVersionFile in lVersionFiles:
 		sDirectoryAsset = os.path.dirname(sVersionFile)
 		sWipDirectoryAsset = os.path.join(sDirectoryAsset, 'wipFiles')
@@ -222,14 +232,31 @@ def renameAsset(sProject, sAsset, sName):
 		sCurrentVersion = None
 		lVersions = []
 		if dAssetInfo['assetInfo']['sCurrentVersionName']:
-			sCurrentVersion = dAssetInfo['assetInfo']['sCurrentVersionName']
+			sCurrentVersion = dAssetInfo['assetInfo']['sCurrentVersionName'] + dAssetInfo['assetInfo']['sFileType']
 			dAssetInfo['assetInfo']['sCurrentVersionName'] = dAssetInfo['assetInfo']['sCurrentVersionName'].replace(sAsset, sName)
 			
 		dAssetInfo['assetInfo']['sAsset'] = sName
 		if dAssetInfo['versionInfo']:
 			for iVersion in dAssetInfo['versionInfo'].keys():
+				lVersions.append(dAssetInfo['versionInfo'][iVersion]['sVersionName'] + dAssetInfo['versionInfo'][iVersion]['sFileType'])
 				dAssetInfo['versionInfo'][iVersion]['sVersionName'] = dAssetInfo['versionInfo'][iVersion]['sVersionName'].replace(sAsset, sName)
-				lVersions.append(dAssetInfo['versionInfo'][iVersion]['sVersionName'])
+				
+
+		if dAssetInfo.has_key('components'):
+			sComponentDir = os.path.join(sDirectoryAsset, 'components')
+			for sComponent in dAssetInfo['components'].keys():
+				sComponentFolder = os.path.join(sComponentDir, sComponent)
+				if dAssetInfo['components'][sComponent]['componentInfo']['sCurrentVersionName']:
+					sCurrentVersionComponent = dAssetInfo['components'][sComponent]['componentInfo']['sCurrentVersionName'] + dAssetInfo['components'][sComponent]['componentInfo']['sFileType']
+					os.rename(os.path.join(sComponentFolder, sCurrentVersionComponent), os.path.join(sComponentFolder, sCurrentVersionComponent.replace(sAsset, sName)))
+					dAssetInfo['components'][sComponent]['componentInfo']['sCurrentVersionName'] = dAssetInfo['components'][sComponent]['componentInfo']['sCurrentVersionName'].replace(sAsset, sName)
+				if dAssetInfo['components'][sComponent]['versionInfo']:
+					sComponentWipFolder = os.path.join(sComponentFolder, 'wipFiles')
+					for iVersion in dAssetInfo['components'][sComponent]['versionInfo'].keys():
+						sVersionComponent = dAssetInfo['components'][sComponent]['versionInfo'][iVersion]['sVersionName'] + dAssetInfo['components'][sComponent]['versionInfo'][iVersion]['sFileType']
+						os.rename(os.path.join(sComponentWipFolder, sVersionComponent), os.path.join(sComponentWipFolder, sVersionComponent.replace(sAsset, sName)))
+						dAssetInfo['components'][sComponent]['versionInfo'][iVersion]['sVersionName'] = dAssetInfo['components'][sComponent]['versionInfo'][iVersion]['sVersionName'].replace(sAsset, sName)
+
 		files.writeJsonFile(sVersionFile, dAssetInfo)
 
 		for sVersion in lVersions:
