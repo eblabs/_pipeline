@@ -84,22 +84,12 @@ def createAssetType(sAsset, sProject = None, sType = 'model'):
 		sComponentDir = os.path.join(sAssetDir, 'components')
 		files.createFolder(sComponentDir)
 		dSubFolders = files.dRiggingComponents
-		dComponents = {'components':{}}
 		for sSubFolder in dSubFolders.keys():
 			sFolderDir = os.path.join(sComponentDir, sSubFolder)
 			files.createFolder(sFolderDir)
 			sWipDir = os.path.join(sFolderDir, 'wipFiles')
 			files.createFolder(sWipDir)
-			dComponentEach = {sSubFolder:
-								{'componentInfo': 
-									{'sCurrentVersionName': None, 'sFileType': dSubFolders[sSubFolder][0]}
-								},
-								{'versionInfo':{}}
-							}
-			dComponents.update(dComponentEach)
-		sAssetDir = sAssetWipDir
 
-	sAssetDir.update(dComponents)
 	_createVersionFile(sAsset, sType, sProject, sAssetDir)
 
 
@@ -241,22 +231,6 @@ def renameAsset(sProject, sAsset, sName):
 				lVersions.append(dAssetInfo['versionInfo'][iVersion]['sVersionName'] + dAssetInfo['versionInfo'][iVersion]['sFileType'])
 				dAssetInfo['versionInfo'][iVersion]['sVersionName'] = dAssetInfo['versionInfo'][iVersion]['sVersionName'].replace(sAsset, sName)
 				
-
-		if dAssetInfo.has_key('components'):
-			sComponentDir = os.path.join(sDirectoryAsset, 'components')
-			for sComponent in dAssetInfo['components'].keys():
-				sComponentFolder = os.path.join(sComponentDir, sComponent)
-				if dAssetInfo['components'][sComponent]['componentInfo']['sCurrentVersionName']:
-					sCurrentVersionComponent = dAssetInfo['components'][sComponent]['componentInfo']['sCurrentVersionName'] + dAssetInfo['components'][sComponent]['componentInfo']['sFileType']
-					os.rename(os.path.join(sComponentFolder, sCurrentVersionComponent), os.path.join(sComponentFolder, sCurrentVersionComponent.replace(sAsset, sName)))
-					dAssetInfo['components'][sComponent]['componentInfo']['sCurrentVersionName'] = dAssetInfo['components'][sComponent]['componentInfo']['sCurrentVersionName'].replace(sAsset, sName)
-				if dAssetInfo['components'][sComponent]['versionInfo']:
-					sComponentWipFolder = os.path.join(sComponentFolder, 'wipFiles')
-					for iVersion in dAssetInfo['components'][sComponent]['versionInfo'].keys():
-						sVersionComponent = dAssetInfo['components'][sComponent]['versionInfo'][iVersion]['sVersionName'] + dAssetInfo['components'][sComponent]['versionInfo'][iVersion]['sFileType']
-						os.rename(os.path.join(sComponentWipFolder, sVersionComponent), os.path.join(sComponentWipFolder, sVersionComponent.replace(sAsset, sName)))
-						dAssetInfo['components'][sComponent]['versionInfo'][iVersion]['sVersionName'] = dAssetInfo['components'][sComponent]['versionInfo'][iVersion]['sVersionName'].replace(sAsset, sName)
-
 		files.writeJsonFile(sVersionFile, dAssetInfo)
 
 		for sVersion in lVersions:
