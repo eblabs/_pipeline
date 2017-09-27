@@ -37,7 +37,7 @@ dNameConvension = {
 		'nearestPointOnCurve': 'clsPntOnCrv',
 		'pointOnCurveInfo': 'pntOnCrvInfo',
 		'pointOnSurfaceInfo': 'pntOnSurfInfo',
-		}
+		},
 
 	'side': {
 		'left': 'l',
@@ -59,7 +59,7 @@ dNameConvension = {
 		'middleBack': 'mb',
 		'middleUp': 'mu',
 		'middleDown': 'md'
-	}
+	},
 
 	'resolution':{
 		'high': 'high',
@@ -67,7 +67,10 @@ dNameConvension = {
 		'low': 'low',
 		'proxy': 'proxy',
 		'simulation': 'sim'
-	}
+	},
 }
 
-dNameConvensionInverse = {v: k for k, v in dNameConvension.iteritems()}
+dNameConvensionInverse = {}
+for sKey in dNameConvension.keys():
+	dInverse = {sKey: {v: k for k, v in dNameConvension[sKey].iteritems()}}
+	dNameConvensionInverse.update(dInverse)
