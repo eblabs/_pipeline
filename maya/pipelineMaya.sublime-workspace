@@ -4,8 +4,20 @@
 		"selected_items":
 		[
 			[
+				"re",
+				"return"
+			],
+			[
 				"get",
 				"getFullNameFromKey"
+			],
+			[
+				"getF",
+				"getFullNameFromKey"
+			],
+			[
+				"getKeyF",
+				"getKeyFromNamePart"
 			],
 			[
 				"_s",
@@ -502,18 +514,6 @@
 			[
 				"QLine",
 				"QLineEditTag"
-			],
-			[
-				"_set",
-				"_setPath"
-			],
-			[
-				"QPu",
-				"QPushButtonPath"
-			],
-			[
-				"_li",
-				"_listType"
 			]
 		]
 	},
@@ -561,7 +561,7 @@
 			"file": "namingAPI/naming.py",
 			"settings":
 			{
-				"buffer_size": 3885,
+				"buffer_size": 4222,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -687,6 +687,7 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"decomposeName",
 			"_getFoldersFromFolderList",
 			"getFoldersThroughPath",
 			"_getVersionFiles",
@@ -954,15 +955,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3885,
+						"buffer_size": 4222,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3313,
-								3313
+								3949,
+								3949
 							]
 						],
 						"settings":
@@ -970,7 +971,7 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 3978.0,
+						"translation.y": 4998.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
