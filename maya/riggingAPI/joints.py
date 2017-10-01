@@ -3,13 +3,17 @@ import maya.cmds as cmds
 import maya.mel as mel
 import os
 import json
-import time
 
 ## libs Import
 import files
 import transforms
 
 #### Functions
+def createJnt(sName):
+	cmds.select(clear = True)
+	sJnt = cmds.joint(name = sName)
+	return sJnt
+
 def getJointInfo(sJnt):
 	lTransformInfo = transforms.getNodeTransformInfo(sNode)
 	sParent = transforms.getNodeParent(sNode)
@@ -21,14 +25,14 @@ def getJointInfo(sJnt):
 				}
 	return dJntInfo
 
-def getJointsInfo(lJnts):
+def getJointInfoFromList(lJnts):
 	dJntsInfo = {}
 	for sJnt in lJnts:
 		dJntInfo = getJointInfo(sJnt)
 		dJntsInfo.update(dJntInfo)
 	return dJntsInfo
 
-def saveJointsInfo(lJnts, sPath):
+def saveJointInfo(lJnts, sPath):
 	dJntsInfo = getJointsInfo(lJnts)
 	files.writeJsonFile(sPath, dJntsInfo)
 
@@ -41,8 +45,7 @@ def buildJointsFromJointsInfo(sPath, sGrp = None):
 	for sJnt in dJntsInfo.keys():
 		if cmds.objExists(sJnt):
 			cmds.delete(sJnt)
-		cmds.select(clear = True)
-		cmds.joint(name = sJnt)
+		createJnt(sJnt)
 		if sGrp:
 			cmds.parent(sJnt, sGrp)
 
