@@ -175,12 +175,12 @@ def loadAsset(sProject, sAsset, sType, iVersion = 0, sLoadType = 'open', sNamesp
 			cmds.file(new = True, force = True ) 
 			cmds.file(sFilePath, open = True)
 		elif sLoadType == 'import':
-			if sNamespace == None:
-				cmds.file(sFilePath, i = True)
-			else:
+			if sNamespace:
 				cmds.file(sFilePath, i = True, namespace = sNamespace)
+			else:
+				cmds.file(sFilePath, i = True)
 		else:
-			if sNamespace == None:
+			if not sNamespace:
 				sNamespace = ''
 			cmds.file(sFilePath, r = True, namespace = sNamespace)    
 	else:

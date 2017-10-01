@@ -15,15 +15,17 @@ sFileType = '.mb'
 sFolderListName = 'folders.folderList'
 lProjectFolders = ['assets']
 dRiggingComponents = {
-						'buildScript': ['.py'], 
-						'blueprint': ['.blueprint'], 
-						'rigGeometry': [sFileType], 
-						'geoHierarchy': ['.geoHierarchy'], 
-						'deformer': ['.deformer'], 
-						'controlShape': ['.ctrlShape']
+						'buildScript': '.py', 
+						'blueprint': '.blueprint', 
+						'rigGeometry': sFileType, 
+						'geoHierarchy': '.geoHierarchy', 
+						'deformer': '.deformer', 
+						'controlShape': '.ctrlShape',
 					}
 
 #### Functions
+
+#------------ custom file functions -----------
 def writeJsonFile(sPath, data):
 	with open(sPath, 'w') as sOutfile:
 		json.dump(data, sOutfile)
@@ -37,7 +39,9 @@ def readJsonFile(sPath):
 		data = json.load(sInfile)
 	file.close(sInfile)
 	return data
+#------------ custom file functions End -----------
 
+#------------ folder & path functions -----------
 def createFolder(sDirectory):
 	if not os.path.exists(sDirectory):
 		os.makedirs(sDirectory)
@@ -72,8 +76,22 @@ def getFilesFromPath(sPath, sType = None):
 				if sFile.endswith(sType):
 					lFilesReturn.append(sFile)
 	return lFilesReturn
-#### sub Functions
+#------------ folder & path functions End -----------
 
+#------------ maya files functions -----------
+def exportNodes(lNodes, sPath):
+	cmds.select(lNodes)
+	cmds.file(sPath, type = sFileType, pr = True, es = True)
+
+def importMayaFile(sPath, sNamespace = None):
+	if sNamespace:
+		cmds.file(sPath, i = True, namespace = sNamespace)
+	else:
+		cmds.file(sPath, i = True)
+
+#------------ maya files functions -----------
+
+#### sub Functions
 def _getFoldersThroughPath(sPath):	
 	sPathDir = os.path.abspath(sPath)
 	sPathBase = os.path.basename(sPathDir)

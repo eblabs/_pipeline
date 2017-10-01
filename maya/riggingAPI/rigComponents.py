@@ -8,11 +8,8 @@ import time
 ## libs Import
 import common.files as files
 import common.transforms as transforms
+
 #### Functions
-def saveGeoHierarchy(sSel = None):
-	dHierarchy = {}
-	if not sSel:
-		
 
 
 #### Sub Functions
