@@ -140,7 +140,7 @@ class oName(object):
 				self.sPart = lNameParts[3]
 				self.iIndex = None
 
-		else:
+		elif len(lNameParts) == 3:
 			self.sPart = lNameParts[2]
 			self.iIndex = None
 			self.iSuffix = None
@@ -149,6 +149,8 @@ class oName(object):
 				self._sRes = None 
 			else:
 				self._sRes = getKeyFromNamePart(lNameParts[1], 'resolution')
+		else:
+			raise RuntimeError('name is not valid')
 
 # functions
 def getKeyFromNamePart(sNamePart, sKeyType):

@@ -3,6 +3,7 @@ import maya.cmds as cmds
 import json
 import os
 from shutil import rmtree
+import cPickle
 ## Vars
 lAssetTypes = ['model', 'rig']
 import getpass
@@ -32,12 +33,20 @@ def writeJsonFile(sPath, data):
 	file.close(sOutfile)
 
 def readJsonFile(sPath):
-	if not os.path.exists(sPath):
-		raise RuntimeError('The file is not exist')
-	print sPath
 	with open(sPath, 'r') as sInfile:
 		data = json.load(sInfile)
 	file.close(sInfile)
+	return data
+
+def writePickleFile(sPath, data):
+	sOutfile = open(sPath, 'wb')
+	cPickle.dump(data, sOutfile, cPickle.HIGHEST_PROTOCOL)
+	sOutfile.close()
+
+def readPickleFile(sPath):
+	sInfile = open(filePath, 'rb')
+	data = cPickle.load(sInfile)
+	sInfile.close()
 	return data
 #------------ custom file functions End -----------
 
