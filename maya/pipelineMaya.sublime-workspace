@@ -4,16 +4,40 @@
 		"selected_items":
 		[
 			[
-				"lC",
-				"lComponents"
+				"sk",
+				"skinCluster"
 			],
 			[
-				"fPn",
-				"fPntZ"
+				"ge",
+				"getSkinCluster"
+			],
+			[
+				"bP",
+				"bPntZ"
 			],
 			[
 				"fP",
-				"fPntZ"
+				"fPntX"
+			],
+			[
+				"fPn",
+				"fPntX"
+			],
+			[
+				"inf",
+				"influenceObjects"
+			],
+			[
+				"lI",
+				"lInfluences"
+			],
+			[
+				"sFi",
+				"sFileTypeLong"
+			],
+			[
+				"lC",
+				"lComponents"
 			],
 			[
 				"f",
@@ -86,10 +110,6 @@
 			[
 				"o",
 				"objExists"
-			],
-			[
-				"ge",
-				"getPolyVetexCount"
 			],
 			[
 				"_",
@@ -494,26 +514,6 @@
 			[
 				"ref",
 				"_refreshFileList"
-			],
-			[
-				"lF",
-				"lFoldersSource"
-			],
-			[
-				"sFo",
-				"sFolderListName"
-			],
-			[
-				"lR",
-				"lProjects"
-			],
-			[
-				"sProje",
-				"sProjectSel"
-			],
-			[
-				"sync",
-				"syncAsset"
 			]
 		]
 	},
@@ -523,7 +523,7 @@
 			"file": "common/files.py",
 			"settings":
 			{
-				"buffer_size": 3309,
+				"buffer_size": 3427,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -538,10 +538,19 @@
 			}
 		},
 		{
+			"contents": "import riggingAPI.deformers as deformers\nreload(deformers)\n\nsPath = 'C:/_works/maya/ten/skin.skinCluster'\n\n#deformers.saveSkinClusterData('mesh_m_test_001', sPath)\ndeformers.getSkinClusterDataFromMesh('mesh_m_test_001')",
+			"settings":
+			{
+				"buffer_size": 219,
+				"line_ending": "Windows",
+				"name": "import riggingAPI.deformers as deformers"
+			}
+		},
+		{
 			"file": "riggingAPI/deformers.py",
 			"settings":
 			{
-				"buffer_size": 7774,
+				"buffer_size": 9065,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -550,7 +559,7 @@
 			"file": "modelingAPI/meshes.py",
 			"settings":
 			{
-				"buffer_size": 1396,
+				"buffer_size": 1394,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -567,7 +576,7 @@
 			"file": "riggingAPI/controls.py",
 			"settings":
 			{
-				"buffer_size": 3759,
+				"buffer_size": 3744,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -576,7 +585,7 @@
 			"file": "common/apiUtils.py",
 			"settings":
 			{
-				"buffer_size": 924,
+				"buffer_size": 915,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -585,8 +594,16 @@
 			"file": "riggingAPI/joints.py",
 			"settings":
 			{
-				"buffer_size": 1534,
+				"buffer_size": 1611,
 				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/harri/Documents/maya/scripts/userSetup.py",
+			"settings":
+			{
+				"buffer_size": 106,
 				"line_ending": "Windows"
 			}
 		},
@@ -630,7 +647,7 @@
 			"file": "common/transforms.py",
 			"settings":
 			{
-				"buffer_size": 5614,
+				"buffer_size": 5636,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -682,6 +699,10 @@
 	},
 	"file_history":
 	[
+		"/C/_works/maya/ten/skin.skinCluster",
+		"/C/_works/maya/ten/controlShapes.ctrlShape",
+		"/C/_works/maya/ten/geoHierarchy.geoHierarchy",
+		"/C/_works/maya/ten/blueprint.blueprint",
 		"/C/Users/harri/Dropbox/Projects/SCRIPTS/Tools/symmetricalTool.py",
 		"/C/_pipeline/maya/namingAPI/__init__.py",
 		"/C/_works/maya/BromProject/assets/chrBrom/rig/assetInfo.version",
@@ -744,9 +765,17 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": true,
+		"case_sensitive": false,
 		"find_history":
 		[
+			"getPoly",
+			"_setSkinWeights",
+			"_getSkinBlendWeights",
+			".length()",
+			"self.fn",
+			"__getCurrentWeights",
+			"_getSkinWeightArray",
+			"_getCtrlShapeControlPoints",
 			"setData",
 			"pickle",
 			"self.fn",
@@ -866,15 +895,7 @@
 			"listItemRightClicked",
 			"filterRegExpChanged_project",
 			"setBaseLayout",
-			"listItemRightClicked",
-			"filterSyntaxComboBox",
-			"filterSyntaxComboBox.itemData",
-			"Changed",
-			"textFilterChanged",
-			"filterRegExpChanged",
-			"addMail",
-			"createMailModel",
-			"setSourceModel"
+			"listItemRightClicked"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -899,7 +920,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 4,
 			"sheets":
 			[
 				{
@@ -908,15 +929,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3309,
+						"buffer_size": 3427,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1092,
-								1113
+								1132,
+								1132
 							]
 						],
 						"settings":
@@ -925,10 +946,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 916.0,
+						"translation.y": 1020.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -944,8 +965,8 @@
 						"selection":
 						[
 							[
-								13515,
-								13515
+								8773,
+								8773
 							]
 						],
 						"settings":
@@ -955,27 +976,55 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 11202.0,
+						"translation.y": 7326.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "riggingAPI/deformers.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7774,
+						"buffer_size": 219,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1698,
-								1698
+								219,
+								0
+							]
+						],
+						"settings":
+						{
+							"auto_name": "import riggingAPI.deformers as deformers",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "riggingAPI/deformers.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 9065,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2168,
+								2168
 							]
 						],
 						"settings":
@@ -984,35 +1033,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "modelingAPI/meshes.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1396,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1233,
-								1245
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 900.0,
+						"translation.y": 1995.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
@@ -1020,6 +1041,34 @@
 				},
 				{
 					"buffer": 4,
+					"file": "modelingAPI/meshes.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1394,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1063,
+								1063
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 714.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
 					"file": "/C/Users/harri/Dropbox/Projects/correctiveExtract01.py",
 					"semi_transient": false,
 					"settings":
@@ -1041,55 +1090,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3933.0,
+						"translation.y": 2199.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "riggingAPI/controls.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3759,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3201,
-								3183
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 2550.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
 					"buffer": 6,
-					"file": "common/apiUtils.py",
+					"file": "riggingAPI/controls.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 924,
+						"buffer_size": 3744,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								786,
-								825
+								3430,
+								3430
 							]
 						],
 						"settings":
@@ -1098,27 +1119,56 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 510.0,
+						"translation.y": 3280.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
 					"buffer": 7,
-					"file": "riggingAPI/joints.py",
+					"file": "common/apiUtils.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1534,
+						"buffer_size": 915,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								156,
-								172
+								576,
+								493
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 215.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "riggingAPI/joints.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1611,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1529,
+								1529
 							]
 						],
 						"settings":
@@ -1126,14 +1176,42 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 102.0,
+						"translation.y": 204.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "/C/Users/harri/Documents/maya/scripts/userSetup.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 106,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 10,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 10,
 					"file": "common/workspaces.py",
 					"semi_transient": false,
 					"settings":
@@ -1158,11 +1236,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 11,
 					"file": "riggingAPI/rigComponents.py",
 					"semi_transient": false,
 					"settings":
@@ -1186,11 +1264,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 12,
 					"file": "namingAPI/namingDict.py",
 					"semi_transient": false,
 					"settings":
@@ -1214,11 +1292,11 @@
 						"translation.y": 102.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 13,
 					"file": "namingAPI/naming.py",
 					"semi_transient": false,
 					"settings":
@@ -1242,24 +1320,24 @@
 						"translation.y": 2958.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 14,
 					"file": "common/transforms.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5614,
+						"buffer_size": 5636,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4014,
-								3996
+								3792,
+								3792
 							]
 						],
 						"settings":
@@ -1267,14 +1345,14 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 3162.0,
+						"translation.y": 3060.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 15,
 					"file": "UI/assetsManagerUI.py",
 					"semi_transient": false,
 					"settings":
@@ -1299,7 +1377,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 15,
 					"type": "text"
 				}
 			]

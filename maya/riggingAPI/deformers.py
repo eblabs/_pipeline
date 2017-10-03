@@ -9,6 +9,8 @@ import common.apiUtils as apiUtils
 import modelingAPI.meshes as meshes
 import joints
 import namingAPI.naming as naming
+import common.files as files
+reload(files)
 
 #### Functions
 def getSkinCluster(sNode):
@@ -51,23 +53,27 @@ def createSkinCluster(sNode, lInfluences):
 
 	return oName.sName
 
-def removeUnusedInfluences(sNode):
-	cmds.select(sNode)
-	mel.eval('removeUnusedInfluences')
+def removeUnusedInfluence(sMesh):
+	sSkinCluster = getSkinCluster(sMesh)
+	if sSkinCluster:
+		lInfluences = cmds.skinCluster(sSkinCluster, q = True, inf = True)
+		lInfluencesUsed = cmds.skinCluster(sSkinCluster, q = True, wi = True)
+		for sInfluence in lInfluencesUsed:
+			lInfluences.remove(sInfluence)
+		if lInfluences:
+			for sInfluence in lInfluences:
+				cmds.skinCluster(sSkinCluster, e = True, removeInfluence = sInfluence)
+				print 'remove influenceObject %s from %s' %(sInfluence, sSkinCluster)
+
 
 
 def getSkinClusterDataFromMesh(sMesh):
-	try:
-		removeUnusedInfluences(sMesh)
-	except:
-		pass
-
 	sSkinCluster = getSkinCluster(sMesh)
-	iVtxCount = meshes.getPolyVetexCount(sMesh)
+	iVtxCount = meshes.getPolyVtxCount(sMesh)
 	iSkinMethod = cmds.getAttr('%s.skinningMethod' %sSkinCluster)
 	bComponents = cmds.getAttr('%s.useComponents' %sSkinCluster)
 	iNormalizeWeights = cmds.getAttr('%s.normalizeWeights' %sSkinCluster)
-	dSkinData = _getSkinWeights(sMesh)
+	dSkinData = _getSkinWeightsData(sMesh)
 	lBlendWeights = _getSkinBlendWeights(sMesh)
 	mVtxPntArray = meshes.getMeshVtxPntArray(sMesh)
 	lVtxPos = apiUtils.convertMPointArrayToList(mVtxPntArray)
@@ -82,6 +88,9 @@ def getSkinClusterDataFromMesh(sMesh):
 					'lVtxPos': lVtxPos
 				}
 	return dSkinData
+
+
+
 
 def saveSkinClusterData(sMesh, sPath):
 	fStartTime = time.time()
@@ -102,19 +111,27 @@ def loadSkinClusterData(sPath, sMesh = None, sMethod = 'vtxId'):
 		sMesh = dSkinData['sGeo']
 
 	if cmds.objExists(sMesh):
-		iVtxCount = meshes.getPolyVetexCount(sMesh)
-		if iVtxCount == dSkinData['iVtxCount']:
-			lInfluences = dSkinData['dSkinData'].keys()
-			sSkinCluster = createSkinCluster(sMesh, lInfluences)
-			mFnSkinCluster = _setMFnSkinCluster(sSkinCluster)
+		sSkinCluster = getSkinCluster(sMesh)
+		if not sSkinCluster:
+			iVtxCount = meshes.getPolyVtxCount(sMesh)
+			if iVtxCount == dSkinData['iVtxCount']:
+				lInfluences = dSkinData['dSkinData'].keys()
+				sSkinCluster = createSkinCluster(sMesh, lInfluences)
+				mFnSkinCluster = _setMFnSkinCluster(sSkinCluster)
 
-			cmds.setAttr('%s.normalizeWeights' %sSkinCluster, 0)
-			_setSkinWeights(sMesh, mFnSkinCluster, dSkinData['dSkinData'], sMethod = sMethod, lVtxPos = lVtxPos)
-			_setSkinBlendWeights(sMesh, mFnSkinCluster, dSkinData['lBlendWeights'], sMethod = sMethod, lVtxPos = lVtxPos)
+				cmds.setAttr('%s.normalizeWeights' %sSkinCluster, 0)
+				_setSkinWeights(sMesh, mFnSkinCluster, dSkinData['dSkinData'], sMethod = sMethod, lVtxPos = dSkinData['lVtxPos'])
+				_setSkinBlendWeights(sMesh, mFnSkinCluster, dSkinData['lBlendWeights'], sMethod = sMethod, lVtxPos = dSkinData['lVtxPos'])
 
-			cmds.setAttr('%s.skinningMethod' %sSkinCluster, dSkinData['iSkinMethod'])
-			cmds.setAttr('%s.useComponents' %sSkinCluster, dSkinData['bComponents'])
-			cmds.setAttr('%s.normalizeWeights' %sSkinCluster, dSkinData['iNormalizeWeights'])
+				cmds.setAttr('%s.skinningMethod' %sSkinCluster, dSkinData['iSkinMethod'])
+				cmds.setAttr('%s.useComponents' %sSkinCluster, dSkinData['bComponents'])
+				cmds.setAttr('%s.normalizeWeights' %sSkinCluster, dSkinData['iNormalizeWeights'])
+			else:
+				print '%s has different vertice count, original is %d, current is %s, skipped' %(sMethod, iVtxCount, dSkinData['iVtxCount'])
+		else:
+			print '%s already has a skinCluster on it, %s, skipped' %(sMesh, skinCluster)
+	else:
+		print '%s does not exist, skipped' %sMesh
 
 	fEndTime = time.time()
 
@@ -126,98 +143,122 @@ def _setMFnSkinCluster(sSkinCluster):
 	mFnSkinCluster = OpenMayaAnim.MFnSkinCluster(mObj)
 	return mFnSkinCluster
 
-def _getSkinWeightArray(sMesh, mFnSkinCluster):
-	mDagPath, mComponents = apiUtils.setDagPath(sMesh)
+def _getSkinWeightArray(mFnSkinCluster):
+	mDagPath, mComponents = _getComponentsFromMFnSkinCluster(mFnSkinCluster)
 	mWeightArray = OpenMaya.MDoubleArray()
-	uIntPtr = apiUtils.createUintPtr()
+	mUtil = OpenMaya.MScriptUtil()
+	mUtil.createFromInt(0)
+	uIntPtr = mUtil.asUintPtr()
 	mFnSkinCluster.getWeights(mDagPath, mComponents, mWeightArray, uIntPtr)
 
+	print 'aaaa'
 	return mWeightArray
 
-def _getSkinInfluenceArray(sMesh, mFnSkinCluster):
+def _getComponentsFromMFnSkinCluster(mFnSkinCluster):
+	mFnSet = OpenMaya.MFnSet(mFnSkinCluster.deformerSet())
+	mSel = OpenMaya.MSelectionList()
+	mFnSet.getMembers(mSel, False)
+	mDagPath = OpenMaya.MDagPath()
+	mComponents = OpenMaya.MObject()
+	mSel.getDagPath(0, mDagPath, mComponents)
+	return mDagPath, mComponents
+
+def _getSkinInfluenceArray(mFnSkinCluster):
 	mInfluenceArray = OpenMaya.MDagPathArray()
 	iInfluence = mFnSkinCluster.influenceObjects(mInfluenceArray)
-	return mInfluenceArray
+	return mInfluenceArray, iInfluence
 
 def _getSkinWeightsData(sMesh):
 	sSkinCluster = getSkinCluster(sMesh)
 	mFnSkinCluster = _setMFnSkinCluster(sSkinCluster)
-	mWeightArray = _getSkinWeightArray(sMesh, mFnSkinCluster)
-	mInfluenceArray = _getSkinInfluenceArray(sMesh, mFnSkinCluster)
-	iComponents = mWeightArray.length() / mInfluenceArray.length()
+	mWeightArray = _getSkinWeightArray(mFnSkinCluster)
+
+	mInfluenceArray, iInfluence = _getSkinInfluenceArray(mFnSkinCluster)
+
+	iComponents = mWeightArray.length() / iInfluence
 
 	dSkinData = {}
 
-	for i in range(mInfluenceArray.length()):
+	for i in range(iInfluence):
 		sInfluence = mInfluenceArray[i].partialPathName()
+
 		dSkinData[sInfluence] = []
 		for j in range(iComponents):
-			dSkinData[sInfluence].append(mWeightArray[j * mInfluenceArray.length() + i])
+			dSkinData[sInfluence].append(mWeightArray[j * iInfluence + i])
 
 	return dSkinData
 
+
+
+
 def _getSkinBlendWeights(sMesh):
-	mDagPath, mComponents = apiUtils.setDagPath(sMesh)
 	sSkinCluster = getSkinCluster(sMesh)
 	mFnSkinCluster = _setMFnSkinCluster(sSkinCluster)
+	mDagPath, mComponents = _getComponentsFromMFnSkinCluster(mFnSkinCluster)
 	mWeightArray = OpenMaya.MDoubleArray()
 	mFnSkinCluster.getBlendWeights(mDagPath, mComponents, mWeightArray)
 	lBlendWeights = apiUtils.convertMDoubleArrayToList(mWeightArray)
 	return lBlendWeights
 
 def _setSkinWeights(sMesh, mFnSkinCluster, dSkinData, sMethod = 'vtxId', lVtxPos = None, fTolerance = 0.00001):
-	mDagPath, mComponents = apiUtils.setDagPath(sMesh)
-	mWeightArray = _getSkinWeightArray(sMesh, mFnSkinCluster)
-	mInfluenceArray = _getSkinInfluenceArray(sMesh, mFnSkinCluster)
-	iComponents = mWeightArray.length() / mInfluenceArray.length()
+	mDagPath, mComponents = _getComponentsFromMFnSkinCluster(mFnSkinCluster)
+	mWeightArray = _getSkinWeightArray(mFnSkinCluster)
+	mInfluenceArray, iInfluence = _getSkinInfluenceArray(mFnSkinCluster)
+	iComponents = mWeightArray.length() / iInfluence
 
 	lComponents = []
 	if sMethod == 'vtxPos':
-		mVtxPntArray = getMeshVtxPntArray(sMesh)
+		mVtxPntArray = meshes.getMeshVtxPntArray(sMesh)
 		lVtxPosNew = apiUtils.convertMPointArrayToList(mVtxPntArray)
 		for lNew in lVtxPosNew:
 			fPntX = lNew[0]
 			fPntY = lNew[1]
 			fPntZ = lNew[2]
 			for i, lOld in enumerate(lVtxPos):
-				if lOld[0] in range(fPntX - fTolerance, fPntX + fTolerance) and lOld[1] in range(fPntY - fTolerance, fPntY + fTolerance) and lOld[2] in range(fPntZ - fTolerance, fPntZ + fTolerance):
+				bPntX = (lOld[0] >= fPntX - fTolerance and lOld[0] <= fPntX + fTolerance)
+				bPntY = (lOld[1] >= fPntY - fTolerance and lOld[1] <= fPntY + fTolerance)
+				bPntZ = (lOld[2] >= fPntZ - fTolerance and lOld[2] <= fPntZ + fTolerance)
+				if bPntX and bPntY and bPntZ:
 					lComponents.append(i)
 					break
 	else:
 		lComponents = range(iComponents)
 
 	for sInfluence in dSkinData.keys():
-		for i in range(mInfluenceArray.length()):
+		for i in range(iInfluence):
 			sInfluenceCurrent = mInfluenceArray[i].partialPathName()
 			if sInfluence == sInfluenceCurrent:
 				for j, m in enumerate(lComponents):
-					mWeightArray.set(dSkinData[sInfluence][m], j * mInfluenceArray.length() + i)
+					mWeightArray.set(dSkinData[sInfluence][m], j * iInfluence + i)
 				break
 
-	mIndexArray = OpenMaya.MIntArray(mInfluenceArray.length())
-    for i in range(mInfluenceArray.length()):
-        mIndexArray.set(i, i)
-    mFnSkinCluster.setWeights(mDagPath, mComponents, mIndexArray, mWeightArray, False)
+	mIndexArray = OpenMaya.MIntArray(iInfluence)
+	for i in range(iInfluence):
+		mIndexArray.set(i, i)
+	mFnSkinCluster.setWeights(mDagPath, mComponents, mIndexArray, mWeightArray, False)
 
 def _setSkinBlendWeights(sMesh, mFnSkinCluster, lBlendWeights, sMethod = 'vtxId', lVtxPos = None, fTolerance = 0.00001):
-	mDagPath, mComponents = apiUtils.setDagPath(sMesh)
+	mDagPath, mComponents = _getComponentsFromMFnSkinCluster(mFnSkinCluster)
 	iComponents = len(lBlendWeights)
 	mBlendWeightsArray = OpenMaya.MDoubleArray(iComponents)
 
 	lComponents = []
 	if sMethod == 'vtxPos':
-		mVtxPntArray = getMeshVtxPntArray(sMesh)
+		mVtxPntArray = meshes.getMeshVtxPntArray(sMesh)
 		lVtxPosNew = apiUtils.convertMPointArrayToList(mVtxPntArray)
 		for lNew in lVtxPosNew:
 			fPntX = lNew[0]
 			fPntY = lNew[1]
 			fPntZ = lNew[2]
 			for i, lOld in enumerate(lVtxPos):
-				if lOld[0] in range(fPntX - fTolerance, fPntX + fTolerance) and lOld[1] in range(fPntY - fTolerance, fPntY + fTolerance) and lOld[2] in range(fPntZ - fTolerance, fPntZ + fTolerance):
+				bPntX = (lOld[0] >= fPntX - fTolerance and lOld[0] <= fPntX + fTolerance)
+				bPntY = (lOld[1] >= fPntY - fTolerance and lOld[1] <= fPntY + fTolerance)
+				bPntZ = (lOld[2] >= fPntZ - fTolerance and lOld[2] <= fPntZ + fTolerance)
+				if bPntX and bPntY and bPntZ:
 					lComponents.append(i)
 					break
 	else:
 		lComponents = range(iComponents)
 	for i, j in enumerate(lComponents):
-        mBlendWeightsArray.set(lBlendWeights[j], i)
-    mFnSkinCluster.setBlendWeights(mDagPath, mComponents, mBlendWeightsArray)
+		mBlendWeightsArray.set(lBlendWeights[j], i)
+	mFnSkinCluster.setBlendWeights(mDagPath, mComponents, mBlendWeightsArray)

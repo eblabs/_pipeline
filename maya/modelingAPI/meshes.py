@@ -32,7 +32,7 @@ def removeInermediateShapes(sNode, bIntermediate = False):
 				if not bIntermediate or not cmds.listConnections(sShapeEach, s = False):
 					cmds.delete(sShapeEach)
 
-def getPolyVetexCount(sMesh):
+def getPolyVtxCount(sMesh):
 	mFnMesh = _setMFnMesh(sMesh)
 	iVtxCount = mFnMesh.numVertices()
 	return iVtxCount

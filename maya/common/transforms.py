@@ -31,19 +31,19 @@ def setNodeTransform(sNode, lTransformInfo, bTranslate = True, bRotate = True, b
 			for i, sAxis in enumerate(['x', 'y', 'z']):
 				if sAxis in lSkipTranslate:
 					lTransformInf[0][i] = lTransformInfoNode[0][i]
-		xform(sNode, t = lTransformInfo[0], ws = True)
+		cmds.xform(sNode, t = lTransformInfo[0], ws = True)
 	if bRotate:
 		if lSkipRotate:
 			for i, sAxis in enumerate(['x', 'y', 'z']):
 				if sAxis in lSkipRotate:
 					lTransformInfo[1][i] = lTransformInfoNode[1][i]
-		xform(sNode, ro = lTransformInfo[1], ws = True)
+		cmds.xform(sNode, ro = lTransformInfo[1], ws = True)
 	if bScale:
 		if lSkipScale:
 			for i, sAxis in enumerate(['x', 'y', 'z']):
 				if sAxis in lSkipScale:
 					lTransformInfo[2][i] = lTransformInfoNode[2][i]
-		xform(sNode, s = lTransformInfo[2], ws = True)
+		cmds.xform(sNode, s = lTransformInfo[2], ws = True)
 
 def transformSnap(lNodes, sType = 'parent', sSnapType = 'oneToAll', lSkipTranslate = None, lSkipRotate = None, lSkipScale = None):
 	if sSnapType == 'oneToAll':
@@ -59,7 +59,7 @@ def transformSnap(lNodes, sType = 'parent', sSnapType = 'oneToAll', lSkipTransla
 				_transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = lSkipRotate)
 			elif sType == 'scale':
 				_transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = lSkipScale)
-			elif sType == 'all'
+			elif sType == 'all':
 				_transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
 	elif sSnapType == 'allToOne':
 		lDrivers = lNodes[:-1]
@@ -73,7 +73,7 @@ def transformSnap(lNodes, sType = 'parent', sSnapType = 'oneToAll', lSkipTransla
 			_transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = lSkipRotate)
 		elif sType == 'scale':
 			_transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = lSkipScale)
-		elif sType == 'all'
+		elif sType == 'all':
 			_transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
 
 
@@ -90,13 +90,13 @@ def getNodeParent(sNode):
 def getNodesHierarchy(lNodes):
 	dHierarchy = {}
 	for sNode in lNodes:
-		sParent = transforms.getNodeParent(sNode)
+		sParent = getNodeParent(sNode)
 		dNodeParent = {sNode: sParent}
 		dHierarchy.update(dNodeParent)
 	return dHierarchy
 
 def saveNodesHierarchy(lNodes, sPath):
-	getNodesHierarchy(lNodes)
+	dHierarchy = getNodesHierarchy(lNodes)
 	files.writeJsonFile(sPath, dHierarchy)
 
 def loadNodesHierarchy(sPath):
@@ -107,7 +107,7 @@ def loadNodesHierarchy(sPath):
 			if sParent:
 				if cmds.objExists(sParent):
 					sParentOrig = cmds.listRelatives(sNode, p = True)
-					if sParentOrig and sParent not in sParentOrig:
+					if not sParentOrig or sParent not in sParentOrig:
 						cmds.parent(sNode, sParent)
 
 

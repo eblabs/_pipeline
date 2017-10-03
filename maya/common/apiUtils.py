@@ -21,9 +21,9 @@ def setDagPath(sNode):
 
 def createUintPtr():
 	mUtil = OpenMaya.MScriptUtil()
-    mUtil.createFromInt(0)
-    uIntPtr = mUtil.asUintPtr()
-    return uIntPtr
+	mUtil.createFromInt(0)
+	uIntPtr = mUtil.asUintPtr()
+	return uIntPtr
 
 def convertMPointArrayToList(mPntArray):
 	lPntList = []

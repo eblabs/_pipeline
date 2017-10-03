@@ -44,7 +44,7 @@ def writePickleFile(sPath, data):
 	sOutfile.close()
 
 def readPickleFile(sPath):
-	sInfile = open(filePath, 'rb')
+	sInfile = open(sPath, 'rb')
 	data = cPickle.load(sInfile)
 	sInfile.close()
 	return data
@@ -90,7 +90,11 @@ def getFilesFromPath(sPath, sType = None):
 #------------ maya files functions -----------
 def exportNodes(lNodes, sPath):
 	cmds.select(lNodes)
-	cmds.file(sPath, type = sFileType, pr = True, es = True)
+	if sPath.endswith('.mb'):
+		sFileTypeLong = 'mayaBinary'
+	elif sPath.endswith('.ma'):
+		sFileTypeLong = 'mayaAscii'
+	cmds.file(sPath, type = sFileTypeLong, pr = True, es = True)
 
 def importMayaFile(sPath, sNamespace = None):
 	if sNamespace:

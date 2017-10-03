@@ -111,17 +111,17 @@ def _getCtrlShapeControlPoints(sCtrlShape):
 	iCtrlPnts = cmds.getAttr('%s.controlPoints' %sCtrlShape, s = 1)
 	lCtrlPnts = []
 	for i in range(0, iCtrlPnts):
-		lCtrlPntEach = cmds.getAttr('%s.controlPoints[%d]' %(sCtrlShape, i))
+		lCtrlPntEach = cmds.getAttr('%s.controlPoints[%d]' %(sCtrlShape, i))[0]
 		lCtrlPnts.append(lCtrlPntEach)
 	return lCtrlPnts
 
 def _getCtrlShapeKnots(sCtrlShape):
 	mObj = apiUtils.setMObj(sCtrlShape)
 	mfnCrv = OpenMaya.MFnNurbsCurve(mObj)
-    mKnots = OpenMaya.MDoubleArray()
-    mfnCre.getKnots(mKnots)
+	mKnots = OpenMaya.MDoubleArray()
+	mfnCrv.getKnots(mKnots)
 
-    lKnots = []
-    for i in range(mKnots.length()):
-    	lKnots.append(mKnots[i])
-    return lKnots
+	lKnots = []
+	for i in range(mKnots.length()):
+		lKnots.append(mKnots[i])
+	return lKnots

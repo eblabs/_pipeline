@@ -5,8 +5,8 @@ import os
 import json
 
 ## libs Import
-import files
-import transforms
+import common.files as files
+import common.transforms as transforms
 
 #### Functions
 def createJnt(sName):
@@ -15,8 +15,8 @@ def createJnt(sName):
 	return sJnt
 
 def getJointInfo(sJnt):
-	lTransformInfo = transforms.getNodeTransformInfo(sNode)
-	sParent = transforms.getNodeParent(sNode)
+	lTransformInfo = transforms.getNodeTransformInfo(sJnt)
+	sParent = transforms.getNodeParent(sJnt)
 	sRotateOrder = cmds.getAttr('%s.rotateOrder' %sJnt)
 	dJntInfo = {sJnt:
 				{'lTransformInfo': lTransformInfo,
@@ -25,7 +25,7 @@ def getJointInfo(sJnt):
 				}
 	return dJntInfo
 
-def getJointInfoFromList(lJnts):
+def getJointsInfoFromList(lJnts):
 	dJntsInfo = {}
 	for sJnt in lJnts:
 		dJntInfo = getJointInfo(sJnt)
@@ -33,29 +33,31 @@ def getJointInfoFromList(lJnts):
 	return dJntsInfo
 
 def saveJointInfo(lJnts, sPath):
-	dJntsInfo = getJointsInfo(lJnts)
+	dJntsInfo = getJointsInfoFromList(lJnts)
 	files.writeJsonFile(sPath, dJntsInfo)
 
 def buildJointsFromJointsInfo(sPath, sGrp = None):
 	dJntsInfo = files.readJsonFile(sPath)
 
 	if sGrp:
-		cmds.group(empty = True, name = sGrp)
+		if not cmds.objExists(sGrp):
+			cmds.group(empty = True, name = sGrp)
 
 	for sJnt in dJntsInfo.keys():
 		if cmds.objExists(sJnt):
 			cmds.delete(sJnt)
 		createJnt(sJnt)
+
+		lTransformInfo = dJntsInfo[sJnt]['lTransformInfo']
+		transforms.setNodeTransform(sJnt, lTransformInfo)
+		cmds.makeIdentity(sJnt, apply = True, t = 1, r = 1, s = 1)
+
 		if sGrp:
 			cmds.parent(sJnt, sGrp)
 
 	for sJnt in dJntsInfo.keys():
-		lTransformInfo = dJntsInfo[sJnt]['lTransformInfo']
 		sParent = dJntsInfo[sJnt]['sParent']
 		sRotateOrder = dJntsInfo[sJnt]['sRotateOrder']
-
-		transforms.setNodeTransform(sJnt, lTransformInfo)
-		cmds.makeIdentity(sJnt, apply = True, t = 1, r = 1, s = 1)
 
 		if sParent and cmds.objExists(sParent) and sParent != sGrp:
 			cmds.parent(sJnt, sParent)
