@@ -43,6 +43,27 @@ def getMeshVtxPntArray(sMesh):
 	mFnMesh.getPoints(mVtxPntArray, OpenMaya.MSpace.kObject)
 	return mVtxPntArray
 
+def remapVtxIdToMesh(sTargetMesh, sBaseMesh = None, lVtxPosBase = None, fTolerance = 0.00001):
+	lComponents = []
+	mVtxPntArrayTargt = getMeshVtxPntArray(sTargetMesh)
+	if not lVtxPosBase:
+		mVtxPntArrayBase = getMeshVtxPntArray(sBaseMesh)
+		lVtxPosBase = apiUtils.convertMPointArrayToList(mVtxPntArrayBase)
+
+	for i in range(mVtxPntArrayTargt.length()):
+		fPntX = mVtxPntArrayTargt[i].x
+		fPntY = mVtxPntArrayTargt[i].y
+		fPntZ = mVtxPntArrayTargt[i].z
+
+		for j, lPntBase in enumerate(lVtxPosBase):
+			bPntX = (lPntBase[0] >= fPntX - fTolerance and lPntBase[0] <= fPntX + fTolerance)
+			bPntY = (lPntBase[1] >= fPntY - fTolerance and lPntBase[1] <= fPntY + fTolerance)
+			bPntZ = (lPntBase[2] >= fPntZ - fTolerance and lPntBase[2] <= fPntZ + fTolerance)
+			if bPntX and bPntY and bPntZ:
+				lComponents.append(j)
+				break
+	return lComponents
+
 
 #### Sub Functions
 def _setMFnMesh(sMesh):

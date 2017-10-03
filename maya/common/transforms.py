@@ -17,11 +17,12 @@ def getNodeTransformInfo(sNode):
 
 def getNodesAvgTransformInfo(lNodes):
 	lTransformInfoAvg = [[0,0,0], [0,0,0], [0,0,0]]
+	iNodes = len(lNodes)
 	for sNode in lNodes:
 		lTransformInfo = getNodeTransformInfo(sNode)
 		for i in range(0,3):
 			for j in range(0,3):
-				lTransformInfoAvg[i][j] += lTransformInfo[i][j]
+				lTransformInfoAvg[i][j] += lTransformInfo[i][j] / float(iNodes)
 	return lTransformInfoAvg
 
 def setNodeTransform(sNode, lTransformInfo, bTranslate = True, bRotate = True, bScale = True, lSkipTranslate = None, lSkipRotate = None, lSkipScale = None):
@@ -75,40 +76,6 @@ def transformSnap(lNodes, sType = 'parent', sSnapType = 'oneToAll', lSkipTransla
 			_transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = lSkipScale)
 		elif sType == 'all':
 			_transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
-
-
-
-
-def getNodeParent(sNode):
-	sParent = cmds.listRelatives(sNode, p = True)
-	if sParent:
-		sParent = sParent[0]
-	else:
-		sParent = None
-	return sParent
-
-def getNodesHierarchy(lNodes):
-	dHierarchy = {}
-	for sNode in lNodes:
-		sParent = getNodeParent(sNode)
-		dNodeParent = {sNode: sParent}
-		dHierarchy.update(dNodeParent)
-	return dHierarchy
-
-def saveNodesHierarchy(lNodes, sPath):
-	dHierarchy = getNodesHierarchy(lNodes)
-	files.writeJsonFile(sPath, dHierarchy)
-
-def loadNodesHierarchy(sPath):
-	dHierarchy = files.readJsonFile(sPath)
-	for sNode in dHierarchy.keys():
-		if cmds.objExists(sNode):
-			sParent = dHierarchy[sNode]
-			if sParent:
-				if cmds.objExists(sParent):
-					sParentOrig = cmds.listRelatives(sNode, p = True)
-					if not sParentOrig or sParent not in sParentOrig:
-						cmds.parent(sNode, sParent)
 
 
 

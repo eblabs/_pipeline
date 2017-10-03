@@ -48,7 +48,7 @@ def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None):
 		cmds.parent(sCtrlShape, sCtrl, add = True, s = True)
 	cmds.delete(sCrv)
 
-
+#------------ save & load ctrlShape functions -----------
 def getCtrlShapeInfo(sCtrl):
 	sCtrlShape = getCtrlShape(sCtrl)
 	
@@ -104,7 +104,7 @@ def buildCtrlShapesFromCtrlShapeInfo(sPath):
 
 	for sCtrl in dCtrlShapeInfo.keys():
 		buildCtrlShape(sCtrl, dCtrlShapeInfo[sCtrl], bColor = True)
-
+#------------ save & load ctrlShape functions end -----------
 
 #### Sub Functions
 def _getCtrlShapeControlPoints(sCtrlShape):

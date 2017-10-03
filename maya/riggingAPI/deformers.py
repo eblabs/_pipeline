@@ -91,7 +91,7 @@ def getSkinClusterDataFromMesh(sMesh):
 
 
 
-
+#------------ save & load skinCluster functions -----------
 def saveSkinClusterData(sMesh, sPath):
 	fStartTime = time.time()
 
@@ -136,6 +136,7 @@ def loadSkinClusterData(sPath, sMesh = None, sMethod = 'vtxId'):
 	fEndTime = time.time()
 
 	print 'loaded skinCluster for %s, took %s seconds' %(sMesh, fEndTime - fStartTime)
+#------------ save & load skinCluster functions end -----------
 
 #### Sub Functions
 def _setMFnSkinCluster(sSkinCluster):
@@ -206,21 +207,8 @@ def _setSkinWeights(sMesh, mFnSkinCluster, dSkinData, sMethod = 'vtxId', lVtxPos
 	mInfluenceArray, iInfluence = _getSkinInfluenceArray(mFnSkinCluster)
 	iComponents = mWeightArray.length() / iInfluence
 
-	lComponents = []
 	if sMethod == 'vtxPos':
-		mVtxPntArray = meshes.getMeshVtxPntArray(sMesh)
-		lVtxPosNew = apiUtils.convertMPointArrayToList(mVtxPntArray)
-		for lNew in lVtxPosNew:
-			fPntX = lNew[0]
-			fPntY = lNew[1]
-			fPntZ = lNew[2]
-			for i, lOld in enumerate(lVtxPos):
-				bPntX = (lOld[0] >= fPntX - fTolerance and lOld[0] <= fPntX + fTolerance)
-				bPntY = (lOld[1] >= fPntY - fTolerance and lOld[1] <= fPntY + fTolerance)
-				bPntZ = (lOld[2] >= fPntZ - fTolerance and lOld[2] <= fPntZ + fTolerance)
-				if bPntX and bPntY and bPntZ:
-					lComponents.append(i)
-					break
+		lComponents = meshes.remapVtxIdToMesh(sMesh, lVtxPosBase = lVtxPos, fTolerance = fTolerance)
 	else:
 		lComponents = range(iComponents)
 
@@ -242,21 +230,8 @@ def _setSkinBlendWeights(sMesh, mFnSkinCluster, lBlendWeights, sMethod = 'vtxId'
 	iComponents = len(lBlendWeights)
 	mBlendWeightsArray = OpenMaya.MDoubleArray(iComponents)
 
-	lComponents = []
 	if sMethod == 'vtxPos':
-		mVtxPntArray = meshes.getMeshVtxPntArray(sMesh)
-		lVtxPosNew = apiUtils.convertMPointArrayToList(mVtxPntArray)
-		for lNew in lVtxPosNew:
-			fPntX = lNew[0]
-			fPntY = lNew[1]
-			fPntZ = lNew[2]
-			for i, lOld in enumerate(lVtxPos):
-				bPntX = (lOld[0] >= fPntX - fTolerance and lOld[0] <= fPntX + fTolerance)
-				bPntY = (lOld[1] >= fPntY - fTolerance and lOld[1] <= fPntY + fTolerance)
-				bPntZ = (lOld[2] >= fPntZ - fTolerance and lOld[2] <= fPntZ + fTolerance)
-				if bPntX and bPntY and bPntZ:
-					lComponents.append(i)
-					break
+		lComponents = meshes.remapVtxIdToMesh(sMesh, lVtxPosBase = lVtxPos, fTolerance = fTolerance)
 	else:
 		lComponents = range(iComponents)
 	for i, j in enumerate(lComponents):

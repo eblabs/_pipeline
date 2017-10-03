@@ -14,6 +14,7 @@ def createJnt(sName):
 	sJnt = cmds.joint(name = sName)
 	return sJnt
 
+#------------ save & load joints functions -----------
 def getJointInfo(sJnt):
 	lTransformInfo = transforms.getNodeTransformInfo(sJnt)
 	sParent = transforms.getNodeParent(sJnt)
@@ -63,3 +64,4 @@ def buildJointsFromJointsInfo(sPath, sGrp = None):
 			cmds.parent(sJnt, sParent)
 
 		cmds.setAttr('%s.rotateOrder' %sJnt, sRotateOrder)
+#------------ save & load joints functions end -----------
