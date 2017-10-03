@@ -19,12 +19,6 @@ def setDagPath(sNode):
 	mSel.getDagPath(0, mDagPath, mComponents)
 	return mDagPath, mComponents
 
-def createUintPtr():
-	mUtil = OpenMaya.MScriptUtil()
-	mUtil.createFromInt(0)
-	uIntPtr = mUtil.asUintPtr()
-	return uIntPtr
-
 def convertMPointArrayToList(mPntArray):
 	lPntList = []
 	for i in range(mPntArray.length()):
