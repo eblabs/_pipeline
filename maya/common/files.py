@@ -23,6 +23,7 @@ dRiggingComponents = {
 						'deformer': '.deformer', 
 						'controlShape': '.ctrlShape',
 					}
+sBlueprintGrp = '_blueprint_'
 
 #### Functions
 

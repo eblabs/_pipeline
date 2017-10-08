@@ -4,6 +4,178 @@
 		"selected_items":
 		[
 			[
+				"add",
+				"addAction"
+			],
+			[
+				"QM",
+				"QMenuItem_refresh"
+			],
+			[
+				"QV",
+				"QVBoxLayout_right"
+			],
+			[
+				"set",
+				"setFixedWidth"
+			],
+			[
+				"QF",
+				"QFrame_right"
+			],
+			[
+				"QL",
+				"QLayoutBase"
+			],
+			[
+				"pro",
+				"progressBarUI"
+			],
+			[
+				"QP",
+				"QProgressBar"
+			],
+			[
+				"file",
+				"fileTreeView"
+			],
+			[
+				"De",
+				"Demo"
+			],
+			[
+				"rig",
+				"rigBuildInfoUI"
+			],
+			[
+				"QT",
+				"QTreeView"
+			],
+			[
+				"Q",
+				"QWidget"
+			],
+			[
+				"load",
+				"loadSaveUI"
+			],
+			[
+				"oW",
+				"oWidgetLoadSave"
+			],
+			[
+				"QLay",
+				"QLayout"
+			],
+			[
+				"pu",
+				"publishUI"
+			],
+			[
+				"QW",
+				"QWidget"
+			],
+			[
+				"QLayou",
+				"QLayoutBase"
+			],
+			[
+				"setM",
+				"setMaximumHeight"
+			],
+			[
+				"QVB",
+				"QVBoxLayout"
+			],
+			[
+				"com",
+				"componentsButtonSet"
+			],
+			[
+				"QPush",
+				"QPushButton"
+			],
+			[
+				"QPushButton_",
+				"QPushButton_template"
+			],
+			[
+				"compo",
+				"componentsButtonSet"
+			],
+			[
+				"QTabWidget_",
+				"QTabWidget_components"
+			],
+			[
+				"QTa",
+				"QTabWidget_components"
+			],
+			[
+				"o",
+				"oBuildScript"
+			],
+			[
+				"Ql",
+				"QLayout"
+			],
+			[
+				"QGrou",
+				"QGroupBoxComponents"
+			],
+			[
+				"QLayout",
+				"QLayout"
+			],
+			[
+				"projec",
+				"projectInfoUI"
+			],
+			[
+				"QLine",
+				"QLineEdit_project"
+			],
+			[
+				"Qt",
+				"QtGui"
+			],
+			[
+				"QLa",
+				"QLayout"
+			],
+			[
+				"getNodes",
+				"getNodesPivotFromBoundingBox"
+			],
+			[
+				"i",
+				"i"
+			],
+			[
+				"lTra",
+				"lTransformInfoAvg"
+			],
+			[
+				"lT",
+				"lTransformInfoAvg"
+			],
+			[
+				"transformi",
+				"lTransformInf"
+			],
+			[
+				"lTransf",
+				"lTransformInfo"
+			],
+			[
+				"lSkip",
+				"lSkipTranslate"
+			],
+			[
+				"lTran",
+				"lTransformX"
+			],
+			[
 				"lVtx",
 				"lVtxPos"
 			],
@@ -80,10 +252,6 @@
 				"_setMFnSkinCluster"
 			],
 			[
-				"i",
-				"iComponents"
-			],
-			[
 				"sI",
 				"sInfluenceCurrent"
 			],
@@ -114,10 +282,6 @@
 			[
 				"nam",
 				"naming"
-			],
-			[
-				"o",
-				"objExists"
 			],
 			[
 				"_",
@@ -176,10 +340,6 @@
 				"overrideColor"
 			],
 			[
-				"add",
-				"addCtrlShape"
-			],
-			[
 				"sCtrl",
 				"sCtrlShape"
 			],
@@ -220,14 +380,6 @@
 				"getJointInfo"
 			],
 			[
-				"lT",
-				"lTransformInfoNode"
-			],
-			[
-				"lTra",
-				"lTransformInfoNode"
-			],
-			[
 				"lSki",
 				"lSkipScale"
 			],
@@ -264,10 +416,6 @@
 				"lSkipScale"
 			],
 			[
-				"lSkip",
-				"lSkipRotate"
-			],
-			[
 				"sDri",
 				"sDriven"
 			],
@@ -276,20 +424,12 @@
 				"_transformSnapPoint"
 			],
 			[
-				"lTran",
-				"lTransformInfoDriven"
-			],
-			[
 				"lD",
 				"lDriven"
 			],
 			[
 				"sF",
 				"sFileType"
-			],
-			[
-				"file",
-				"files"
 			],
 			[
 				"sP",
@@ -374,146 +514,6 @@
 			[
 				"m",
 				"multiplyDivide"
-			],
-			[
-				"sV",
-				"sVersionComponent"
-			],
-			[
-				"sComp",
-				"sComponentWipFolder"
-			],
-			[
-				"sv",
-				"sVersionName"
-			],
-			[
-				"sCom",
-				"sComponentWipFolder"
-			],
-			[
-				"sCurren",
-				"sCurrentVersionComponent"
-			],
-			[
-				"sCo",
-				"sComponentDir"
-			],
-			[
-				"version",
-				"versionInfo"
-			],
-			[
-				"ass",
-				"assetInfo"
-			],
-			[
-				"sCurre",
-				"sCurrentVersionComponent"
-			],
-			[
-				"versi",
-				"versionInfo"
-			],
-			[
-				"vers",
-				"versionInfo"
-			],
-			[
-				"compo",
-				"componentInfo"
-			],
-			[
-				"comonen",
-				"componentInfo"
-			],
-			[
-				"com",
-				"componentInfo"
-			],
-			[
-				"sA",
-				"sAssetWipDir"
-			],
-			[
-				"dCo",
-				"dComponents"
-			],
-			[
-				"world",
-				"worldUpObject"
-			],
-			[
-				"atta",
-				"attachNodeToPntOnCrvInfo"
-			],
-			[
-				"att",
-				"attachNodeToMotionPath"
-			],
-			[
-				"mo",
-				"motionPath"
-			],
-			[
-				"path",
-				"pathAnimation"
-			],
-			[
-				"sCr",
-				"sCrv"
-			],
-			[
-				"crea",
-				"createChainJnt"
-			],
-			[
-				"fT",
-				"fTxAvg"
-			],
-			[
-				"sAss",
-				"sAssetDir"
-			],
-			[
-				"_crea",
-				"_createVersionFile"
-			],
-			[
-				"sFile",
-				"sFileType"
-			],
-			[
-				"wip",
-				"wipFiles"
-			],
-			[
-				"sAsset",
-				"sAssetDir"
-			],
-			[
-				"sPathT",
-				"sPathTypeSync"
-			],
-			[
-				"sPathSou",
-				"sPathSource"
-			],
-			[
-				"sPathSour",
-				"sPathSourceType"
-			],
-			[
-				"sPaths",
-				"sPathSource"
-			],
-			[
-				"sPathS",
-				"sPathSource"
-			],
-			[
-				"pu",
-				"_publishCmd"
 			]
 		]
 	},
@@ -523,7 +523,7 @@
 			"file": "common/files.py",
 			"settings":
 			{
-				"buffer_size": 3427,
+				"buffer_size": 3457,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -564,15 +564,6 @@
 			}
 		},
 		{
-			"file": "riggingAPI/joints.py",
-			"settings":
-			{
-				"buffer_size": 1724,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
 			"file": "common/workspaces.py",
 			"settings":
 			{
@@ -585,8 +576,61 @@
 			"file": "riggingAPI/rigComponents.py",
 			"settings":
 			{
-				"buffer_size": 222,
+				"buffer_size": 715,
 				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "riggingAPI/rigBuilderUI.py",
+			"settings":
+			{
+				"buffer_size": 15981,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "UI/assetsManagerUI.py",
+			"settings":
+			{
+				"buffer_size": 16702,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "UI/saveAssetUI.py",
+			"settings":
+			{
+				"buffer_size": 7085,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "import riggingAPI.rigBuilderUI as rigBuilderUI\nreload(rigBuilderUI)\nimport UI.baseUI as baseUI\nreload(baseUI)\n\nglobal rigBuilderWin\ntry:\n    rigBuilderWin.close()\nexcept:\n    pass\n\nrigBuilderWin = rigBuilderUI.rigBuilderUI(baseUI.getMayaWindow())\nrigBuilderWin.show()",
+			"settings":
+			{
+				"buffer_size": 267,
+				"line_ending": "Windows",
+				"name": "import riggingAPI.rigBuilderUI as rigBuilderUI"
+			}
+		},
+		{
+			"file": "/C/Users/harri/Desktop/collapseExample.py",
+			"settings":
+			{
+				"buffer_size": 3175,
+				"encoding": "UTF-8",
+				"line_ending": "Windows",
+				"name": "from PySide import QtCore"
+			}
+		},
+		{
+			"file": "riggingAPI/joints.py",
+			"settings":
+			{
+				"buffer_size": 1724,
 				"line_ending": "Windows"
 			}
 		},
@@ -612,7 +656,24 @@
 			"file": "common/transforms.py",
 			"settings":
 			{
-				"buffer_size": 4857,
+				"buffer_size": 5543,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/Users/harri/Downloads/edgeFlowMirror.py",
+			"settings":
+			{
+				"buffer_size": 55023,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "common/maths.py",
+			"settings":
+			{
+				"buffer_size": 241,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -622,15 +683,6 @@
 			"settings":
 			{
 				"buffer_size": 1078,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "UI/assetsManagerUI.py",
-			"settings":
-			{
-				"buffer_size": 16702,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -673,6 +725,8 @@
 	},
 	"file_history":
 	[
+		"/C/_pipeline/maya/riggingAPI/rigBuildUI.py",
+		"/C/_pipeline/maya/riggingAPI/joints.py",
 		"/C/Users/harri/Documents/maya/scripts/userSetup.py",
 		"/C/Users/harri/Dropbox/Projects/correctiveExtract01.py",
 		"/C/Users/harri/Downloads/skinio.py",
@@ -745,6 +799,14 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"fileListView",
+			"QListView",
+			"_listItemRightClicked",
+			"setAlignment",
+			"class",
+			"_addQPushButton",
+			"lTransformInf",
+			"getNodesAvgTransformInfo",
 			"getPoly",
 			"_setSkinWeights",
 			"_getSkinBlendWeights",
@@ -864,15 +926,7 @@
 			"checkbox",
 			"bsListWidget",
 			"listItemRightClicked",
-			"QLayout",
-			"listItemRightClicked_project",
-			"self.QListView_project",
-			"QListView",
-			"fileList",
-			"listItemRightClicked",
-			"filterRegExpChanged_project",
-			"setBaseLayout",
-			"listItemRightClicked"
+			"QLayout"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -897,7 +951,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 7,
 			"sheets":
 			[
 				{
@@ -906,15 +960,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3427,
+						"buffer_size": 3457,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1306,
-								1257
+								537,
+								546
 							]
 						],
 						"settings":
@@ -923,10 +977,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1122.0,
+						"translation.y": 102.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -952,10 +1006,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6120.0,
+						"translation.y": 3060.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
@@ -980,10 +1034,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1337.0,
+						"translation.y": 408.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
@@ -1012,7 +1066,7 @@
 						"translation.y": 510.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
@@ -1041,39 +1095,11 @@
 						"translation.y": 2958.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
 					"buffer": 5,
-					"file": "riggingAPI/joints.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1724,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1712,
-								1712
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 1734.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
 					"file": "common/workspaces.py",
 					"semi_transient": false,
 					"settings":
@@ -1098,24 +1124,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 6,
 					"file": "riggingAPI/rigComponents.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 222,
+						"buffer_size": 715,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								201,
-								201
+								693,
+								693
 							]
 						],
 						"settings":
@@ -1123,14 +1149,189 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 136.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "riggingAPI/rigBuilderUI.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 15981,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								12950,
+								12950
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 14304.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
 					"buffer": 8,
+					"file": "UI/assetsManagerUI.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 16702,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6104,
+								5849
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 9189.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "UI/saveAssetUI.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7085,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1764,
+								1764
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1326.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 267,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								267,
+								267
+							]
+						],
+						"settings":
+						{
+							"auto_name": "import riggingAPI.rigBuilderUI as rigBuilderUI",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "/C/Users/harri/Desktop/collapseExample.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3175,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								348,
+								351
+							]
+						],
+						"settings":
+						{
+							"auto_name": "from PySide import QtCore",
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 102.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "riggingAPI/joints.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1724,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								926,
+								971
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 816.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 16,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
 					"file": "namingAPI/namingDict.py",
 					"semi_transient": false,
 					"settings":
@@ -1151,14 +1352,14 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 102.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 14,
 					"file": "namingAPI/naming.py",
 					"semi_transient": false,
 					"settings":
@@ -1179,42 +1380,100 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 2958.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 15,
 					"file": "common/transforms.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4857,
+						"buffer_size": 5543,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								671,
-								671
+								3297,
+								3297
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
-						"translation.x": 9.0,
-						"translation.y": 2244.0,
+						"translation.x": 0.0,
+						"translation.y": 3970.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 16,
+					"file": "/C/Users/harri/Downloads/edgeFlowMirror.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 55023,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								42991,
+								42991
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 37774.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "common/maths.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 241,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								147,
+								121
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 17,
+					"type": "text"
+				},
+				{
+					"buffer": 18,
 					"file": "common/hierarchy.py",
 					"semi_transient": false,
 					"settings":
@@ -1239,36 +1498,7 @@
 						"translation.y": 816.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "UI/assetsManagerUI.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 16702,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								395,
-								367
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 12,
+					"stack_index": 11,
 					"type": "text"
 				}
 			]
