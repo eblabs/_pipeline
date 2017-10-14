@@ -18,6 +18,9 @@ sFileType = files.sFileType
 sFolderListName = files.sFolderListName
 
 #### Functions
+def createNewScene():
+	cmds.file(f = True, new = True)
+	
 def createProject(sName):
 	## create/write folder list
 	sFolderListPath = os.path.join(sPathLocal, sFolderListName)
