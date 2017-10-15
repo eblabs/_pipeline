@@ -12,6 +12,8 @@ class baseCore(object):
 		self.dFunctions_build = {}
 		self.dFunctions_post = {}
 		self.dRigData = {}
+		self.sProject = None
+		self.sAsset = None
 		
 	def registerFunction(self, **kwargs):
 		mFunction = kwargs.get('mFunction', None)

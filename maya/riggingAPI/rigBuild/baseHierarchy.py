@@ -5,6 +5,7 @@ import maya.mel as mel
 ## Build Script Import
 import baseCore
 import common.workspaces as workspaces
+import riggingAPI.rigComponents as rigComponents
 
 ## baseHierarchy build script
 class baseHierarchy(baseCore.baseCore):
@@ -119,25 +120,29 @@ class baseHierarchy(baseCore.baseCore):
 		return True
 
 	def importModel(self):
-		dModel = self.rigData['dModel']
-		workspaces.loadAsset(dModel['sProject'], dModel['sAsset'], 'model', sLoadType = 'import')
-		return True
+		bReturn = rigComponents.importModel(self.dRigData['dModel'], self.sProject, self.sAsset)
+		return bReturn
 
 	def buildBaseRigNodes(self):
 		pass
 
 	def importBlueprint(self):
-		pass
+		bReturn = rigComponents.importBlueprint(self.dRigData['dBlueprint'], self.sProject, self.sAsset)
+		return bReturn
 
 	def importRigGeometry(self):
-		pass
+		bReturn = rigComponents.importRigGeometry(self.dRigData['lRigGeometry'], self.sProject, self.sAsset)
+		return bReturn
 
 	def importGeoHierarchy(self):
-		pass
+		bReturn = rigComponents.importGeoHierarchy(self.dRigData['lGeoHierarchy'], self.sProject, self.sAsset)
+		return bReturn
 
 	def importDeformer(self):
-		pass
+		bReturn = rigComponents.importDeformer(self.dRigData['lDeformer'], self.sProject, self.sAsset)
+		return bReturn
 
 	def importControlShape(self):
-		pass
+		bReturn = rigComponents.importControlShape(self.dRigData['lControlShape'], self.sProject, self.sAsset)
+		return bReturn
 		
