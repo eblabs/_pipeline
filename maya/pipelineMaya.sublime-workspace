@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"imp",
+				"import"
+			],
+			[
+				"rig",
+				"rigData"
+			],
+			[
 				"build",
 				"buildBaseRigNodes"
 			],
@@ -14,10 +22,6 @@
 			[
 				"im",
 				"importDeformer"
-			],
-			[
-				"imp",
-				"importGeoHierarchy"
 			],
 			[
 				"import",
@@ -262,10 +266,6 @@
 			[
 				"De",
 				"Demo"
-			],
-			[
-				"rig",
-				"rigBuildInfoUI"
 			],
 			[
 				"QT",
@@ -523,16 +523,19 @@
 			"file": "common/files.py",
 			"settings":
 			{
-				"buffer_size": 3457,
+				"buffer_size": 3454,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
+			"contents": "## External Import\nimport maya.cmds as cmds\nimport maya.mel as mel\nimport maya.OpenMaya as OpenMaya\nimport maya.OpenMayaAnim as OpenMayaAnim\nimport time\n## libs Import\nimport common.apiUtils as apiUtils\nimport modelingAPI.meshes as meshes\nimport joints\nimport namingAPI.naming as naming\nimport common.files as files\nreload(files)\n\n#### Functions\ndef getSkinCluster(sNode):\n\tsSkinCluster = mel.eval('findRelatedSkinCluster(\"' + sNode + '\")')\n\treturn sSkinCluster\n\ndef createSkinCluster(sNode, lInfluences):\n\tlJnts = []\n\tlGeos = []\n\tlCrvs = []\n\tsGrp = '_missedSkinJoints_'\n\toName = naming.oName(sNode)\n\toName.sType = 'skinCluster'\n\tfor sInfluence in lInfluences:\n\t\tif cmds.objExists(sInfluence):\n\t\t\tif cmds.objectType(sInfluence) == 'joint':\n\t\t\t\tlJnts.append(sInfluence)\n\t\t\telif cmds.objExists(sInfluence) == 'nurbsCurve':\n\t\t\t\tlCrvs.append(sInfluence)\n\t\t\telse:\n\t\t\t\tlGeos.append(sInfluence)\n\t\telse:\n\t\t\tcreateJnt(sInfluence)\n\t\t\tlJnts.append(sInfluence)\n\t\t\tif not cmds.objExists(sGrp):\n\t\t\t\tcmds.group(empty = True, name = sGrp)\n\t\t\t\tcmds.setAttr('%s.v' %sGrp, 0)\n\t\t\tcmds.parent(sInfluence, sGrp)\n\n\tcmds.skinCluster(lJnts, sNode, tsb = True, bindMethod = 0, skinMethod = 0, name = oName.sName)\n\n\tfor i, lComponents in enumerate([lCrvs, lGeos]):\n\t\tif lComponents:\n\t\t\tfor sComponent in lComponents:\n\t\t\t\tcmds.skinCluster(oName.sName, e = True, ug = i, ai = sComponent)\n\t\t\t\toNameGeo = naming.oName(sComponent)\n\t\t\t\toNameGeo.sPart += 'Base'\n\t\t\t\tcmds.rename('%sBase' %sComponent, oNameGeo.sName)\n\t\t\tcmds.setAttr('%s.useComponents' %oName.sName, 1)\n\n\treturn oName.sName\n\ndef removeUnusedInfluence(sMesh):\n\tsSkinCluster = getSkinCluster(sMesh)\n\tif sSkinCluster:\n\t\tlInfluences = cmds.skinCluster(sSkinCluster, q = True, inf = True)\n\t\tlInfluencesUsed = cmds.skinCluster(sSkinCluster, q = True, wi = True)\n\t\tfor sInfluence in lInfluencesUsed:\n\t\t\tlInfluences.remove(sInfluence)\n\t\tif lInfluences:\n\t\t\tfor sInfluence in lInfluences:\n\t\t\t\tcmds.skinCluster(sSkinCluster, e = True, removeInfluence = sInfluence)\n\t\t\t\tprint 'remove influenceObject %s from %s' %(sInfluence, sSkinCluster)\n\n\n\ndef getSkinClusterDataFromMesh(sMesh):\n\tsSkinCluster = getSkinCluster(sMesh)\n\tiVtxCount = meshes.getPolyVtxCount(sMesh)\n\tiSkinMethod = cmds.getAttr('%s.skinningMethod' %sSkinCluster)\n\tbComponents = cmds.getAttr('%s.useComponents' %sSkinCluster)\n\tiNormalizeWeights = cmds.getAttr('%s.normalizeWeights' %sSkinCluster)\n\tdSkinData = __getSkinWeightsData(sMesh)\n\tlBlendWeights = __getSkinBlendWeights(sMesh)\n\tmVtxPntArray = meshes.getMeshVtxPntArray(sMesh)\n\tlVtxPos = apiUtils.convertMPointArrayToList(mVtxPntArray)\n\tdSkinData = {\n\t\t\t\t\t'sGeo' : sMesh,\n\t\t\t\t\t'iVtxCount': iVtxCount,\n\t\t\t\t\t'iSkinMethod': iSkinMethod,\n\t\t\t\t\t'bComponents': bComponents,\n\t\t\t\t\t'iNormalizeWeights': iNormalizeWeights,\n\t\t\t\t\t'dSkinData': dSkinData,\n\t\t\t\t\t'lBlendWeights': lBlendWeights,\n\t\t\t\t\t'lVtxPos': lVtxPos\n\t\t\t\t}\n\treturn dSkinData\n\n\n\n#------------ save & load skinCluster functions -----------\ndef saveSkinClusterData(sMesh, sPath):\n\tfStartTime = time.time()\n\n\tdSkinData = getSkinClusterDataFromMesh(sMesh)\n\tfiles.writePickleFile(sPath, dSkinData)\n\n\tfEndTime = time.time()\n\n\tprint 'saved skinCluster for %s, took %s seconds' %(sMesh, fEndTime - fStartTime)\n\ndef loadSkinClusterData(sPath, sMesh = None, sMethod = 'vtxId'):\n\tfStartTime = time.time()\n\n\tdSkinData = files.readPickleFile(sPath)\n\n\tif not sMesh:\n\t\tsMesh = dSkinData['sGeo']\n\n\tif cmds.objExists(sMesh):\n\t\tsSkinCluster = getSkinCluster(sMesh)\n\t\tif not sSkinCluster:\n\t\t\tiVtxCount = meshes.getPolyVtxCount(sMesh)\n\t\t\tif iVtxCount == dSkinData['iVtxCount']:\n\t\t\t\tlInfluences = dSkinData['dSkinData'].keys()\n\t\t\t\tsSkinCluster = createSkinCluster(sMesh, lInfluences)\n\t\t\t\tmFnSkinCluster = __setMFnSkinCluster(sSkinCluster)\n\n\t\t\t\tcmds.setAttr('%s.normalizeWeights' %sSkinCluster, 0)\n\t\t\t\t__setSkinWeights(sMesh, mFnSkinCluster, dSkinData['dSkinData'], sMethod = sMethod, lVtxPos = dSkinData['lVtxPos'])\n\t\t\t\t__setSkinBlendWeights(sMesh, mFnSkinCluster, dSkinData['lBlendWeights'], sMethod = sMethod, lVtxPos = dSkinData['lVtxPos'])\n\n\t\t\t\tcmds.setAttr('%s.skinningMethod' %sSkinCluster, dSkinData['iSkinMethod'])\n\t\t\t\tcmds.setAttr('%s.useComponents' %sSkinCluster, dSkinData['bComponents'])\n\t\t\t\tcmds.setAttr('%s.normalizeWeights' %sSkinCluster, dSkinData['iNormalizeWeights'])\n\t\t\telse:\n\t\t\t\tprint '%s has different vertice count, original is %d, current is %s, skipped' %(sMethod, iVtxCount, dSkinData['iVtxCount'])\n\t\telse:\n\t\t\tprint '%s already has a skinCluster on it, %s, skipped' %(sMesh, skinCluster)\n\telse:\n\t\tprint '%s does not exist, skipped' %sMesh\n\n\tfEndTime = time.time()\n\n\tprint 'loaded skinCluster for %s, took %s seconds' %(sMesh, fEndTime - fStartTime)\n#------------ save & load skinCluster functions end -----------\n\n#### Sub Functions\ndef __setMFnSkinCluster(sSkinCluster):\n\tmObj = apiUtils.setMObj(sSkinCluster)\n\tmFnSkinCluster = OpenMayaAnim.MFnSkinCluster(mObj)\n\treturn mFnSkinCluster\n\ndef __getSkinWeightArray(mFnSkinCluster):\n\tmDagPath, mComponents = __getComponentsFromMFnSkinCluster(mFnSkinCluster)\n\tmWeightArray = OpenMaya.MDoubleArray()\n\tmUtil = OpenMaya.MScriptUtil()\n\tmUtil.createFromInt(0)\n\tuIntPtr = mUtil.asUintPtr()\n\tmFnSkinCluster.getWeights(mDagPath, mComponents, mWeightArray, uIntPtr)\n\n\tprint 'aaaa'\n\treturn mWeightArray\n\ndef __getComponentsFromMFnSkinCluster(mFnSkinCluster):\n\tmFnSet = OpenMaya.MFnSet(mFnSkinCluster.deformerSet())\n\tmSel = OpenMaya.MSelectionList()\n\tmFnSet.getMembers(mSel, False)\n\tmDagPath = OpenMaya.MDagPath()\n\tmComponents = OpenMaya.MObject()\n\tmSel.getDagPath(0, mDagPath, mComponents)\n\treturn mDagPath, mComponents\n\ndef __getSkinInfluenceArray(mFnSkinCluster):\n\tmInfluenceArray = OpenMaya.MDagPathArray()\n\tiInfluence = mFnSkinCluster.influenceObjects(mInfluenceArray)\n\treturn mInfluenceArray, iInfluence\n\ndef __getSkinWeightsData(sMesh):\n\tsSkinCluster = getSkinCluster(sMesh)\n\tmFnSkinCluster = __setMFnSkinCluster(sSkinCluster)\n\tmWeightArray = __getSkinWeightArray(mFnSkinCluster)\n\n\tmInfluenceArray, iInfluence = __getSkinInfluenceArray(mFnSkinCluster)\n\n\tiComponents = mWeightArray.length() / iInfluence\n\n\tdSkinData = {}\n\n\tfor i in range(iInfluence):\n\t\tsInfluence = mInfluenceArray[i].partialPathName()\n\n\t\tdSkinData[sInfluence] = []\n\t\tfor j in range(iComponents):\n\t\t\tdSkinData[sInfluence].append(mWeightArray[j * iInfluence + i])\n\n\treturn dSkinData\n\n\n\n\ndef __getSkinBlendWeights(sMesh):\n\tsSkinCluster = getSkinCluster(sMesh)\n\tmFnSkinCluster = __setMFnSkinCluster(sSkinCluster)\n\tmDagPath, mComponents = __getComponentsFromMFnSkinCluster(mFnSkinCluster)\n\tmWeightArray = OpenMaya.MDoubleArray()\n\tmFnSkinCluster.getBlendWeights(mDagPath, mComponents, mWeightArray)\n\tlBlendWeights = apiUtils.convertMDoubleArrayToList(mWeightArray)\n\treturn lBlendWeights\n\ndef __setSkinWeights(sMesh, mFnSkinCluster, dSkinData, sMethod = 'vtxId', lVtxPos = None, fTolerance = 0.00001):\n\tmDagPath, mComponents = __getComponentsFromMFnSkinCluster(mFnSkinCluster)\n\tmWeightArray = __getSkinWeightArray(mFnSkinCluster)\n\tmInfluenceArray, iInfluence = __getSkinInfluenceArray(mFnSkinCluster)\n\tiComponents = mWeightArray.length() / iInfluence\n\n\tif sMethod == 'vtxPos':\n\t\tlComponents = meshes.remapVtxIdToMesh(sMesh, lVtxPosBase = lVtxPos, fTolerance = fTolerance)\n\telse:\n\t\tlComponents = range(iComponents)\n\n\tfor sInfluence in dSkinData.keys():\n\t\tfor i in range(iInfluence):\n\t\t\tsInfluenceCurrent = mInfluenceArray[i].partialPathName()\n\t\t\tif sInfluence == sInfluenceCurrent:\n\t\t\t\tfor j, m in enumerate(lComponents):\n\t\t\t\t\tmWeightArray.set(dSkinData[sInfluence][m], j * iInfluence + i)\n\t\t\t\tbreak\n\n\tmIndexArray = OpenMaya.MIntArray(iInfluence)\n\tfor i in range(iInfluence):\n\t\tmIndexArray.set(i, i)\n\tmFnSkinCluster.setWeights(mDagPath, mComponents, mIndexArray, mWeightArray, False)\n\ndef __setSkinBlendWeights(sMesh, mFnSkinCluster, lBlendWeights, sMethod = 'vtxId', lVtxPos = None, fTolerance = 0.00001):\n\tmDagPath, mComponents = __getComponentsFromMFnSkinCluster(mFnSkinCluster)\n\tiComponents = len(lBlendWeights)\n\tmBlendWeightsArray = OpenMaya.MDoubleArray(iComponents)\n\n\tif sMethod == 'vtxPos':\n\t\tlComponents = meshes.remapVtxIdToMesh(sMesh, lVtxPosBase = lVtxPos, fTolerance = fTolerance)\n\telse:\n\t\tlComponents = range(iComponents)\n\tfor i, j in enumerate(lComponents):\n\t\tmBlendWeightsArray.set(lBlendWeights[j], i)\n\tmFnSkinCluster.setBlendWeights(mDagPath, mComponents, mBlendWeightsArray)\n",
 			"file": "riggingAPI/deformers.py",
+			"file_size": 8501,
+			"file_write_time": 131515207280956787,
 			"settings":
 			{
-				"buffer_size": 8262,
+				"buffer_size": 8285,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -541,7 +544,7 @@
 			"file": "modelingAPI/meshes.py",
 			"settings":
 			{
-				"buffer_size": 2236,
+				"buffer_size": 2239,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -558,7 +561,7 @@
 			"file": "riggingAPI/controls.py",
 			"settings":
 			{
-				"buffer_size": 3862,
+				"buffer_size": 3866,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -567,7 +570,7 @@
 			"file": "riggingAPI/rigBuild/baseCore.py",
 			"settings":
 			{
-				"buffer_size": 1889,
+				"buffer_size": 1938,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -576,7 +579,19 @@
 			"file": "riggingAPI/rigBuild/baseHierarchy.py",
 			"settings":
 			{
-				"buffer_size": 2694,
+				"buffer_size": 2898,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "## External Import\nimport maya.cmds as cmds\nimport maya.mel as mel\nimport os\nimport json\nimport time\n\n## libs Import\nimport common.files as files\nimport common.transforms as transforms\nimport joints\n\n#### Functions\ndef saveBlueprintJnts(sPath):\n\tif cmds.objExists(files.sBlueprintGrp):\n\t\tlJnts = cmds.listRelatives(files.sBlueprintGrp, c = True, ad = True, type = 'joint')\n\t\tjoints.saveJointInfo(lJnts, sPath)\n\telse:\n\t\tcmds.warning('%s does not exist, skipped' %files.sBlueprintGrp)\n\ndef buildBlueprintJnts(sPath):\n\tif os.path.exists(sPath):\n\t\tjoints.buildJointsFromJointsInfo(sPath, sGrp = files.sBlueprintGrp)\n\telse:\n\t\tcmds.warning('blueprint file does not exist, cannot build the joints')\n\n\n\n\n#### Sub Functions\ndef generateComponentPath(dData, sProject, sAsset, sComponent):\n\tif dData['sProject']:\n\t\tsProject = dData['sProject']\n\tif dData['sAsset']:\n\t\tsAsset = dData['sAsset']\n\n",
+			"file": "riggingAPI/rigComponents.py",
+			"file_size": 745,
+			"file_write_time": 131516565286006285,
+			"settings":
+			{
+				"buffer_size": 882,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -594,7 +609,7 @@
 			"file": "UI/assetsManagerUI.py",
 			"settings":
 			{
-				"buffer_size": 16702,
+				"buffer_size": 16719,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -603,7 +618,7 @@
 			"file": "common/workspaces.py",
 			"settings":
 			{
-				"buffer_size": 14887,
+				"buffer_size": 14839,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -612,15 +627,7 @@
 			"file": "UI/syncAssetsUI.py",
 			"settings":
 			{
-				"buffer_size": 13889,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigComponents.py",
-			"settings":
-			{
-				"buffer_size": 715,
+				"buffer_size": 13887,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -629,7 +636,7 @@
 			"file": "riggingAPI/rigBuilderUI.py",
 			"settings":
 			{
-				"buffer_size": 15981,
+				"buffer_size": 15977,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -646,27 +653,9 @@
 			"file": "UI/saveAssetUI.py",
 			"settings":
 			{
-				"buffer_size": 7085,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "import riggingAPI.rigBuilderUI as rigBuilderUI\nreload(rigBuilderUI)\nimport UI.baseUI as baseUI\nreload(baseUI)\n\nglobal rigBuilderWin\ntry:\n    rigBuilderWin.close()\nexcept:\n    pass\n\nrigBuilderWin = rigBuilderUI.rigBuilderUI(baseUI.getMayaWindow())\nrigBuilderWin.show()",
-			"settings":
-			{
-				"buffer_size": 267,
-				"line_ending": "Windows",
-				"name": "import riggingAPI.rigBuilderUI as rigBuilderUI"
-			}
-		},
-		{
-			"file": "/C/Users/harri/Desktop/collapseExample.py",
-			"settings":
-			{
-				"buffer_size": 3175,
+				"buffer_size": 7074,
 				"encoding": "UTF-8",
-				"line_ending": "Windows",
-				"name": "from PySide import QtCore"
+				"line_ending": "Windows"
 			}
 		},
 		{
@@ -690,7 +679,7 @@
 			"file": "namingAPI/naming.py",
 			"settings":
 			{
-				"buffer_size": 4294,
+				"buffer_size": 4292,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -699,7 +688,7 @@
 			"file": "common/transforms.py",
 			"settings":
 			{
-				"buffer_size": 5543,
+				"buffer_size": 5524,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -768,6 +757,7 @@
 	},
 	"file_history":
 	[
+		"/C/Users/harri/Desktop/collapseExample.py",
 		"/C/Users/harri/Desktop/exportObj.py",
 		"/C/Users/harri/Desktop/assignShader.py",
 		"/C/_pipeline/maya/riggingAPI/rigBuildUI.py",
@@ -844,6 +834,80 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"___",
+			"._",
+			"_transformSnapAll",
+			"_transformSnapParent",
+			"_transformSnapScale",
+			"_transformSnapOrient",
+			"_transformSnapPoint",
+			"_decomposeName",
+			"._",
+			"_setPathWinPop",
+			"._",
+			"workspaces",
+			"_setPath",
+			"_setPushButtonEnabled",
+			"_listTypes",
+			"_listAssets",
+			"_listProjects",
+			"_saveAsset",
+			"_resetPath",
+			"_setPathWinPop",
+			"_getAssetFolders",
+			"_listItemRightClicked",
+			"_setQMenuItemCreateEnabled",
+			"_openContainFolder",
+			"_QMenuItemDelete",
+			"_QMenuItemRename",
+			"_QMenuItemCreate",
+			"_listItemClick",
+			"_listItemRightClicked",
+			"_filterRegExpChanged",
+			"_importAsset",
+			"_openAsset",
+			"_getCurrentAsset",
+			"_setProject",
+			"_setPushButtonEnabled",
+			"_addQPushButton",
+			"_setVersionComment",
+			"_getCurrentVersion",
+			"_setVersionEnabled",
+			"_refreshVersion",
+			"_addVersion",
+			"_getVersionInfo",
+			"_fileLayout",
+			"files",
+			"_getCtrlShapeKnots",
+			"_getCtrlShapeControlPoints",
+			"setMFnMesh",
+			"_setSkinBlendWeights",
+			"_setSkinWeights",
+			"getSkinBlendWeights",
+			"_getSkinWeightsData",
+			"_getSkinInfluenceArray",
+			"_getComponentsFromMFnSkinCluster",
+			"_getSkinWeightArray",
+			"_setMFnSkinCluster",
+			"workspaces",
+			"_filterRegExpChanged",
+			"_addFile",
+			"_refreshFileList",
+			"_setList",
+			"syncCmd",
+			"refreshCmd",
+			"_checkoutCmd",
+			"_publishCmd",
+			"_getSelectItem",
+			"_",
+			"_getVersionFiles",
+			"_getFoldersFromFolderList",
+			"_writeFolderListFile",
+			"_createFolderListFile",
+			"_getAssetFile",
+			"_getAssetDirectory",
+			"createVersionFile",
+			"getProject",
 			"assetsManagerBaseLayout",
 			"oLayout_type",
 			"selectionModel",
@@ -897,81 +961,7 @@
 			"copyfile",
 			"_getSelectItem",
 			"self.QLabel_file",
-			"setCurrentIndex",
-			"currentIndex",
-			"self.dAssetData",
-			".data",
-			"QSourceModel_ver",
-			"QSource",
-			"QModelIndex",
-			"QSourceModel_version",
-			"'sType'",
-			"_getAssetFile",
-			"_getFoldersThroughPath",
-			"self.sPath",
-			"_getFoldersThroughPath",
-			"sPathSource",
-			"os.path.join(os.path.join(self.oLayout_type.sPath, currentItem))",
-			"version.isChecked()",
-			"lQ",
-			"bCheck",
-			"_getAssetFolder",
-			"sPathLocal",
-			"_listItemRightClicked",
-			"getFoldersTh",
-			"os.path",
-			"_setPushButtonEnabled",
-			"_createVersionFile",
-			"_getProject",
-			"QMenuItem_rename",
-			"getFilesFromPath",
-			"_getVersionInfo",
-			"_refreshVersion",
-			"fileTreeView",
-			"FileList",
-			"_writeFileListFile",
-			"_writeFolderListFile",
-			"createFileListFile",
-			"readJsonFile",
-			"sFileList",
-			"rebuildListModel",
-			"_getAssetDirectory",
-			"readJsonFil",
-			"versionFile",
-			"rowCount",
-			"self.QSourceModel",
-			"sPathListItem",
-			"bListItemClick",
-			"assetsManagerBaseLayout",
-			"_listItemRightClicked",
-			"_QMenuItemDelete",
-			"_getAssetDirectory",
-			"deleteFileFromPath",
-			"getFilesFromPath",
-			"self.sPath",
-			"_getFoldersFromPath",
-			"createFolder",
-			"self.sPath",
-			"cmds.warning",
-			"currentIndex",
-			"valid",
-			"os.path.join",
-			"_getAssetDirectory",
-			"Input_create",
-			"popWinRightClick",
-			"dAssetData",
-			"_listItemClick",
-			"QListView_version",
-			"SUBJECT",
-			"addMail",
-			"createMailModel",
-			"setSourceModel",
-			"iVersionCurrent",
-			"sCurrentVersionName",
-			"copyfile",
-			"createVersionFile",
-			"getAssetDirectory",
-			"getGeoInfo"
+			"setCurrentIndex"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -979,6 +969,72 @@
 		"regex": false,
 		"replace_history":
 		[
+			"__",
+			"transformSnapAll",
+			"transformSnapParent",
+			"transformSnapScale",
+			"transformSnapOrient",
+			"transformSnapPoint",
+			"decomposeName",
+			"setPath",
+			"setPushButtonEnabled",
+			"listTypes",
+			"listAssets",
+			"listProjects",
+			"__saveAsset",
+			"__resetPath",
+			"__setPathWinPop",
+			"__getAssetFolders",
+			"getAssetFolders",
+			"listItemRightClicked",
+			"setQMenuItemCreateEnabled",
+			"openContainFolder",
+			"QMenuItemDelete",
+			"QMenuItemRename",
+			"QMenuItemCreate",
+			"listItemClick",
+			"listItemRightClicked",
+			"filterRegExpChanged",
+			"__importAsset",
+			"__openAsset",
+			"__getCurrentAsset",
+			"__setProject",
+			"__setPushButtonEnabled",
+			"__addQPushButton",
+			"__setVersionComment",
+			"__getCurrentVersion",
+			"__setVersionEnabled",
+			"__refreshVersion",
+			"__addVersion",
+			"__getVersionInfo",
+			"__fileLayout",
+			"__getCtrlShapeKnots",
+			"__getCtrlShapeControlPoints",
+			"__setMFnMesh",
+			"__setSkinBlendWeights",
+			"__setSkinWeights",
+			"__getSkinBlendWeights",
+			"__getSkinWeightsData",
+			"__getSkinInfluenceArray",
+			"__getComponentsFromMFnSkinCluster",
+			"__getSkinWeightArray",
+			"__setMFnSkinCluster",
+			"filterRegExpChanged",
+			"addFile",
+			"refreshFileList",
+			"setList",
+			"__setList",
+			"__syncCmd",
+			"__refreshCmd",
+			"__checkoutCmd",
+			"__publishCmd",
+			"__getSelectItem",
+			"getVersionFiles",
+			"getFoldersFromFolderList",
+			"writeFolderListFile",
+			"createFolderListFile",
+			"getAssetFile",
+			"getAssetDirectory",
 			"fEndTime",
 			"fStartTime",
 			"_writeFolderListFile",
@@ -996,7 +1052,7 @@
 	"groups":
 	[
 		{
-			"selected": 6,
+			"selected": 10,
 			"sheets":
 			[
 				{
@@ -1005,15 +1061,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3457,
+						"buffer_size": 3454,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								537,
-								546
+								3073,
+								3073
 							]
 						],
 						"settings":
@@ -1025,7 +1081,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
@@ -1034,15 +1090,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8262,
+						"buffer_size": 8285,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7941,
-								7941
+								7680,
+								7682
 							]
 						],
 						"settings":
@@ -1051,10 +1107,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2970.0,
+						"translation.y": 6724.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
@@ -1063,15 +1119,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2236,
+						"buffer_size": 2239,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2065,
-								2065
+								1110,
+								1110
 							]
 						],
 						"settings":
@@ -1079,10 +1135,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 396.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 20,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
@@ -1108,10 +1164,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 495.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
@@ -1120,15 +1176,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3862,
+						"buffer_size": 3866,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								178,
-								150
+								149,
+								149
 							]
 						],
 						"settings":
@@ -1140,7 +1196,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
@@ -1149,15 +1205,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1889,
+						"buffer_size": 1938,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								507,
-								517
+								292,
+								292
 							]
 						],
 						"settings":
@@ -1166,10 +1222,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1782.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -1178,15 +1234,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2694,
+						"buffer_size": 2898,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1585,
-								1585
+								2670,
+								2670
 							]
 						],
 						"settings":
@@ -1194,14 +1250,42 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 544.0,
+						"translation.y": 3465.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 20,
 					"type": "text"
 				},
 				{
 					"buffer": 7,
+					"file": "riggingAPI/rigComponents.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 882,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								880,
+								880
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 495.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 19,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
 					"file": "riggingAPI/rigBuild/rigData.py",
 					"semi_transient": false,
 					"settings":
@@ -1225,53 +1309,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "UI/assetsManagerUI.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 16702,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								16468,
-								16468
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 7919.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
 					"buffer": 9,
-					"file": "common/workspaces.py",
+					"file": "UI/assetsManagerUI.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 14887,
+						"buffer_size": 16719,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								425,
-								425
+								592,
+								592
 							]
 						],
 						"settings":
@@ -1280,27 +1335,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 204.0,
+						"translation.y": 405.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
 					"buffer": 10,
-					"file": "UI/syncAssetsUI.py",
+					"file": "common/workspaces.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 13889,
+						"buffer_size": 14839,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1764,
-								1715
+								3994,
+								3994
 							]
 						],
 						"settings":
@@ -1309,38 +1364,39 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2574.0,
+						"translation.y": 3738.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
 					"buffer": 11,
-					"file": "riggingAPI/rigComponents.py",
+					"file": "UI/syncAssetsUI.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 715,
+						"buffer_size": 13887,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								693,
-								693
+								6804,
+								6804
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 50.0,
+						"translation.y": 6104.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -1349,15 +1405,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 15981,
+						"buffer_size": 15977,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1939,
-								1897
+								15355,
+								15355
 							]
 						],
 						"settings":
@@ -1366,10 +1422,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1905.0,
+						"translation.y": 12809.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -1397,7 +1453,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -1406,15 +1462,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7085,
+						"buffer_size": 7074,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1764,
-								1764
+								572,
+								572
 							]
 						],
 						"settings":
@@ -1423,73 +1479,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1287.0,
+						"translation.y": 339.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
 					"buffer": 15,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 267,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								267,
-								267
-							]
-						],
-						"settings":
-						{
-							"auto_name": "import riggingAPI.rigBuilderUI as rigBuilderUI",
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 16,
-					"type": "text"
-				},
-				{
-					"buffer": 16,
-					"file": "/C/Users/harri/Desktop/collapseExample.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3175,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								348,
-								351
-							]
-						],
-						"settings":
-						{
-							"auto_name": "from PySide import QtCore",
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 99.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 12,
-					"type": "text"
-				},
-				{
-					"buffer": 17,
 					"file": "riggingAPI/joints.py",
 					"semi_transient": false,
 					"settings":
@@ -1511,14 +1508,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 792.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
-					"buffer": 18,
+					"buffer": 16,
 					"file": "namingAPI/namingDict.py",
 					"semi_transient": false,
 					"settings":
@@ -1539,6 +1536,34 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
+						"translation.y": 2079.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 15,
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "namingAPI/naming.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4292,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3419,
+								3419
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
@@ -1546,20 +1571,20 @@
 					"type": "text"
 				},
 				{
-					"buffer": 19,
-					"file": "namingAPI/naming.py",
+					"buffer": 18,
+					"file": "common/transforms.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4294,
+						"buffer_size": 5524,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								225,
-								200
+								203,
+								204
 							]
 						],
 						"settings":
@@ -1570,39 +1595,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 20,
-					"file": "common/transforms.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5543,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3297,
-								3297
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 3854.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 18,
-					"type": "text"
-				},
-				{
-					"buffer": 21,
+					"buffer": 19,
 					"file": "/C/Users/harri/Downloads/edgeFlowMirror.py",
 					"semi_transient": false,
 					"settings":
@@ -1628,11 +1625,11 @@
 						"translation.y": 36663.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
-					"buffer": 22,
+					"buffer": 20,
 					"file": "common/maths.py",
 					"semi_transient": false,
 					"settings":
@@ -1656,11 +1653,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 21,
 					"file": "common/hierarchy.py",
 					"semi_transient": false,
 					"settings":
@@ -1682,10 +1679,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 792.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 11,
 					"type": "text"
 				}
 			]
@@ -1730,7 +1727,7 @@
 	"project": "pipelineMaya.sublime-project",
 	"replace":
 	{
-		"height": 78.0
+		"height": 100.0
 	},
 	"save_all_on_build": true,
 	"select_file":

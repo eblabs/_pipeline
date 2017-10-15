@@ -67,7 +67,7 @@ class syncAssetsUI(QtGui.QWidget):
 		self.QPushButtonRefresh = QtGui.QPushButton('Force to refresh')
 		self.QPushButtonRefresh.setMaximumWidth(150)
 		QLayoutButton.addWidget(self.QPushButtonRefresh)
-		self.QPushButtonRefresh.clicked.connect(self._refreshCmd)
+		self.QPushButtonRefresh.clicked.connect(self.__refreshCmd)
 
 		QLabel = QtGui.QLabel()
 		QLayoutButton.addWidget(QLabel)
@@ -75,12 +75,12 @@ class syncAssetsUI(QtGui.QWidget):
 		self.QPushButtonPush = QtGui.QPushButton('Push to Server')
 		self.QPushButtonPush.setMaximumWidth(150)
 		QLayoutButton.addWidget(self.QPushButtonPush)
-		self.QPushButtonPush.clicked.connect(self._publishCmd)
+		self.QPushButtonPush.clicked.connect(self.__publishCmd)
 
 		self.QPushButtonPull = QtGui.QPushButton('Pull to Local')
 		self.QPushButtonPull.setMaximumWidth(150)
 		QLayoutButton.addWidget(self.QPushButtonPull)
-		self.QPushButtonPull.clicked.connect(self._checkoutCmd)
+		self.QPushButtonPull.clicked.connect(self.__checkoutCmd)
 
 	def setProjectList(self):
 		lProjects = self.dAssetData.keys()
@@ -88,11 +88,11 @@ class syncAssetsUI(QtGui.QWidget):
 		lProjects.sort()
 		for sProject in lProjects:
 			lStatus.append(self.dAssetData[sProject]['status'])
-		self.oLayout_project._setList(lProjects, lStatus)
+		self.oLayout_project.setList(lProjects, lStatus)
 
 	def setAssetList(self):
-		self.oLayout_asset._refreshFileList()
-		self.sProject, sStatus = self._getSelectItem(self.oLayout_project)
+		self.oLayout_asset.refreshFileList()
+		self.sProject, sStatus = self.__getSelectItem(self.oLayout_project)
 
 		if self.sProject:
 			if self.dAssetData[self.sProject]['folders']:
@@ -101,15 +101,15 @@ class syncAssetsUI(QtGui.QWidget):
 				lAssets.sort()
 				for sAsset in lAssets:
 					lStatus.append(self.dAssetData[self.sProject]['folders'][sAsset]['status'])
-				self.oLayout_asset._setList(lAssets, lStatus)
+				self.oLayout_asset.setList(lAssets, lStatus)
 			else:
-				self.oLayout_asset._refreshFileList()
+				self.oLayout_asset.refreshFileList()
 		else:
-			self.oLayout_asset._refreshFileList()
+			self.oLayout_asset.refreshFileList()
 
 	def setTypeList(self):
-		self.oLayout_type._refreshFileList()
-		self.sAsset, sStatus = self._getSelectItem(self.oLayout_asset)
+		self.oLayout_type.refreshFileList()
+		self.sAsset, sStatus = self.__getSelectItem(self.oLayout_asset)
 
 		if self.sAsset:
 			if self.dAssetData[self.sProject]['folders'][self.sAsset]['folders']:
@@ -118,13 +118,13 @@ class syncAssetsUI(QtGui.QWidget):
 				lTypes.sort()
 				for sType in lTypes:
 					lStatus.append(self.dAssetData[self.sProject]['folders'][self.sAsset]['folders'][sType]['status'])
-				self.oLayout_type._setList(lTypes, lStatus)
+				self.oLayout_type.setList(lTypes, lStatus)
 			else:
-				self.oLayout_type._refreshFileList()
+				self.oLayout_type.refreshFileList()
 		else:
-			self.oLayout_type._refreshFileList()
+			self.oLayout_type.refreshFileList()
 
-	def _getSelectItem(self, oLayout):
+	def __getSelectItem(self, oLayout):
 		iIndexProxy = oLayout.QTreeView.currentIndex()
 		if iIndexProxy.row() >= 0:
 			iIndexSource = oLayout.QProxyModel.mapToSource(iIndexProxy)
@@ -139,25 +139,25 @@ class syncAssetsUI(QtGui.QWidget):
 			sStatus = None
 		return sSelect, sStatus
 
-	def _publishCmd(self):
+	def __publishCmd(self):
 		bCheck = QtGui.QMessageBox.question(self, 'Push To Server', 'Are you sure you want to push to server?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 		if bCheck == QtGui.QMessageBox.Yes:
-			self._syncCmd('server')
+			self.__syncCmd('server')
 
-	def _checkoutCmd(self):
+	def __checkoutCmd(self):
 		bCheck = QtGui.QMessageBox.question(self, 'Pull To Local', 'Are you sure you want to pull to local?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 		if bCheck == QtGui.QMessageBox.Yes:
-			self._syncCmd('local')
+			self.__syncCmd('local')
 
-	def _refreshCmd(self):
-		self.oLayout_project._refreshFileList()
+	def __refreshCmd(self):
+		self.oLayout_project.refreshFileList()
 		self.dAssetData = getFileInfoFromLocalAndServer()
 		self.setProjectList()
 			
-	def _syncCmd(self, sMode):
-		sTypeSel, sStatusTypeSel = self._getSelectItem(self.oLayout_type)
-		sAssetSel, sStatusAssetSel = self._getSelectItem(self.oLayout_asset)
-		sProjectSel, sStatusProjectSel = self._getSelectItem(self.oLayout_project)
+	def __syncCmd(self, sMode):
+		sTypeSel, sStatusTypeSel = self.__getSelectItem(self.oLayout_type)
+		sAssetSel, sStatusAssetSel = self.__getSelectItem(self.oLayout_asset)
+		sProjectSel, sStatusProjectSel = self.__getSelectItem(self.oLayout_project)
 		if sTypeSel:
 			workspaces.syncAsset(sProjectSel, sAssetSel, sTypeSel, sMode = sMode)
 		elif sAssetSel:
@@ -195,7 +195,7 @@ class syncAssetsUI(QtGui.QWidget):
 					else:
 						workspaces.syncAsset(sProject, None, None, sMode = sMode)
 
-		self._refreshCmd()
+		self.__refreshCmd()
 
 
 class syncAssetLayout():
@@ -235,18 +235,18 @@ class syncAssetLayout():
 		self.QTreeView.header().setStretchLastSection(False)
 		self.QLayout.addWidget(self.QTreeView)
 
-		self.QFilterEdit.textChanged.connect(self._filterRegExpChanged)
+		self.QFilterEdit.textChanged.connect(self.filterRegExpChanged)
 
-	def _setList(self, lFiles, lStatus):
+	def setList(self, lFiles, lStatus):
 		for i, sFile in enumerate(lFiles):
-			self._addFile(sFile, lStatus[i])
+			self.addFile(sFile, lStatus[i])
 
-	def _refreshFileList(self):
+	def refreshFileList(self):
 		iRowCount = self.QSourceModel.rowCount()
 		for i in range(0, iRowCount + 1):
 			self.QSourceModel.removeRow(0)
 	
-	def _addFile(self, sName, sStatus):
+	def addFile(self, sName, sStatus):
 		iRowCount = self.QSourceModel.rowCount()
 		self.QSourceModel.insertRow(iRowCount)
 		self.QSourceModel.setData(self.QSourceModel.index(iRowCount, syncAssetLayout.NAME), sName)
@@ -258,7 +258,7 @@ class syncAssetLayout():
 		else:
 			self.QSourceModel.item(iRowCount, column = syncAssetLayout.STATUS).setForeground(QtGui.QBrush(QtGui.QColor('yellow')))
 
-	def _filterRegExpChanged(self):
+	def filterRegExpChanged(self):
 		regExp = QtCore.QRegExp(self.QFilterEdit.text(), QtCore.Qt.CaseInsensitive)
 		self.QProxyModel.setFilterRegExp(regExp)
 	
@@ -341,11 +341,11 @@ def compareFilesLocalServer(sPathLocal, sPathServer):
 	lReturn = []
 
 	if os.path.exists(sPathLocal):
-		lFiles_local = workspaces._getFoldersFromFolderList(sPathLocal)
+		lFiles_local = workspaces.getFoldersFromFolderList(sPathLocal)
 	else:
 		lFiles_local = []
 	if os.path.exists(sPathServer):
-		lFiles_server = workspaces._getFoldersFromFolderList(sPathServer)
+		lFiles_server = workspaces.getFoldersFromFolderList(sPathServer)
 	else:
 		lFiles_server = []
 

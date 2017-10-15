@@ -59,7 +59,7 @@ class saveAssetUI(QtGui.QWidget):
 
 		QPushButtonPath = QtGui.QPushButton('Change Path')
 		QLayoutBase.addWidget(QPushButtonPath)
-		QPushButtonPath.pressed.connect(self._setPathWinPop)
+		QPushButtonPath.pressed.connect(self.__setPathWinPop)
 
 		## tag
 		QLayoutTag = QtGui.QHBoxLayout(self)
@@ -89,11 +89,11 @@ class saveAssetUI(QtGui.QWidget):
 		self.QPushButtonSave = QtGui.QPushButton('Save Asset')
 		QLayoutBase.addWidget(self.QPushButtonSave)
 		self.QPushButtonSave.setEnabled(False)
-		self._getAssetFolders()
-		self.QPushButtonSave.clicked.connect(self._saveAsset)
+		self.__getAssetFolders()
+		self.QPushButtonSave.clicked.connect(self.__saveAsset)
 
-	def _getAssetFolders(self):
-		sPath = workspaces._getProject(rootDirectory = False)
+	def __getAssetFolders(self):
+		sPath = workspaces.getProject(rootDirectory = False)
 		if os.path.isfile(sPath):
 			sPath = os.path.dirname(sPath)
 		sPath = os.path.abspath(sPath)
@@ -107,23 +107,23 @@ class saveAssetUI(QtGui.QWidget):
 				self.QPushButtonSave.setEnabled(True)
 
 
-	def _setPathWinPop(self):
+	def __setPathWinPop(self):
 		try:
 			self.setPathWin.close()
 		except:
 			pass
 		self.setPathWin = setPathWin()
 		self.setPathWin.show()
-		self.setPathWin.QPushButtonPath.clicked.connect(self._resetPath)
+		self.setPathWin.QPushButtonPath.clicked.connect(self.__resetPath)
 
-	def _resetPath(self):
+	def __resetPath(self):
 		if self.setPathWin.sProject and self.setPathWin.sAsset and self.setPathWin.sType:
 			self.QLabelProject.setText(self.setPathWin.sProject)
 			self.QLabelAsset.setText(self.setPathWin.sAsset)
 			self.QLabelType.setText(self.setPathWin.sType)
 			self.QPushButtonSave.setEnabled(True)
 
-	def _saveAsset(self):
+	def __saveAsset(self):
 		sProject = self.QLabelProject.text()
 		sAsset = self.QLabelAsset.text()
 		sType = self.QLabelType.text()
@@ -178,54 +178,54 @@ class setPathWin(QtGui.QDialog):
 			QLayoutLabel.addWidget(QComboBox)
 			QLayoutPath.addLayout(QLayoutLabel)
 
-		self._listProjects()
-		self._listAssets()
-		self._listTypes()
-		self.QComboBoxProject.currentIndexChanged.connect(self._listAssets)
-		self.QComboBoxAsset.currentIndexChanged.connect(self._listTypes)
+		self.listProjects()
+		self.listAssets()
+		self.listTypes()
+		self.QComboBoxProject.currentIndexChanged.connect(self.listAssets)
+		self.QComboBoxAsset.currentIndexChanged.connect(self.listTypes)
 
 		self.QPushButtonPath = QtGui.QPushButton('Set Path')
 		QLayoutBase.addWidget(self.QPushButtonPath)
-		self._setPushButtonEnabled()
-		self.QComboBoxType.currentIndexChanged.connect(self._setPushButtonEnabled)
-		self.QPushButtonPath.pressed.connect(self._setPath)
+		self.setPushButtonEnabled()
+		self.QComboBoxType.currentIndexChanged.connect(self.setPushButtonEnabled)
+		self.QPushButtonPath.pressed.connect(self.setPath)
 
-	def _listProjects(self):
-		lFolders = workspaces._getFoldersFromFolderList(files.sPathLocal)
+	def listProjects(self):
+		lFolders = workspaces.getFoldersFromFolderList(files.sPathLocal)
 		for sFolder in lFolders:
 			self.QComboBoxProject.addItem(sFolder)
 
-	def _listAssets(self):
+	def listAssets(self):
 		sProject = self.QComboBoxProject.currentText()
 		if sProject:
 			self.QComboBoxAsset.clear()
-			sDir, sWipDir = workspaces._getAssetDirectory(sProject = sProject)
-			lFolders = workspaces._getFoldersFromFolderList(sDir)
+			sDir, sWipDir = workspaces.getAssetDirectory(sProject = sProject)
+			lFolders = workspaces.getFoldersFromFolderList(sDir)
 			for sFolder in lFolders:
 				self.QComboBoxAsset.addItem(sFolder)
 		else:
 			self.QComboBoxAsset.clear()
 
-	def _listTypes(self):
+	def listTypes(self):
 		sProject = self.QComboBoxProject.currentText()
 		sAsset = self.QComboBoxAsset.currentText()
 		if sAsset:
 			self.QComboBoxType.clear()
-			sDir, sWipDir = workspaces._getAssetDirectory(sProject = sProject, sAsset = sAsset)
-			lFolders = workspaces._getFoldersFromFolderList(sDir)
+			sDir, sWipDir = workspaces.getAssetDirectory(sProject = sProject, sAsset = sAsset)
+			lFolders = workspaces.getFoldersFromFolderList(sDir)
 			for sFolder in lFolders:
 				self.QComboBoxType.addItem(sFolder)
 		else:
 			self.QComboBoxType.clear()
 
-	def _setPushButtonEnabled(self):
+	def setPushButtonEnabled(self):
 		sType = self.QComboBoxType.currentText()
 		if sType:
 			self.QPushButtonPath.setEnabled(True)
 		else:
 			self.QPushButtonPath.setEnabled(False)
 
-	def _setPath(self):
+	def setPath(self):
 		self.sProject = self.QComboBoxProject.currentText()
 		self.sAsset = self.QComboBoxAsset.currentText()
 		self.sType = self.QComboBoxType.currentText()

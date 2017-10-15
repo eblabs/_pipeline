@@ -64,9 +64,9 @@ class assetsManagerUI(QtGui.QWidget):
 		self.oLayout_type.initUI()
 
 		## File Layout
-		self._fileLayout(QLayoutBase)
+		self.__fileLayout(QLayoutBase)
 
-	def _fileLayout(self, QLayoutBase):
+	def __fileLayout(self, QLayoutBase):
 		QLayout = QtGui.QVBoxLayout()
 		QLayoutBase.addLayout(QLayout)
 
@@ -78,8 +78,8 @@ class assetsManagerUI(QtGui.QWidget):
 		self.QLabel_file.setStyleSheet("border: 1px solid black;")
 		QLayout.addWidget(self.QLabel_file)
 		QSelectionModel = self.oLayout_type.QListView.selectionModel()
-		QSelectionModel.currentChanged.connect(self._getVersionInfo)
-		#self.QComboBox_file.currentIndexChanged.connect(self._getVersionInfo)
+		QSelectionModel.currentChanged.connect(self.__getVersionInfo)
+		#self.QComboBox_file.currentIndexChanged.connect(self.__getVersionInfo)
 
 		#### versions		
 		self.QCheckBox_version = QtGui.QCheckBox('Versions')
@@ -97,7 +97,7 @@ class assetsManagerUI(QtGui.QWidget):
 
 		#### connect version with QTreeView
 		self.QTreeView_version.setEnabled(False)
-		self.QCheckBox_version.stateChanged.connect(self._setVersionEnabled)
+		self.QCheckBox_version.stateChanged.connect(self.__setVersionEnabled)
 
 		#### comment
 		self.QLabel_comment = QtGui.QLabel()
@@ -110,23 +110,23 @@ class assetsManagerUI(QtGui.QWidget):
 		self.QLabel_comment.setAlignment(QtCore.Qt.AlignTop)
 
 		QSelectionModel = self.QTreeView_version.selectionModel()
-		QSelectionModel.currentChanged.connect(self._setVersionComment)
+		QSelectionModel.currentChanged.connect(self.__setVersionComment)
 
 		#### button
 		QLayoutButton = QtGui.QHBoxLayout(self)
 		QLayout.addLayout(QLayoutButton)
-		self.QPushButton_setProject = self._addQPushButton(QLayoutButton, sName = 'Set Project')
-		self.QPushButton_open = self._addQPushButton(QLayoutButton, sName = 'Open File')
-		self.QPushButton_import = self._addQPushButton(QLayoutButton, sName = 'Import File')
+		self.QPushButton__setProject = self.__addQPushButton(QLayoutButton, sName = 'Set Project')
+		self.QPushButton_open = self.__addQPushButton(QLayoutButton, sName = 'Open File')
+		self.QPushButton_import = self.__addQPushButton(QLayoutButton, sName = 'Import File')
 		QSelectionModel = self.oLayout_type.QListView.selectionModel()
-		QSelectionModel.currentChanged.connect(self._setPushButtonEnabled)
-		self.QPushButton_setProject.clicked.connect(self._setProject)
-		self.QPushButton_open.clicked.connect(self._openAsset)
-		self.QPushButton_import.clicked.connect(self._importAsset)
+		QSelectionModel.currentChanged.connect(self.__setPushButtonEnabled)
+		self.QPushButton__setProject.clicked.connect(self.__setProject)
+		self.QPushButton_open.clicked.connect(self.__openAsset)
+		self.QPushButton_import.clicked.connect(self.__importAsset)
 
 
 	
-	def _getVersionInfo(self):
+	def __getVersionInfo(self):
 		currentItem = self.oLayout_type.QListView.currentIndex().data()
 		
 		if currentItem:
@@ -149,37 +149,37 @@ class assetsManagerUI(QtGui.QWidget):
 					lVersions.append(int(sKey))
 				lVersions.sort()
 
-				self._refreshVersion()
+				self.__refreshVersion()
 				for iVersion in lVersions:
 					sFileVersion = dVersions[str(iVersion)]['sVersionName']
 					sFileTypeVersion = dVersions[str(iVersion)]['sFileType']
 					sPathFile = os.path.join(self.sPath, 'wipFiles')
 					sPathFile = os.path.join(sPathFile, '%s%s' %(sFileVersion, sFileTypeVersion))
 					if sFileVersion and os.path.exists(sPathFile):
-						self._addVersion(iVersion, sFileVersion)
+						self.__addVersion(iVersion, sFileVersion)
 			else:
 				self.QLabel_file.clear()
-				self._refreshVersion()
+				self.__refreshVersion()
 				self.QCheckBox_version.setChecked(False)
 				
 		else:
 			self.QLabel_file.clear()
-			self._refreshVersion()
+			self.__refreshVersion()
 			self.QCheckBox_version.setChecked(False)
 			self.sPath = None
 
 
-	def _addVersion(self, iVersion, sFileName):
+	def __addVersion(self, iVersion, sFileName):
 		self.QSourceModel_version.insertRow(0)
 		self.QSourceModel_version.setData(self.QSourceModel_version.index(0, assetsManagerUI.VERSION), iVersion)
 		self.QSourceModel_version.setData(self.QSourceModel_version.index(0, assetsManagerUI.FILENAME), sFileName)
 
-	def _refreshVersion(self):
+	def __refreshVersion(self):
 		iRowCount = self.QSourceModel_version.rowCount()
 		for i in range(0, iRowCount + 1):
 			self.QSourceModel_version.removeRow(0)
 
-	def _setVersionEnabled(self):
+	def __setVersionEnabled(self):
 		bVersion = self.QCheckBox_version.isChecked()
 		self.QTreeView_version.setEnabled(bVersion)
 		if not bVersion:
@@ -187,7 +187,7 @@ class assetsManagerUI(QtGui.QWidget):
 			self.QTreeView_version.clearFocus()
 			self.QTreeView_version.setCurrentIndex(QtCore.QModelIndex())
 
-	def _getCurrentVersion(self):
+	def __getCurrentVersion(self):
 		iIndex = self.QTreeView_version.currentIndex().row()
 		if iIndex >= 0:
 			iVersion = self.QSourceModel_version.item(iIndex, column = assetsManagerUI.VERSION).text()
@@ -195,24 +195,24 @@ class assetsManagerUI(QtGui.QWidget):
 			iVersion = None
 		return iVersion
 
-	def _setVersionComment(self):
-		iVersion = self._getCurrentVersion()
+	def __setVersionComment(self):
+		iVersion = self.__getCurrentVersion()
 		if iVersion and self.dAssetData:
 			sComment = self.dAssetData['versionInfo'][str(iVersion)]['sComment']
 			self.QLabel_comment.setText(sComment)
 		else:
 			self.QLabel_comment.clear()
 
-	def _addQPushButton(self, QLayout, sName = 'Set Project'):
+	def __addQPushButton(self, QLayout, sName = 'Set Project'):
 		QPushButton = QtGui.QPushButton(sName)
 		QLayout.addWidget(QPushButton)
 		QPushButton.setEnabled(False)
 		return QPushButton
 
-	def _setPushButtonEnabled(self):
+	def __setPushButtonEnabled(self):
 		currentIndex = self.oLayout_type.QListView.currentIndex()
 		if currentIndex.isValid():
-			self.QPushButton_setProject.setEnabled(True)
+			self.QPushButton__setProject.setEnabled(True)
 			sFile = self.QLabel_file.text()
 			if not sFile:				
 				self.QPushButton_open.setEnabled(False)
@@ -221,16 +221,16 @@ class assetsManagerUI(QtGui.QWidget):
 				self.QPushButton_open.setEnabled(True)
 				self.QPushButton_import.setEnabled(True)
 		else:
-			self.QPushButton_setProject.setEnabled(False)
+			self.QPushButton__setProject.setEnabled(False)
 			self.QPushButton_open.setEnabled(False)
 			self.QPushButton_import.setEnabled(False)
 
-	def _setProject(self):
+	def __setProject(self):
 		workspaces.setProject(self.sPath)
 		self.close()
 
-	def _getCurrentAsset(self):
-		sFolders = files._getFoldersThroughPath(self.sPath)
+	def __getCurrentAsset(self):
+		sFolders = files.getFoldersThroughPath(self.sPath)
 		sType = sFolders[-1]
 		sAsset = sFolders[-2]
 		sProject = sFolders[-4]
@@ -238,24 +238,24 @@ class assetsManagerUI(QtGui.QWidget):
 		if not bVersion:
 			iVersion = 0
 		else:
-			iVersion = self._getCurrentVersion()
+			iVersion = self.__getCurrentVersion()
 			if not iVersion:
 				iVersion = 0
 		return sProject, sAsset, sType, iVersion
 
-	def _openAsset(self):
+	def __openAsset(self):
 		bModified = workspaces.checkCurrentSceneModified()
 		if bModified:
 			bCheck = QtGui.QMessageBox.question(self, 'Open Asset', 'Current Scene is not saved, are you sure to open the asset?', QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 			if bCheck == QtGui.QMessageBox.Yes:
 				bModified = False
 		if not bModified:
-			sProject, sAsset, sType, iVersion = self._getCurrentAsset()
+			sProject, sAsset, sType, iVersion = self.__getCurrentAsset()
 			workspaces.loadAsset(sProject, sAsset, sType, iVersion = iVersion)
 			self.close()
 
-	def _importAsset(self):
-		sProject, sAsset, sType, iVersion = self._getCurrentAsset()
+	def __importAsset(self):
+		sProject, sAsset, sType, iVersion = self.__getCurrentAsset()
 		workspaces.loadAsset(sProject, sAsset, sType, iVersion = iVersion, sLoadType = 'import')
 		self.close()
 
@@ -279,11 +279,11 @@ class assetsManagerBaseLayout():
 		
 		if self.bListItemRightClick:
 			self.QListView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-			self.QListView.connect(self.QListView, QtCore.SIGNAL("customContextMenuRequested(QPoint)" ), self._listItemRightClicked)
+			self.QListView.connect(self.QListView, QtCore.SIGNAL("customContextMenuRequested(QPoint)" ), self.listItemRightClicked)
 
 		if self.bListItemClick and self.oLayout:
 			QSelectionModel = self.oLayout.QListView.selectionModel()
-			QSelectionModel.currentChanged.connect(self._listItemClick)
+			QSelectionModel.currentChanged.connect(self.listItemClick)
 
 	def setBaseLayout(self):
 		QLabel = QtGui.QLabel('%s:' %self.sName)
@@ -305,20 +305,20 @@ class assetsManagerBaseLayout():
 		self.QListView.setModel(self.QProxyModel)
 		self.QLayout.addWidget(self.QListView)
 
-		self.QFilterEdit.textChanged.connect(self._filterRegExpChanged)
+		self.QFilterEdit.textChanged.connect(self.filterRegExpChanged)
 
 	def rebuildListModel(self):
 		self.QSourceModel.clear()
-		lFolders = workspaces._getFoldersFromFolderList(self.sPath)
+		lFolders = workspaces.getFoldersFromFolderList(self.sPath)
 		for sFolder in lFolders:
 			sFolder_item = QtGui.QStandardItem(sFolder)
 			self.QSourceModel.appendRow(sFolder_item)
 
-	def _filterRegExpChanged(self):
+	def filterRegExpChanged(self):
 		regExp = QtCore.QRegExp(self.QFilterEdit.text(), QtCore.Qt.CaseInsensitive)
 		self.QProxyModel.setFilterRegExp(regExp)
 
-	def _listItemRightClicked(self, QPos):
+	def listItemRightClicked(self, QPos):
 		QListMenu= QtGui.QMenu(self.QListView)
 		QMenuItem_create = QListMenu.addAction("Create")
 		QMenuItem_rename = QListMenu.addAction("Rename")
@@ -326,10 +326,10 @@ class assetsManagerBaseLayout():
 		QMenuItem_folder = QListMenu.addAction("Contain Folder")
 		#self.connect(menu_item_rename, QtCore.SIGNAL("triggered()"), self.renameItem) 
 		#self.connect(menu_item_delete, QtCore.SIGNAL("triggered()"), self.menuItemClicked) 
-		QMenuItem_create.connect(QMenuItem_create, QtCore.SIGNAL("triggered()"), self._QMenuItemCreate)
-		QMenuItem_rename.connect(QMenuItem_rename, QtCore.SIGNAL("triggered()"), self._QMenuItemRename)
-		QMenuItem_delete.connect(QMenuItem_delete, QtCore.SIGNAL("triggered()"), self._QMenuItemDelete)
-		QMenuItem_delete.connect(QMenuItem_folder, QtCore.SIGNAL("triggered()"), self._openContainFolder)
+		QMenuItem_create.connect(QMenuItem_create, QtCore.SIGNAL("triggered()"), self.QMenuItemCreate)
+		QMenuItem_rename.connect(QMenuItem_rename, QtCore.SIGNAL("triggered()"), self.QMenuItemRename)
+		QMenuItem_delete.connect(QMenuItem_delete, QtCore.SIGNAL("triggered()"), self.QMenuItemDelete)
+		QMenuItem_delete.connect(QMenuItem_folder, QtCore.SIGNAL("triggered()"), self.openContainFolder)
 		
 		parentPosition = self.QListView.mapToGlobal(QtCore.QPoint(0, 0))        
 		QListMenu.move(parentPosition + QPos)
@@ -351,7 +351,7 @@ class assetsManagerBaseLayout():
 
 
 	## controlled from other list's item click
-	def _listItemClick(self):
+	def listItemClick(self):
 		QListViewSource = self.oLayout.QListView
 		sPathSource = self.oLayout.sPath
 		currentItem = QListViewSource.currentIndex().data()
@@ -367,7 +367,7 @@ class assetsManagerBaseLayout():
 		else:
 			self.QSourceModel.clear()
 
-	def _QMenuItemCreate(self):
+	def QMenuItemCreate(self):
 		currentItem = self.QListView.currentIndex().data()
 		if self.sName != 'Types':
 			sInput, bInput = QtGui.QInputDialog.getText(self.QListView, 'Create',  'Create %s:' %self.sName[:-1])
@@ -385,14 +385,14 @@ class assetsManagerBaseLayout():
 				else:
 					QListViewSource = self.oLayout.QListView
 					sAsset = QListViewSource.currentIndex().data()
-					sFolders = files._getFoldersThroughPath(self.sPath)
+					sFolders = files.getFoldersThroughPath(self.sPath)
 					sProject = sFolders[-3]
 					workspaces.createAssetType(sAsset, sProject = sProject, sType = sInput)
 
 				self.rebuildListModel()
 
 
-	def _QMenuItemRename(self):
+	def QMenuItemRename(self):
 		currentItem = self.QListView.currentIndex().data()
 		sInput, bInput = QtGui.QInputDialog.getText(self.QListView, 'Rename',  'Rename %s:' %self.sName[:-1])
 		if bInput and sInput:
@@ -401,24 +401,24 @@ class assetsManagerBaseLayout():
 				if self.sName == 'Projects':
 					workspaces.renameProject(currentItem, sInput)
 				else:
-					sProject = files._getFoldersThroughPath(self.sPath)[-2]
+					sProject = files.getFoldersThroughPath(self.sPath)[-2]
 					workspaces.renameAsset(sProject, currentItem, sInput)
 				self.rebuildListModel()
 
 
-	def _QMenuItemDelete(self):
+	def QMenuItemDelete(self):
 		currentItem = self.QListView.currentIndex().data()
 		bCheck = QtGui.QMessageBox.question(self.QListView, 'Delete', 'Are you sure to delete %s?' %currentItem, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 		if bCheck == QtGui.QMessageBox.Yes:
 			self.QSourceModel.clear()
-			workspaces._deleteWorkspaceFolderFromPath(self.sPath, currentItem)
+			workspaces.deleteWorkspaceFolderFromPath(self.sPath, currentItem)
 			self.rebuildListModel()
 
-	def _openContainFolder(self):
+	def openContainFolder(self):
 		currentItem = self.QListView.currentIndex().data()
 		files.openFolderFromPath(os.path.join(self.sPath, currentItem))
 
-	def _setQMenuItemCreateEnabled(self):
+	def setQMenuItemCreateEnabled(self):
 		currentItem = self.oLayout.QListView.currentIndex().data()
 		if not currentItem:
 			self.QMenuItem_create.setEnabled(False)

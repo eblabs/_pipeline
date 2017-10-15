@@ -6,7 +6,7 @@ class oName(object):
 		super(oName, self).__init__()
 
 		if args:
-			self._decomposeName(args[0])
+			self.decomposeName(args[0])
 		else:
 			sType = kwargs.get('sType', None)
 			sSide = kwargs.get('sSide', None)
@@ -101,7 +101,7 @@ class oName(object):
 				sName += '%03d_' %iNum
 		return sName[:-1]
 
-	def _decomposeName(self, sName):
+	def decomposeName(self, sName):
 		lNameParts = sName.split('_')
 		self._sType = getKeyFromNamePart(lNameParts[0], 'type')
 		if len(lNameParts) == 6:			

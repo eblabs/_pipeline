@@ -14,8 +14,9 @@ class baseHierarchy(baseCore.baseCore):
 
 		self.generateRigData()
 
-	def generateRigData(self):
-		self.dData = {
+	def rigData(self):
+		super(baseHierarchy, self).rigData()
+		dData = {
 						'dModel': {
 									'sProject': None,
 									'sAsset': None,
@@ -55,6 +56,8 @@ class baseHierarchy(baseCore.baseCore):
 											]
 
 						}
+
+		self.dRigData.update(dData)
 
 	def importFunctions(self):
 		super(baseHierarchy, self).importFunctions()
@@ -113,9 +116,12 @@ class baseHierarchy(baseCore.baseCore):
 		
 	def createNewScene(self):
 		workspaces.createNewScene()
+		return True
 
 	def importModel(self):
-		pass
+		dModel = self.rigData['dModel']
+		workspaces.loadAsset(dModel['sProject'], dModel['sAsset'], 'model', sLoadType = 'import')
+		return True
 
 	def buildBaseRigNodes(self):
 		pass

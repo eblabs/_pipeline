@@ -52,8 +52,8 @@ def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None):
 def getCtrlShapeInfo(sCtrl):
 	sCtrlShape = getCtrlShape(sCtrl)
 	
-	lCtrlPnts = _getCtrlShapeControlPoints(sCtrlShape)
-	lKnots = _getCtrlShapeKnots(sCtrlShape)
+	lCtrlPnts = __getCtrlShapeControlPoints(sCtrlShape)
+	lKnots = __getCtrlShapeKnots(sCtrlShape)
 	bPeriodic = bool(cmds.getAttr('%s.form' %sCtrlShape))
 	iDegree = cmds.getAttr('%s.degree' %sCtrlShape)
 	bOverride = cmds.getAttr('%s.overrideEnabled' %sCtrlShape)
@@ -107,7 +107,7 @@ def buildCtrlShapesFromCtrlShapeInfo(sPath):
 #------------ save & load ctrlShape functions end -----------
 
 #### Sub Functions
-def _getCtrlShapeControlPoints(sCtrlShape):
+def __getCtrlShapeControlPoints(sCtrlShape):
 	iCtrlPnts = cmds.getAttr('%s.controlPoints' %sCtrlShape, s = 1)
 	lCtrlPnts = []
 	for i in range(0, iCtrlPnts):
@@ -115,7 +115,7 @@ def _getCtrlShapeControlPoints(sCtrlShape):
 		lCtrlPnts.append(lCtrlPntEach)
 	return lCtrlPnts
 
-def _getCtrlShapeKnots(sCtrlShape):
+def __getCtrlShapeKnots(sCtrlShape):
 	mObj = apiUtils.setMObj(sCtrlShape)
 	mfnCrv = OpenMaya.MFnNurbsCurve(mObj)
 	mKnots = OpenMaya.MDoubleArray()

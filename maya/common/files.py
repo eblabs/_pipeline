@@ -106,7 +106,7 @@ def importMayaFile(sPath, sNamespace = None):
 #------------ maya files functions -----------
 
 #### sub Functions
-def _getFoldersThroughPath(sPath):	
+def getFoldersThroughPath(sPath):	
 	sPathDir = os.path.abspath(sPath)
 	sPathBase = os.path.basename(sPathDir)
 	sPathDir = os.path.dirname(sPathDir)
@@ -114,12 +114,12 @@ def _getFoldersThroughPath(sPath):
 	lFolders.append(sPathBase)
 	return lFolders
 
-def _getBaseFileFromPath(sPath):
+def getBaseFileFromPath(sPath):
 	sPathDir = os.path.abspath(sPath)
 	sFile = os.path.basename(sPathDir)
 	return sFile
 
-def _convertStringToCamelcase(sString):
+def convertStringToCamelcase(sString):
 	if '_' in sString:
 		sStringParts = sString.split('_')
 		sString = ''

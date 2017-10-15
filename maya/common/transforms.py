@@ -76,34 +76,34 @@ def transformSnap(lNodes, sType = 'parent', sSnapType = 'oneToAll', lSkipTransla
 		lTransformInfoDriver = getNodeTransformInfo(sDriver)
 		for sDriven in lDriven:
 			if sType == 'parent':
-				_transformSnapParent(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate)
+				transformSnapParent(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate)
 			elif sType == 'point':
-				_transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate)
+				transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate)
 			elif sType == 'orient':
-				_transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = lSkipRotate)
+				transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = lSkipRotate)
 			elif sType == 'scale':
-				_transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = lSkipScale)
+				transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = lSkipScale)
 			elif sType == 'all':
-				_transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
+				transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
 	elif sSnapType == 'allToOne':
 		lDrivers = lNodes[:-1]
 		sDriven = lNodes[-1]
 		lTransformInfoDriver = getNodesAvgTransformInfo(lDrivers, bCenterPivot = bCenterPivot)
 		if sType == 'parent':
-			_transformSnapParent(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate)
+			transformSnapParent(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate)
 		elif sType == 'point':
-			_transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate)
+			transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate)
 		elif sType == 'orient':
-			_transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = lSkipRotate)
+			transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = lSkipRotate)
 		elif sType == 'scale':
-			_transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = lSkipScale)
+			transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = lSkipScale)
 		elif sType == 'all':
-			_transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
+			transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
 
 
 
 #### Sub Functions
-def _transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = None):
+def transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = None):
 	lPos = lTransformInfoDriver[0]
 
 	lTransformInfoDriven = getNodeTransformInfo(sDriven)
@@ -114,7 +114,7 @@ def _transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = None):
 
 	cmds.xform(sDriven, t = lPos, ws = True)
 
-def _transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = None):
+def transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = None):
 	lRot = lTransformInfoDriver[1]
 
 	lTransformInfoDriven = getNodeTransformInfo(sDriven)
@@ -125,7 +125,7 @@ def _transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = None):
 
 	cmds.xform(sDriven, ro = lRot, ws = True)
 
-def _transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = None):
+def transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = None):
 	lScl = lTransformInfoDriver[2]
 
 	lTransformInfoDriven = getNodeTransformInfo(sDriven)
@@ -136,12 +136,12 @@ def _transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = None):
 
 	cmds.xform(sDriven, s = lScl, ws = True)
 
-def _transformSnapParent(lTransformInfoDriver, sDriven, lSkipTranslate = None, lSkipRotate = None):
-	_transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate)
-	_transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = lSkipRotate)
+def transformSnapParent(lTransformInfoDriver, sDriven, lSkipTranslate = None, lSkipRotate = None):
+	transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate)
+	transformSnapOrient(lTransformInfoDriver, sDriven, lSkipRotate = lSkipRotate)
 
-def _transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = None, lSkipRotate = None, lSkipScale = None):
-	_transformSnapParent(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate)
-	_transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = lSkipScale)
+def transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = None, lSkipRotate = None, lSkipScale = None):
+	transformSnapParent(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate)
+	transformSnapScale(lTransformInfoDriver, sDriven, lSkipScale = lSkipScale)
 
 

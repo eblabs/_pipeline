@@ -11,6 +11,7 @@ class baseCore(object):
 		self.dFunctions_pre = {}
 		self.dFunctions_build = {}
 		self.dFunctions_post = {}
+		self.dRigData = {}
 		
 	def registerFunction(self, **kwargs):
 		mFunction = kwargs.get('mFunction', None)
@@ -68,6 +69,9 @@ class baseCore(object):
 		dFuncAll.update(dFuncUpdate)
 
 	def importFunctions(self):
+		pass
+
+	def rigData(self):
 		pass
 
 

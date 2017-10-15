@@ -33,12 +33,12 @@ def removeInermediateShapes(sNode, bIntermediate = False):
 					cmds.delete(sShapeEach)
 
 def getPolyVtxCount(sMesh):
-	mFnMesh = _setMFnMesh(sMesh)
+	mFnMesh = __setMFnMesh(sMesh)
 	iVtxCount = mFnMesh.numVertices()
 	return iVtxCount
 
 def getMeshVtxPntArray(sMesh):
-	mFnMesh = _setMFnMesh(sMesh)
+	mFnMesh = __setMFnMesh(sMesh)
 	mVtxPntArray = OpenMaya.MPointArray()
 	mFnMesh.getPoints(mVtxPntArray, OpenMaya.MSpace.kObject)
 	return mVtxPntArray
@@ -66,7 +66,7 @@ def remapVtxIdToMesh(sTargetMesh, sBaseMesh = None, lVtxPosBase = None, fToleran
 
 
 #### Sub Functions
-def _setMFnMesh(sMesh):
+def __setMFnMesh(sMesh):
 	mDagPath, mComponents = apiUtils.setDagPath(sMesh)
 	mFnMesh = OpenMaya.MFnMesh(mDagPath)
 	return mFnMesh

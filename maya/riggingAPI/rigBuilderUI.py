@@ -416,9 +416,9 @@ class rigBuildInfoWidget(QtGui.QWidget):
 		self.setLayout(QLayout)
 
 		self.QTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.QTreeView.customContextMenuRequested.connect(self._listItemRightClicked)
+		self.QTreeView.customContextMenuRequested.connect(self.listItemRightClicked)
 
-	def _listItemRightClicked(self, QPos):
+	def listItemRightClicked(self, QPos):
 		QListMenu= QtGui.QMenu(self.QTreeView)
 		QMenuItem_execute = QListMenu.addAction('Execute Select Function')
 		QMenuItem_refresh = QListMenu.addAction('Refresh Build Script')
@@ -471,9 +471,9 @@ class rigDataInfoWidget(QtGui.QWidget):
 		self.setLayout(QLayout)
 
 		self.QTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.QTreeView.customContextMenuRequested.connect(self._listItemRightClicked)
+		self.QTreeView.customContextMenuRequested.connect(self.listItemRightClicked)
 
-	def _listItemRightClicked(self, QPos):
+	def listItemRightClicked(self, QPos):
 		QListMenu= QtGui.QMenu(self.QTreeView)
 		QMenuItem_add = QListMenu.addAction('Add Component')
 		QMenuItem_remove = QListMenu.addAction('Remove Component')
