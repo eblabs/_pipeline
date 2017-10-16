@@ -6,8 +6,8 @@ import maya.mel as mel
 import baseCore
 import common.workspaces as workspaces
 import common.attributes as attributes
-import namingAPI.namingDict as namingDict
 import namingAPI.naming as naming
+import modelingAPI.models as models
 import riggingAPI.rigComponents as rigComponents
 
 ## baseHierarchy build script
@@ -124,16 +124,17 @@ class baseHierarchy(baseCore.baseCore):
 
 	def importModel(self):
 		bReturn = rigComponents.importModel(self.dRigData['dModel'], self.sProject, self.sAsset)
+		self.dModelInfo = models.getModelInfo(self.sAsset)
 		return bReturn
 
 	def buildBaseRigNodes(self):
 		## create master node
 		sMaster = transforms.createTransformNode('master', lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
 		####### add attrs
-		lResKeys = ['high', 'middle', 'low', 'proxy', 'simulation']
+		lRes = self.dModelInfo['resolution']
 		sEnumName = ''
-		for sResKey in lResKeys:
-			sEnumName += '%s:' %namingDict.dNameConvension['resolution'][sResKey]
+		for sRes in lRes:
+			sEnumName += '%s:' %sRes
 		sEnumName = sEnumName[:-1]
 		cmds.addAttr(sMaster, ln = 'resolution', at = 'enum', enumName = sEnumName, keyable = False, dv = 0)
 		cmds.setAttr('%s.resolution' %sMaster, channelBox = True)
@@ -156,11 +157,11 @@ class baseHierarchy(baseCore.baseCore):
 
 		## create geometry groups
 		sGeometry = transforms.createTransformNode('geometry', lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sDoNotTouch)
-		for sResKey in lResKeys:
-			sResGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sResKey, sPart = 'geo').sName
+		for sRes in lRes:
+			sResGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'geo').sName
 			sResGrp = transforms.createTransformNode(sResGrp, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sGeometry)
 			for sPart in ['xtrs', 'def']:
-				sGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sResKey, sPart = sPart).sName
+				sGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = sPart).sName
 				sGrp = transforms.createTransformNode(sGrp, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sResGrp)
 
 		## create joint group
@@ -176,23 +177,23 @@ class baseHierarchy(baseCore.baseCore):
 
 		## create rigGeometry groups
 		sRigGeometry = transforms.createTransformNode('rigGeometry', lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sDoNotTouch)
-		for sResKey in lResKeys:
-			sResGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sResKey, sPart = 'rigGeometry').sName
+		for sRes in lRes:
+			sResGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'rigGeometry').sName
 			sResGrp = transforms.createTransformNode(sResGrp, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sRigGeometry)
 			for sPart in ['transform', 'origin']:
-				sGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sResKey, sPart = 'rigGeometry%s' %sPart.title()).sName
+				sGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'rigGeometry%s' %sPart.title()).sName
 				sGrp = transforms.createTransformNode(sGrp, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sResGrp)
 
 
 		## Vis connections
 		### resolution
 		lAttr = []
-		for sResKey in lResKeys:
-			sResGeoGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sResKey, sPart = 'geo').sName
-			sResRigGeoGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sResKey, sPart = 'rigGeometry').sName
+		for sRes in lRes:
+			sResGeoGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'geo').sName
+			sResRigGeoGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'rigGeometry').sName
 			lAttr.append('%s.v' %sResGeoGrp)
 			attributes.connectAttrs(['%s.v' %sResGeoGrp], ['%s.v' %sResRigGeoGrp], bForce = True)
-		attributes.enumToMultiAttrs('resolution', lAttr, iEnumRange = len(lResKeys), lValRange = [[0,1]], sEnumObj = sMaster)
+		attributes.enumToMultiAttrs('resolution', lAttr, iEnumRange = len(lRes), lValRange = [[0,1]], sEnumObj = sMaster)
 
 		### geometry joints controls rigNodes
 		lGrps = [sGeometry, sJoint, sControl, sRigNode, sRigGeometry]
