@@ -90,7 +90,12 @@ class oName(object):
 
 	@property
 	def sName(self):
-		if not self.sPart or not self._sType:
+		if not self.sPart:
+			raise RuntimeError('The name entered is invalid')
+		elif not self._sType:
+			if self._sSide or self._sRes or self.iIndex or self.iSuffix:
+				raise RuntimeError('The name entered is invalid')
+		elif not self._sRes or not self._sSide:
 			raise RuntimeError('The name entered is invalid')
 		sName = ''
 		for sNamePart in [self._sType, self._sSide, self._sRes, self.sPart]:
@@ -103,54 +108,58 @@ class oName(object):
 
 	def decomposeName(self, sName):
 		lNameParts = sName.split('_')
-		self._sType = getKeyFromNamePart(lNameParts[0], 'type')
-		if len(lNameParts) == 6:			
-			self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
-			self._sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
-			self.sPart = lNameParts[3]
-			self.iIndex = int(lNameParts[4])
-			self.iSuffix = int(lNameParts[5])
-		elif len(lNameParts) == 5:
-			if lNameParts[4].isdigit() and lNameParts[3].isdigit():
-				self.iIndex = int(lNameParts[3])
-				self.iSuffix = int(lNameParts[4])
-				self.sPart = lNameParts[2]
+		if len(lNameParts) > 1
+			self._sType = getKeyFromNamePart(lNameParts[0], 'type')
+			if len(lNameParts) == 6:			
 				self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
-				if self.sSide:
+				self._sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
+				self.sPart = lNameParts[3]
+				self.iIndex = int(lNameParts[4])
+				self.iSuffix = int(lNameParts[5])
+			elif len(lNameParts) == 5:
+				if lNameParts[4].isdigit() and lNameParts[3].isdigit():
+					self.iIndex = int(lNameParts[3])
+					self.iSuffix = int(lNameParts[4])
+					self.sPart = lNameParts[2]
+					self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
+					if self.sSide:
+						self._sRes = None 
+					else:
+						self._sRes = getKeyFromNamePart(lNameParts[1], 'resolution')
+				else:
+					self.iIndex = int(lNameParts[4])
+					self.sPart = lNameParts[3]
+					self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
+					self._sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
+					self.iSuffix = None
+
+			elif len(lNameParts) == 4:
+				self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
+				self.iSuffix = None
+				if lNameParts[3].isdigit():
+					self.iIndex = int(lNameParts[3])
+					self.sPart = lNameParts[2]
+					self._sRes = None
+				else:
+					self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
+					self._sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
+					self.sPart = lNameParts[3]
+					self.iIndex = None
+
+			elif len(lNameParts) == 3:
+				self.sPart = lNameParts[2]
+				self.iIndex = None
+				self.iSuffix = None
+				self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
+				if self._sSide:
 					self._sRes = None 
 				else:
 					self._sRes = getKeyFromNamePart(lNameParts[1], 'resolution')
 			else:
-				self.iIndex = int(lNameParts[4])
-				self.sPart = lNameParts[3]
-				self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
-				self._sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
-				self.iSuffix = None
-
-		elif len(lNameParts) == 4:
-			self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
-			self.iSuffix = None
-			if lNameParts[3].isdigit():
-				self.iIndex = int(lNameParts[3])
-				self.sPart = lNameParts[2]
-				self._sRes = None
-			else:
-				self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
-				self._sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
-				self.sPart = lNameParts[3]
-				self.iIndex = None
-
-		elif len(lNameParts) == 3:
-			self.sPart = lNameParts[2]
-			self.iIndex = None
-			self.iSuffix = None
-			self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
-			if self._sSide:
-				self._sRes = None 
-			else:
-				self._sRes = getKeyFromNamePart(lNameParts[1], 'resolution')
+				raise RuntimeError('name is not valid')
 		else:
-			raise RuntimeError('name is not valid')
+			self.sPart = lNameParts[0]
+		
 
 # functions
 def getKeyFromNamePart(sNamePart, sKeyType):
