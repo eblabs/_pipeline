@@ -15,18 +15,18 @@ class oName(object):
 			iIndex = kwargs.get('iIndex', None)
 			iSuffix = kwargs.get('iSuffix', None)
 
-			if sType:
-				self._sType = sType
-			if sSide:
-				self._sSide = sSide
-			if sRes:
-				self._sRes = sRes
-			if sPart:
-				self.sPart = sPart
-			if iIndex:
-				self.iIndex = iIndex
-			if iSuffix:
-				self.iSuffix = iSuffix
+
+			self._sType = sType
+
+			self._sSide = sSide
+
+			self._sRes = sRes
+
+			self.sPart = sPart
+
+			self.iIndex = iIndex
+
+			self.iSuffix = iSuffix
 
 	@property
 	def sType(self):
@@ -95,7 +95,7 @@ class oName(object):
 		elif not self._sType:
 			if self._sSide or self._sRes or self.iIndex or self.iSuffix:
 				raise RuntimeError('The name entered is invalid')
-		elif not self._sRes or not self._sSide:
+		elif not self._sRes and not self._sSide:
 			raise RuntimeError('The name entered is invalid')
 		sName = ''
 		for sNamePart in [self._sType, self._sSide, self._sRes, self.sPart]:
@@ -108,7 +108,7 @@ class oName(object):
 
 	def decomposeName(self, sName):
 		lNameParts = sName.split('_')
-		if len(lNameParts) > 1
+		if len(lNameParts) > 1:
 			self._sType = getKeyFromNamePart(lNameParts[0], 'type')
 			if len(lNameParts) == 6:			
 				self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
@@ -159,6 +159,11 @@ class oName(object):
 				raise RuntimeError('name is not valid')
 		else:
 			self.sPart = lNameParts[0]
+			self._sType = None
+			self._sSide = None
+			self._sRes = None
+			self.iIndex = None
+			self.iSuffix = None
 		
 
 # functions

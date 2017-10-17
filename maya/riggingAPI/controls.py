@@ -5,6 +5,9 @@ import maya.OpenMaya as OpenMaya
 ## libs Import
 import common.apiUtils as apiUtils
 import common.files as files
+import namingAPI.naming as naming
+import common.transforms as transforms
+import common.attributes as attributes
 
 #### Functions
 def getCtrlShape(sCtrl):
@@ -47,6 +50,44 @@ def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None):
 	for sCtrl in lCtrls:
 		cmds.parent(sCtrlShape, sCtrl, add = True, s = True)
 	cmds.delete(sCrv)
+
+#------------ create controller functions -----------
+def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sParent = None, sPos = None, sShape = 'cube', fSize = 1, sColor = None, lLockHideAttrs = []):
+	## zero grp
+	sZero = naming.oName(sType = 'zero', sSide = sSide, sPart = sPart, iIndex = iIndex).sName
+	sZero = transforms.createTransfromNode(sZero, sParent = sParent)
+
+	## passer grp
+	sPasser = naming.oName(sType = 'passer', sSide = sSide, sPart = sPart, iIndex = iIndex).sName
+	sPasser = transforms.createTransfromNode(sPasser, sParent = sZero)
+
+	## stacks grp
+	sParenStack = sPasser
+	for i in range(iStacks):
+		sStack = naming.oName(sType = 'stack', sSide = sSide, sPart = sPart, iIndex = iIndex, iSuffix = i).sName
+		sStack = transforms.createTransfromNode(oStackName.sName, sParent = sParenStack)
+		sParenStack = sStack
+
+	## ctrl
+	sCtrl = naming.oName(sType = 'ctrl', sSide = sSide, sPart = sPart, iIndex = iIndex).sName
+	sCtrl = transforms.createTransfromNode(sCtrl, lLockHideAttrs = lLockHideAttrs, sParent = sParenStack)
+
+	## sub Ctrl
+	if bSub:
+		cmds.addAttr(sCtrl, ln = 'subCtrlVis', at = 'long', keyable = False)
+		cmds.setAttr('%s.subCtrlVis' %sCtrl, channelBox = True)
+		sSub = naming.oName(sType = 'ctrl', sSide = sSide, sPart = '%sSub' %sPart, iIndex = iIndex).sName
+		sSub = transforms.createTransfromNode(sSub, lLockHideAttrs = lLockHideAttrs, sParent = sCtrl)
+		attributes.connectAttrs(['%s.subCtrlVis' %sCtrl], ['%s.v' %sSub], bForce = True)
+
+
+
+	oCtrlName = naming.oName(sType = 'ctrl', sSide = sSide, sPart = sPart, iIndex = iIndex)
+	sCtrl = transforms.createTransfromNode(oCtrlName.sName, lLockHideAttrs = lLockHideAttrs)
+	for i in range(iStacks):
+		oStackName = naming.oName(sType = 'stack', sSide = sSide, sPart = sPart, iIndex = iIndex, iSuffix = i)
+		sStack = transforms.createTransfromNode(oStackName.sName, sParent = None)
+
 
 #------------ save & load ctrlShape functions -----------
 def getCtrlShapeInfo(sCtrl):

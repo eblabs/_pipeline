@@ -114,10 +114,7 @@ def enumToMultiAttrs(sEnumAttr, lAttr, iEnumRange = 2, lValRange = [[0,1]], sEnu
 	iIndex = oObjName.iIndex
 
 	for i in range(iEnumRange):
-		if iIndex:
-			sCondition = naming.oName(sType = 'condition', sSide = sSide, sPart = '%s%s' %(sEnumObj, sEnumAttrName.title()), iIndex = iIndex, iSuffix = i).sName
-		else:
-			sCondition = naming.oName(sType = 'condition', sSide = sSide, sPart = '%s%s' %(sEnumObj, sEnumAttrName.title()), iIndex = i).sName
+		sCondition = naming.oName(sType = 'condition', sSide = sSide, sPart = '%s%s' %(sEnumObj, sEnumAttrName.title()), iIndex = iIndex, iSuffix = i).sName
 		cmds.createNode('condition', name = sCondition)
 		cmds.connectAttr(sEnumAttr, '%s.firstTerm' %sCondition)
 		cmds.setAttr('%s.secondTerm' %sCondition, i)
