@@ -1,5 +1,5 @@
 import namingDict
-
+reload(namingDict)
 class oName(object):
 	"""docstring for oName"""
 	def __init__(self, *args, **kwargs):
@@ -16,11 +16,11 @@ class oName(object):
 			iSuffix = kwargs.get('iSuffix', None)
 
 
-			self._sType = sType
+			self._sType = getKeyFromNamePart(sType, 'type')
 
-			self._sSide = sSide
+			self._sSide = getKeyFromNamePart(sSide, 'side')
 
-			self._sRes = sRes
+			self._sRes = getKeyFromNamePart(sRes, 'resolution')
 
 			self.sPart = sPart
 
@@ -90,18 +90,22 @@ class oName(object):
 
 	@property
 	def sName(self):
-		if not self.sPart:
+		sName = self.composeName(self._sType, self._sSide, self._sRes, self.sPart, self.iIndex, self.iSuffix)
+		return sName
+
+	def composeName(self, sType, sSide, sRes, sPart, iIndex, iSuffix):
+		if not sPart:
 			raise RuntimeError('The name entered is invalid')
-		elif not self._sType:
-			if self._sSide or self._sRes or self.iIndex or self.iSuffix:
+		elif not sType:
+			if sSide or sRes or iIndex or iSuffix:
 				raise RuntimeError('The name entered is invalid')
-		elif not self._sRes and not self._sSide:
+		elif not sRes and not sSide:
 			raise RuntimeError('The name entered is invalid')
 		sName = ''
-		for sNamePart in [self._sType, self._sSide, self._sRes, self.sPart]:
+		for sNamePart in [sType, sSide, sRes, sPart]:
 			if sNamePart:
 				sName += '%s_' %sNamePart
-		for iNum in [self.iIndex, self.iSuffix]:
+		for iNum in [iIndex, iSuffix]:
 			if iNum:
 				sName += '%03d_' %iNum
 		return sName[:-1]
