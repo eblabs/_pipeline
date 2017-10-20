@@ -16,11 +16,11 @@ class oName(object):
 			iSuffix = kwargs.get('iSuffix', None)
 
 
-			self._sType = getKeyFromNamePart(sType, 'type')
+			self.__sType = getKeyFromNamePart(sType, 'type')
 
-			self._sSide = getKeyFromNamePart(sSide, 'side')
+			self.__sSide = getKeyFromNamePart(sSide, 'side')
 
-			self._sRes = getKeyFromNamePart(sRes, 'resolution')
+			self.__sRes = getKeyFromNamePart(sRes, 'resolution')
 
 			self.sPart = sPart
 
@@ -30,15 +30,15 @@ class oName(object):
 
 	@property
 	def sType(self):
-		return self._sType
+		return self.__sType
 
 	@property
 	def sSide(self):
-		return self._sSide
+		return self.__sSide
 
 	@property
 	def sRes(self):
-		return self._sRes
+		return self.__sRes
 
 	@sType.setter
 	def sType(self, sKey):
@@ -46,7 +46,7 @@ class oName(object):
 			sName = getKeyFromNamePart(sKey, 'type')
 		else:
 			sName = None
-		self._sType = sName
+		self.__sType = sName
 
 	@sSide.setter
 	def sSide(self, sKey):
@@ -54,7 +54,7 @@ class oName(object):
 			sName = getKeyFromNamePart(sKey, 'side')
 		else:
 			sName = None
-		self._sSide = sName
+		self.__sSide = sName
 
 	@sRes.setter
 	def sRes(self, sKey):
@@ -62,35 +62,35 @@ class oName(object):
 			sName = getKeyFromNamePart(sKey, 'resolution')
 		else:
 			sName = None
-		self._sRes = sName
+		self.__sRes = sName
 
 	@property
 	def sTypeKey(self):
-		if self._sType:
-			sKey = getFullNameFromKey(self._sType, 'type')
+		if self.__sType:
+			sKey = getFullNameFromKey(self.__sType, 'type')
 		else:
 			sKey = None
 		return sKey
 
 	@property
 	def sSideKey(self):
-		if self._sSide:
-			sKey = getFullNameFromKey(self._sSide, 'side')
+		if self.__sSide:
+			sKey = getFullNameFromKey(self.__sSide, 'side')
 		else:
 			sKey = None
 		return sKey
 
 	@property
 	def sResKey(self):
-		if self._sRes:
-			sKey = getFullNameFromKey(self._sRes, 'resolution')
+		if self.__sRes:
+			sKey = getFullNameFromKey(self.__sRes, 'resolution')
 		else:
 			sKey = None
 		return sKey
 
 	@property
 	def sName(self):
-		sName = self.composeName(self._sType, self._sSide, self._sRes, self.sPart, self.iIndex, self.iSuffix)
+		sName = self.composeName(self.__sType, self.__sSide, self.__sRes, self.sPart, self.iIndex, self.iSuffix)
 		return sName
 
 	def composeName(self, sType, sSide, sRes, sPart, iIndex, iSuffix):
@@ -113,10 +113,10 @@ class oName(object):
 	def decomposeName(self, sName):
 		lNameParts = sName.split('_')
 		if len(lNameParts) > 1:
-			self._sType = getKeyFromNamePart(lNameParts[0], 'type')
+			self.__sType = getKeyFromNamePart(lNameParts[0], 'type')
 			if len(lNameParts) == 6:			
-				self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
-				self._sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
+				self.__sSide = getKeyFromNamePart(lNameParts[1], 'side')
+				self.__sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
 				self.sPart = lNameParts[3]
 				self.iIndex = int(lNameParts[4])
 				self.iSuffix = int(lNameParts[5])
@@ -125,28 +125,28 @@ class oName(object):
 					self.iIndex = int(lNameParts[3])
 					self.iSuffix = int(lNameParts[4])
 					self.sPart = lNameParts[2]
-					self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
+					self.__sSide = getKeyFromNamePart(lNameParts[1], 'side')
 					if self.sSide:
-						self._sRes = None 
+						self.__sRes = None 
 					else:
-						self._sRes = getKeyFromNamePart(lNameParts[1], 'resolution')
+						self.__sRes = getKeyFromNamePart(lNameParts[1], 'resolution')
 				else:
 					self.iIndex = int(lNameParts[4])
 					self.sPart = lNameParts[3]
-					self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
-					self._sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
+					self.__sSide = getKeyFromNamePart(lNameParts[1], 'side')
+					self.__sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
 					self.iSuffix = None
 
 			elif len(lNameParts) == 4:
-				self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
+				self.__sSide = getKeyFromNamePart(lNameParts[1], 'side')
 				self.iSuffix = None
 				if lNameParts[3].isdigit():
 					self.iIndex = int(lNameParts[3])
 					self.sPart = lNameParts[2]
-					self._sRes = None
+					self.__sRes = None
 				else:
-					self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
-					self._sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
+					self.__sSide = getKeyFromNamePart(lNameParts[1], 'side')
+					self.__sRes = getKeyFromNamePart(lNameParts[2], 'resolution')
 					self.sPart = lNameParts[3]
 					self.iIndex = None
 
@@ -154,18 +154,18 @@ class oName(object):
 				self.sPart = lNameParts[2]
 				self.iIndex = None
 				self.iSuffix = None
-				self._sSide = getKeyFromNamePart(lNameParts[1], 'side')
-				if self._sSide:
-					self._sRes = None 
+				self.__sSide = getKeyFromNamePart(lNameParts[1], 'side')
+				if self.__sSide:
+					self.__sRes = None 
 				else:
-					self._sRes = getKeyFromNamePart(lNameParts[1], 'resolution')
+					self.__sRes = getKeyFromNamePart(lNameParts[1], 'resolution')
 			else:
 				raise RuntimeError('name is not valid')
 		else:
 			self.sPart = lNameParts[0]
-			self._sType = None
-			self._sSide = None
-			self._sRes = None
+			self.__sType = None
+			self.__sSide = None
+			self.__sRes = None
 			self.iIndex = None
 			self.iSuffix = None
 		

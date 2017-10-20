@@ -66,16 +66,173 @@ def scaleCtrlShape(sCtrl, fScale = 1):
 			cmds.setAttr('%s.controlPoints[%d]' %(sCtrlShape, i), lCtrlPntPosUpdate[0], lCtrlPntPosUpdate[1], lCtrlPntPosUpdate[2])
 
 #------------ create controller wrapper -----------
-class oControl(naming.oName):
+class oControl(object):
 	"""docstring for oControl"""
-	def __init__(self, *args):
-		super(oControl, self).__init__(*args)
-		self.args = args
+	def __init__(self, sCtrl):
+		self.__getCtrlInfo(sCtrl)
 
-	def getCtrlInfo(self, sNode):
-		pass
+	@property
+	def sName(self):
+		return self.__sName
 
-		
+	@property
+	def sSide(self):
+		return self.__sSide
+
+	@property
+	def sPart(self):
+		return self.__sPart
+
+	@property
+	def iIndex(self):
+		return self.__iIndex
+
+	@property
+	def sZero(self):
+		return self.__sZero
+
+	@property
+	def sPasser(self):
+		return self.__sPasser
+
+	@property
+	def lStacks(self):
+		return self.__lStacks
+
+	@property
+	def iStacks(self):
+		return self.__iStacks
+
+	@property
+	def sSub(self):
+		return self.__sSub
+
+	@property
+	def bSub(self):
+		return self.__bSub
+
+	@sSide.setter
+	def sSide(self, sKey):
+		if sKey:
+			sName = naming.getKeyFromNamePart(sKey, 'side')
+			self.__sSide = sName
+			self.__renameCtrl()
+
+	@sPart.setter
+	def sPart(self, sKey):
+		if sKey:
+			self.__sPartt = sKey
+			self.__renameCtrl()
+
+	@iIndex.setter
+	def iIndex(self, iKey):
+		if iKey:
+			self.__iIndex = iKey
+			self.__renameCtrl()
+
+	@iStacks.setter
+	def iStacks(self, iKey):
+		if iKey < 1:
+			iKey = 1
+		if self.__iStacks != iKey:
+			self.__updateStacks(iKey)
+
+	@bSub.setter
+	def bSub(self, bKey):
+		if self.__bSub != bool(bKey):
+			self.__updateSub()
+
+	def __getCtrlInfo(self, sCtrl):
+		self.__sName = sCtrl
+
+		oCtrlName = naming.oName(sCtrl)
+
+		self.__sSide = oCtrlName.sSide
+		self.__sPart = oCtrlName.sPart
+		self.__iIndex = oCtrlName.iIndex
+		self.__iSuffix = oCtrlName.iSuffix
+
+		sSub = cmds.getAttr('%s.sSub' %sCtrl)
+		if sSub:
+			self.__sSub = sSub
+			self.__bSub = True
+		else:
+			self.__sSub = None
+			self.__bSub = False
+
+		iStacks = cmds.getAttr('%s.iStacks' %sCtrl)
+		self.__lStacks = []
+		for i in range(iStacks):
+			sStack = naming.oName(sType = 'stack', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex, iSuffix = i + 1).sName
+			self.__lStacks.append(sStack)
+		self.__iStacks = iStacks
+
+		self.__sPasser = naming.oName(sType = 'passer', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
+		self.__sZero = naming.oName(sType = 'zero', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
+
+	def __renameCtrl(self):
+		sZero = naming.oName(sType = 'zero', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
+		cmds.rename(self.__sZero, sZero)
+		sPasser = naming.oName(sType = 'passer', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
+		cmds.rename(self.__sPasser, sPasser)
+		lStacks = []
+		for i in range(len(self.__lStacks)):
+			sStack = naming.oName(sType = 'stack', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex, iSuffix = i + 1).sName
+			cmds.rename(self.__lStacks[i], sStack)
+			lStacks.append(sStack)
+		sCtrl = naming.oName(sType = 'ctrl', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
+		cmds.rename(self.__sName, sCtrl)
+		if self.__sSub:
+			sSub = naming.oName(sType = 'ctrl', sSide = self.__sSide, sPart = '%sSub' %self.__sPart, iIndex = self.__iIndex).sName
+			cmds.rename(self.__sSub, sSub)
+			cmds.setAttr('%s.sSub' %sCtrl, lock = False)
+			cmds.setAttr('%s.sSub' %sCtrl, sSub, type = 'string', lock = True)
+		self.__getCtrlInfo(sCtrl)
+
+	def __updateStacks(self, iKey):
+		if iKey < self.__iStacks:
+			lChilds = cmds.listRelatives(self.__lStacks[-1], c = True)
+			cmds.parent(lChilds, self.__lStacks[iKey - 1])
+			cmds.delete(self.__iStacks[iKey:])
+		else:
+			sParentStack = self.__iStacks[-1]
+			lChilds = cmds.listRelatives(self.__lStacks[-1], c = True)
+			for i in range(self.__iStacks, iKey):
+				sStack = naming.oName(sType = 'stack', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex, iSuffix = i + 1).sName
+				sStack = transforms.createTransformNode(sStack, sParent = sParentStack)
+				transforms.transformSnap([sParentStack], [sStack])
+				sParentStack = sStack
+			cmds.parent(lChilds, sParentStack)
+		cmds.setAttr('%s.iStacks' %self.__sName, lock = False)
+		cmds.setAttr('%s.iStacks' %self.__sName, iKey, lock = True)
+		self.__getCtrlInfo(self.__sName)
+
+	def __updateSub(self):
+		cmds.setAttr('%s.sSub' %self.__sName, lock = False)
+		if self.__bSub:
+			lChilds = cmds.listRelatives(self.__sSub, c = True)
+			if lChilds:
+				cmds.parent(lChilds, self.__sName)
+			cmds.delete(self.__sSub)
+			cmds.setAttr('%s.sSub' %self.__sName, '', type = 'string', lock = True)
+		else:
+			cmds.addAttr(self.__sName, ln = 'subCtrlVis', at = 'long', keyable = False, min = 0, max = 1, dv = 0)
+			cmds.setAttr('%s.subCtrlVis' %self.__sName, channelBox = True)
+			sSub = naming.oName(sType = 'ctrl', sSide = self.__sSide, sPart = '%sSub' %self.__sPart, iIndex = self.__iIndex).sName
+			sSub = transforms.createTransformNode(sSub, sParent = self.__sName)
+			transforms.transformSnap([self.__sName], [sSub])
+			attributes.connectAttrs(['%s.subCtrlVis' %self.__sName], ['%s.v' %sSub], bForce = True)
+			for sAttr in ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v']:
+				if cmds.getAttr('%s.%s' %(self.__sName, sAttr), lock = True):
+					cmds.setAttr('%s.%s' %(sSub, sAttr), keyable = False, lock = True, channelBox = False)
+			dCtrlShapeInfo = getCtrlShapeInfo(self.__sName)
+			addCtrlShape([sSub], '%sShape' %sSub, bVis = True, dCtrlShapeInfo = dCtrlShapeInfo)
+			scaleCtrlShape(sSub, fScale = 0.9)
+			cmds.setAttr('%s.sSub' %self.__sName, sSub, type = 'string', lock = True)
+		self.__getCtrlInfo(self.__sName)
+
+
+
 		
 		
 
@@ -90,16 +247,16 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 	sPasser = transforms.createTransformNode(sPasser, sParent = sZero)
 
 	## stacks grp
-	sParenStack = sPasser
+	sParentStack = sPasser
 	for i in range(iStacks):
 		sStack = naming.oName(sType = 'stack', sSide = sSide, sPart = sPart, iIndex = iIndex, iSuffix = i + 1).sName
-		sStack = transforms.createTransformNode(sStack, sParent = sParenStack)
-		sParenStack = sStack
+		sStack = transforms.createTransformNode(sStack, sParent = sParentStack)
+		sParentStack = sStack
 
 	## ctrl
 	oCtrl = naming.oName(sType = 'ctrl', sSide = sSide, sPart = sPart, iIndex = iIndex)
 	sCtrl = oCtrl.sName
-	sCtrl = transforms.createTransformNode(sCtrl, lLockHideAttrs = lLockHideAttrs, sParent = sParenStack)
+	sCtrl = transforms.createTransformNode(sCtrl, lLockHideAttrs = lLockHideAttrs, sParent = sParentStack)
 
 	## sub Ctrl
 	if bSub:
@@ -150,6 +307,9 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 		cmds.setAttr('%s.sSub' %sCtrl, sSub, type = 'string', lock = True)
 	else:
 		cmds.setAttr('%s.sSub' %sCtrl, '', type = 'string', lock = True)
+
+	oCtrl = oControl(sCtrl)
+	return oCtrl
 
 #------------ create controller functions end -----------
 	
