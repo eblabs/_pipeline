@@ -110,6 +110,16 @@ def createTransformNode(sName, lLockHideAttrs = [], sParent = None):
 		cmds.parent(sName, sParent)
 	return sName
 
+def getBoundingBoxInfo(sNode):
+	lBBoxMin = cmds.getAttr('%s.boundingBoxMin' %sNode)[0]
+	lBBoxMax = cmds.getAttr('%s.boundingBoxMax' %sNode)[0]
+
+	fWidth = lBBoxMax[0] - lBBoxMin[0]
+	fHeight = lBBoxMax[1] - lBBoxMin[1]
+	fDepth = lBBoxMax[2] - lBBoxMin[2]
+
+	return fWidth, fHeight, fDepth
+
 
 #### Sub Functions
 def transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = None):

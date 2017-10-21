@@ -8,6 +8,7 @@ import common.workspaces as workspaces
 import common.attributes as attributes
 import namingAPI.naming as naming
 import modelingAPI.models as models
+import modelingAPI.meshes as meshes
 import riggingAPI.rigComponents as rigComponents
 
 ## baseHierarchy build script
@@ -124,16 +125,24 @@ class baseHierarchy(baseCore.baseCore):
 
 	def importModel(self):
 		bReturn = rigComponents.importModel(self.dRigData['dModel'], self.sProject, self.sAsset)
-		self.dModelInfo = models.getModelInfo(self.sAsset)
+		self.sModel = self.sAsset
+		lChilds = cmds.listRelatives(self.sAsset, c = True, type = 'transform')
+		self.lRes = []
+		for sChild in lChilds:
+			lMeshes = meshes.getMeshesFromGrp(sChild)
+			if lMeshes:
+				oNameGrp = naming.oName(sChild)
+				if oNameGrp.sRes not in self.lRes:
+					self.lRes.append(oNameGrp.sRes)
+
 		return bReturn
 
 	def buildBaseRigNodes(self):
 		## create master node
 		sMaster = transforms.createTransformNode('master', lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
 		####### add attrs
-		lRes = self.dModelInfo['resolution']
 		sEnumName = ''
-		for sRes in lRes:
+		for sRes in self.lRes:
 			sEnumName += '%s:' %sRes
 		sEnumName = sEnumName[:-1]
 		cmds.addAttr(sMaster, ln = 'resolution', at = 'enum', enumName = sEnumName, keyable = False, dv = 0)
@@ -148,8 +157,8 @@ class baseHierarchy(baseCore.baseCore):
 			cmds.addAttr(sMaster, ln = sAttr, at = 'enum', enumName = 'on:off:template:reference', keyable = False, dv = iVal)
 			cmds.setAttr('%s.%s' %(sMaster, sAttr), channelBox = True)
 
-		cmds.addAttr(sMaster, ln = 'skelOrigin', at = 'long', min = 0, max = 1, dv =1, keyable = False)
-		cmds.setAttr('%s.skelOrigin' %sMaster, channelBox = True)
+		cmds.addAttr(sMaster, ln = 'geoDeformMove', nn = 'Geo Deform/Move', at = 'long', min = 0, max = 1, dv =0, keyable = False)
+		cmds.setAttr('%s.geoDeformMove' %sMaster, channelBox = True)
 
 		## create control, do not touch group
 		sControl = transforms.createTransformNode('controls', lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sMaster)
@@ -157,7 +166,7 @@ class baseHierarchy(baseCore.baseCore):
 
 		## create geometry groups
 		sGeometry = transforms.createTransformNode('geometry', lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sDoNotTouch)
-		for sRes in lRes:
+		for sRes in self.lRes:
 			sResGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'geo').sName
 			sResGrp = transforms.createTransformNode(sResGrp, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sGeometry)
 			for sPart in ['xtrs', 'def']:
@@ -177,23 +186,22 @@ class baseHierarchy(baseCore.baseCore):
 
 		## create rigGeometry groups
 		sRigGeometry = transforms.createTransformNode('rigGeometry', lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sDoNotTouch)
-		for sRes in lRes:
+		for sRes in self.lRes:
 			sResGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'rigGeometry').sName
 			sResGrp = transforms.createTransformNode(sResGrp, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sRigGeometry)
 			for sPart in ['transform', 'origin']:
 				sGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'rigGeometry%s' %sPart.title()).sName
 				sGrp = transforms.createTransformNode(sGrp, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sResGrp)
 
-
 		## Vis connections
 		### resolution
 		lAttr = []
-		for sRes in lRes:
+		for sRes in self.lRes:
 			sResGeoGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'geo').sName
 			sResRigGeoGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'rigGeometry').sName
 			lAttr.append('%s.v' %sResGeoGrp)
 			attributes.connectAttrs(['%s.v' %sResGeoGrp], ['%s.v' %sResRigGeoGrp], bForce = True)
-		attributes.enumToMultiAttrs('resolution', lAttr, iEnumRange = len(lRes), lValRange = [[0,1]], sEnumObj = sMaster)
+		attributes.enumToMultiAttrs('resolution', lAttr, iEnumRange = len(self.lRes), lValRange = [[0,1]], sEnumObj = sMaster)
 
 		### geometry joints controls rigNodes
 		lGrps = [sGeometry, sJoint, sControl, sRigNode, sRigGeometry]
@@ -207,6 +215,19 @@ class baseHierarchy(baseCore.baseCore):
 			attributes.connectAttrs(['%s.outColor' %sConditionVis], ['%s.v' %lGrps[i]], bForce = True)
 			cmds.setAttr('%s.overrideEnabled' %lGrps[i], 1)
 			attributes.enumToSingleAttrs(sAttr, ['%s.overrideDisplayType' %lGrps[i]], iEnumRange = 4, lValRange = [[0,0],[0,0],[0,1],[0,2]], sEnumObj = sMaster)
+
+		## create ctrls
+		fWidth, fHeight, fDepth = transforms.getBoundingBoxInfo(self.sAsset)
+		fCtrlSize = fWidth * fDepth * 1.2
+		### world ctrl
+		sParentCtrl = sControl
+		lCtrlShape = [['circle', 'yellow'], ['triangle', 'royal heath'], 'triangle', ['royal purple']]
+		for i, sCtrlName in enumerate(['world', 'layout', 'local']):
+			oCtrl = controls.create(sCtrlName, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sParent = sParentCtrl, sPos = None, sShape = lCtrlShape[i][0], fSize = fCtrlSize, sColor = lCtrlShape[i][1], lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])
+			cmds.addAttr(oCtrl.sName, ln = 'rigScale', at = 'float', dv = 1, keyable = True)
+			attributes.connectAttrs(['%s.rigScale' %oCtrl.sName, '%s.rigScale' %oCtrl.sName, '%s.rigScale' %oCtrl.sName,], ['%s.sx' %oCtrl.sName, '%s.sy' %oCtrl.sName, '%s.sz' %oCtrl.sName], bForce = True)
+
+		## connect ctrl with grps
 
 	def importBlueprint(self):
 		bReturn = rigComponents.importBlueprint(self.dRigData['dBlueprint'], self.sProject, self.sAsset)

@@ -191,12 +191,12 @@ class oControl(object):
 
 	def __updateStacks(self, iKey):
 		if iKey < self.__iStacks:
-			lChilds = cmds.listRelatives(self.__lStacks[-1], c = True)
+			lChilds = cmds.listRelatives(self.__lStacks[-1], c = True, type = 'transform')
 			cmds.parent(lChilds, self.__lStacks[iKey - 1])
-			cmds.delete(self.__iStacks[iKey:])
+			cmds.delete(self.__lStacks[iKey:])
 		else:
-			sParentStack = self.__iStacks[-1]
-			lChilds = cmds.listRelatives(self.__lStacks[-1], c = True)
+			sParentStack = self.__lStacks[-1]
+			lChilds = cmds.listRelatives(self.__lStacks[-1], c = True, type = 'transform')
 			for i in range(self.__iStacks, iKey):
 				sStack = naming.oName(sType = 'stack', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex, iSuffix = i + 1).sName
 				sStack = transforms.createTransformNode(sStack, sParent = sParentStack)
@@ -205,16 +205,19 @@ class oControl(object):
 			cmds.parent(lChilds, sParentStack)
 		cmds.setAttr('%s.iStacks' %self.__sName, lock = False)
 		cmds.setAttr('%s.iStacks' %self.__sName, iKey, lock = True)
+		cmds.select(self.__sName)
 		self.__getCtrlInfo(self.__sName)
 
 	def __updateSub(self):
 		cmds.setAttr('%s.sSub' %self.__sName, lock = False)
 		if self.__bSub:
-			lChilds = cmds.listRelatives(self.__sSub, c = True)
+			lChilds = cmds.listRelatives(self.__sSub, c = True, type = 'transform')
+			print lChilds
 			if lChilds:
 				cmds.parent(lChilds, self.__sName)
 			cmds.delete(self.__sSub)
 			cmds.setAttr('%s.sSub' %self.__sName, '', type = 'string', lock = True)
+			cmds.deleteAttr('%s.subCtrlVis' %self.__sName)
 		else:
 			cmds.addAttr(self.__sName, ln = 'subCtrlVis', at = 'long', keyable = False, min = 0, max = 1, dv = 0)
 			cmds.setAttr('%s.subCtrlVis' %self.__sName, channelBox = True)
@@ -226,9 +229,10 @@ class oControl(object):
 				if cmds.getAttr('%s.%s' %(self.__sName, sAttr), lock = True):
 					cmds.setAttr('%s.%s' %(sSub, sAttr), keyable = False, lock = True, channelBox = False)
 			dCtrlShapeInfo = getCtrlShapeInfo(self.__sName)
-			addCtrlShape([sSub], '%sShape' %sSub, bVis = True, dCtrlShapeInfo = dCtrlShapeInfo)
+			addCtrlShape([sSub], '%sShape' %sSub, bVis = True, dCtrlShapeInfo = dCtrlShapeInfo[self.__sName])
 			scaleCtrlShape(sSub, fScale = 0.9)
 			cmds.setAttr('%s.sSub' %self.__sName, sSub, type = 'string', lock = True)
+		cmds.select(self.__sName)
 		self.__getCtrlInfo(self.__sName)
 
 

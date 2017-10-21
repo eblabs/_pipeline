@@ -64,6 +64,16 @@ def remapVtxIdToMesh(sTargetMesh, sBaseMesh = None, lVtxPosBase = None, fToleran
 				break
 	return lComponents
 
+def getMeshesFromGrp(sGrp):
+	lMeshes = []
+	lChilds = cmds.listRelatives(sGrp, c = True, ad = True, type = 'mesh')
+	if lChilds:
+		for sChild in lChilds:
+			sNode = cmds.listRelatives(sChild, p = True)[0]
+			if sNode not in lMeshes:
+				lMeshes.append(sNode)
+	return lMeshes
+
 
 #### Sub Functions
 def __setMFnMesh(sMesh):
