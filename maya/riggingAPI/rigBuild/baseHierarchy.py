@@ -4,6 +4,7 @@ import maya.mel as mel
 
 ## Build Script Import
 import baseCore
+reload(baseCore)
 import common.workspaces as workspaces
 import common.attributes as attributes
 import namingAPI.naming as naming
@@ -17,7 +18,7 @@ class baseHierarchy(baseCore.baseCore):
 	def __init__(self):
 		super(baseHierarchy, self).__init__()
 
-		self.generateRigData()
+		#self.generateRigData()
 
 	def rigData(self):
 		super(baseHierarchy, self).rigData()
@@ -69,54 +70,54 @@ class baseHierarchy(baseCore.baseCore):
 
 		## Pre Build
 		self.registerFunction(
-								'mFunction': self.createNewScene,
-								'sName': 'Create New Scene',
-								'sSection': 'Pre Build',
+								mFunction = self.createNewScene,
+								sName = 'Create New Scene',
+								sParent = 'Pre Build',
 								)
 
 		self.registerFunction(
-								'mFunction': self.importModel,
-								'sName': 'Import Model',
-								'sSection': 'Pre Build',
+								mFunction = self.importModel,
+								sName = 'Import Model',
+								sParent = 'Pre Build',
 								)
 
 		self.registerFunction(
-								'mFunction': self.buildBaseRigNodes,
-								'sName': 'Build Base Rig Nodes',
-								'sSection': 'Pre Build',
+								mFunction = self.buildBaseRigNodes,
+								sName = 'Build Base Rig Nodes',
+								sParent = 'Pre Build',
 								)
 
 		self.registerFunction(
-								'mFunction': self.importBlueprint,
-								'sName': 'Import Blueprint',
-								'sSection': 'Pre Build',
+								mFunction = self.importBlueprint,
+								sName = 'Import Blueprint',
+								sParent = 'Pre Build',
 								)
 
 		self.registerFunction(
-								'mFunction': self.importRigGeometry,
-								'sName': 'Import Rig Geometry',
-								'sSection': 'Pre Build',
+								mFunction = self.importRigGeometry,
+								sName = 'Import Rig Geometry',
+								sParent = 'Pre Build',
 								)
 
 		# Build
 
 		# Post Build
 		self.registerFunction(
-								'mFunction': self.importGeoHierarchy,
-								'sName': 'Import Geo Hierarchy',
-								'sSection': 'Post Build',
+								mFunction = self.importGeoHierarchy,
+								sName = 'Import Geo Hierarchy',
+								sParent = 'Post Build',
 								)
 
 		self.registerFunction(
-								'mFunction': self.importDeformer,
-								'sName': 'Import Deformer',
-								'sSection': 'Post Build',
+								mFunction = self.importDeformer,
+								sName = 'Import Deformer',
+								sParent = 'Post Build',
 								)
 
 		self.registerFunction(
-								'mFunction': self.importControlShape,
-								'sName': 'Import Control Shape',
-								'sSection': 'Post Build'
+								mFunction = self.importControlShape,
+								sName = 'Import Control Shape',
+								sParent = 'Post Build'
 								)
 		
 	def createNewScene(self):
@@ -191,7 +192,8 @@ class baseHierarchy(baseCore.baseCore):
 			sResGrp = transforms.createTransformNode(sResGrp, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sRigGeometry)
 			for sPart in ['transform', 'origin']:
 				sGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'rigGeometry%s' %sPart.title()).sName
-				sGrp = transforms.createTransformNode(sGrp, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sResGrp)
+				sGrp = transforms.createTransformNode(sGrp, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sParent = sResGrp)
+				cmds.setAttr('%s.v' %sGrp, 0)
 
 		## Vis connections
 		### resolution
@@ -226,8 +228,37 @@ class baseHierarchy(baseCore.baseCore):
 			oCtrl = controls.create(sCtrlName, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sParent = sParentCtrl, sPos = None, sShape = lCtrlShape[i][0], fSize = fCtrlSize, sColor = lCtrlShape[i][1], lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])
 			cmds.addAttr(oCtrl.sName, ln = 'rigScale', at = 'float', dv = 1, keyable = True)
 			attributes.connectAttrs(['%s.rigScale' %oCtrl.sName, '%s.rigScale' %oCtrl.sName, '%s.rigScale' %oCtrl.sName,], ['%s.sx' %oCtrl.sName, '%s.sy' %oCtrl.sName, '%s.sz' %oCtrl.sName], bForce = True)
+			sParentCtrl = oCtrl.sName
+			fCtrlSize *= 0.85
+
+		sCtrlLocal = sParentCtrl
 
 		## connect ctrl with grps
+		### geo grp
+		for sRes in self.lRes:
+			for sPart in ['xtrs', 'def']:
+				sGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = sPart).sName
+				lConstraints = constraints.constraint([sCtrlLocal, sGrp], sType = 'all', bForce = True)
+				if sPart == 'def':
+					for sConstraint in lConstraints:
+						sWeightAttr = constraints.getWeightAliasList(sConstraint)[0]
+						attributes.connectAttrs(['%s.geoDeformMove' %sMaster], ['%s.%s' %(sConstraint, sWeightAttr)], bForce = True)
+
+		### joints
+		lConstraints = constraints.constraint([sCtrlLocal, sJoint], sType = 'all', bForce = True)
+		for sConstraint in lConstraints:
+			sWeightAttr = constraints.getWeightAliasList(sConstraint)[0]
+			attributes.connectAttrs(['%s.geoDeformMove' %sMaster], ['%s.%s' %(sConstraint, sWeightAttr)], bForce = True)
+
+		### rigNodes
+		sGrp = naming.oName(sType = 'group', sSide = 'middle', sPart = 'rigNodesTransform').sName
+		lConstraints = constraints.constraint([sCtrlLocal, sGrp], sType = 'all', bForce = True)
+
+		### rig geometry
+		for sRes in self.lRes:
+			sGrp = naming.oName(sType = 'group', sSide = 'middle', sRes = sRes, sPart = 'rigGeometryTransform').sName
+			lConstraints = constraints.constraint([sCtrlLocal, sGrp], sType = 'all', bForce = True)
+
 
 	def importBlueprint(self):
 		bReturn = rigComponents.importBlueprint(self.dRigData['dBlueprint'], self.sProject, self.sAsset)

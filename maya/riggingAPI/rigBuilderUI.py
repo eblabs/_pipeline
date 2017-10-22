@@ -82,8 +82,9 @@ class rigBuilderUI(QtGui.QWidget):
 		QPushButton = QtGui.QPushButton('Load')
 		QPushButton.setMinimumHeight(40)
 		QVBoxLayout.addWidget(QPushButton)
-		QPushButton.setEnabled(False)
+		#QPushButton.setEnabled(False)
 		QPushButton.setStyleSheet('background-color:rgb(255,100,100)')
+		QPushButton.clicked.connect(self.__loadBuildScriptCmd)
 
 	## components
 	def tabWidgetUI(self, QLayout):
@@ -221,8 +222,9 @@ class rigBuilderUI(QtGui.QWidget):
 		QLayout.addWidget(QGroupBox)
 		QVBoxLayout = QtGui.QVBoxLayout()
 		QGroupBox.setLayout(QVBoxLayout)
-		oRigBuildWidget = rigBuildInfoWidget()
-		QVBoxLayout.addWidget(oRigBuildWidget)
+		#oRigBuildWidget = rigBuildInfoWidget()
+		#QVBoxLayout.addWidget(oRigBuildWidget)
+		self.QBuidlScriptLayout = QVBoxLayout
 		
 	def progressBarUI(self, QLayout):
 		QGroupBox = QtGui.QGroupBox('Rig Progress')
@@ -239,6 +241,11 @@ class rigBuilderUI(QtGui.QWidget):
 		QGroupBox.setLayout(QVBoxLayout)
 		oRigDataWidget = rigDataInfoWidget()
 		QVBoxLayout.addWidget(oRigDataWidget)
+
+	def __loadBuildScriptCmd(self):
+		QTreeWidget_buildScript = QtGui.QTreeWidget()
+		self.QBuidlScriptLayout.addWidget(QTreeWidget_buildScript)
+		loadBuildScript(QTreeWidget_buildScript)
 		
 
 		
@@ -486,8 +493,58 @@ class rigDataInfoWidget(QtGui.QWidget):
 		QListMenu.show()
  		
  		 
+### sub functions
+def loadBuildScript(QTreeWidget):
+	## load build script
+	import rigBuild.baseHierarchy as baseHierarchy
+	reload(baseHierarchy)
+	oBuildScript = baseHierarchy.baseHierarchy()
+	oBuildScript.importFunctions()
+
+	dFunctions = oBuildScript.dFunctions
+
+	## ------------- test functions
+	print dFunctions
+
+	oBuildScript.sAsset = 'chrTest'
+	## ------------- test functions end ------------
+	
+	QAsset = QtGui.QTreeWidgetItem(QTreeWidget)
+	QAsset.setText(0, oBuildScript.sAsset)
+
+	for sSection in ['Pre Build', 'Build', 'Post Build']:
+		QSection = QtGui.QTreeWidgetItem(QAsset)
+		QSection.setText(0, sSection)
+		QSection.setFlags(QSection.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
+		QSection.setCheckState(0, QtCore.Qt.Checked)
+
+	for dFunctionEach in dFunctions['lFunctions']:
+		sFunctionName = dFunctionEach.keys()[0]
+		sParent = dFunctionEach[sFunctionName]['sParent']
+		sAfter = dFunctionEach[sFunctionName]['sAfter']
+		lColor = dFunctionEach[sFunctionName]['lColor']
 		
-		
-		
+		## find parent
+		QParents = QTreeWidget.findItems(sParent, QtCore.Qt.MatchExactly | QtCore.Qt.MatchRecursive, 0)
+		if QParents:
+			QItem = QtGui.QTreeWidgetItem()
+			QItem.setText(0, sFunctionName)
+			QItem.setFlags(QItem.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
+			QItem.setCheckState(0, QtCore.Qt.Checked)
+			if lColor:
+				QItem.setForeground(0, QtGui.QBrush(QtGui.QColor.fromRgb(lColor[0], lColor[1], lColor[2])))			
+			if isinstance(sAfter, basestring):
+				QAfter = QTreeWidget.findItems(sAfter, QtCore.Qt.MatchExactly | QtCore.Qt.MatchRecursive, 0)
+				if QAfter and (QAfter[0].parent().text(0) == QParents[0].text(0)):
+					iIndex = QParents[0].indexOfChild(QAfter[0])
+					QParents[0].insertChild(iIndex + 1, QItem)
+				else:
+					QParents[0].addChild(QItem)
+			elif isinstance(sAfter, int):
+				QParents[0].insertChild(sAfter, QItem)
+			elif not sAfter:
+				QParents[0].addChild(QItem)
+
+
 
 
