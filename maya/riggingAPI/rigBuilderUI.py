@@ -222,8 +222,8 @@ class rigBuilderUI(QtGui.QWidget):
 		QLayout.addWidget(QGroupBox)
 		QVBoxLayout = QtGui.QVBoxLayout()
 		QGroupBox.setLayout(QVBoxLayout)
-		#oRigBuildWidget = rigBuildInfoWidget()
-		#QVBoxLayout.addWidget(oRigBuildWidget)
+		self.oRigBuildWidget = rigBuildInfoWidget()
+		QVBoxLayout.addWidget(self.oRigBuildWidget)
 		self.QBuidlScriptLayout = QVBoxLayout
 		
 	def progressBarUI(self, QLayout):
@@ -243,9 +243,9 @@ class rigBuilderUI(QtGui.QWidget):
 		QVBoxLayout.addWidget(oRigDataWidget)
 
 	def __loadBuildScriptCmd(self):
-		QTreeWidget_buildScript = QtGui.QTreeWidget()
-		self.QBuidlScriptLayout.addWidget(QTreeWidget_buildScript)
-		loadBuildScript(QTreeWidget_buildScript)
+		QTreeWidget_buildScript = self.oRigBuildWidget.QTreeWidget
+		dFunctions = loadBuildScript(QTreeWidget_buildScript)
+		self.oRigBuildWidget.QTreeWidget.dFunctions = dFunctions
 		
 
 		
@@ -402,36 +402,62 @@ class fileTreeView(QtGui.QTreeView):
 	def mouseDoubleClickEvent(self, event):
 		pass
 
+class buildInfoTreeView(QtGui.QTreeWidget):
+	def __init__(self, parent=None):
+		super(buildInfoTreeView, self).__init__(parent)
+
+		self.dFunctions = {}
+
+	def keyPressEvent(self, event):
+		if (event.key() == QtCore.Qt.Key_Escape and
+			event.modifiers() == QtCore.Qt.NoModifier):
+			self.clearSelection()
+			self.clearFocus()
+			self.setCurrentIndex(QtCore.QModelIndex())
+		else:
+			QtGui.QTreeView.keyPressEvent(self, event)
+
+	def mousePressEvent(self, event):
+		if not self.indexAt(event.pos()).isValid():
+			self.clearSelection()
+			self.clearFocus()
+			self.setCurrentIndex(QtCore.QModelIndex())
+		QtGui.QTreeView.mousePressEvent(self, event)
+
+	def mouseDoubleClickEvent(self, event):
+		sFunction = self.currentItem().text(0)
+		mFunction = self.dFunctions[sFunction]
+		mFunction()
+
 class rigBuildInfoWidget(QtGui.QWidget):
-	FUNCTION, STATUS = range(2)
+	#FUNCTION, STATUS = range(2)
 	def __init__(self):
 		super(rigBuildInfoWidget, self).__init__()
 
-		QSourceModel = QtGui.QStandardItemModel(0,2)
-		QSourceModel.setHeaderData(rigBuildInfoWidget.FUNCTION, QtCore.Qt.Horizontal, 'Function')
-		QSourceModel.setHeaderData(rigBuildInfoWidget.STATUS, QtCore.Qt.Horizontal, 'Status')
-
-		self.QTreeView = fileTreeView()
-		self.QTreeView.setRootIsDecorated(False)
-		self.QTreeView.setAlternatingRowColors(True)
-		self.QTreeView.setModel(QSourceModel)
-		self.QTreeView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-		self.QTreeView.setHeaderHidden(True)
-
+		QHeader = QtGui.QTreeWidgetItem(['Function', 'Status'])
+		self.QTreeWidget = buildInfoTreeView()
+		self.QTreeWidget.setHeaderItem(QHeader)
+		self.QTreeWidget.setRootIsDecorated(False)
+		self.QTreeWidget.setAlternatingRowColors(True)
+		self.QTreeWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+		self.QTreeWidget.setHeaderHidden(True)
+		self.QTreeWidget.header().setResizeMode(0, QtGui.QHeaderView.Stretch)
+		self.QTreeWidget.header().setStretchLastSection(False)
+		self.QTreeWidget.setColumnWidth(1,30)
 		QLayout = QtGui.QVBoxLayout()
-		QLayout.addWidget(self.QTreeView)
+		QLayout.addWidget(self.QTreeWidget)
 		self.setLayout(QLayout)
 
-		self.QTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.QTreeView.customContextMenuRequested.connect(self.listItemRightClicked)
+		self.QTreeWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.QTreeWidget.customContextMenuRequested.connect(self.listItemRightClicked)
 
 	def listItemRightClicked(self, QPos):
-		QListMenu= QtGui.QMenu(self.QTreeView)
+		QListMenu= QtGui.QMenu(self.QTreeWidget)
 		QMenuItem_execute = QListMenu.addAction('Execute Select Function')
 		QMenuItem_refresh = QListMenu.addAction('Refresh Build Script')
 		QMenuItem_reBuild = QListMenu.addAction('Rerun Build Script')
 
-		parentPosition = self.QTreeView.mapToGlobal(QtCore.QPoint(0, 0))        
+		parentPosition = self.QTreeWidget.mapToGlobal(QtCore.QPoint(0, 0))        
 		QListMenu.move(parentPosition + QPos)
 
 		QListMenu.show()
@@ -509,6 +535,8 @@ def loadBuildScript(QTreeWidget):
 	oBuildScript.sAsset = 'chrTest'
 	## ------------- test functions end ------------
 	
+	dFunctionsWidget = {}
+
 	QAsset = QtGui.QTreeWidgetItem(QTreeWidget)
 	QAsset.setText(0, oBuildScript.sAsset)
 
@@ -531,6 +559,12 @@ def loadBuildScript(QTreeWidget):
 			QItem.setText(0, sFunctionName)
 			QItem.setFlags(QItem.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
 			QItem.setCheckState(0, QtCore.Qt.Checked)
+
+			dFunctionsWidget.update({sFunctionName: dFunctionEach[sFunctionName]['mFunction']})
+
+			#QItem.setText(1, 'T')
+			#QItem.setForeground(1, QtGui.QBrush(QtGui.QColor('green')))
+			#QItem.setTextAlignment(1, QtCore.Qt.AlignCenter)
 			if lColor:
 				QItem.setForeground(0, QtGui.QBrush(QtGui.QColor.fromRgb(lColor[0], lColor[1], lColor[2])))			
 			if isinstance(sAfter, basestring):
@@ -544,6 +578,10 @@ def loadBuildScript(QTreeWidget):
 				QParents[0].insertChild(sAfter, QItem)
 			elif not sAfter:
 				QParents[0].addChild(QItem)
+
+	QTreeWidget.expandAll()
+
+	return dFunctionsWidget
 
 
 
