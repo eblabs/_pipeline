@@ -12,6 +12,7 @@ import common.workspaces as workspaces
 import common.hierarchy as hierarchy
 import controls
 import joints
+reload(joints)
 import deformers
 
 #### Functions

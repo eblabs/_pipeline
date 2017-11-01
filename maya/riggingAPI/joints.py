@@ -7,6 +7,7 @@ import json
 ## libs Import
 import common.files as files
 import common.transforms as transforms
+import common.hierarchy as hierarchy
 
 #### Functions
 def createJnt(sName):
@@ -17,7 +18,7 @@ def createJnt(sName):
 #------------ save & load joints functions -----------
 def getJointInfo(sJnt):
 	lTransformInfo = transforms.getNodeTransformInfo(sJnt)
-	sParent = transforms.getNodeParent(sJnt)
+	sParent =  hierarchy.getNodeParent(sJnt)
 	sRotateOrder = cmds.getAttr('%s.rotateOrder' %sJnt)
 	dJntInfo = {sJnt:
 				{'lTransformInfo': lTransformInfo,
