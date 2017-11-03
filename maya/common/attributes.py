@@ -27,10 +27,10 @@ def connectAttrs(lDriverAttrs, lDrivenAttrs, sDriver = None, sDriven = None, bFo
 		if '.' not in sDriverAttr:
 			sDriverAttr  = '%s.%s' %(sDriver, sDriverAttr)
 		if '.' not in lDrivenAttrs[i]:
-			sDrivenAttr - '%s.%s' %(sDriven, lDrivenAttrs[i])
+			sDrivenAttr = '%s.%s' %(sDriven, lDrivenAttrs[i])
 		else:
 			sDrivenAttr = lDrivenAttrs[i]
-		lConnections = cmds.listConnections(sDrivenAttr, s = True, p = True, scn = True)
+		lConnections = cmds.listConnections(sDrivenAttr, s = True, d = False, p = True, scn = True)
 		bLock = cmds.getAttr(sDrivenAttr, lock = True)
 		if not lConnections and not bLock:
 			cmds.connectAttr(sDriverAttr, sDrivenAttr)
@@ -56,7 +56,7 @@ def connectAttrs(lDriverAttrs, lDrivenAttrs, sDriver = None, sDriven = None, bFo
 				cmds.connectAttr(sDriverAttr, sDrivenAttr, f = True)
 				cmds.setAttr(sDrivenAttr, lock = True)
 
-def enumToSingleAttrs(sEnumAttr, lAttr, iEnumRange = 2, lValRange = [[0,1]], sEnumObj = None):
+def enumToSingleAttrs(sEnumAttr, lAttrs, iEnumRange = 2, lValRange = [[0,1]], sEnumObj = None):
 	if '.' not in sEnumAttr:
 		sEnumAttrName = sEnumAttr
 		sEnumAttr = '%s.%s' %(sEnumObj, sEnumAttr)
@@ -97,9 +97,9 @@ def enumToSingleAttrs(sEnumAttr, lAttr, iEnumRange = 2, lValRange = [[0,1]], sEn
 		sConditionSave = sCondition
 
 	for sAttr in lAttrs:
-		connectAttrs(['%s.outColorR' %sConditionMain], sAttr, bForce = True)
+		connectAttrs(['%s.outColorR' %sConditionMain], [sAttr], bForce = True)
 
-def enumToMultiAttrs(sEnumAttr, lAttr, iEnumRange = 2, lValRange = [[0,1]], sEnumObj = None):
+def enumToMultiAttrs(sEnumAttr, lAttrs, iEnumRange = 2, lValRange = [[0,1]], sEnumObj = None):
 	if '.' not in sEnumAttr:
 		sEnumAttrName = sEnumAttr
 		sEnumAttr = '%s.%s' %(sEnumObj, sEnumAttr)
@@ -128,4 +128,4 @@ def enumToMultiAttrs(sEnumAttr, lAttr, iEnumRange = 2, lValRange = [[0,1]], sEnu
 		cmds.setAttr('%s.colorIfFalseR' %sCondition, lValFalse)
 		
 		if lAttrs[i]:
-			connectAttrs(['%s.outColorR' %sCondition], lAttrs[i], bForce = True)
+			connectAttrs(['%s.outColorR' %sCondition], [lAttrs[i]], bForce = True)

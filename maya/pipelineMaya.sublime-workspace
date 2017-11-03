@@ -4,6 +4,42 @@
 		"selected_items":
 		[
 			[
+				"sGrp",
+				"sGrpRigGeo"
+			],
+			[
+				"conne",
+				"connectAttrs"
+			],
+			[
+				"attr",
+				"attributes"
+			],
+			[
+				"geo",
+				"geometries"
+			],
+			[
+				"rig",
+				"rigGeometries"
+			],
+			[
+				"at",
+				"attributes"
+			],
+			[
+				"connect",
+				"connectAttrs"
+			],
+			[
+				"imp",
+				"import"
+			],
+			[
+				"crea",
+				"createNewScene"
+			],
+			[
 				"sFunc",
 				"sFunctionName"
 			],
@@ -320,10 +356,6 @@
 				"sParenStack"
 			],
 			[
-				"crea",
-				"createTransfromNode"
-			],
-			[
 				"s",
 				"sPart"
 			],
@@ -362,10 +394,6 @@
 			[
 				"sRig",
 				"sRigNode"
-			],
-			[
-				"rig",
-				"rigGeometry"
 			],
 			[
 				"enum",
@@ -422,10 +450,6 @@
 			[
 				"sA",
 				"sAttr"
-			],
-			[
-				"imp",
-				"importModel"
 			],
 			[
 				"bR",
@@ -490,30 +514,6 @@
 			[
 				"QPush",
 				"QPushButtonAssign"
-			],
-			[
-				"selec",
-				"selectionModel"
-			],
-			[
-				"QS",
-				"QSourceModel"
-			],
-			[
-				"QLis",
-				"QListView"
-			],
-			[
-				"currentI",
-				"currentItem"
-			],
-			[
-				"set",
-				"setEnabled"
-			],
-			[
-				"is",
-				"isValid"
 			]
 		]
 	},
@@ -524,6 +524,33 @@
 			"settings":
 			{
 				"buffer_size": 3454,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript.py",
+			"settings":
+			{
+				"buffer_size": 5117,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "riggingAPI/rigBuild/baseHierarchy.py",
+			"settings":
+			{
+				"buffer_size": 11268,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "riggingAPI/rigComponents.py",
+			"settings":
+			{
+				"buffer_size": 4275,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -591,15 +618,6 @@
 			}
 		},
 		{
-			"file": "riggingAPI/rigBuild/baseHierarchy.py",
-			"settings":
-			{
-				"buffer_size": 11268,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
 			"file": "riggingAPI/rigBuilderUI.py",
 			"settings":
 			{
@@ -648,16 +666,7 @@
 			"file": "common/attributes.py",
 			"settings":
 			{
-				"buffer_size": 4621,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigComponents.py",
-			"settings":
-			{
-				"buffer_size": 4275,
+				"buffer_size": 4638,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -874,6 +883,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"geometry",
+			"lAttr",
 			"rigBuildInfoUI",
 			"rigBuildInfoWidget",
 			"buildInfoTreeView",
@@ -999,9 +1010,7 @@
 			"_getSkinWeightArray",
 			"_getCtrlShapeControlPoints",
 			"setData",
-			"pickle",
-			"self.fn",
-			"__getGeometryComponents"
+			"pickle"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1096,7 +1105,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -1112,8 +1121,8 @@
 						"selection":
 						[
 							[
-								671,
-								671
+								1728,
+								1765
 							]
 						],
 						"settings":
@@ -1122,14 +1131,98 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 693.0,
+						"translation.y": 2178.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5117,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								5117
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 585.0,
+						"translation.y": 2154.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
+					"buffer": 2,
+					"file": "riggingAPI/rigBuild/baseHierarchy.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11268,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								201,
+								163
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "riggingAPI/rigComponents.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4275,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1103,
+								1014
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1188.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
 					"file": "riggingAPI/deformers.py",
 					"semi_transient": false,
 					"settings":
@@ -1154,11 +1247,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 5,
 					"file": "modelingAPI/meshes.py",
 					"semi_transient": false,
 					"settings":
@@ -1182,11 +1275,11 @@
 						"translation.y": 1683.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 6,
 					"file": "common/apiUtils.py",
 					"semi_transient": false,
 					"settings":
@@ -1211,11 +1304,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 7,
 					"file": "riggingAPI/controls.py",
 					"semi_transient": false,
 					"settings":
@@ -1240,11 +1333,11 @@
 						"translation.y": 8622.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 8,
 					"file": "namingAPI/naming.py",
 					"semi_transient": false,
 					"settings":
@@ -1265,14 +1358,14 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 2574.0,
+						"translation.y": 2871.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 9,
 					"file": "riggingAPI/controlShapeDict.py",
 					"semi_transient": false,
 					"settings":
@@ -1296,11 +1389,11 @@
 						"translation.y": 1584.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 20,
+					"stack_index": 22,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 10,
 					"file": "riggingAPI/rigBuild/baseCore.py",
 					"semi_transient": false,
 					"settings":
@@ -1325,39 +1418,11 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
-					"file": "riggingAPI/rigBuild/baseHierarchy.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 11268,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1494,
-								1510
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 2098.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
+					"buffer": 11,
 					"file": "riggingAPI/rigBuilderUI.py",
 					"semi_transient": false,
 					"settings":
@@ -1382,11 +1447,11 @@
 						"translation.y": 7673.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 12,
 					"file": "/C/Users/harri/Desktop/assignShader.py",
 					"semi_transient": false,
 					"settings":
@@ -1411,11 +1476,11 @@
 						"translation.y": 4398.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 13,
 					"file": "riggingAPI/rigBuild/constraints.py",
 					"semi_transient": false,
 					"settings":
@@ -1439,11 +1504,11 @@
 						"translation.y": 495.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 20,
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 14,
 					"file": "common/transforms.py",
 					"semi_transient": false,
 					"settings":
@@ -1455,8 +1520,8 @@
 						"selection":
 						[
 							[
-								3223,
-								3146
+								3937,
+								4000
 							]
 						],
 						"settings":
@@ -1464,14 +1529,14 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 3267.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 15,
 					"file": "modelingAPI/models.py",
 					"semi_transient": false,
 					"settings":
@@ -1495,24 +1560,24 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
-					"buffer": 14,
+					"buffer": 16,
 					"file": "common/attributes.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4621,
+						"buffer_size": 4638,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								168,
-								203
+								1059,
+								1059
 							]
 						],
 						"settings":
@@ -1520,42 +1585,14 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 14,
-					"type": "text"
-				},
-				{
-					"buffer": 15,
-					"file": "riggingAPI/rigComponents.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4275,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								304,
-								304
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 702.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 16,
+					"buffer": 17,
 					"file": "riggingAPI/rigBuild/rigData.py",
 					"semi_transient": false,
 					"settings":
@@ -1579,11 +1616,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 23,
 					"type": "text"
 				},
 				{
-					"buffer": 17,
+					"buffer": 18,
 					"file": "UI/assetsManagerUI.py",
 					"semi_transient": false,
 					"settings":
@@ -1608,11 +1645,11 @@
 						"translation.y": 2484.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
-					"buffer": 18,
+					"buffer": 19,
 					"file": "common/workspaces.py",
 					"semi_transient": false,
 					"settings":
@@ -1637,11 +1674,11 @@
 						"translation.y": 10651.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 25,
+					"stack_index": 26,
 					"type": "text"
 				},
 				{
-					"buffer": 19,
+					"buffer": 20,
 					"file": "UI/syncAssetsUI.py",
 					"semi_transient": false,
 					"settings":
@@ -1666,11 +1703,11 @@
 						"translation.y": 7962.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 20,
+					"buffer": 21,
 					"file": "UI/baseUI.py",
 					"semi_transient": false,
 					"settings":
@@ -1694,11 +1731,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
-					"buffer": 21,
+					"buffer": 22,
 					"file": "UI/saveAssetUI.py",
 					"semi_transient": false,
 					"settings":
@@ -1723,11 +1760,11 @@
 						"translation.y": 2682.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
-					"buffer": 22,
+					"buffer": 23,
 					"file": "riggingAPI/joints.py",
 					"semi_transient": false,
 					"settings":
@@ -1752,11 +1789,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 24,
 					"file": "namingAPI/namingDict.py",
 					"semi_transient": false,
 					"settings":
@@ -1780,11 +1817,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 25,
 					"file": "/C/Users/harri/Downloads/edgeFlowMirror.py",
 					"semi_transient": false,
 					"settings":
@@ -1810,11 +1847,11 @@
 						"translation.y": 36663.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 26,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
-					"buffer": 25,
+					"buffer": 26,
 					"file": "common/maths.py",
 					"semi_transient": false,
 					"settings":
@@ -1838,11 +1875,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 24,
+					"stack_index": 25,
 					"type": "text"
 				},
 				{
-					"buffer": 26,
+					"buffer": 27,
 					"file": "common/hierarchy.py",
 					"semi_transient": false,
 					"settings":
@@ -1867,7 +1904,7 @@
 						"translation.y": 198.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 11,
 					"type": "text"
 				}
 			]
