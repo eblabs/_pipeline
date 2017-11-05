@@ -19,6 +19,10 @@ def setDagPath(sNode):
 	mSel.getDagPath(0, mDagPath, mComponents)
 	return mDagPath, mComponents
 
+def setMPoint(lPos):
+	mPoint = OpenMaya.MPoint(lPos[0], lPos[1], lPos[2])
+	return mPoint
+
 def convertMPointArrayToList(mPntArray):
 	lPntList = []
 	for i in range(mPntArray.length()):

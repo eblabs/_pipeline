@@ -28,6 +28,17 @@ def constraint(lNodes, sType = 'parent', sConstraintType = 'oneToAll', bMaintain
 
 	return lConstraints
 
+def follicleConstraint(sGeo, lNodes, bMaintainOffset = True, lSkipTranslate = None, lSkipRotate = None, lSkipScale = None, bForce = False):
+	oName = naming.oName(sGeo)
+	sGrpFollicle = naming.oName(sType = 'grp', sSide = oName.sSide, sPart = '%sFollicle' %oName.sPart, iIndex = oName.iIndex).sName
+	if not cmds.objExists(sGrpFollicle):
+		transforms.createTransformNode(sGrpFollicle, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
+	for sNode in lNodes:
+		if cmds.objectType(sGeo) == 'mesh':
+			lPos = 
+		elif cmds.objectType(sGeo) == 'surface':
+			lPos = 
+
 def getWeightAliasList(sConstraint):
 	sConstraintType = cmds.objectType(sConstraint)
 	if sConstraintType == 'pointConstraint':
@@ -55,7 +66,7 @@ def __constraint(lDrivers, sDriven, bMaintainOffset = False, lSkipTranslate = No
 		lAttrConnect = ['sx', 'sy', 'sz', 's']
 	elif sType == 'all':
 		lAttrConnect = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 't', 'r', 's']
-	for sAttr in ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 't', 'r']:
+	for sAttr in lAttrConnect:
 		lConnectionsAttr = cmds.listConnections('%s.%s'%(sDriven, sAttr), s = True, scn = True, p = True)
 		if lConnectionsAttr:
 			for sConnection in lConnectionsAttr:
@@ -63,6 +74,8 @@ def __constraint(lDrivers, sDriven, bMaintainOffset = False, lSkipTranslate = No
 		bLock = cmds.getAttr('%s.%s'%(sDriven, sAttr), lock = True)
 		if bLock:
 			lLocks.append(sAttr)
+
+	bConstraint = True
 
 	if not bForce:
 		if lConnections or lLocks:

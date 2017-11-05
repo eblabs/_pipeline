@@ -223,7 +223,7 @@ class baseHierarchy(baseCore.baseCore):
 		fCtrlSize = fWidth * fDepth * 1.2
 		### world ctrl
 		sParentCtrl = sControl
-		lCtrlShape = [['circle', 'yellow'], ['triangle', 'royal heath'], 'triangle', ['royal purple']]
+		lCtrlShape = [['circle', 'yellow'], ['triangle', 'royal heath'], ['triangle', 'royal purple']]
 		for i, sCtrlName in enumerate(['world', 'layout', 'local']):
 			oCtrl = controls.create(sCtrlName, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sParent = sParentCtrl, sPos = None, sShape = lCtrlShape[i][0], fSize = fCtrlSize, sColor = lCtrlShape[i][1], lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])
 			cmds.addAttr(oCtrl.sName, ln = 'rigScale', at = 'float', dv = 1, keyable = True)

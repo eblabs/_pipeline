@@ -2,6 +2,7 @@ dNameConvension = {
 	'type': {
 		'group': 'grp',
 		'null': 'null',
+		'rigGroup': 'rig',
 		'locator': 'loc',
 		'joint': 'jnt',
 		'mesh': 'mesh',

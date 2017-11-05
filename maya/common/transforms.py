@@ -103,8 +103,9 @@ def transformSnap(lNodes, sType = 'parent', sSnapType = 'oneToAll', lSkipTransla
 			transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
 
 
-def createTransformNode(sName, lLockHideAttrs = [], sParent = None):
+def createTransformNode(sName, lLockHideAttrs = [], sParent = None, iRotateOrder = 0):
 	cmds.group(empty  = True, name = sName)
+	cmds.setAttr('%s.ro' %sName, iRotateOrder)
 	attributes.lockHideAttrs(lLockHideAttrs, sNode = sName)
 	if sParent:
 		cmds.parent(sName, sParent)

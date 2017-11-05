@@ -241,33 +241,33 @@ class oControl(object):
 		
 
 #------------ create controller functions -----------
-def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sParent = None, sPos = None, sShape = 'cube', fSize = 1, sColor = None, lLockHideAttrs = []):
+def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sParent = None, sPos = None, iRotateOrder = 0, sShape = 'cube', fSize = 1, sColor = None, lLockHideAttrs = []):
 	## zero grp
 	sZero = naming.oName(sType = 'zero', sSide = sSide, sPart = sPart, iIndex = iIndex).sName
-	sZero = transforms.createTransformNode(sZero, sParent = sParent)
+	sZero = transforms.createTransformNode(sZero, sParent = sParent, iRotateOrder = iRotateOrder)
 
 	## passer grp
 	sPasser = naming.oName(sType = 'passer', sSide = sSide, sPart = sPart, iIndex = iIndex).sName
-	sPasser = transforms.createTransformNode(sPasser, sParent = sZero)
+	sPasser = transforms.createTransformNode(sPasser, sParent = sZero, iRotateOrder = iRotateOrder)
 
 	## stacks grp
 	sParentStack = sPasser
 	for i in range(iStacks):
 		sStack = naming.oName(sType = 'stack', sSide = sSide, sPart = sPart, iIndex = iIndex, iSuffix = i + 1).sName
-		sStack = transforms.createTransformNode(sStack, sParent = sParentStack)
+		sStack = transforms.createTransformNode(sStack, sParent = sParentStack, iRotateOrder = iRotateOrder)
 		sParentStack = sStack
 
 	## ctrl
 	oCtrl = naming.oName(sType = 'ctrl', sSide = sSide, sPart = sPart, iIndex = iIndex)
 	sCtrl = oCtrl.sName
-	sCtrl = transforms.createTransformNode(sCtrl, lLockHideAttrs = lLockHideAttrs, sParent = sParentStack)
+	sCtrl = transforms.createTransformNode(sCtrl, lLockHideAttrs = lLockHideAttrs, sParent = sParentStack, iRotateOrder = iRotateOrder)
 
 	## sub Ctrl
 	if bSub:
 		cmds.addAttr(sCtrl, ln = 'subCtrlVis', at = 'long', keyable = False, min = 0, max = 1, dv = 0)
 		cmds.setAttr('%s.subCtrlVis' %sCtrl, channelBox = True)
 		sSub = naming.oName(sType = 'ctrl', sSide = sSide, sPart = '%sSub' %sPart, iIndex = iIndex).sName
-		sSub = transforms.createTransformNode(sSub, lLockHideAttrs = lLockHideAttrs, sParent = sCtrl)
+		sSub = transforms.createTransformNode(sSub, lLockHideAttrs = lLockHideAttrs, sParent = sCtrl, iRotateOrder = iRotateOrder)
 		attributes.connectAttrs(['%s.subCtrlVis' %sCtrl], ['%s.v' %sSub], bForce = True)
 
 	## add shape
