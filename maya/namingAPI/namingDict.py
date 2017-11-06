@@ -21,6 +21,7 @@ dNameConvension = {
 		'blueprint': 'bpJnt',
 		'bindJoint': 'bindJnt',
 		'ikHandle': 'ikHnd',
+		'follicle': 'fol',
 		'plusMinusAverage': 'pmav',
 		'multiplyDivide': 'multDv',
 		'addDoubleLinear': 'add',

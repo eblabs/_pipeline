@@ -74,6 +74,31 @@ def getMeshesFromGrp(sGrp):
 				lMeshes.append(sNode)
 	return lMeshes
 
+def getClosestPointOnMesh(lPos, sMesh):
+	mFnMesh = __setMFnMesh(sMesh)
+	mPoint = apiUtils.setMPoint(lPos)
+
+	mPointClst = OpenMaya.MPoint()
+	id_util = OpenMaya.MScriptUtil()
+	id_util.createFromInt(0)
+	id_param = id_util.asIntPtr()
+
+	mFnMesh.getClosestPoint(mPoint, mPointClst, OpenMaya.MSpace.kWorld, id_param)
+
+	uv_util = OpenMaya.MScriptUtil()
+	uv_util.createFromList([0.0, 0.0], 2)
+	uv_param = uv_util.asFloat2Ptr()
+
+	sUvSetCurrent = cmds.polyUVSet(sMesh, q = True, cuv = True)[0]
+	mFnMesh.getUVAtPoint(mPointClst, uv_param, OpenMaya.MSpace.kWorld, sUvSetCurrent, id_param)
+
+	fVal_u = OpenMaya.MScriptUtil.getFloat2ArrayItem(uv_param, 0, 0)
+	fVal_v = OpenMaya.MScriptUtil.getFloat2ArrayItem(uv_param, 0, 1)
+	
+	return (mPointClst[0], mPointClst[1], mPointClst[2]), [fVal_u, fVal_v]
+
+
+
 
 #### Sub Functions
 def __setMFnMesh(sMesh):

@@ -4,9 +4,14 @@ import maya.mel as mel
 
 ## lib import
 import namingAPI.naming as naming
+reload(naming)
 import common.transforms as transforms
+reload(transforms)
 import common.attributes as attributes
-
+import modelingAPI.meshes as meshes
+reload(meshes)
+import modelingAPI.surfaces as surfaces
+reload(surfaces)
 ## functions
 def constraint(lNodes, sType = 'parent', sConstraintType = 'oneToAll', bMaintainOffset = False, lSkipTranslate = None, lSkipRotate = None, lSkipScale = None, bForce = False):
 	if not lSkipTranslate:
@@ -28,16 +33,57 @@ def constraint(lNodes, sType = 'parent', sConstraintType = 'oneToAll', bMaintain
 
 	return lConstraints
 
-def follicleConstraint(sGeo, lNodes, bMaintainOffset = True, lSkipTranslate = None, lSkipRotate = None, lSkipScale = None, bForce = False):
+def follicleConstraint(sGeo, lNodes, sType = 'parent', bMaintainOffset = True, lSkipTranslate = None, lSkipRotate = None, bForce = False):
 	oName = naming.oName(sGeo)
 	sGrpFollicle = naming.oName(sType = 'grp', sSide = oName.sSide, sPart = '%sFollicle' %oName.sPart, iIndex = oName.iIndex).sName
 	if not cmds.objExists(sGrpFollicle):
 		transforms.createTransformNode(sGrpFollicle, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
-	for sNode in lNodes:
-		if cmds.objectType(sGeo) == 'mesh':
-			lPos = 
-		elif cmds.objectType(sGeo) == 'surface':
-			lPos = 
+		cmds.addAttr(sGrpFollicle, ln = 'follicleCount', at = 'long', dv = 0)
+		cmds.setAttr('%s.follicleCount' %sGrpFollicle, lock = True)
+	sGeoShape = meshes.getShape(sGeo)
+
+	iFollicle = cmds.getAttr('%s.follicleCount' %sGrpFollicle)
+	for i, sNode in enumerate(lNodes):
+		lPos_node = cmds.xform(sNode, q = True, t = True, ws = True)
+		if cmds.objectType(sGeoShape) == 'mesh':
+			lPosClst, lPosUv = meshes.getClosestPointOnMesh(lPos_node, sGeo)
+			lShapeConnectAttr = ['outMesh', 'inputMesh']
+		elif cmds.objectType(sGeoShape) == 'nurbsSurface':
+			lPosClst, lPosUv = surfaces.getClosestPointOnSurface(lPos_node, sGeo)
+			lShapeConnectAttr = ['local', 'inputSurface']
+		else:
+			raise RuntimeError('%s is not a mesh or nurbs surface' %sGeo)
+
+		## create follicle
+		sFollicleShape = cmds.createNode('follicle')
+		sFollicleTrans = cmds.listRelatives(sFollicleShape, p = True)[0]
+		sFollicle = naming.oName(sType = 'follicle', sSide = oName.sSide, sPart = '%sFollicle' %oName.sPart, iIndex = oName.iIndex, iSuffix = iFollicle + i + 1).sName
+		cmds.rename(sFollicleTrans, sFollicle)
+		sFollicleShape = cmds.listRelatives(sFollicle, s = True)[0]
+
+		## connect
+		cmds.connectAttr('%s.%s' %(sGeoShape, lShapeConnectAttr[0]), '%s.%s' %(sFollicleShape, lShapeConnectAttr[1]))
+		cmds.connectAttr('%s.worldMatrix[0]' %sGeoShape, '%s.inputWorldMatrix' %sFollicleShape)
+		for sAttr in ['X', 'Y', 'Z']:
+			cmds.connectAttr('%s.outRotate%s' %(sFollicleShape, sAttr), '%s.rotate%s' %(sFollicle, sAttr))
+			cmds.connectAttr('%s.outTranslate%s' %(sFollicleShape, sAttr), '%s.translate%s' %(sFollicle, sAttr))
+		cmds.setAttr('%s.parameterU' %sFollicleShape, lPosUv[0])
+		cmds.setAttr('%s.parameterV' %sFollicleShape, lPosUv[1])
+
+		cmds.parent(sFollicle, sGrpFollicle)
+
+		## constraint
+		constraint([sFollicle, sNode], sType = sType, bMaintainOffset = bMaintainOffset, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, bForce = bForce)
+
+	## update follicle count
+	cmds.setAttr('%s.follicleCount' %sGrpFollicle, lock = False)
+	cmds.setAttr('%s.follicleCount' %sGrpFollicle, iFollicle + len(lNodes), lock = True)
+
+	return sGrpFollicle
+
+
+
+
 
 def getWeightAliasList(sConstraint):
 	sConstraintType = cmds.objectType(sConstraint)
@@ -101,8 +147,9 @@ def __constraint(lDrivers, sDriven, bMaintainOffset = False, lSkipTranslate = No
 					transforms.transformSnap([sDriver, sConstraintGrp], sType = 'all')
 					cmds.setAttr('%s.v' %sConstraintGrp, 0)
 					attributes.lockHideAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sNode = sConstraintGrp)
-				sNull = naming.oName(sType = 'null', sSide = oNameDriven.sSide, sPart = '%s%sConstraintW%d'%(oNameDriven.sSide,sType.title(), i), iIndex = oNameDriven.iIndex, iSuffix = oNameDriven.iSuffix).sName
-				sNull = transforms.createTransformNode(sNull, sParent = sConstraintGrp)
+				sNull = naming.oName(sType = 'null', sSide = oNameDriven.sSide, sPart = '%s%sConstraintW%d'%(oNameDriven.sPart,sType.title(), i), iIndex = oNameDriven.iIndex, iSuffix = oNameDriven.iSuffix).sName
+				iRotateOrder = cmds.getAttr('%s.ro' %sDriven)
+				sNull = transforms.createTransformNode(sNull, sParent = sConstraintGrp, iRotateOrder = iRotateOrder)
 				transforms.transformSnap([sDriven, sNull], sType = 'all')
 				attributes.lockHideAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sNode = sNull)
 				lNulls.append(sNull)

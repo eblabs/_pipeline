@@ -13,11 +13,11 @@ def createRibbonFromNodes(sName, lNodes, sDirection = 'x', fWidth = 1):
 	cmds.setAttr('%s.t%s' %(sCrvA, sDirection), fWidth * 0.5)
 	cmds.setAttr('%s.t%s' %(sCrvB, sDirection), -fWidth * 0.5)
 	cmds.loft(sCrvA, sCrvB, ch=False, rn=True, ar=True, name = sName)
-	cmds.rebuildSurface(sName, ch = False, su = len(lNodes) - 1, sv = 1, dv = 3, du = 3)
+	cmds.rebuildSurface(sName, ch = False, sv = len(lNodes) - 1, su = 1, dv = 3, du = 3)
 	cmds.delete(sCrvA, sCrvB)
 	return sName
 
-def getClosetPointOnSurface(lPos, sSurface):
+def getClosestPointOnSurface(lPos, sSurface):
 	mFnNurbsSurface = __setMFnNurbsSurface(sSurface)
 	mPoint = apiUtils.setMPoint(lPos)
 
@@ -30,7 +30,18 @@ def getClosetPointOnSurface(lPos, sSurface):
 	v_param = v_util.asDoublePtr()
 
 	mPointCls = mFnNurbsSurface.closestPoint(mPoint, False, u_param, v_param,  False, 1.0, OpenMaya.MSpace.kWorld)
-	return [(mPointCls[0], mPointCls[1], mPointCls[2]), (OpenMaya.MScriptUtil.getDouble(u_param), OpenMaya.MScriptUtil.getDouble(v_param))]
+
+	fVal_u = OpenMaya.MScriptUtil.getDouble(u_param)
+	fVal_v = OpenMaya.MScriptUtil.getDouble(v_param)
+
+	## normalize uv
+	sShape = cmds.listRelatives(sSurface, s = True)[0]
+	lRangeU = cmds.getAttr('%s.minMaxRangeU' %sShape)[0]
+	lRangeV = cmds.getAttr('%s.minMaxRangeV' %sShape)[0]
+
+	fVal_u = (fVal_u - lRangeU[0])/float(lRangeU[1] - lRangeU[0])
+	fVal_v = (fVal_v - lRangeV[0])/float(lRangeV[1] - lRangeV[0])
+	return (mPointCls[0], mPointCls[1], mPointCls[2]), [fVal_u, fVal_v]
 
 
 #### Sub Functions
