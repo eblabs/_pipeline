@@ -147,10 +147,13 @@ def __constraint(lDrivers, sDriven, bMaintainOffset = False, lSkipTranslate = No
 					transforms.transformSnap([sDriver, sConstraintGrp], sType = 'all')
 					cmds.setAttr('%s.v' %sConstraintGrp, 0)
 					attributes.lockHideAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sNode = sConstraintGrp)
+				sNullOffset = naming.oName(sType = 'null', sSide = oNameDriven.sSide, sPart = '%s%sConstraintOffsetW%d'%(oNameDriven.sPart,sType.title(), i), iIndex = oNameDriven.iIndex, iSuffix = oNameDriven.iSuffix).sName
 				sNull = naming.oName(sType = 'null', sSide = oNameDriven.sSide, sPart = '%s%sConstraintW%d'%(oNameDriven.sPart,sType.title(), i), iIndex = oNameDriven.iIndex, iSuffix = oNameDriven.iSuffix).sName
 				iRotateOrder = cmds.getAttr('%s.ro' %sDriven)
-				sNull = transforms.createTransformNode(sNull, sParent = sConstraintGrp, iRotateOrder = iRotateOrder)
-				transforms.transformSnap([sDriven, sNull], sType = 'all')
+				sNullOffset = transforms.createTransformNode(sNullOffset, sParent = sConstraintGrp, iRotateOrder = iRotateOrder)
+				sNull = transforms.createTransformNode(sNull, sParent = sNullOffset, iRotateOrder = iRotateOrder)
+				transforms.transformSnap([sDriven, sNullOffset], sType = 'all')
+				attributes.lockHideAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sNode = sNullOffset)
 				attributes.lockHideAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sNode = sNull)
 				lNulls.append(sNull)
 			lConstraints = lNulls

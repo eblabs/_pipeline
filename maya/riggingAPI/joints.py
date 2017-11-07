@@ -10,9 +10,10 @@ import common.transforms as transforms
 import common.hierarchy as hierarchy
 
 #### Functions
-def createJnt(sName):
+def createJnt(sName, iRotateOrder = 0):
 	cmds.select(clear = True)
 	sJnt = cmds.joint(name = sName)
+	cmds.setAttr('%s.ro' %sJnt, iRotateOrder)
 	return sJnt
 
 def createJntOnExistingNode(sNode, sSearch, sReplace, sParent = None):
@@ -60,7 +61,8 @@ def buildJointsFromJointsInfo(sPath, sGrp = None):
 	for sJnt in dJntsInfo.keys():
 		if cmds.objExists(sJnt):
 			cmds.delete(sJnt)
-		createJnt(sJnt)
+		iRotateOrder = dJntsInfo[sJnt]['iRotateOrder']
+		createJnt(sJnt, iRotateOrder = iRotateOrder)
 
 		lTransformInfo = dJntsInfo[sJnt]['lTransformInfo']
 		transforms.setNodeTransform(sJnt, lTransformInfo)
@@ -71,10 +73,8 @@ def buildJointsFromJointsInfo(sPath, sGrp = None):
 
 	for sJnt in dJntsInfo.keys():
 		sParent = dJntsInfo[sJnt]['sParent']
-		iRotateOrder = dJntsInfo[sJnt]['iRotateOrder']
 
 		if sParent and cmds.objExists(sParent) and sParent != sGrp:
 			cmds.parent(sJnt, sParent)
 
-		cmds.setAttr('%s.rotateOrder' %sJnt, iRotateOrder)
 #------------ save & load joints functions end -----------
