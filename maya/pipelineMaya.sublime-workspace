@@ -4,12 +4,196 @@
 		"selected_items":
 		[
 			[
-				"sJnt",
-				"sJnt_clavNonTwist"
+				"sCtrl",
+				"sCtrlParent"
+			],
+			[
+				"paren",
+				"parentConstraint"
+			],
+			[
+				"cla",
+				"clavicle"
+			],
+			[
+				"sP",
+				"sPart"
+			],
+			[
+				"lFi",
+				"lFingerParts"
+			],
+			[
+				"lF",
+				"lFingerParts"
+			],
+			[
+				"sPar",
+				"sPart"
+			],
+			[
+				"cons",
+				"constraint"
+			],
+			[
+				"sDrv_sca",
+				"sDrv_scapulaRot"
+			],
+			[
+				"sDrv_scapulaR",
+				"sDrv_scapulaRotAim"
+			],
+			[
+				"sDrv_scapulaRot",
+				"sDrv_scapulaRotOffset"
+			],
+			[
+				"sDrv_scapulaRotA",
+				"sDrv_scapulaRotAimTarget"
+			],
+			[
+				"worldUp",
+				"worldUpVector"
+			],
+			[
+				"aimC",
+				"aimVector"
+			],
+			[
+				"sConstraint",
+				"sConstraintNode"
+			],
+			[
+				"sCons",
+				"sConstraintNode"
+			],
+			[
+				"para",
+				"parameterV"
+			],
+			[
+				"connect",
+				"connectAttrs"
+			],
+			[
+				"sD",
+				"sDecomposeMatrix"
+			],
+			[
+				"sDe",
+				"sDecomposeMatrix"
+			],
+			[
+				"sSur",
+				"sSurf_ribCageShape"
+			],
+			[
+				"get",
+				"getShape"
+			],
+			[
+				"sDrv",
+				"sDrv_scapulaAim"
+			],
+			[
+				"trans",
+				"transforms"
+			],
+			[
+				"loc",
+				"lockHideAttrs"
+			],
+			[
+				"sDef",
+				"sDefJnt_upperArmNonTwist"
+			],
+			[
+				"sCrv",
+				"sCrv"
+			],
+			[
+				"ov",
+				"overrideDisplayType"
+			],
+			[
+				"sFk",
+				"sFk_upperArm"
+			],
+			[
+				"conenct",
+				"connectAttr"
+			],
+			[
+				"sShae",
+				"sShapeCtrl"
+			],
+			[
+				"connectA",
+				"connectAttr"
+			],
+			[
+				"sShape",
+				"sShapeCtrl"
+			],
+			[
+				"connec",
+				"connectAttrs"
+			],
+			[
+				"enum",
+				"enumerate"
+			],
+			[
+				"sDr",
+				"sDrv_upperArm"
 			],
 			[
 				"sFk_",
-				"sFk_upperArm"
+				"sFk_wrist"
+			],
+			[
+				"sIk_",
+				"sIk_wrist"
+			],
+			[
+				"oCtrl_el",
+				"oCtrl_elbowIkPv"
+			],
+			[
+				"sIk",
+				"sIk_elbow"
+			],
+			[
+				"sGrp_el",
+				"sGrp_elbowIkPvCrv"
+			],
+			[
+				"sI",
+				"sIk_elbow"
+			],
+			[
+				"oCtrl_h",
+				"oCtrl_handIk"
+			],
+			[
+				"sGrp_arm",
+				"sGrp_armIkHndle"
+			],
+			[
+				"sp",
+				"sPart"
+			],
+			[
+				"sb",
+				"sBp_elbow"
+			],
+			[
+				"oCtrl_",
+				"oCtrl_handIk"
+			],
+			[
+				"sJnt",
+				"sJnt_clavNonTwist"
 			],
 			[
 				"con",
@@ -36,19 +220,7 @@
 				"sGrp_armRig"
 			],
 			[
-				"cons",
-				"constraint"
-			],
-			[
 				"sIkH",
-				"sIkHnd_clav"
-			],
-			[
-				"sDr",
-				"sDrv_clavEnd"
-			],
-			[
-				"sIk",
 				"sIkHnd_clav"
 			],
 			[
@@ -72,10 +244,6 @@
 				"createJntOnExistingNode"
 			],
 			[
-				"sP",
-				"sParent"
-			],
-			[
 				"sJn",
 				"sJnt"
 			],
@@ -86,10 +254,6 @@
 			[
 				"sBp",
 				"sBp_clav"
-			],
-			[
-				"cla",
-				"s_clavicle"
 			],
 			[
 				"sT",
@@ -106,10 +270,6 @@
 			[
 				"enu",
 				"enumToMultiAttrs"
-			],
-			[
-				"get",
-				"getWeightAliasList"
 			],
 			[
 				"ctrl_",
@@ -138,10 +298,6 @@
 			[
 				"lD",
 				"lDrvJnts_neck"
-			],
-			[
-				"sCtrl",
-				"sCtrlShape"
 			],
 			[
 				"fk",
@@ -176,10 +332,6 @@
 				"fHeightAdd"
 			],
 			[
-				"oCtrl_",
-				"oCtrl_spine"
-			],
-			[
 				"lP",
 				"lPosCOG"
 			],
@@ -190,10 +342,6 @@
 			[
 				"ctrl",
 				"ctrl_m_cog"
-			],
-			[
-				"sD",
-				"sDriver"
 			],
 			[
 				"l",
@@ -226,10 +374,6 @@
 			[
 				"o",
 				"objectType"
-			],
-			[
-				"connec",
-				"connectAttr"
 			],
 			[
 				"sFo",
@@ -312,10 +456,6 @@
 				"sTwistChest"
 			],
 			[
-				"trans",
-				"transforms"
-			],
-			[
 				"lJnts",
 				"lDrvJnts_spine"
 			],
@@ -374,146 +514,6 @@
 			[
 				"pa",
 				"parentModelToGrps"
-			],
-			[
-				"imp",
-				"importRigGeometry"
-			],
-			[
-				"im",
-				"importModel"
-			],
-			[
-				"impor",
-				"import"
-			],
-			[
-				"contro",
-				"controls"
-			],
-			[
-				"conne",
-				"connectAttrs"
-			],
-			[
-				"attr",
-				"attributes"
-			],
-			[
-				"geo",
-				"geometries"
-			],
-			[
-				"rig",
-				"rigGeometries"
-			],
-			[
-				"at",
-				"attributes"
-			],
-			[
-				"connect",
-				"connectAttrs"
-			],
-			[
-				"sFunc",
-				"sFunctionName"
-			],
-			[
-				"d",
-				"dFunctionsWidget"
-			],
-			[
-				"dF",
-				"dFunctions"
-			],
-			[
-				"setHead",
-				"setHeaderHidden"
-			],
-			[
-				"QA",
-				"QAbstractItemView"
-			],
-			[
-				"setS",
-				"setSelectionBehavior"
-			],
-			[
-				"setA",
-				"setAlternatingRowColors"
-			],
-			[
-				"build",
-				"buildInfoTreeView"
-			],
-			[
-				"QTre",
-				"QTreeWidget_buildScript"
-			],
-			[
-				"Qt",
-				"QTreeWidget"
-			],
-			[
-				"dFu",
-				"dFunctionEach"
-			],
-			[
-				"lF",
-				"lFunctionsOrder"
-			],
-			[
-				"dFun",
-				"dFunctions"
-			],
-			[
-				"QSct",
-				"QSection"
-			],
-			[
-				"dFunc",
-				"dFuncAll"
-			],
-			[
-				"lFunc",
-				"lFuncAll"
-			],
-			[
-				"lFun",
-				"lFunctionsOrder"
-			],
-			[
-				"QT",
-				"QTreeWidgetItem"
-			],
-			[
-				"QP",
-				"QPreBuild"
-			],
-			[
-				"QTree",
-				"QTreeWidget"
-			],
-			[
-				"sCon",
-				"sConstraint"
-			],
-			[
-				"const",
-				"constraints"
-			],
-			[
-				"parent",
-				"parentConstraint"
-			],
-			[
-				"scale",
-				"scaleConstraint"
-			],
-			[
-				"ori",
-				"orientConstraint"
 			]
 		]
 	},
@@ -532,7 +532,7 @@
 			"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript.py",
 			"settings":
 			{
-				"buffer_size": 27334,
+				"buffer_size": 45183,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -577,7 +577,7 @@
 			"file": "riggingAPI/constraints.py",
 			"settings":
 			{
-				"buffer_size": 9146,
+				"buffer_size": 9207,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -904,9 +904,13 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": false,
+		"case_sensitive": true,
 		"find_history":
 		[
+			"follicle",
+			"blue",
+			"sIkHnd_upperArm",
+			"rigs'",
 			"connectAttrs",
 			"cmds.ikHandle",
 			"enumToMultiAttrs",
@@ -1030,11 +1034,7 @@
 			"_listItemRightClicked",
 			"setAlignment",
 			"class",
-			"_addQPushButton",
-			"lTransformInf",
-			"getNodesAvgTransformInfo",
-			"getPoly",
-			"_setSkinWeights"
+			"_addQPushButton"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1158,7 +1158,7 @@
 						"translation.y": 2178.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
@@ -1167,23 +1167,23 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 27334,
+						"buffer_size": 45183,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								26293,
-								26293
+								44361,
+								44361
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
-						"translation.x": 2254.0,
-						"translation.y": 12994.0,
+						"translation.x": 1539.0,
+						"translation.y": 19999.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1212,10 +1212,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 9504.0,
+						"translation.y": 3267.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
@@ -1243,7 +1243,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
@@ -1269,10 +1269,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 495.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
@@ -1288,8 +1288,8 @@
 						"selection":
 						[
 							[
-								3127,
-								3127
+								172,
+								180
 							]
 						],
 						"settings":
@@ -1297,10 +1297,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 2574.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -1309,15 +1309,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9146,
+						"buffer_size": 9207,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7243,
-								7338
+								1302,
+								1356
 							]
 						],
 						"settings":
@@ -1325,11 +1325,11 @@
 							"syntax": "Packages/Python/Python.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 200.0,
-						"translation.y": 4537.0,
+						"translation.x": 0.0,
+						"translation.y": 676.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -1345,8 +1345,8 @@
 						"selection":
 						[
 							[
-								4060,
-								4060
+								4001,
+								4017
 							]
 						],
 						"settings":
@@ -1354,10 +1354,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1980.0,
+						"translation.y": 3366.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -1385,7 +1385,7 @@
 						"translation.y": 7920.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
@@ -1413,7 +1413,7 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
@@ -1442,7 +1442,7 @@
 						"translation.y": 1725.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
@@ -1471,7 +1471,7 @@
 						"translation.y": 99.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
@@ -1499,7 +1499,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
@@ -1527,7 +1527,7 @@
 						"translation.y": 1288.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
@@ -1556,7 +1556,7 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
@@ -1614,7 +1614,7 @@
 						"translation.y": 4398.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
@@ -1658,8 +1658,8 @@
 						"selection":
 						[
 							[
-								1059,
-								1059
+								432,
+								362
 							]
 						],
 						"settings":
@@ -1667,10 +1667,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 702.0,
+						"translation.y": 9.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -1871,7 +1871,7 @@
 						"translation.y": 990.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
@@ -1887,8 +1887,8 @@
 						"selection":
 						[
 							[
-								482,
-								482
+								966,
+								978
 							]
 						],
 						"settings":
@@ -1896,10 +1896,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 792.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{

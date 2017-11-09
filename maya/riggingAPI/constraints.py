@@ -42,6 +42,7 @@ def follicleConstraint(sGeo, lNodes, sType = 'parent', bMaintainOffset = True, l
 		cmds.setAttr('%s.follicleCount' %sGrpFollicle, lock = True)
 	sGeoShape = meshes.getShape(sGeo)
 
+	lFollicles = []
 	iFollicle = cmds.getAttr('%s.follicleCount' %sGrpFollicle)
 	for i, sNode in enumerate(lNodes):
 		lPos_node = cmds.xform(sNode, q = True, t = True, ws = True)
@@ -61,6 +62,8 @@ def follicleConstraint(sGeo, lNodes, sType = 'parent', bMaintainOffset = True, l
 		cmds.rename(sFollicleTrans, sFollicle)
 		sFollicleShape = cmds.listRelatives(sFollicle, s = True)[0]
 
+		lFollicles.append(sFollicle)
+
 		## connect
 		cmds.connectAttr('%s.%s' %(sGeoShape, lShapeConnectAttr[0]), '%s.%s' %(sFollicleShape, lShapeConnectAttr[1]))
 		cmds.connectAttr('%s.worldMatrix[0]' %sGeoShape, '%s.inputWorldMatrix' %sFollicleShape)
@@ -79,7 +82,7 @@ def follicleConstraint(sGeo, lNodes, sType = 'parent', bMaintainOffset = True, l
 	cmds.setAttr('%s.follicleCount' %sGrpFollicle, lock = False)
 	cmds.setAttr('%s.follicleCount' %sGrpFollicle, iFollicle + len(lNodes), lock = True)
 
-	return sGrpFollicle
+	return sGrpFollicle, lFollicles
 
 
 
