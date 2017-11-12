@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"parent",
+				"parentSkinGeoToDefGrp"
+			],
+			[
+				"defo",
+				"deformers"
+			],
+			[
 				"lCtrl",
 				"lCtrlPntsMirror"
 			],
@@ -506,14 +514,6 @@
 			[
 				"sFo",
 				"sFollicle"
-			],
-			[
-				"sFol",
-				"sFollicleTrans"
-			],
-			[
-				"sG",
-				"sGrpFollicle"
 			]
 		]
 	},
@@ -532,7 +532,7 @@
 			"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript.py",
 			"settings":
 			{
-				"buffer_size": 63033,
+				"buffer_size": 63744,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -631,7 +631,7 @@
 			"file": "riggingAPI/deformers.py",
 			"settings":
 			{
-				"buffer_size": 8354,
+				"buffer_size": 8340,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -1141,8 +1141,8 @@
 						"selection":
 						[
 							[
-								622,
-								632
+								595,
+								586
 							]
 						],
 						"settings":
@@ -1154,7 +1154,7 @@
 						"translation.y": 264.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
@@ -1163,15 +1163,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 63033,
+						"buffer_size": 63744,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								62792,
-								62792
+								0,
+								63744
 							]
 						],
 						"settings":
@@ -1179,7 +1179,7 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 28814.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1211,7 +1211,7 @@
 						"translation.y": 12787.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -1240,7 +1240,7 @@
 						"translation.y": 990.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
@@ -1268,7 +1268,7 @@
 						"translation.y": 4024.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
@@ -1296,7 +1296,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -1324,7 +1324,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
@@ -1353,7 +1353,7 @@
 						"translation.y": 792.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
@@ -1369,8 +1369,8 @@
 						"selection":
 						[
 							[
-								2950,
-								2971
+								2093,
+								2115
 							]
 						],
 						"settings":
@@ -1378,10 +1378,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 2475.0,
+						"translation.y": 1584.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -1410,7 +1410,7 @@
 						"translation.y": 3464.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
@@ -1475,15 +1475,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8354,
+						"buffer_size": 8340,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2012,
-								2018
+								350,
+								371
 							]
 						],
 						"settings":
@@ -1492,10 +1492,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1725.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -1923,7 +1923,7 @@
 						"translation.y": 792.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{

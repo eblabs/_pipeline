@@ -161,7 +161,6 @@ def __getSkinWeightArray(mFnSkinCluster):
 	uIntPtr = mUtil.asUintPtr()
 	mFnSkinCluster.getWeights(mDagPath, mComponents, mWeightArray, uIntPtr)
 
-	print 'aaaa'
 	return mWeightArray
 
 def __getComponentsFromMFnSkinCluster(mFnSkinCluster):
