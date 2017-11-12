@@ -4,9 +4,11 @@ import maya.mel as mel
 import maya.OpenMaya as OpenMaya
 ## libs Import
 import common.apiUtils as apiUtils
+reload(apiUtils)
 import common.files as files
 import namingAPI.naming as naming
 import common.transforms as transforms
+reload(transforms)
 import common.attributes as attributes
 import common.maths as maths
 import controlShapeDict
@@ -21,7 +23,7 @@ def getCtrlShape(sCtrl):
 		sCtrlShape = None
 	return sCtrlShape
 
-def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None):
+def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None, bTop = False):
 	if dCtrlShapeInfo:
 		lCtrlPnts = dCtrlShapeInfo['lCtrlPnts']
 		lKnots = dCtrlShapeInfo['lKnots']
@@ -52,6 +54,8 @@ def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None):
 		cmds.setAttr('%s.v' %sCtrlShape, lock = True)
 	for sCtrl in lCtrls:
 		cmds.parent(sCtrlShape, sCtrl, add = True, s = True)
+	if bTop:
+		cmds.reorder(sCtrlShape, f = True)
 	cmds.delete(sCrv)
 
 def scaleCtrlShape(sCtrl, fScale = 1):
@@ -64,6 +68,39 @@ def scaleCtrlShape(sCtrl, fScale = 1):
 			vCtrlPnt = maths.vectorScale(vCtrlPnt, fScale)
 			lCtrlPntPosUpdate = maths.getPointFromVectorAndPoint(lPosPivot, vCtrlPnt)
 			cmds.setAttr('%s.controlPoints[%d]' %(sCtrlShape, i), lCtrlPntPosUpdate[0], lCtrlPntPosUpdate[1], lCtrlPntPosUpdate[2])
+
+def mirrorCtrlShape(sCtrl, bFlip = True):
+	oName = naming.oName(sCtrl)
+	bMirror = True
+	if 'left' in oName.sSideKey:
+		oName.sSide = oName.sSideKey.replace('left', 'right')
+	elif 'right' in oName.sSideKey:
+		oName.sSide = oName.sSideKey.replace('right', 'left')
+	else:
+		bSkip = False
+	if bMirror:
+		sCtrlMirror = oName.sName
+		sCtrlShapeMirror = getCtrlShape(sCtrlMirror)
+		iColor = cmds.getAttr('%s.overrideColor' %sCtrlShapeMirror)
+		dCtrlShapeInfo = getCtrlShapeInfo(sCtrl)
+
+		if bFlip:
+			lCtrlPnts = dCtrlShapeInfo[sCtrl]['lCtrlPnts']
+			lCtrlPntsMirror = []
+			for lCtrlPnt in lCtrlPnts:
+				lCtrlPntWorld = transforms.convertPointTransformFromObjectToWorld(lCtrlPnt, sCtrl)
+				lCtrlPntWorld[0] = -1 * lCtrlPntWorld[0]
+				lCtrlPntMirror = transforms.convertPointTransformFromWorldToObject(lCtrlPntWorld, sCtrlMirror)
+				lCtrlPntsMirror.append(lCtrlPntMirror)
+			dCtrlShapeInfo[sCtrl]['lCtrlPnts'] = lCtrlPntsMirror
+
+		dCtrlShapeInfo[sCtrl]['sCtrlShape'] = sCtrlShapeMirror
+		dCtrlShapeInfo[sCtrl]['iColor'] = iColor
+
+	buildCtrlShape(sCtrlMirror, dCtrlShapeInfo[sCtrl], bColor = True, bTop = True)
+
+
+
 
 #------------ create controller wrapper -----------
 class oControl(object):
@@ -357,7 +394,7 @@ def saveCtrlShapeInfo(lCtrls, sPath):
 	dCtrlShapeInfo = getCtrlShapeInfoFromList(lCtrls)
 	files.writeJsonFile(sPath, dCtrlShapeInfo)
 
-def buildCtrlShape(sCtrl, dCtrlShapeInfo, bColor = True):
+def buildCtrlShape(sCtrl, dCtrlShapeInfo, bColor = True, bTop = False):
 	if cmds.objExists(sCtrl):
 		sCtrlShape = getCtrlShape(sCtrl)
 		if sCtrlShape:
@@ -366,7 +403,7 @@ def buildCtrlShape(sCtrl, dCtrlShapeInfo, bColor = True):
 		else:
 			iColor = None
 		sCtrlShape = dCtrlShapeInfo['sCtrlShape']
-		addCtrlShape([sCtrl], sCtrlShape, dCtrlShapeInfo = dCtrlShapeInfo)
+		addCtrlShape([sCtrl], sCtrlShape, dCtrlShapeInfo = dCtrlShapeInfo, bTop = bTop)
 		if not bColor and iColor:
 			cmds.setAttr('%s.overrideColor' %sCtrlShape, iColor)
 
@@ -374,7 +411,7 @@ def buildCtrlShapesFromCtrlShapeInfo(sPath):
 	dCtrlShapeInfo = files.readJsonFile(sPath)
 
 	for sCtrl in dCtrlShapeInfo.keys():
-		buildCtrlShape(sCtrl, dCtrlShapeInfo[sCtrl], bColor = True)
+		buildCtrlShape(sCtrl, dCtrlShapeInfo[sCtrl], bColor = True, bTop = True)
 #------------ save & load ctrlShape functions end -----------
 
 #### Sub Functions
@@ -383,7 +420,7 @@ def __getCtrlShapeControlPoints(sCtrlShape):
 	lCtrlPnts = []
 	for i in range(0, iCtrlPnts):
 		lCtrlPntEach = cmds.getAttr('%s.controlPoints[%d]' %(sCtrlShape, i))[0]
-		lCtrlPnts.append(lCtrlPntEach)
+		lCtrlPnts.append([lCtrlPntEach[0], lCtrlPntEach[1], lCtrlPntEach[2]])
 	return lCtrlPnts
 
 def __getCtrlShapeKnots(sCtrlShape):

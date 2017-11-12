@@ -1,6 +1,7 @@
 ## External Import
 import maya.cmds as cmds
 import maya.mel as mel
+import maya.OpenMaya as OpenMaya
 import os
 import json
 import time
@@ -9,6 +10,7 @@ import time
 import files
 import maths
 import attributes
+import apiUtils
 
 #### Functions
 def getNodeTransformInfo(sNode):
@@ -121,6 +123,19 @@ def getBoundingBoxInfo(sNode):
 
 	return fWidth, fHeight, fDepth
 
+def convertPointTransformFromObjectToWorld(lTranslate, sParent):
+	mMatrixPnt = apiUtils.createMMatrixFromTransformInfo(lTranslate = lTranslate)
+	mMatrixParent = apiUtils.createMMatrixFromTransformNode(sParent, sSpace = 'world')
+	mMatrixPntWorld = mMatrixPnt * mMatrixParent
+	lTransformInfo = apiUtils.decomposeMMatrix(mMatrixPntWorld)
+	return lTransformInfo[0]
+
+def convertPointTransformFromWorldToObject(lTranslate, sParent):
+	mMatrixPnt = apiUtils.createMMatrixFromTransformInfo(lTranslate = lTranslate)
+	mMatrixParent = apiUtils.createMMatrixFromTransformNode(sParent, sSpace = 'world')
+	mMatrixPntWorld = mMatrixPnt * mMatrixParent.inverse()
+	lTransformInfo = apiUtils.decomposeMMatrix(mMatrixPntWorld)
+	return lTransformInfo[0]
 
 #### Sub Functions
 def transformSnapPoint(lTransformInfoDriver, sDriven, lSkipTranslate = None):

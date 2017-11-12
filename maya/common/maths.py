@@ -1,5 +1,6 @@
 ## External Import
 import math
+import maya.OpenMaya as OpenMaya
 
 #### Functions
 def getAvgValueFromList(lList):
@@ -8,6 +9,7 @@ def getAvgValueFromList(lList):
 	for v in lList:
 		fValue += v / float(iList)
 	return fValue
+
 #--------------- vector ------------
 def vector(pointA, pointB):
 	return [pointB[0] - pointA[0], pointB[1] - pointA[1], pointB[2] - pointA[2]]
