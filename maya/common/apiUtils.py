@@ -1,6 +1,3 @@
-## test
-## test master
-
 ## External Import
 import maya.cmds as cmds
 import maya.mel as mel
@@ -42,9 +39,6 @@ def createMDoubleArray(lList):
 	mDoubleArray = OpenMaya.MScriptUtil()
 	mDoubleArray.createFromList(lList,3)
 	return mDoubleArray
-
-def test():
-	pass
 
 # ----------------- mMatrix ----------------------
 def createMMatrixFromTransformInfo(lTranslate = [0,0,0], lRotate = [0,0,0], lScale = [1,1,1], iRotateOrder = 0):
