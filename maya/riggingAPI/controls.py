@@ -409,7 +409,7 @@ def buildCtrlShape(sCtrl, dCtrlShapeInfo, bColor = True, bTop = False):
 
 def buildCtrlShapesFromCtrlShapeInfo(sPath):
 	dCtrlShapeInfo = files.readJsonFile(sPath)
-
+	
 	for sCtrl in dCtrlShapeInfo.keys():
 		buildCtrlShape(sCtrl, dCtrlShapeInfo[sCtrl], bColor = True, bTop = True)
 #------------ save & load ctrlShape functions end -----------
