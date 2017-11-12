@@ -42,6 +42,9 @@ def createMDoubleArray(lList):
 	mDoubleArray.createFromList(lList,3)
 	return mDoubleArray
 
+def test():
+	pass
+
 # ----------------- mMatrix ----------------------
 def createMMatrixFromTransformInfo(lTranslate = [0,0,0], lRotate = [0,0,0], lScale = [1,1,1], iRotateOrder = 0):
 	lRotateOrder = [OpenMaya.MTransformationMatrix.kXYZ, 
