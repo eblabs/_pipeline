@@ -5,6 +5,9 @@ import maya.OpenMaya as OpenMaya
 
 #### Functions
 def setMObj(sNode):
+	'''
+	return a mObject
+	'''
 	mObj = OpenMaya.MObject()
 	mSel = OpenMaya.MSelectionList()
 	mSel.add(sNode)
@@ -12,6 +15,9 @@ def setMObj(sNode):
 	return mObj
 
 def setDagPath(sNode):
+	'''
+	return mDagPath and mObject
+	'''
 	mDagPath = OpenMaya.MDagPath()
 	mSel = OpenMaya.MSelectionList()
 	mSel.add(sNode)
@@ -20,6 +26,9 @@ def setDagPath(sNode):
 	return mDagPath, mComponents
 
 def setMPoint(lPos):
+	'''
+	return a mPoint
+	'''
 	mPoint = OpenMaya.MPoint(lPos[0], lPos[1], lPos[2])
 	return mPoint
 

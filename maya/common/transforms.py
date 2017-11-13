@@ -26,9 +26,9 @@ def getNodesAvgTransformInfo(lNodes, bCenterPivot = False):
 		for sNode in lNodes:
 			lTransformInfo = getNodeTransformInfo(sNode)
 			for j, lTransformInfoEach in enumerate(lTransformInfo[i]):
-				lPos[j].append(lTransformInfoEach[j])
+				lPos[j].append(lTransformInfoEach)
 		lPosAvg = []
-		for j, lPosEach in lPos:
+		for lPosEach in lPos:
 			fPosAvg = maths.getAvgValueFromList(lPosEach)
 			lPosAvg.append(fPosAvg)
 		lTransformInfoAvg.append(lPosAvg)
@@ -43,7 +43,7 @@ def getNodesPivotFromBoundingBox(lNodes):
 		lPosEach = []
 		for sNode in lNodes:
 			fTransformInfo = getNodeTransformInfo(sNode)[0][i]
-			iPosEach.append(fTransformInfo)
+			lPosEach.append(fTransformInfo)
 		lPos[0].append(max(lPosEach))
 		lPos[1].append(min(lPosEach))
 	lCp = []

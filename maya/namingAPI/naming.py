@@ -1,7 +1,9 @@
 import namingDict
 reload(namingDict)
 class oName(object):
-	"""docstring for oName"""
+	'''
+	a naming wrapper
+	'''
 	def __init__(self, *args, **kwargs):
 		super(oName, self).__init__()
 

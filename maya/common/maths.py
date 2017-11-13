@@ -1,6 +1,5 @@
 ## External Import
 import math
-import maya.OpenMaya as OpenMaya
 
 #### Functions
 def getAvgValueFromList(lList):

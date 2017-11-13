@@ -16,6 +16,9 @@ reload(transforms)
 reload(naming)
 #### Functions
 def getCtrlShape(sCtrl):
+	'''
+	return the first shape node of a control
+	'''
 	lCtrlShapes = cmds.listRelatives(sCtrl, s = True)
 	if lCtrlShapes:
 		sCtrlShape = lCtrlShapes[0]
@@ -24,6 +27,15 @@ def getCtrlShape(sCtrl):
 	return sCtrlShape
 
 def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None, bTop = False):
+	'''
+	add a shape node to a list of controls
+
+	lCtrls: a list of transform nodes need to add the shape node
+	sCtrlShape: shape node name
+	bVis: shape node's visibility, True/False
+	dCtrlShapeInfo: a dictionary contain all the shape node's shape information
+	bTop: either the shape node will be on top of other shape nodes nor not, True/False
+	'''
 	if dCtrlShapeInfo:
 		lCtrlPnts = dCtrlShapeInfo['lCtrlPnts']
 		lKnots = dCtrlShapeInfo['lKnots']
@@ -59,6 +71,9 @@ def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None, bTop = 
 	cmds.delete(sCrv)
 
 def scaleCtrlShape(sCtrl, fScale = 1):
+	'''
+	scale the shape node in the control's transform space
+	'''
 	lPosPivot = cmds.xform(sCtrl, q = True, t = True, ws = True)
 	sCtrlShape = getCtrlShape(sCtrl)
 	if sCtrlShape:
@@ -69,42 +84,75 @@ def scaleCtrlShape(sCtrl, fScale = 1):
 			lCtrlPntPosUpdate = maths.getPointFromVectorAndPoint(lPosPivot, vCtrlPnt)
 			cmds.setAttr('%s.controlPoints[%d]' %(sCtrlShape, i), lCtrlPntPosUpdate[0], lCtrlPntPosUpdate[1], lCtrlPntPosUpdate[2])
 
-def mirrorCtrlShape(sCtrl, bFlip = True):
+def mirrorCtrlShape(sCtrl):
+	'''
+	mirror control's shape node to the other side
+	'''
 	oName = naming.oName(sCtrl)
+	sCtrlShape = getCtrlShape(sCtrl)
+	oCtrlShapeName = naming.oName(sCtrlShape)
 	bMirror = True
 	if 'left' in oName.sSideKey:
 		oName.sSide = oName.sSideKey.replace('left', 'right')
+		oCtrlShapeName.sSide = oCtrlShapeName.sSideKey.replace('left', 'right')
 	elif 'right' in oName.sSideKey:
 		oName.sSide = oName.sSideKey.replace('right', 'left')
+		oCtrlShapeName.sSide = oCtrlShapeName.sSideKey.replace('right', 'left')
 	else:
-		bSkip = False
+		bMirror = False
 	if bMirror:
-		sCtrlMirror = oName.sName
-		sCtrlShapeMirror = getCtrlShape(sCtrlMirror)
-		iColor = cmds.getAttr('%s.overrideColor' %sCtrlShapeMirror)
+		sCtrlMirror = oName.sName				
+		sCtrlShapeMirror = oCtrlShapeName.sName
+		if cmds.objExists(sCtrlShapeMirror):
+			iColor = cmds.getAttr('%s.overrideColor' %sCtrlShapeMirror)
+		else:
+			iColor = None
 		dCtrlShapeInfo = getCtrlShapeInfo(sCtrl)
 
-		if bFlip:
-			lCtrlPnts = dCtrlShapeInfo[sCtrl]['lCtrlPnts']
-			lCtrlPntsMirror = []
-			for lCtrlPnt in lCtrlPnts:
-				lCtrlPntWorld = transforms.convertPointTransformFromObjectToWorld(lCtrlPnt, sCtrl)
-				lCtrlPntWorld[0] = -1 * lCtrlPntWorld[0]
-				lCtrlPntMirror = transforms.convertPointTransformFromWorldToObject(lCtrlPntWorld, sCtrlMirror)
-				lCtrlPntsMirror.append(lCtrlPntMirror)
-			dCtrlShapeInfo[sCtrl]['lCtrlPnts'] = lCtrlPntsMirror
+		lCtrlPnts = dCtrlShapeInfo[sCtrl]['lCtrlPnts']
+		lCtrlPntsMirror = []
+		for lCtrlPnt in lCtrlPnts:
+			lCtrlPntWorld = transforms.convertPointTransformFromObjectToWorld(lCtrlPnt, sCtrl)
+			lCtrlPntWorld[0] = -1 * lCtrlPntWorld[0]
+			lCtrlPntMirror = transforms.convertPointTransformFromWorldToObject(lCtrlPntWorld, sCtrlMirror)
+			lCtrlPntsMirror.append(lCtrlPntMirror)
+		dCtrlShapeInfo[sCtrl]['lCtrlPnts'] = lCtrlPntsMirror
 
 		dCtrlShapeInfo[sCtrl]['sCtrlShape'] = sCtrlShapeMirror
 		dCtrlShapeInfo[sCtrl]['iColor'] = iColor
 
-	buildCtrlShape(sCtrlMirror, dCtrlShapeInfo[sCtrl], bColor = True, bTop = True)
+		buildCtrlShape(sCtrlMirror, dCtrlShapeInfo[sCtrl], bColor = True, bTop = True)
 
 
 
 
 #------------ create controller wrapper -----------
 class oControl(object):
-	"""docstring for oControl"""
+	'''
+	a wrapper for controller
+
+	control's hierarchy: sZero/sPasser/sStack01/.../sName/sSub
+
+	property:
+	sName: return the control's name
+	sSide: return the control's side
+	sPart: return the control's part
+	iIndex: return the control's index
+	sZero: return the control's zero group
+	sPasser: return the control's passer group
+	lStacks: return the control's stack groups list
+	iStacks: return how many stack groups the control have
+	sSub: return the control's sub control name
+	bSub: return whether the control has a sub control or not
+	sSideKey: return the control's side's full name
+
+	setAttr:
+	sSide: set the control's side
+	sPart: set the control's part name
+	iIndex: set the control's index
+	iStacks: set how many stacks the control has
+	bSub: set if the control has a sub control or not
+	'''
 	def __init__(self, sCtrl):
 		self.__getCtrlInfo(sCtrl)
 
@@ -147,6 +195,11 @@ class oControl(object):
 	@property
 	def bSub(self):
 		return self.__bSub
+
+	@property
+	def sSideKey(self):
+		sKey = getFullNameFromKey(self.__sSide, 'side')
+		return sKey
 
 	@sSide.setter
 	def sSide(self, sKey):
@@ -279,6 +332,24 @@ class oControl(object):
 
 #------------ create controller functions -----------
 def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sParent = None, sPos = None, iRotateOrder = 0, sShape = 'cube', fSize = 1, sColor = None, lLockHideAttrs = []):
+	'''
+	create control function
+
+	return control wrapper
+
+	sPart: control's part name
+	sSide: control's side name
+	iIndex: control's index
+	bSub: whether the control will have sub control or not
+	iStacks: how many stack groups the control will have
+	sParent: where the control should be parented
+	sPos: where the control would be snapped to
+	iRotateOrder: set the control's rotateOrder
+	sShape: control's shape
+	fSize: control's shape's size
+	sColor: control's shape color string/index
+	lLockHideAttrs: list of attributes should be locked and hidden
+	'''
 	## zero grp
 	sZero = naming.oName(sType = 'zero', sSide = sSide, sPart = sPart, iIndex = iIndex).sName
 	sZero = transforms.createTransformNode(sZero, sParent = sParent, iRotateOrder = iRotateOrder)
@@ -358,6 +429,23 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 
 #------------ save & load ctrlShape functions -----------
 def getCtrlShapeInfo(sCtrl):
+	'''
+	get control shape node info
+	retrun a dictionary
+
+	dCtrlShapeInfo = {sCtrl:
+						{
+							'sCtrlShape': sCtrlShape,
+							'lCtrlPnts': lCtrlPnts,
+							'lKnots': lKnots,
+							'bPeriodic': bPeriodic,
+							'iDegree': iDegree,
+							'bOverride': bOverride,
+							'iOverrideType': iOverrideType,
+							'iColor': iColor
+						}
+					 }
+	'''
 	sCtrlShape = getCtrlShape(sCtrl)
 	
 	lCtrlPnts = __getCtrlShapeControlPoints(sCtrlShape)
@@ -384,6 +472,9 @@ def getCtrlShapeInfo(sCtrl):
 	return dCtrlShapeInfo
 
 def getCtrlShapeInfoFromList(lCtrls):
+	'''
+	return a dictionary contain shape node info for all the controls in the list
+	'''
 	dCtrlShapeInfo = {}
 	for sCtrl in lCtrls:
 		dCtrlShapeInfoEach = getCtrlShapeInfo(sCtrl)
@@ -391,10 +482,21 @@ def getCtrlShapeInfoFromList(lCtrls):
 	return dCtrlShapeInfo
 
 def saveCtrlShapeInfo(lCtrls, sPath):
+	'''
+	save control shape info as a json file to the path
+	'''
 	dCtrlShapeInfo = getCtrlShapeInfoFromList(lCtrls)
 	files.writeJsonFile(sPath, dCtrlShapeInfo)
 
 def buildCtrlShape(sCtrl, dCtrlShapeInfo, bColor = True, bTop = False):
+	'''
+	build control shape node from given info
+
+	sCtrl: the control's transform node, the shape node will be added to this transform
+	dCtrlShapeInfo: the shape info for the shape node
+	bColor: either override the color or not
+	bTop: either put this shape node on top of other shape nodes or not
+	'''
 	if cmds.objExists(sCtrl):
 		sCtrlShape = getCtrlShape(sCtrl)
 		if sCtrlShape:
@@ -408,6 +510,9 @@ def buildCtrlShape(sCtrl, dCtrlShapeInfo, bColor = True, bTop = False):
 			cmds.setAttr('%s.overrideColor' %sCtrlShape, iColor)
 
 def buildCtrlShapesFromCtrlShapeInfo(sPath):
+	'''
+	build controls shapes from given json file
+	'''
 	dCtrlShapeInfo = files.readJsonFile(sPath)
 	
 	for sCtrl in dCtrlShapeInfo.keys():
