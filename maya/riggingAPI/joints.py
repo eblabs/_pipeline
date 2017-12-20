@@ -23,7 +23,15 @@ def createJntOnExistingNode(sNode, sSearch, sReplace, sParent = None):
 	cmds.setAttr('%s.rotateOrder' %sJnt, iRotateOrder)
 	transforms.setNodeTransform(sJnt, lTransformInfo)
 	cmds.makeIdentity(sJnt, apply = True, t = 1, r = 1, s = 1)
-	if sParent:
+	if sParent and cmds.objExists(sParent):
+		cmds.parent(sJnt, sParent)
+	return sJnt
+
+def createJntOnTransformInfo(sName, lTransformInfo, iRotateOrder = 0, sParent = None):
+	sJnt = createJnt(sName, iRotateOrder = iRotateOrder)
+	transforms.setNodeTransform(sJnt, lTransformInfo)
+	cmds.makeIdentity(sJnt, apply = True, t = 1, r = 1, s = 1)
+	if sParent and cmds.objExists(sParent):
 		cmds.parent(sJnt, sParent)
 	return sJnt
 
@@ -62,14 +70,9 @@ def buildJointsFromJointsInfo(sPath, sGrp = None):
 		if cmds.objExists(sJnt):
 			cmds.delete(sJnt)
 		iRotateOrder = dJntsInfo[sJnt]['iRotateOrder']
-		createJnt(sJnt, iRotateOrder = iRotateOrder)
-
 		lTransformInfo = dJntsInfo[sJnt]['lTransformInfo']
-		transforms.setNodeTransform(sJnt, lTransformInfo)
-		cmds.makeIdentity(sJnt, apply = True, t = 1, r = 1, s = 1)
 
-		if sGrp:
-			cmds.parent(sJnt, sGrp)
+		createJntOnTransformInfo(sJnt, lTransformInfo, iRotateOrder = iRotateOrder, sParent = sGrp)
 
 	for sJnt in dJntsInfo.keys():
 		sParent = dJntsInfo[sJnt]['sParent']

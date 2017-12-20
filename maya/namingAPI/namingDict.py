@@ -42,6 +42,7 @@ dNameConvension = {
 		'nearestPointOnCurve': 'clsPntOnCrv',
 		'pointOnCurveInfo': 'pntOnCrvInfo',
 		'pointOnSurfaceInfo': 'pntOnSurfInfo',
+		'choice': 'choice'
 		},
 
 	'side': {
@@ -79,3 +80,8 @@ dNameConvensionInverse = {}
 for sKey in dNameConvension.keys():
 	dInverse = {sKey: {v: k for k, v in dNameConvension[sKey].iteritems()}}
 	dNameConvensionInverse.update(dInverse)
+
+spaceDict = {
+				'fk': 0,
+				'ik': 1,
+				}

@@ -4,14 +4,10 @@ import maya.mel as mel
 
 ## lib import
 import namingAPI.naming as naming
-reload(naming)
 import common.transforms as transforms
-reload(transforms)
 import common.attributes as attributes
 import modelingAPI.meshes as meshes
-reload(meshes)
 import modelingAPI.surfaces as surfaces
-reload(surfaces)
 ## functions
 def constraint(lNodes, sType = 'parent', sConstraintType = 'oneToAll', bMaintainOffset = False, lSkipTranslate = None, lSkipRotate = None, lSkipScale = None, bForce = False):
 	if not lSkipTranslate:
@@ -83,6 +79,125 @@ def follicleConstraint(sGeo, lNodes, sType = 'parent', bMaintainOffset = True, l
 	cmds.setAttr('%s.follicleCount' %sGrpFollicle, iFollicle + len(lNodes), lock = True)
 
 	return sGrpFollicle, lFollicles
+
+def spaceConstraint(dDrivers, sDriven, sType = 'parent', sCtrl = None, bMaintainOffset = True, sName = 'space', lDefaultVal = None):
+	## dDrivers = {'cog': {'iIndex': 0, 'sOutput': 'ctrl_m_cog'}}
+	sEnum = ''
+	for sSpace in dDrivers.keys():
+		sEnum += '%s=%d:' %(sSpace, dDrivers[sSpace]['iIndex'])
+
+	if sType == 'parent':
+		sConstraint = cmds.createNode('parentConstraint', name = '%s_parentConstraint1' %sDriven)
+		cmds.parent(sConstraint, sDriven)
+		for sAttr in ['translate', 'rotate']:
+			for sAxis in ['X', 'Y', 'Z']:
+				cmds.connectAttr('%s.constraint%s%s' %(sConstraint, sAttr.title(), sAxis), '%s.%s%s' %(sDriven, sAttr, sAxis))
+		for sAttr in ['rotateOrder', 'rotatePivot']:
+			cmds.connectAttr('%s.%s' %(sDriven, sAttr), '%s.constraint%s%s' %(sConstraint, sAttr[0].upper(), sAttr[1:]))
+		cmds.connectAttr('%s.rotatePivotTranslate' %sDriven, '%s.constraintRotateTranslate' %sConstraint)
+		cmds.connectAttr('%s.parentInverseMatrix[0]' %sDriven, '%s.constraintParentInverseMatrix' %sConstraint)
+		lAttrs_s = ['translate', 'rotate', 'scale', 'parentMatrix[0]', 'rotateOrder', 'rotatePivot', 'rotatePivotTranslate']
+		lAttrs_d = ['targetTranslate', 'targetRotate', 'targetScale', 'targetParentMatrix', 'targetRotateOrder', 'targetRotatePivot', 'targetRotateTranslate']
+
+	elif sType == 'point':
+		sConstraint = cmds.createNode('pointConstraint', name = '%s_pointConstraint1' %sDriven)
+		cmds.parent(sConstraint, sDriven)
+		for sAttr in ['translate']:
+			for sAxis in ['X', 'Y', 'Z']:
+				cmds.connectAttr('%s.constraint%s%s' %(sConstraint, sAttr.title(), sAxis), '%s.%s%s' %(sDriven, sAttr, sAxis))
+		for sAttr in ['rotatePivot']:
+			cmds.connectAttr('%s.%s' %(sDriven, sAttr), '%s.constraint%s%s' %(sConstraint, sAttr[0].upper(), sAttr[1:]))
+		cmds.connectAttr('%s.rotatePivotTranslate' %sDriven, '%s.constraintRotateTranslate' %sConstraint)
+		cmds.connectAttr('%s.parentInverseMatrix[0]' %sDriven, '%s.constraintParentInverseMatrix' %sConstraint)
+		lAttrs_s = ['translate','parentMatrix[0]', 'rotatePivot', 'rotatePivotTranslate']
+		lAttrs_d = ['targetTranslate', 'targetParentMatrix', 'targetRotatePivot', 'targetRotateTranslate']
+
+	elif sType == 'orient':
+		sConstraint = cmds.createNode('orientConstraint', name = '%s_orientConstraint1' %sDriven)
+		cmds.parent(sConstraint, sDriven)
+		for sAttr in ['rotate']:
+			for sAxis in ['X', 'Y', 'Z']:
+				cmds.connectAttr('%s.constraint%s%s' %(sConstraint, sAttr.title(), sAxis), '%s.%s%s' %(sDriven, sAttr, sAxis))
+		for sAttr in ['rotateOrder']:
+			cmds.connectAttr('%s.%s' %(sDriven, sAttr), '%s.constraint%s%s' %(sConstraint, sAttr[0].upper(), sAttr[1:]))
+		cmds.connectAttr('%s.parentInverseMatrix[0]' %sDriven, '%s.constraintParentInverseMatrix' %sConstraint)
+		lAttrs_s = ['rotate', 'parentMatrix[0]', 'rotateOrder']
+		lAttrs_d = ['targetRotate', 'targetParentMatrix', 'targetRotateOrder']
+
+	elif sType == 'scale':
+		sConstraint = cmds.createNode('scaleConstraint', name = '%s_scaleConstraint1' %sDriven)
+		cmds.parent(sConstraint, sDriven)
+		for sAttr in [ 'scale']:
+			for sAxis in ['X', 'Y', 'Z']:
+				cmds.connectAttr('%s.constraint%s%s' %(sConstraint, sAttr.title(), sAxis), '%s.%s%s' %(sDriven, sAttr, sAxis))
+		cmds.connectAttr('%s.parentInverseMatrix[0]' %sDriven, '%s.constraintParentInverseMatrix' %sConstraint)
+		lAttrs_s = ['scale', 'parentMatrix[0]']
+		lAttrs_d = ['targetScale', 'targetParentMatrix']
+
+	## add attr to ctrl
+	if not sCtrl:
+		sCtrl = sDriven
+
+	oNameCtrl = naming.oName(sCtrl)
+	sRvs = naming.oName(sType = 'reverse', sSide = oNameCtrl.sSide, sPart = '%s%s%sBlend' %(oNameCtrl.sPart, sName[0].upper(), sName[1:]), iIndex = oNameCtrl.iIndex, iSuffix = oNameCtrl.iSuffix).sName
+
+	if not cmds.attributeQuery('%sDivider' %sName, node = sCtrl, exists = True):
+		attributes.addDivider([sCtrl], sName)
+		cmds.addAttr(sCtrl, ln = '%sModeA' %sName, nn = 'Mode A', at = 'enum', en = sEnum[:-1], keyable = True)
+		cmds.addAttr(sCtrl, ln = '%sModeB' %sName, nn = 'Mode B', at = 'enum', en = sEnum[:-1], keyable = True)
+		cmds.addAttr(sCtrl, ln = '%sModeBlend' %sName, nn = 'Mode A---B', at = 'float', min = 0, max = 1, keyable = True)
+		sRvs = cmds.createNode('reverse', name = sRvs)
+		cmds.connectAttr('%s.%sModeBlend' %(sCtrl, sName), '%s.inputX' %sRvs)
+
+	cmds.connectAttr('%s.%sModeBlend' %(sCtrl, sName), '%s.target[1].targetWeight' %sConstraint)
+	cmds.connectAttr('%s.outputX' %sRvs, '%s.target[0].targetWeight' %sConstraint)
+
+	oNameDriven = naming.oName(sDriven)
+	for i, sAttr_s in enumerate(lAttrs_s):
+		sChoiceA = naming.oName(sType = 'choice', sSide = oNameDriven.sSide, sPart = '%s%s%s%s%sA' %(oNameDriven.sPart, sName[0].upper(), sName[1:], lAttrs_d[i][0].upper(), lAttrs_d[i][1:]), iIndex = oNameDriven.iIndex, iSuffix = oNameDriven.iSuffix).sName
+		sChoiceB = naming.oName(sType = 'choice', sSide = oNameDriven.sSide, sPart = '%s%s%s%s%sB' %(oNameDriven.sPart, sName[0].upper(), sName[1:], lAttrs_d[i][0].upper(), lAttrs_d[i][1:]), iIndex = oNameDriven.iIndex, iSuffix = oNameDriven.iSuffix).sName
+		sChoiceA = cmds.createNode('choice', name = sChoiceA)
+		sChoiceB = cmds.createNode('choice', name = sChoiceB)
+		cmds.connectAttr('%s.output' %sChoiceA, '%s.target[0].%s' %(sConstraint, lAttrs_d[i]))
+		cmds.connectAttr('%s.output' %sChoiceB, '%s.target[1].%s' %(sConstraint, lAttrs_d[i]))
+		cmds.connectAttr('%s.%sModeA' %(sCtrl, sName), '%s.selector' %sChoiceA)
+		cmds.connectAttr('%s.%sModeB' %(sCtrl, sName), '%s.selector' %sChoiceB)
+
+		for sSpace in dDrivers.keys():
+			sDriver = dDrivers[sSpace]['sOutput']
+			iIndex = dDrivers[sSpace]['iIndex']
+			if bMaintainOffset:
+				oNameDriver = naming.oName(sDriver)
+				oNameDriver.sType = 'grp'
+				oNameDriver.sPart = '%s%sConstraint' %(oNameDriver.sPart, sType.title())
+				sConstraintGrp = oNameDriver.sName
+				if not cmds.objExists(sConstraintGrp):
+					sConstraintGrp = transforms.createTransformNode(sConstraintGrp, sParent = sDriver)
+					transforms.transformSnap([sDriver, sConstraintGrp], sType = 'all')
+					cmds.setAttr('%s.v' %sConstraintGrp, 0)
+					attributes.lockHideAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sNode = sConstraintGrp)
+				sNullOffset = naming.oName(sType = 'null', sSide = oNameDriven.sSide, sPart = '%s%sConstraintOffset'%(oNameDriven.sPart,sType.title()), iIndex = oNameDriven.iIndex, iSuffix = oNameDriven.iSuffix).sName
+				sNull = naming.oName(sType = 'null', sSide = oNameDriven.sSide, sPart = '%s%sConstraint'%(oNameDriven.sPart,sType.title()), iIndex = oNameDriven.iIndex, iSuffix = oNameDriven.iSuffix).sName
+				iRotateOrder = cmds.getAttr('%s.ro' %sDriven)
+				sNullOffset = transforms.createTransformNode(sNullOffset, sParent = sConstraintGrp, iRotateOrder = iRotateOrder)
+				sNull = transforms.createTransformNode(sNull, sParent = sNullOffset, iRotateOrder = iRotateOrder)
+				transforms.transformSnap([sDriven, sNullOffset], sType = 'all')
+				attributes.lockHideAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sNode = sNullOffset)
+				attributes.lockHideAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sNode = sNull)
+				sDriver = sNull
+			cmds.connectAttr('%s.%s' %(sDriver, sAttr_s), '%s.input[%d]' %(sChoiceA, iIndex))
+			cmds.connectAttr('%s.%s' %(sDriver, sAttr_s), '%s.input[%d]' %(sChoiceB, iIndex))
+
+	if lDefaultVal:
+		cmds.setAttr('%s.%sModeA' %(sCtrl, sName), lDefaultVal[0])
+		cmds.setAttr('%s.%sModeB' %(sCtrl, sName), lDefaultVal[1])
+				
+
+		
+
+
+
+
 
 
 

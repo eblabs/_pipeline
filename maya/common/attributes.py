@@ -22,6 +22,11 @@ def unlockAttrs(lAttrs, sNode = None, bKeyable = True, bChannelBox = True):
 		cmds.setAttr(sAttr, lock = False, channelBox = bChannelBox)
 		cmds.setAttr(sAttr, keyable = bKeyable)
 
+def addDivider(lNodes, sName):
+	for sNode in lNodes:
+		cmds.addAttr(sNode, ln = '%sDivider' %sName, nn = '%s%s__________:' %(sName[0].upper(), sName[1:]), at = 'enum', en = ' ')
+		cmds.setAttr('%s.%sDivider' %(sNode, sName), channelBox = True, lock = True)
+
 def connectAttrs(lDriverAttrs, lDrivenAttrs, sDriver = None, sDriven = None, bForce = True):
 	for i, sDriverAttr in enumerate(lDriverAttrs):
 		if '.' not in sDriverAttr:
@@ -99,7 +104,7 @@ def enumToSingleAttrs(sEnumAttr, lAttrs, iEnumRange = 2, lValRange = [[0,1]], sE
 	for sAttr in lAttrs:
 		connectAttrs(['%s.outColorR' %sConditionMain], [sAttr], bForce = True)
 
-def enumToMultiAttrs(sEnumAttr, lAttrs, iEnumRange = 2, lValRange = [[0,1]], sEnumObj = None):
+def enumToMultiAttrs(sEnumAttr, lAttrs, iEnumRange = 2, lEnumIndex = None, lValRange = [[0,1]], sEnumObj = None):
 	if '.' not in sEnumAttr:
 		sEnumAttrName = sEnumAttr
 		sEnumAttr = '%s.%s' %(sEnumObj, sEnumAttr)
@@ -113,11 +118,13 @@ def enumToMultiAttrs(sEnumAttr, lAttrs, iEnumRange = 2, lValRange = [[0,1]], sEn
 		sSide = 'middle'
 	iIndex = oObjName.iIndex
 
-	for i in range(iEnumRange):
+	if not lEnumIndex:
+		lEnumIndex = range(iEnumRange)
+	for i, val in enumerate(lEnumIndex):
 		sCondition = naming.oName(sType = 'condition', sSide = sSide, sPart = '%s%s' %(sEnumObj, sEnumAttrName.title()), iIndex = iIndex, iSuffix = i).sName
 		cmds.createNode('condition', name = sCondition)
 		cmds.connectAttr(sEnumAttr, '%s.firstTerm' %sCondition)
-		cmds.setAttr('%s.secondTerm' %sCondition, i)
+		cmds.setAttr('%s.secondTerm' %sCondition, val)
 		if len(lValRange) == iEnumRange:
 			lValTrue = lValRange[i][1]
 			lValFalse = lValRange[i][0]

@@ -11,6 +11,7 @@ import files
 import maths
 import attributes
 import apiUtils
+import namingAPI.naming as naming
 
 #### Functions
 def getNodeTransformInfo(sNode):
@@ -105,13 +106,52 @@ def transformSnap(lNodes, sType = 'parent', sSnapType = 'oneToAll', lSkipTransla
 			transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
 
 
-def createTransformNode(sName, lLockHideAttrs = [], sParent = None, iRotateOrder = 0):
+def createTransformNode(sName, lLockHideAttrs = [], sParent = None, iRotateOrder = 0, bVis = True, sPos = None):
 	cmds.group(empty  = True, name = sName)
 	cmds.setAttr('%s.ro' %sName, iRotateOrder)
-	attributes.lockHideAttrs(lLockHideAttrs, sNode = sName)
-	if sParent:
+	cmds.setAttr('%s.v' %sName, bVis)
+	if sPos:
+		transformSnap([sPos, sName], sType = 'all')
+	if sParent and cmds.objExists(sParent):
 		cmds.parent(sName, sParent)
+	attributes.lockHideAttrs(lLockHideAttrs, sNode = sName)
 	return sName
+
+def createTransformMatcherNode(sNode, sParent = None):
+	oName = naming.oName(sNode)
+	sOffset = naming.oName(sType = 'grp', sSide = oName.sSide, sPart = '%sMatcher' %oName.sPart, iIndex = oName.iIndex, iSuffix = oName.iSuffix).sName
+	sMatcher = naming.oName(sType = 'null', sSide = oName.sSide, sPart = '%sMatcher' %oName.sPart, iIndex = oName.iIndex, iSuffix = oName.iSuffix).sName
+	iRotateOrder = cmds.getAttr('%s.ro' %sNode)
+	sOffset = createTransformNode(sOffset, sParent = sParent, iRotateOrder = iRotateOrder)
+	transformSnap([sNode, sOffset], sType = 'all')
+	attributes.lockHideAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sNode = sOffset)
+	sMatcher = createTransformNode(sMatcher, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sOffset, sPos = sOffset, iRotateOrder = iRotateOrder)
+	return sMatcher, sOffset
+
+def worldOrientTransform(sNode, sFoward = 'z', sUp = 'y'):
+	lTranslate = cmds.xform(sNode, q = True, t = True, ws = True)
+
+	if sFoward.lower() == 'x':
+		lFoward = [1,0,0]
+	elif sFoward.lower() == 'y':
+		lFoward = [0,1,0]
+	else:
+		lFoward = [0,0,1]
+
+	if sUp.lower() == 'x':
+		lUp = [1,0,0]
+	elif sUp.lower() == 'y':
+		lUp = [0,1,0]
+	else:
+		lUp = [0,0,1]
+
+	sLocFoward = cmds.spaceLocator()[0]
+	sLocUp = cmds.spaceLocator()[0]
+	cmds.xform(sLocFoward, t = [lTranslate[0], lTranslate[1], lTranslate[2] + 10], ws = True)
+	cmds.xform(sLocUp, t = [lTranslate[0], lTranslate[1] + 10, lTranslate[2]], ws = True)
+
+	cmds.delete(cmds.aimConstraint(sLocFoward, sNode, aimVector = lFoward, upVector = lUp, worldUpType = 'object', worldUpObject = sLocUp, mo = False))
+	cmds.delete(sLocUp, sLocFoward)
 
 def getBoundingBoxInfo(sNode):
 	lBBoxMin = cmds.getAttr('%s.boundingBoxMin' %sNode)[0]

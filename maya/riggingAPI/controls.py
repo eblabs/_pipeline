@@ -144,6 +144,7 @@ class oControl(object):
 	iStacks: return how many stack groups the control have
 	sSub: return the control's sub control name
 	bSub: return whether the control has a sub control or not
+	sOutput: return the node used to constraint with other objects
 	sSideKey: return the control's side's full name
 
 	setAttr:
@@ -197,6 +198,10 @@ class oControl(object):
 		return self.__bSub
 
 	@property
+	def sOutput(self):
+		return self.__sOutput
+
+	@property
 	def sSideKey(self):
 		sKey = getFullNameFromKey(self.__sSide, 'side')
 		return sKey
@@ -241,6 +246,8 @@ class oControl(object):
 		self.__sPart = oCtrlName.sPart
 		self.__iIndex = oCtrlName.iIndex
 		self.__iSuffix = oCtrlName.iSuffix
+
+		self.__sOutput = cmds.getAttr('%s.sOutput' %sCtrl)
 
 		sSub = cmds.getAttr('%s.sSub' %sCtrl)
 		if sSub:
@@ -370,6 +377,10 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 	sCtrl = oCtrl.sName
 	sCtrl = transforms.createTransformNode(sCtrl, lLockHideAttrs = lLockHideAttrs, sParent = sParentStack, iRotateOrder = iRotateOrder)
 
+	## output
+	sOutput = naming.oName(sType = 'grp', sSide = sSide, sPart = '%sOutput' %sPart, iIndex = iIndex).sName
+	sOutput = transforms.createTransformNode(sOutput, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sCtrl, iRotateOrder = iRotateOrder)
+
 	## sub Ctrl
 	if bSub:
 		cmds.addAttr(sCtrl, ln = 'subCtrlVis', at = 'long', keyable = False, min = 0, max = 1, dv = 0)
@@ -377,6 +388,7 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 		sSub = naming.oName(sType = 'ctrl', sSide = sSide, sPart = '%sSub' %sPart, iIndex = iIndex).sName
 		sSub = transforms.createTransformNode(sSub, lLockHideAttrs = lLockHideAttrs, sParent = sCtrl, iRotateOrder = iRotateOrder)
 		attributes.connectAttrs(['%s.subCtrlVis' %sCtrl], ['%s.v' %sSub], bForce = True)
+		attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = sSub, sDriven = sOutput, bForce = True)
 
 	## add shape
 	if sColor:
@@ -412,8 +424,10 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 		transforms.transformSnap([sPos, sZero])
 
 	## write control info
+	cmds.addAttr(sCtrl, ln = 'sOutput', dt = 'string')
 	cmds.addAttr(sCtrl, ln = 'iStacks', at = 'long', dv = iStacks)
 	cmds.addAttr(sCtrl, ln = 'sSub', dt = 'string')
+	cmds.setAttr('%s.sOutput' %sCtrl, sOutput, type = 'string', lock = True)
 	cmds.setAttr('%s.iStacks' %sCtrl, lock = True)
 	if bSub:
 		cmds.setAttr('%s.sSub' %sCtrl, sSub, type = 'string', lock = True)
