@@ -267,6 +267,10 @@ class oControl(object):
 		self.__sPasser = naming.oName(sType = 'passer', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
 		self.__sZero = naming.oName(sType = 'zero', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
 
+		self.__sMultMatrixOutput = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sMatrixOutput' %self.__sPart, iIndex = self.__iIndex).sName
+		self.__sMultMatrixStacks = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sStacksMatrixOutput' %self.__sPart, iIndex = self.__iIndex).sName
+	
+
 	def __renameCtrl(self):
 		sZero = naming.oName(sType = 'zero', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
 		cmds.rename(self.__sZero, sZero)
@@ -284,6 +288,13 @@ class oControl(object):
 			cmds.rename(self.__sSub, sSub)
 			cmds.setAttr('%s.sSub' %sCtrl, lock = False)
 			cmds.setAttr('%s.sSub' %sCtrl, sSub, type = 'string', lock = True)
+
+		sMultMatrixOutput = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sMatrixOutput' %self.__sPart, iIndex = self.__iIndex).sName
+		cmds.rename(self.__sMultMatrixOutput, sMultMatrixOutput)
+
+		sMultMatrixStacks = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sStacksMatrixOutput' %self.__sPart, iIndex = self.__iIndex).sName
+		cmds.rename(self.__sMultMatrixStacks, sMultMatrixStacks)
+
 		self.__getCtrlInfo(sCtrl)
 
 	def __updateStacks(self, iKey):
@@ -303,6 +314,15 @@ class oControl(object):
 		cmds.setAttr('%s.iStacks' %self.__sName, lock = False)
 		cmds.setAttr('%s.iStacks' %self.__sName, iKey, lock = True)
 		cmds.select(self.__sName)
+
+		cmds.delete(self.__sMultMatrixStacks)
+		cmds.createNode('multMatrix', name = self.__sMultMatrixStacks)
+		for i in range(iKey):
+			iNum = iKey - i
+			sStack = naming.oName(sType = 'stack', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex, iSuffix = iNum).sName
+			cmds.connectAttr('%s.matrix' %sStack, '%s.matrixIn[%d]' %(self.__sMultMatrixStacks, i))
+		cmds.connectAttr('%s.matrixSum' %self.__sMultMatrixStacks, '%s.matrixIn[2]' %self.__sMultMatrixOutput)
+
 		self.__getCtrlInfo(self.__sName)
 
 	def __updateSub(self):
@@ -433,6 +453,27 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 		cmds.setAttr('%s.sSub' %sCtrl, sSub, type = 'string', lock = True)
 	else:
 		cmds.setAttr('%s.sSub' %sCtrl, '', type = 'string', lock = True)
+
+	##### matrix
+	cmds.addAttr(sCtrl, ln = 'matrixOutput', at = 'matrix')
+	cmds.addAttr(sCtrl, ln = 'inverseMatrixOutput', at = 'matrix')
+
+	sInverseMatrixOutput = cmds.createNode('inverseMatrix', name = naming.oName(sType = 'inverseMatrix', sSide = sSide, sPart = '%sInverseMatrixOutput' %sPart, iIndex = iIndex).sName)
+	cmds.connectAttr('%s.matrixOutput' %sCtrl, '%s.inputMatrix' %sInverseMatrixOutput)
+	cmds.connectAttr('%s.outputMatrix' %sInverseMatrixOutput, '%s.inverseMatrixOutput' %sCtrl)
+
+	sMultMatrix = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = sSide, sPart = '%sMatrixOutput' %sPart, iIndex = iIndex).sName)
+	sMultMatrixStacks = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = sSide, sPart = '%sStacksMatrixOutput' %sPart, iIndex = iIndex).sName)
+
+	cmds.connectAttr('%s.matrix' %sOutput, '%s.matrixIn[0]' %sMultMatrix)
+	cmds.connectAttr('%s.matrixSum' %sMultMatrixStacks, '%s.matrixIn[1]' %sMultMatrix)
+	cmds.connectAttr('%s.matrix' %sPasser, '%s.matrixIn[2]' %sMultMatrix)
+	cmds.connectAttr('%s.matrix' %sZero, '%s.matrixIn[3]' %sMultMatrix)
+	cmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.matrixOutput' %sCtrl)
+	for i in range(iStacks):
+		iNum = iStacks - i
+		sStack = naming.oName(sType = 'stack', sSide = sSide, sPart = sPart, iIndex = iIndex, iSuffix = iNum).sName
+		cmds.connectAttr('%s.matrix' %sStack, '%s.matrixIn[%d]' %(sMultMatrixStacks, i))
 
 	oCtrl = oControl(sCtrl)
 	return oCtrl

@@ -35,6 +35,7 @@ dNameConvension = {
 		'decomposeMatrix': 'decompMatrix',
 		'multMatrix': 'multMatrix',
 		'addMatrix': 'addMatrix',
+		'inverseMatrix': 'inverseMatrix',
 		'blendColors': 'blend',
 		'clamp': 'clamp',
 		'closetPointOnMesh': 'clsPntOnMesh',
