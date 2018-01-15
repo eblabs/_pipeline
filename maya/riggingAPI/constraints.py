@@ -191,6 +191,30 @@ def spaceConstraint(dDrivers, sDriven, sType = 'parent', sCtrl = None, bMaintain
 	if lDefaultVal:
 		cmds.setAttr('%s.%sModeA' %(sCtrl, sName), lDefaultVal[0])
 		cmds.setAttr('%s.%sModeB' %(sCtrl, sName), lDefaultVal[1])
+
+def matrixConnect(sDrvNode, lDrivenNodes, sDrvAttr, lSkipTranslate = [], lSkipRotate = [], lSkipScale = [], bForce = True):
+	oName = naming.oName(sDrvNode)
+	oName.sType = 'decomposeMatrix'
+	sDecomposeMatrix = cmds.createNode('decomposeMatrix', name = oName.sName)
+	cmds.connectAttr('%s.%s' %(sDrvNode, sDrvAttr), '%s.inputMatrix' %sDecomposeMatrix)
+	if not lSkipRotate:
+		oName.sType = 'quatToEuler'
+		sQuatToEuler = cmds.createNode('quatToEuler', name = oName.sName)
+		cmds.connectAttr('%s.outputQuat' %sDecomposeMatrix, '%s.inputQuat' %sQuatToEuler)
+		cmds.connectAttr('%s.ro' %lDrivenNodes[0], '%s.inputRotateOrder' %sQuatToEuler)
+		if len(lDrivenNodes) > 1:
+			for sDriven in lDrivenNodes[1:]:
+				cmds.connectAttr('%s.ro' %lDrivenNodes[0], '%s.ro' %sDriven)
+
+	## connect matrix
+	for sDriven in lDrivenNodes:
+		for sAxis in ['X', 'Y', 'Z']:
+			if sAxis not in lSkipTranslate:
+				attributes.connectAttrs(['%s.outputTranslate%s' %(sDecomposeMatrix, sAxis)], ['%s.translate%s' %(sDriven, sAxis)], bForce = bForce)
+			if sAxis not in lSkipRotate:
+				attributes.connectAttrs(['%s.outputRotate%s' %(sQuatToEuler, sAxis)], ['%s.rotate%s' %(sDriven, sAxis)], bForce = bForce)
+			if sAxis not in lSkipScale:
+				attributes.connectAttrs(['%s.outputScale%s' %(sDecomposeMatrix, sAxis)], ['%s.scale%s' %(sDriven, sAxis)], bForce = bForce)
 				
 
 		

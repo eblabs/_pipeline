@@ -81,6 +81,13 @@ def createMMatrixFromTransformNode(sNode, sSpace = 'world'):
 	OpenMaya.MScriptUtil.createMatrixFromList(lMatrix, mMatrix)
 	return mMatrix
 
+def convertMMatrixToList(mMatrix):
+	lMatrix = []
+	for i in range(4):
+		for j in range(4):
+			lMatrix.append(mMatrix(i, j))
+	return lMatrix
+
 def decomposeMMatrix(mMatrix, sSpace = 'world', iRotateOrder = 0):
 	if sSpace == 'world':
 		mSpace = OpenMaya.MSpace.kWorld

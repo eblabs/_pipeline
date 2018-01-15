@@ -31,20 +31,23 @@ def createCurveOnNodes(sName, lNodes, iDegree = 3, sParent = None):
 		cmds.parent(sName, sParent)
 	return sName
 
-def createCurveLine(sName, lNodes, sParent = None):
+def createCurveLine(sName, lNodes, bConstraint = False):
 	oName = naming.oName(sName)
-	sGrp = transforms.createTransformNode(naming.oName(sType = 'grp', sSide = oName.sSide, sPart = oName.sPart, iIndex = oName.iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sParent)
-	sCrv = createCurveOnNodes(sName, lNodes, iDegree = 1, sParent = sGrp)
+	sCrv = cmds.curve(d = 1, p = [[0,0,0],[0,0,0]], name = sName)
 	sCrvShape = getShape(sCrv)
+	sCrvShape = cmds.rename(sCrvShape, '%sShape' %sCrv)
 	cmds.setAttr('%s.overrideEnabled' %sCrvShape, 1)
 	cmds.setAttr('%s.overrideDisplayType' %sCrvShape, 2)
 	cmds.setAttr('%s.inheritsTransform' %sCrv, 0)
+	lClsHnds = []
 	for i, sNode in enumerate(lNodes):
 		lCls = cmds.cluster('%s.cv[%i]' %(sCrv, i), name = naming.oName(sType = 'cluster', sSide = oName.sSide, sPart = oName.sPart, iindex = i + 1).sName)
 		cmds.setAttr('%s.v' %lCls[1], 0)
-		cmds.pointConstraint(sNode, lCls[1], mo = False)
-		cmds.parent(lCls[1], sGrp)
-	return sCrv, sGrp
+		cmds.delete(cmds.pointConstraint(sNode, lCls[1], mo = False))
+		lClsHnds.append(lCls[1])
+		if bConstraint:
+			cmds.pointConstraint(sNode, lCls[1], mo = False)		
+	return sCrv, lClsHnds
 
 def getCurveCvNum(sCrv):
 	sShape = getShape(sCrv)

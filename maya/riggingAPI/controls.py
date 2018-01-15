@@ -267,7 +267,8 @@ class oControl(object):
 		self.__sPasser = naming.oName(sType = 'passer', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
 		self.__sZero = naming.oName(sType = 'zero', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
 
-		self.__sMultMatrixOutput = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sMatrixOutput' %self.__sPart, iIndex = self.__iIndex).sName
+		self.__sMultMatrixOutputLocal = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sMatrixOutputLocal' %self.__sPart, iIndex = self.__iIndex).sName
+		self.__sMultMatrixOutputWorld = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sMatrixOutputWorld' %self.__sPart, iIndex = self.__iIndex).sName
 		self.__sMultMatrixStacks = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sStacksMatrixOutput' %self.__sPart, iIndex = self.__iIndex).sName
 	
 
@@ -289,8 +290,11 @@ class oControl(object):
 			cmds.setAttr('%s.sSub' %sCtrl, lock = False)
 			cmds.setAttr('%s.sSub' %sCtrl, sSub, type = 'string', lock = True)
 
-		sMultMatrixOutput = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sMatrixOutput' %self.__sPart, iIndex = self.__iIndex).sName
-		cmds.rename(self.__sMultMatrixOutput, sMultMatrixOutput)
+		sMultMatrixOutputLocal = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sMatrixOutputLocal' %self.__sPart, iIndex = self.__iIndex).sName
+		cmds.rename(self.__sMultMatrixOutputLocal, sMultMatrixOutputLocal)
+
+		sMultMatrixOutputWorld = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sMatrixOutputWorld' %self.__sPart, iIndex = self.__iIndex).sName
+		cmds.rename(self.__sMultMatrixOutputWorld, sMultMatrixOutputWorld)
 
 		sMultMatrixStacks = naming.oName(sType = 'multMatrix', sSide = self.__sSide, sPart = '%sStacksMatrixOutput' %self.__sPart, iIndex = self.__iIndex).sName
 		cmds.rename(self.__sMultMatrixStacks, sMultMatrixStacks)
@@ -321,7 +325,7 @@ class oControl(object):
 			iNum = iKey - i
 			sStack = naming.oName(sType = 'stack', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex, iSuffix = iNum).sName
 			cmds.connectAttr('%s.matrix' %sStack, '%s.matrixIn[%d]' %(self.__sMultMatrixStacks, i))
-		cmds.connectAttr('%s.matrixSum' %self.__sMultMatrixStacks, '%s.matrixIn[2]' %self.__sMultMatrixOutput)
+		cmds.connectAttr('%s.matrixSum' %self.__sMultMatrixStacks, '%s.matrixIn[2]' %self.__sMultMatrixOutputLocal)
 
 		self.__getCtrlInfo(self.__sName)
 
@@ -455,25 +459,36 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 		cmds.setAttr('%s.sSub' %sCtrl, '', type = 'string', lock = True)
 
 	##### matrix
-	cmds.addAttr(sCtrl, ln = 'matrixOutput', at = 'matrix')
-	cmds.addAttr(sCtrl, ln = 'inverseMatrixOutput', at = 'matrix')
+	cmds.addAttr(sCtrl, ln = 'matrixOutputLocal', at = 'matrix')
+	cmds.addAttr(sCtrl, ln = 'inverseMatrixOutputLocal', at = 'matrix')
+	cmds.addAttr(sCtrl, ln = 'matrixOutputWorld', at = 'matrix')
+	cmds.addAttr(sCtrl, ln = 'inverseMatrixOutputWorld', at = 'matrix')
 
-	sInverseMatrixOutput = cmds.createNode('inverseMatrix', name = naming.oName(sType = 'inverseMatrix', sSide = sSide, sPart = '%sInverseMatrixOutput' %sPart, iIndex = iIndex).sName)
-	cmds.connectAttr('%s.matrixOutput' %sCtrl, '%s.inputMatrix' %sInverseMatrixOutput)
-	cmds.connectAttr('%s.outputMatrix' %sInverseMatrixOutput, '%s.inverseMatrixOutput' %sCtrl)
+	sInverseMatrixOutputLocal = cmds.createNode('inverseMatrix', name = naming.oName(sType = 'inverseMatrix', sSide = sSide, sPart = '%sInverseMatrixOutputLocal' %sPart, iIndex = iIndex).sName)
+	cmds.connectAttr('%s.matrixOutput' %sCtrl, '%s.inputMatrix' %sInverseMatrixOutputLocal)
+	cmds.connectAttr('%s.outputMatrix' %sInverseMatrixOutputLocal, '%s.inverseMatrixOutputLocal' %sCtrl)
 
-	sMultMatrix = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = sSide, sPart = '%sMatrixOutput' %sPart, iIndex = iIndex).sName)
+	sInverseMatrixOutputWorld = cmds.createNode('inverseMatrix', name = naming.oName(sType = 'inverseMatrix', sSide = sSide, sPart = '%sInverseMatrixOutputWorld' %sPart, iIndex = iIndex).sName)
+	cmds.connectAttr('%s.matrixOutput' %sCtrl, '%s.inputMatrix' %sInverseMatrixOutputWorld)
+	cmds.connectAttr('%s.outputMatrix' %sInverseMatrixOutputWorld, '%s.inverseMatrixOutputWorld' %sCtrl)
+
+	sMultMatrixLocal = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = sSide, sPart = '%sMatrixOutputLocal' %sPart, iIndex = iIndex).sName)
+	sMultMatrixWorld = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = sSide, sPart = '%sMatrixOutputWorld' %sPart, iIndex = iIndex).sName)
 	sMultMatrixStacks = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = sSide, sPart = '%sStacksMatrixOutput' %sPart, iIndex = iIndex).sName)
 
-	cmds.connectAttr('%s.matrix' %sOutput, '%s.matrixIn[0]' %sMultMatrix)
-	cmds.connectAttr('%s.matrixSum' %sMultMatrixStacks, '%s.matrixIn[1]' %sMultMatrix)
-	cmds.connectAttr('%s.matrix' %sPasser, '%s.matrixIn[2]' %sMultMatrix)
-	cmds.connectAttr('%s.matrix' %sZero, '%s.matrixIn[3]' %sMultMatrix)
-	cmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.matrixOutput' %sCtrl)
+	cmds.connectAttr('%s.matrix' %sOutput, '%s.matrixIn[0]' %sMultMatrixLocal)
+	cmds.connectAttr('%s.matrixSum' %sMultMatrixStacks, '%s.matrixIn[1]' %sMultMatrixLocal)
+	cmds.connectAttr('%s.matrix' %sPasser, '%s.matrixIn[2]' %sMultMatrixLocal)
+	cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.matrixOutputLocal' %sCtrl)
+
 	for i in range(iStacks):
 		iNum = iStacks - i
 		sStack = naming.oName(sType = 'stack', sSide = sSide, sPart = sPart, iIndex = iIndex, iSuffix = iNum).sName
 		cmds.connectAttr('%s.matrix' %sStack, '%s.matrixIn[%d]' %(sMultMatrixStacks, i))
+
+	cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.matrixIn[0]' %sMultMatrixWorld)
+	cmds.connectAttr('%s.matrix' %sZero, '%s.matrixIn[1]' %sMultMatrixWorld)
+	cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.matrixOutputWorld' %sCtrl)
 
 	oCtrl = oControl(sCtrl)
 	return oCtrl
