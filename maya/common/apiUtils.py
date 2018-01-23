@@ -88,6 +88,11 @@ def convertMMatrixToList(mMatrix):
 			lMatrix.append(mMatrix(i, j))
 	return lMatrix
 
+def convertListToMMatrix(lMatrix):
+	mMatrix = OpenMaya.MMatrix()
+	OpenMaya.MScriptUtil.createMatrixFromList(lMatrix, mMatrix)
+	return mMatrix
+
 def decomposeMMatrix(mMatrix, sSpace = 'world', iRotateOrder = 0):
 	if sSpace == 'world':
 		mSpace = OpenMaya.MSpace.kWorld

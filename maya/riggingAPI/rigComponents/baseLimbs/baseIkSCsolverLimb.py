@@ -14,10 +14,10 @@ import riggingAPI.controls as controls
 
 import riggingAPI.rigComponents.baseComponent as baseComponent
 
-class baseIkSCsolcerLimb(baseComponent.baseComponent):
-	"""docstring for baseIkSCsolcerLimb"""
+class baseIkSCsolverLimb(baseComponent.baseComponent):
+	"""docstring for baseIkSCsolverLimb"""
 	def __init__(self, *args, **kwargs):
-		super(baseIkSCsolcerLimb, self).__init__(*args, **kwargs)
+		super(baseIkSCsolverLimb, self).__init__(*args, **kwargs)
 		if args:
 			self._getComponentInfo(args[0])
 		else:
@@ -27,7 +27,7 @@ class baseIkSCsolcerLimb(baseComponent.baseComponent):
 			self._bBind = kwargs.get('bBind', False)
 	
 	def createComponent(self):
-		super(baseIkRPsolcerLimb, self).createComponent()
+		super(baseIkRPsolverLimb, self).createComponent()
 
 		sParent_jnt = self._sComponentDrvJoints
 		sParent_ctrl = self._sComponentControls
@@ -56,24 +56,31 @@ class baseIkSCsolcerLimb(baseComponent.baseComponent):
 					cmds.connectAttr('%s.rotate%s' %(sJnt, sAxis), '%s.rotate%s' %(sBindJnt, sAxis))
 					cmds.connectAttr('%s.scale%s' %(sJnt, sAxis), '%s.scale%s' %(sBindJnt, sAxis))
 
-		## ctrls
-		oCtrlRoot = controls.create('%sRoot' %self._sName, sSide = self._sSide, iIndex = self._iIndex, iStacks = self._iStacks, bSub = True, sParent = self._sComponentControls, sPos = self._lBpJnts[0], sShape = 'cube', fSize = 8, lLockHideAttrs = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
-		oCtrlAim = controls.create('%sAim' %self._sName, sSide = self._sSide, iIndex = self._iIndex, iStacks = self._iStacks, bSub = True, sParent = self._sComponentControls, sPos = self._lBpJnts[0], sShape = 'cube', fSize = 8, lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])
-		lCtrls.append(oCtrlRoot.sName)
-		lCtrls.append(oCtrlAim.sName)
-
-		## ik handle
+		## ik handles
 		sIkHnd = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sSCsolver' %self._sName, iIndex = self._iIndex).sName
 		cmds.ikHandle(sj = lJnts[0], ee = lJnts[-1], sol = 'ikSCsolver', name = sIkHnd)
 
+		## controls
+		oCtrlRoot = controls.create('%sRoot' %self._sName, sSide = self._sSide, iIndex = self._iIndex, iStacks = self._iStacks, bSub = True, sParent = self._sComponentControls, sPos = lJnts[0], sShape = 'cube', fSize = 8, lLockHideAttrs = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
+		lCtrls.append(oCtrlRoot.sName)
+		oCtrlAim = controls.create('%sAim' %self._sName, sSide = self._sSide, iIndex = self._iIndex, iStacks = self._iStacks, bSub = True, sParent = self._sComponentControls, sPos = lJnts[-1], sShape = 'cube', fSize = 8, lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])
+		lCtrls.append(oCtrlAim.sName)
+
 		#### offset group
-		sGrpIk = createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sSCsolver' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesLocal, sPos = lCtrls[-1])
+		sGrpIk = createTransformNode(naming.oName(sType = 'group', sSide = oJntNameParent.sSide, sPart = oJntNameParent.sPart, iIndex = oJntNameParent.iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesLocal, sPos = oCtrlAim.sName)
 		cmds.parent(sIkHnd, sGrpIk)
 
-		## matrix connect
-		constraints.matrixConnect(lCtrls[0], [lJnts[0]], 'matrixOutputWorld',lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)
-		constraints.matrixConnect(lCtrls[1], [sGrpPv], 'matrixOutputWorld', lSkipScale = ['X', 'Y', 'Z'], bForce = True)
-		
+		#### matrix connect
+		constraints.matrixConnect(oCtrlAim.sName, [sGrpIk], 'matrixOutputWorld', lSkipScale = ['X', 'Y', 'Z'], bForce = True)
+		constraints.matrixConnect(oCtrlRoot.sName, [lJnts[0]], 'matrixOutputWorld',lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)
+
+		## pass info to class
+		self._lJnts = lJnts
+		self._lCtrls = lCtrls
+		self._lBindJnts = lBindJnts
+		self._sGrpIk = sGrpIk
+		self._sIkHnd = sIkHnd
+
 		## write component info
 		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'baseIkSCsolcerLimb', type = 'string', lock = True)
 		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, len(lJnts), lock = True)

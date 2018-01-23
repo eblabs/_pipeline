@@ -56,12 +56,12 @@ def getCurveCvNum(sCrv):
 	iCvNum = iSpan + iDegree
 	return iCvNum
 
-def clusterCurve(sCrv):
+def clusterCurve(sCrv, bRelatives = False):
 	oName = naming.oName(sCrv)
 	iCvNum = getCurveCvNum(sCrv)
 	lClsHnds = []
 	for i in range(iCvNum):
-		lCls = cmds.cluster('%s.cv[%d]' %(sCrv, i), name = naming.oName(sType = 'cluster', sSide = oName.sSide, sPart = oName.sPart, iIndex = oName.iIndex, iSuffix = i + 1).sName, rel = False)
+		lCls = cmds.cluster('%s.cv[%d]' %(sCrv, i), name = naming.oName(sType = 'cluster', sSide = oName.sSide, sPart = oName.sPart, iIndex = oName.iIndex, iSuffix = i + 1).sName, rel = bRelatives)
 		sClsHnd = naming.oName(sType = 'cluster', sSide = oName.sSide, sPart = '%sHandle' %oName.sPart, iIndex = oName.iIndex, iSuffix = i + 1).sName
 		cmds.rename(lCls[1], sClsHnd)
 		cmds.setAttr('%s.v' %sClsHnd, 0)

@@ -14,10 +14,10 @@ import riggingAPI.controls as controls
 
 import riggingAPI.rigComponents.baseComponent as baseComponent
 
-class baseIkRPsolcerLimb(baseComponent.baseComponent):
-	"""docstring for baseIkRPsolcerLimb"""
+class baseIkRPsolverLimb(baseComponent.baseComponent):
+	"""docstring for baseIkRPsolverLimb"""
 	def __init__(self, *args, **kwargs):
-		super(baseIkRPsolcerLimb, self).__init__(*args, **kwargs)
+		super(baseIkRPsolverLimb, self).__init__(*args, **kwargs)
 		if args:
 			self._getComponentInfo(args[0])
 		else:
@@ -28,7 +28,7 @@ class baseIkRPsolcerLimb(baseComponent.baseComponent):
 			self._lBpCtrls = kwargs.get('lBpCtrls', None)
 
 	def createComponent(self):
-		super(baseIkRPsolcerLimb, self).createComponent()
+		super(baseIkRPsolverLimb, self).createComponent()
 
 		sParent_jnt = self._sComponentDrvJoints
 		sParent_ctrl = self._sComponentControls
@@ -82,6 +82,13 @@ class baseIkRPsolcerLimb(baseComponent.baseComponent):
 		#### pole vector line
 		sCrv, lClsHnds = curves.createCurveLine(naming.oName(sType = 'curve', sSide = self._sSide, sPart = '%sPvLineIk' %self._sName, iIndex = self._iIndex).sName, [lJnts[1], lCtrls[1]], bConstraint = False)
 		cmds.parent(lClsHnds, sCrv, self._sComponentControls)
+
+		## pass info to class
+		self._lJnts = lJnts
+		self._lCtrls = lCtrls
+		self._lBindJnts = lBindJnts
+		self._sGrpIk = sGrpIk
+		self._sIkHnd = sIkHnd
 
 		## matrix connect
 		constraints.matrixConnect(lCtrls[0], [lJnts[0]], 'matrixOutputWorld',lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)

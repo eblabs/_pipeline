@@ -33,7 +33,7 @@ class baseFkChainLimb(baseComponent.baseComponent):
 		sParent_jnt = self._sComponentDrvJoints
 		sParent_ctrl = self._sComponentControls
 		sParent_bind = self._sComponentBindJoints
-		lJnts = []
+		slJnts = []
 		lCtrls = []
 		lBindJnts = []
 
@@ -73,6 +73,11 @@ class baseFkChainLimb(baseComponent.baseComponent):
 				cmds.setAttr('%s.matrixIn[1]' %sMultMatrix, lMatrix, type = 'matrix')
 
 				constraints.matrixConnect(sMultMatrix, [sJnt], 'matrixSum', lSkipScale = ['X', 'Y', 'Z'], bForce = True)
+
+		## pass info to class
+		self._lJnts = lJnts
+		self._lCtrls = lCtrls
+		self._lBindJnts = lBindJnts
 
 		## write component info
 		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'baseFkChainLimb', type = 'string', lock = True)
