@@ -93,6 +93,15 @@ def convertListToMMatrix(lMatrix):
 	OpenMaya.MScriptUtil.createMatrixFromList(lMatrix, mMatrix)
 	return mMatrix
 
+def getLocalMatrixInNode(sNode, sParent, sNodeAttr = 'worldMatrix[0]', sParentAttr = 'worldMatrix[0]'):
+	lMatrix_node = cmds.getAttr('%s.%s' %(sNode, sNodeAttr))
+	lMatrix_parent = cmds.getAttr('%s.%s' %(sParentAttr, sParentAttr))
+	mMatrix_node = convertListToMMatrix(lMatrix_node)
+	mMatrix_parent = convertListToMMatrix(lMatrix_parent)
+	mMatrixInverse_parent = mMatrix_parent.inverse()
+	mMatrix_local = mMatrix_node * mMatrixInverse_parent
+	lMatrixLocal = convertMMatrixToList(mMatrix_local)
+
 def decomposeMMatrix(mMatrix, sSpace = 'world', iRotateOrder = 0):
 	if sSpace == 'world':
 		mSpace = OpenMaya.MSpace.kWorld

@@ -170,7 +170,7 @@ class legIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 
 		## write component info
 		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, lock = False)
-		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'armIkModule', type = 'string', lock = True)
+		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'legIkModule', type = 'string', lock = True)
 		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, lock = False)
 		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, len(self._lJnts), lock = True)
 		sBindString = ''

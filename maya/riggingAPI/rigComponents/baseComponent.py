@@ -159,14 +159,14 @@ class baseComponent(object):
 		self._sComponentXform = sComponentXform
 		self._sComponentPasser = sComponentPasser
 		self._sComponentSpace = sComponentSpace
-		self._sComponentRigNodeWorld = sComponentRigNodesWorld
+		self._sComponentRigNodesWorld = sComponentRigNodesWorld
 		self._sComponentSubComponents = sComponentSubComponents
 		self._sComponentControlsXform = sComponentControlsXform
 		self._sComponentControls = sComponentControls
 		self._sComponentJoints = sComponentJoints
 		self._sComponentDrvJoints = sComponentDrvJoints
 		self._sComponentBindJoints = sComponentBindJoints
-		self._sComponentRigNodeLoacl = sComponentRigNodesLocal
+		self._sComponentRigNodesLocal = sComponentRigNodesLocal
 
 		## add component info
 		#### joint count
