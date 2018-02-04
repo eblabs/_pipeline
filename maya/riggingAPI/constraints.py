@@ -195,13 +195,17 @@ def spaceConstraint(dDrivers, sDriven, sType = 'parent', sCtrl = None, bMaintain
 def matrixConnect(sDrvNode, lDrivenNodes, sDrvAttr, lSkipTranslate = [], lSkipRotate = [], lSkipScale = [], bForce = True):
 	oName = naming.oName(sDrvNode)
 	oName.sType = 'decomposeMatrix'
-	sDecomposeMatrix = cmds.createNode('decomposeMatrix', name = oName.sName)
-	cmds.connectAttr('%s.%s' %(sDrvNode, sDrvAttr), '%s.inputMatrix' %sDecomposeMatrix)
+	sDecomposeMatrix = oName.sName
+	if not cmds.objExists(sDecomposeMatrix):
+		sDecomposeMatrix = cmds.createNode('decomposeMatrix', name = oName.sName)
+		cmds.connectAttr('%s.%s' %(sDrvNode, sDrvAttr), '%s.inputMatrix' %sDecomposeMatrix)
 	if not lSkipRotate:
 		oName.sType = 'quatToEuler'
-		sQuatToEuler = cmds.createNode('quatToEuler', name = oName.sName)
-		cmds.connectAttr('%s.outputQuat' %sDecomposeMatrix, '%s.inputQuat' %sQuatToEuler)
-		cmds.connectAttr('%s.ro' %lDrivenNodes[0], '%s.inputRotateOrder' %sQuatToEuler)
+		sQuatToEuler = oName.sName
+		if not cmds.objExists(sQuatToEuler):
+			sQuatToEuler = cmds.createNode('quatToEuler', name = oName.sName)
+			cmds.connectAttr('%s.outputQuat' %sDecomposeMatrix, '%s.inputQuat' %sQuatToEuler)
+			cmds.connectAttr('%s.ro' %lDrivenNodes[0], '%s.inputRotateOrder' %sQuatToEuler)
 		if len(lDrivenNodes) > 1:
 			for sDriven in lDrivenNodes[1:]:
 				cmds.connectAttr('%s.ro' %lDrivenNodes[0], '%s.ro' %sDriven)

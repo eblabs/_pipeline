@@ -25,6 +25,8 @@ class baseIkSplineSolverLimb(baseComponent.baseComponent):
 			self._lBpJnts = kwargs.get('lBpJnts', None)
 			self._iStacks = kwargs.get('iStacks', 1)
 			self._bBind = kwargs.get('bBind', False)
+			self._sCrv = kwargs.get('sCrv', None)
+			
 
 	def createComponent(self):
 		super(baseIkSplineSolverLimb, self).createComponent()
@@ -43,11 +45,11 @@ class baseIkSplineSolverLimb(baseComponent.baseComponent):
 			lJntsLocal.append(sJnt)
 
 		## generate curve
-		sIkHnd = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sSplineSolver' %self._sName, iIndex = self._iIndex).sName
-		sCurve = naming.oName(sType = 'curve', sSide = self._sSide, sPart = '%sSplineSolver' %self._sName, iIndex = self._iIndex).sName
-		lIkNodes = cmds.ikHandle(sj = lJntsLocal[0], ee = lJntsLocal[-1], sol = 'ikSplineSolver', ccv = True, scv = False)
-		cmds.rename(lIkNodes[-1], sCurve)
-		cmds.delete(lIkNodes[:-1])
+		if not self._sCrv:
+			sCurve = naming.oName(sType = 'curve', sSide = self._sSide, sPart = '%sSplineSolver' %self._sName, iIndex = self._iIndex).sName
+			sCurve = curves.createCurveOnNodes(sCurve, lJntsLocal, iDegree = 3, sParent = None)
+		else:
+			sCurve = self._sCrv
 		lClsHnds = curves.clusterCurve(sCurve, bRelatives = True)
 		#### rebuild curve
 		iCvs = curves.getCurveCvNum(sCurve)

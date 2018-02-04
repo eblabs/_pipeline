@@ -4,8 +4,188 @@
 		"selected_items":
 		[
 			[
+				"lCtr",
+				"lCtrlsName"
+			],
+			[
+				"base",
+				"baseFkOnIkSplineLimb"
+			],
+			[
+				"lCtrl",
+				"lCtrlsFkTop"
+			],
+			[
+				"lCtrlsFk",
+				"lCtrlsFkBot"
+			],
+			[
+				"lCtrls",
+				"lCtrlsFk"
+			],
+			[
+				"lGrpB",
+				"lGrpBend_top"
+			],
+			[
+				"lCt",
+				"lCtrlsFk"
+			],
+			[
+				"lG",
+				"lGrpBend_bot"
+			],
+			[
+				"oCtrl",
+				"oCtrlOffset_top"
+			],
+			[
+				"Dw",
+				"dWorldUpMatrixEnd"
+			],
+			[
+				"sMultM",
+				"sMultMatrixTwist"
+			],
+			[
+				"lGrp",
+				"lGrpBend_bot"
+			],
+			[
+				"sGrp_",
+				"sGrp_botRvs"
+			],
+			[
+				"sGrp",
+				"sGrp_topRvs"
+			],
+			[
+				"oCtrlO",
+				"oCtrlOffset_bot"
+			],
+			[
+				"oCtrlOff",
+				"oCtrlOffset_top"
+			],
+			[
+				"mat",
+				"matrixOutputWorld"
+			],
+			[
+				"sQua",
+				"sQuatToEulerFkRot"
+			],
+			[
+				"SmULTm",
+				"sMultMatrixParent"
+			],
+			[
+				"multip",
+				"multiplyDivide"
+			],
+			[
+				"create",
+				"createNode"
+			],
+			[
+				"sQ",
+				"sQuatToEulerFkRot"
+			],
+			[
+				"outpu",
+				"outputQuat"
+			],
+			[
+				"sDe",
+				"sDecomposeMatrixFkRot"
+			],
+			[
+				"output",
+				"matrixOutputLocal"
+			],
+			[
+				"cre",
+				"createNode"
+			],
+			[
+				"oName",
+				"oNameMatrix"
+			],
+			[
+				"oNa",
+				"oNameMatrix"
+			],
+			[
+				"OcTRL",
+				"oCtrlOffset"
+			],
+			[
 				"oC",
-				"oCtrl"
+				"oCtrlOffset"
+			],
+			[
+				"oCt",
+				"oCtrlOffset_top"
+			],
+			[
+				"oCtl",
+				"oCtrlTop"
+			],
+			[
+				"sGrpR",
+				"sGrpRvsZero"
+			],
+			[
+				"matrixOutput",
+				"matrixOutputWorld"
+			],
+			[
+				"sMultMa",
+				"sMultMatrix_botTranslate"
+			],
+			[
+				"sMultMatrix",
+				"sMultMatrix_topTranslate"
+			],
+			[
+				"sMUlt",
+				"sMultMatrix"
+			],
+			[
+				"sGrp_bot",
+				"sGrp_botRvs"
+			],
+			[
+				"matrixO",
+				"matrixOutputBend"
+			],
+			[
+				"ze",
+				"sGrp_topRvsZero"
+			],
+			[
+				"lGr",
+				"lGrpBend_bot"
+			],
+			[
+				"sGrp_topR",
+				"sGrp_topRvsZero"
+			],
+			[
+				"matrixOut",
+				"matrixOutputLocal"
+			],
+			[
+				"oCtrl_",
+				"oCtrl_bot"
+			],
+			[
+				"sP",
+				"sParent_ctrl"
+			],
+			[
+				"lJnts",
+				"lJntsLocal"
 			],
 			[
 				"sC",
@@ -20,24 +200,8 @@
 				"tweakCtrlVis"
 			],
 			[
-				"sP",
-				"sPelvisBend"
-			],
-			[
-				"oNa",
-				"oName"
-			],
-			[
-				"oCtrl",
-				"oCtrlChest"
-			],
-			[
 				"_ik",
 				"_sIkHnd"
-			],
-			[
-				"sMultM",
-				"sMultMatrixTwist_chest"
 			],
 			[
 				"matri",
@@ -56,10 +220,6 @@
 				"getLocalMatrixInNode"
 			],
 			[
-				"output",
-				"outputRotate"
-			],
-			[
 				"input",
 				"inputRotateOrder"
 			],
@@ -69,10 +229,6 @@
 			],
 			[
 				"sDeco",
-				"sDecomposeMatrix"
-			],
-			[
-				"sDe",
 				"sDecomposeMatrix"
 			],
 			[
@@ -88,28 +244,12 @@
 				"matrixOutputWorld"
 			],
 			[
-				"lGrp",
-				"lGrpBend_pelvis"
-			],
-			[
 				"sGrpBen",
 				"sGrpBend_chest"
 			],
 			[
-				"lG",
-				"lGrpBend_pelvis"
-			],
-			[
-				"sGrp",
-				"sGrpBendChest"
-			],
-			[
 				"smULTm",
 				"sMultMatrixCls"
-			],
-			[
-				"mat",
-				"matrix"
 			],
 			[
 				"mMatr",
@@ -140,16 +280,8 @@
 				"convertListToMMatrix"
 			],
 			[
-				"oCt",
-				"oCtrlCls"
-			],
-			[
 				"sMul",
 				"sMultMatrix"
-			],
-			[
-				"matrixO",
-				"matrixOutputWorld"
 			],
 			[
 				"l",
@@ -168,20 +300,12 @@
 				"sParent"
 			],
 			[
-				"lGr",
-				"lGrpBend_pelvis"
-			],
-			[
 				"lGrpBe",
 				"lGrpBend_pelvis"
 			],
 			[
 				"namin",
 				"naming"
-			],
-			[
-				"oName",
-				"oNameGrp"
 			],
 			[
 				"sMu",
@@ -208,14 +332,6 @@
 				"lGrpBend_chest"
 			],
 			[
-				"lGrpB",
-				"lGrpBend_pelvis"
-			],
-			[
-				"sGrp_",
-				"sGrp_chest"
-			],
-			[
 				"nami",
 				"naming"
 			],
@@ -230,10 +346,6 @@
 			[
 				"sS",
 				"sSide"
-			],
-			[
-				"base",
-				"baseIkSplineSolverLimb"
 			],
 			[
 				"_lB",
@@ -294,10 +406,6 @@
 			[
 				"outputMat",
 				"outputMatrixWorld"
-			],
-			[
-				"sMultMa",
-				"sMultMatrixWorld"
 			],
 			[
 				"sMultMat",
@@ -406,114 +514,6 @@
 			[
 				"sPare",
 				"sParent"
-			],
-			[
-				"sParent",
-				"sParent_jnt"
-			],
-			[
-				"sComponentRigN",
-				"sComponentRigNodesLocal"
-			],
-			[
-				"sComponent",
-				"sComponentControls"
-			],
-			[
-				"sComponenp",
-				"sComponentSubComponents"
-			],
-			[
-				"sComponentR",
-				"sComponentRigNodesWorld"
-			],
-			[
-				"sCo",
-				"sComponentMaster"
-			],
-			[
-				"iI",
-				"iIndex"
-			],
-			[
-				"sub",
-				"subComponents"
-			],
-			[
-				"_s",
-				"_sSide"
-			],
-			[
-				"trans",
-				"transforms"
-			],
-			[
-				"__sMult",
-				"__sMultMatrixOutput"
-			],
-			[
-				"sMutlM",
-				"sMultMatrixStacks"
-			],
-			[
-				"__sMultM",
-				"__sMultMatrixStacks"
-			],
-			[
-				"inver",
-				"inverseMatrixOutput"
-			],
-			[
-				"lJnt",
-				"lJntsOutput"
-			],
-			[
-				"_lJ",
-				"_lJntsOutput"
-			],
-			[
-				"lJ",
-				"lJnts"
-			],
-			[
-				"connec",
-				"connectAttr"
-			],
-			[
-				"le",
-				"legIkRig"
-			],
-			[
-				"sIk",
-				"sIkHnd"
-			],
-			[
-				"sMa",
-				"sMatchersString"
-			],
-			[
-				"sMo",
-				"sModuleNode"
-			],
-			[
-				"_sConnec",
-				"_sConnectInJnt"
-			],
-			[
-				"dD",
-				"dDrivers"
-			],
-			[
-				"cons",
-				"constraints"
-			],
-			[
-				"_l",
-				"_lBpCtrls"
-			],
-			[
-				"_b",
-				"_bOrientTop"
 			]
 		]
 	},
@@ -748,19 +748,16 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseIkSplineSolverLimb.py",
 			"settings":
 			{
-				"buffer_size": 5307,
+				"buffer_size": 5177,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"contents": "####################################################\n# spine ik module\n# this module should do the base biped spine ik rig\n####################################################\n## import\nimport maya.cmds as cmds\n## import libs\nimport namingAPI.naming as naming\nimport common.transforms as transforms\nimport common.attributes as attributes\nimport common.apiUtils as apiUtils\nimport riggingAPI.joints as joints\nimport riggingAPI.controls as controls\nimport riggingAPI.constraints as constraints\n\nimport riggingAPI.rigComponents.baseLimbs.baseIkSplineSolverLimb as baseIkSplineSolverLimb\n\nclass spineIkModule(baseIkSplineSolverLimb.baseIkSplineSolverLimb):\n\t\"\"\"docstring for spineIkModule\"\"\"\n\tdef __init__(self, *args, **kwargs):\n\t\tsuper(spineIkModule, self).__init__(*args, **kwargs)\n\t\tif args:\n\t\t\tself._getComponentInfo(args[0])\n\n\tdef createComponent(self):\n\t\tsuper(spineIkModule, self).createComponent()\n\t\t\n\t\tiRotateOrder = cmds.getAttr('%s.ro' %self._lJnts[0])\n\t\t## get reverse rotateOrder\n\t\tlRotateOrderRvs = [5, 3, 4, 1, 2, 0]\n\t\tiRotateOrderRvs = lRotateOrderRvs[iRotateOrder]\n\t\t#### chest pelvis bend\n\t\t###### chest pelvis ctrl\n\t\tsGrp_chestRvs = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sChestBendRvs' %self._sName, iIndex = self._iIndex).sName, iRotateOrder = iRotateOrderRvs, sParent = self._sComponentControls)\n\t\tsGrp_pelvisRvs = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sPelvisBendRvs' %self._sName, iIndex = self._iIndex).sName, iRotateOrder = iRotateOrderRvs, sParent = self._sComponentControls)\n\t\t\n\t\toCtrlChest = controls.create('%sChest' %self._sName, sSide = self._sSide, iIndex = self._iIndex, iStacks = self._iStacks, bSub = True, iRotateOrder = iRotateOrder, sParent = sGrp_chestRvs, sShape = 'cube', fSize = 4, lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])\n\t\toCtrlPelvis = controls.create('%sPelvis' %self._sName, sSide = self._sSide, iIndex = self._iIndex, iStacks = self._iStacks, bSub = True, iRotateOrder = iRotateOrder, sParent = sGrp_pelvisRvs, sShape = 'cube', fSize = 4, lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])\n\n\t\t###### matrix connect, add multiply attrs\n\t\tlRotatePlug = []\n\t\tfor i, sCtrl in enumerate([oCtrlChest.sName, oCtrlPelvis.sName]):\n\t\t\tattributes.addDivider([sCtrl], 'RotMult')\n\t\t\tfor j in range(1, len(self._lCtrls) - 1):\n\t\t\t\tcmds.addAttr(sCtrl, ln = 'rotMult%02d' %j, at = 'float', min = 0, max = 1, dv = 1, keyable = True)\n\n\t\t\tsDecomposeMatrix = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = self._sSide, sPart = '%s%sBend' %(self._sName, ['Chest', 'Pelvis'][i])).sName)\n\t\t\tsQuatToEuler = cmds.createNode('quatToEuler', name = naming.oName(sType = 'quatToEuler', sSide = self._sSide, sPart = '%s%sBend' %(self._sName, ['Chest', 'Pelvis'][i])).sName)\n\t\t\tcmds.connectAttr('%s.matrixOutputLocal' %sCtrl, '%s.inputMatrix' %sDecomposeMatrix)\n\t\t\tcmds.connectAttr('%s.outputQuat' %sDecomposeMatrix, '%s.inputQuat' %sQuatToEuler)\n\t\t\tcmds.connectAttr('%s.ro' %sCtrl, '%s.inputRotateOrder' %sQuatToEuler)\n\t\t\tsMult = cmds.createNode('multiplyDivide', name = naming.oName(sType = 'multiplyDivide', sSide = self._sSide, sPart = '%s%sBend' %(self._sName, ['Chest', 'Pelvis'][i])).sName)\n\t\t\tcmds.setAttr('%s.operation' %sMult, 2)\n\t\t\tsMultRvs = cmds.createNode('multiplyDivide', name = naming.oName(sType = 'multiplyDivide', sSide = self._sSide, sPart = '%s%sBendRvs' %(self._sName, ['Chest', 'Pelvis'][i])).sName)\n\t\t\tfor sAxis in ['X', 'Y', 'Z']:\n\t\t\t\tcmds.connectAttr('%s.outputRotate%s' %(sQuatToEuler, sAxis), '%s.input1%s' %(sMult, sAxis))\n\t\t\t\tcmds.setAttr('%s.input2%s' %(sMult, sAxis), len(self._lCtrls) - 2)\n\t\t\t\tcmds.connectAttr('%s.outputRotate%s' %(sQuatToEuler, sAxis), '%s.input1%s' %(sMultRvs, sAxis))\n\t\t\t\tcmds.setAttr('%s.input2%s' %(sMultRvs, sAxis), -1)\n\t\t\t\tcmds.connectAttrs('%s.output%s' %(sMultRvs, sAxis), '%s.rotate%s' %([sGrp_chestRvs, sGrp_pelvisRvs][i], sAxis))\n\t\t\tlRotatePlug.append(sMult)\n\n\t\t###### create null group for each cluster (no pelvis end joint, no chest end joint)\n\t\tsParent_ctrl = self._sComponentControls\n\t\tlGrpBend_chest = []\n\t\tlGrpBend_pelvis = []\n\t\tfor i, sCtrl in enumerate(self._lCtrls[1:len(self._lCtrls)-1]):\n\t\t\tsGrp_chest = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sChestBend' %self._sName, iIndex = i + 1).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz', 'v'], iRotateOrder = iRotateOrder, sPos = sCtrl, sParent = self._sComponentControls)\n\t\t\tsGrp_pelvis = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sPelvisBend' %self._sName, iIndex = len(self._lCtrls) - i - 2).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz', 'v'], iRotateOrder = iRotateOrder, sPos = sCtrl, sParent = self._sComponentControls)\n\t\t\tlGrpBend_chest.append(sGrp_chest)\n\t\t\tlGrpBend_pelvis.append(sGrp_pelvis)\n\n\t\t\tsMultRot_chest = cmds.createNode('multiplyDivide', name = naming.oName(sType = 'multiplyDivide', sSide = self._sSide, sPart = '%sChestBendMult' %self._sName, iIndex = i + 1).sName)\n\t\t\tsMultRot_pelvis = cmds.createNode('multiplyDivide', name = naming.oName(sType = 'multiplyDivide', sSide = self._sSide, sPart = '%sPelvisBendMult' %self._sName, iIndex = len(self._lCtrls) - i - 2).sName)\n\n\t\t\tfor sAxis in ['X', 'Y', 'Z']:\n\t\t\t\tcmds.connectAttr('%s.output%s' %(lRotatePlug[0], sAxis), '%s.input1%s' %(sGrp_chest, sMultRot_chest))\n\t\t\t\tcmds.connectAttr('%s.output%s' %(lRotatePlug[1], sAxis), '%s.input1%s' %(sGrp_pelvis, sMultRot_pelvis))\n\t\t\t\tcmds.connectAttr('%s.rotMult%02d' %(oCtrlChest.sName, i + 1), '%s.input2%s' %(sGrp_chest, sMultRot_chest))\n\t\t\t\tcmds.connectAttr('%s.rotMult%02d' %(oCtrlPelvis.sName, len(self._lCtrls) - i - 2), '%s.input2%s' %(sGrp_pelvis, sMultRot_pelvis))\n\t\t\t\tcmds.connectAttr('%s.output%s' %(sMultRot_chest, sAxis), '%s.rotate%s' %(sGrp_chest, sAxis))\n\t\t\t\tcmds.connectAttr('%s.output%s' %(sMultRot_pelvis, sAxis), '%s.rotate%s' %(sGrp_pelvis, sAxis))\n\n\t\tlGrpBend_pelvis.reverse()\n\n\t\tfor i in range(len(sGrpParent_chest[1:])):\n\t\t\tfor j, sGrp in enumerate([lGrpBend_chest[i], lGrpBend_pelvis[i]]):\n\t\t\t\tsParent = [lGrpBend_chest, lGrpBend_pelvis][j][i - 1]\n\t\t\t\tcmds.parent(sGrp, sParent)\n\n\t\t\t\t## add world matrix\n\t\t\t\tcmds.addAttr(sGrp, ln = 'matrixOutputWorld', at = 'matrix')\n\n\t\t\t\toNameGrp = naming.oName(sGrp)\n\t\t\t\toNameGrp.sType = 'multMatrix'\n\t\t\t\toNameGrp.sPart = '%sMatrixOutputWorld' %oNameGrp.sPart\n\t\t\t\tsMultMatrix = cmds.createNode('multMatrix', name = oNameGrp.sName)\n\t\t\t\tcmsd.connectAttr('%s.matrix' %sGrp, '%s.matrixIn[0]' %sMultMatrix)\n\t\t\t\tif i > 1:\n\t\t\t\t\tcmds.connectAttr('%s.matrixOutputWorld' %sParent, '%s.matrixIn[1]' %sMultMatrix)\n\t\t\t\telse:\n\t\t\t\t\tcmds.connectAttr('%s.matrix' %sParent, '%s.matrixIn[1]' %sMultMatrix)\n\t\t\t\tcmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.matrixOutputWorld' %sGrp)\n\n\t\tcmds.delete(cmds.pointConstraint(self._lCtrls[1], sGrp_pelvisRvs, mo = False))\n\t\tcmds.delete(cmds.pointConstraint(self._lCtrls[-2], sGrp_chestRvs, mo = False))\n\t\tcmds.parent(sGrp_pelvisRvs, lGrpBend_pelvis[-1])\n\t\tcmds.parent(sGrp_chestRvs, lGrpBend_chest[-1])\n\n\t\t#### connect chest and pelvis controls to clusters\n\t\t## chest and pelvis cluster\n\t\tsMultMatrixWorld_chest = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sChestMatrixWorld' %self._sName, iIndex = self._iIndex).sName)\n\t\tsMultMatrixWorld_pelvis = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sPelvisMatrixWorld' %self._sName, iIndex = self._iIndex).sName)\n\n\t\tfor i, sCtrl in enumerate([oCtrlChest.sName, oCtrlPelvis.sName]):\n\t\t\tsGrpRvs = [sGrp_chestRvs, sGrp_pelvisRvs][i]\n\t\t\tsMultMatrix = [sMultMatrixWorld_chest, sMultMatrixWorld_pelvis][i]\n\t\t\tsGrpParent = [lGrpBend_chest[-1], lGrpBend_pelvis[-1]]\n\t\t\tsCtrlCls = [self._lCtrls[-2], self._lCtrls[1]][i]\n\t\t\toCtrlCls = controls.oControl(sCtrlCls)\n\t\t\tcmds.connectAttr('%s.matrixOutputLocal' %sCtrl, '%s.matrixIn[0]' %sMultMatrix)\n\t\t\tcmds.connectAttr('%s.matrix' %sGrpRvs, '%s.matrixIn[1]' %sMultMatrix)\n\t\t\tcmds.connectAttr('%s.matrixOutputWorld' %sGrpParent, '%s.matrixIn[2]' %sMultMatrix)\n\t\t\tsMultMatrixCls = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = oCtrlCls.sSide, sPart = '%sMatrixOutput' %oCtrlCls.sPart, iIndex = oCtrlCls.iIndex).sName)\n\t\t\tcmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.matrixIn[0]' %sMultMatrixCls)\n\t\t\tlInverseMatrix = cmds.getAttr('%s.inverseMatrix' %oCtrlCls.sZero)\n\t\t\tcmds.setAttr('%s.matrixIn[1]' %sMultMatrixCls, lInverseMatrix, type = 'matrix')\n\t\t\tconstraints.matrixConnect(sMultMatrixCls, [oCtrlCls.sPasser], 'matrixSum', lSkipTranslate = [], lSkipRotate = [], lSkipScale = ['x', 'y', 'z'], bForce = True)\n\n\t\t\tsCtrlClsEnd = [self._lCtrls[-1], self._lCtrls[0]][i]\n\t\t\toCtrlClsEnd = controls.oControl(sCtrlClsEnd)\n\n\t\t\tsMultMatrixClsEnd = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = oCtrlClsEnd.sSide, sPart = '%sMatrixOutput' %oCtrlClsEnd.sPart, iIndex = oCtrlClsEnd.iIndex).sName)\n\t\t\tlMatrix = apiUtils.getLocalMatrixInNode(oCtrlClsEnd.sPasser, sCtrl, sNodeAttr = 'worldMatrix[0]', sParentAttr = 'worldMatrix[0]')\n\t\t\tlInverseMatrix = cmds.getAttr('%s.inverseMatrix' %oCtrlClsEnd.sZero)\n\t\t\tcmds.setAttr('%s.matrixIn[0]' %sMultMatrixClsEnd, lMatrix, type = 'matrix')\n\t\t\tcmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.matrixIn[1]' %sMultMatrixClsEnd)\n\t\t\tcmds.setAttr('%s.matrixIn[2]' %sMultMatrixClsEnd, lInverseMatrix, type = 'matrix')\n\t\t\tconstraints.matrixConnect(sMultMatrixClsEnd, [oCtrlClsEnd.sPasser], 'matrixSum', lSkipTranslate = [], lSkipRotate = [], lSkipScale = ['x', 'y', 'z'], bForce = True)\n\n\t\t##### mid cls connect\n\t\tiNum = len(self._lCtrls[2:]) - 1\n\t\t## chest pelvis world translate - grp bend world translate\n\t\tlMinusTranslate = []\n\t\tfor i, sMatrix in enumerate([sMultMatrixWorld_chest, sMultMatrixWorld_pelvis]):\n\t\t\toCtrl = [oCtrlChest, oCtrlPelvis][i]\n\t\t\tsGrpBend = [lGrpBend_chest[-1], lGrpBend_pelvis[-1]][i]\n\t\t\tsDecomposeMatrix_ctrl = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = oCtrl.sSide, sPart = '%sMatrixCtrlTranslateWorld' %oCtrl.sPart, iIndex = oCtrl.iIndex).sName)\n\t\t\tsDecomposeMatrix_grp = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = oCtrl.sSide, sPart = '%sMatrixGrpTranslateWorld' %oCtrl.sPart, iIndex = oCtrl.iIndex).sName)\n\t\t\tcmds.connectAttr('%s.matrixSum' %sMatrix, '%s.inputMatrix' %sDecomposeMatrix_ctrl)\n\t\t\tcmds.connectAttr('%s.matrixOutputWorld' %sGrpBend, '%s.inputMatrix' %sDecomposeMatrix_grp)\n\t\t\tsMinus = cmds.createNode('plusMinusAverage', name = naming.oName(sType = 'plusMinusAverage', sSide = oCtrl.sSide, sPart = '%sMatrixTranslateWorld' %oCtrl.sPart, iIndex = oCtrl.iIndex).sName)\n\t\t\tcmds.setAttr('%s.operation' %sMinus, 2)\n\t\t\tcmds.connectAttr('%s.outputTranslate' %sDecomposeMatrix_ctrl, '%s.input3D[0]' %sMinus)\n\t\t\tcmds.connectAttr('%s.outputTranslate' %sDecomposeMatrix_grp, '%s.input3D[1]' %sMinus)\n\t\t\tlMinusTranslate.append(sMinus)\n\n\t\tfor i, sCtrlCls in enumerate(self._lCtrls[1:iNum + 1]):\n\t\t\tsGrpBend_chest = lGrpBend_chest[i + 1]\n\t\t\tsGrpBend_pelvis = lGrpBend_pelvis[-i - 2]\n\t\t\toCtrlCls = controls.oControl(sCtrlCls)\n\t\t\tsAddMatrix = cmds.createNode('addMatrix', name = naming.oName(sType = 'addMatrix', sSide = oCtrlCls.sSide, sPart = '%sMatrixBend' %oCtrlCls.sPart, iIndex = oCtrlCls.iIndex).sName)\n\t\t\tcmds.connectAttr('%s.matrixOutputWorld' %sGrpBend_chest, '%s.matrixIn[0]' %sAddMatrix)\n\t\t\tcmds.connectAttr('%s.matrixOutputWorld' %sGrpBend_pelvis, '%s.matrixIn[1]' %sAddMatrix)\n\t\t\tsMultMatrixCls = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = oCtrlCls.sSide, sPart = '%sMatrixBend' %oCtrlCls.sPart, iIndex = oCtrlCls.iIndex).sName)\n\t\t\tcmds.connectAttr('%s.matrixSum' %sAddMatrix, '%s.matrixIn[0]' %sMultMatrixCls)\t\t\t\n\t\t\tlInverseMatrix = cmds.getAttr('%s.inverseMatrix' %oCtrlCls.sZero)\n\t\t\tcmds.setAttr('%s.matrixIn[0]' %sMultMatrixCls, lInverseMatrix, type = 'matrix')\n\n\t\t\tsMultChest = cmds.createNode('multiplyDivide', name = naming.oName(sType = 'multiplyDivide', sSide = oCtrlCls.sSide, sPart = '%sChestTranslate' %oCtrlCls.sPart, iIndex = oCtrlCls.iIndex).sName)\n\t\t\tsMultPelvis = cmds.createNode('multiplyDivide', name = naming.oName(sType = 'multiplyDivide', sSide = oCtrlCls.sSide, sPart = '%sPelvisTranslate' %oCtrlCls.sPart, iIndex = oCtrlCls.iIndex).sName)\n\t\t\tfWeight = (i + 1) / float(iNum)\n\t\t\tfor sAxis in ['X', 'Y', 'Z']:\n\t\t\t\tcmds.setAttr('%s.input2%s' %(sMultChest, sAxis), 1 - fWeight)\n\t\t\t\tcmds.setAttr('%s.input2%s' %(sMultPelvis, sAxis), fWeight)\n\t\t\tcmds.connectAttr('%s.output3D' %lMinusTranslate[0], '%s.input1' %sMultChest)\n\t\t\tcmds.connectAttr('%s.output3D' %lMinusTranslate[1], '%s.input1' %sMultPelvis)\n\t\t\tsPlus = cmds.createNode('plusMinusAverage', name = naming.oName(sType = 'plusMinusAverage', sSide = oCtrlCls.sSide, sPart = '%sTranslateOutput' %oCtrlCls.sPart, iIndex = oCtrlCls.iIndex).sName)\n\t\t\tcmds.connectAttr('%s.output' %sMultChest, '%s.input3D[0]' %sPlus)\n\t\t\tcmds.connectAttr('%s.output' %sMultPelvis, '%s.input3D[1]' %sPlus)\n\t\t\tsDecomposeMatrix = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = oCtrlCls.sSide, sPart = '%sMatrixBend' %oCtrlCls.sPart, iIndex = oCtrlCls.iIndex).sName)\n\t\t\tcmds.connectAttr('%s.matrixSum' %sAddMatrix, '%s.matrixIn[0]' %sDecomposeMatrix)\n\t\t\tcmds.connectAttr('%s.outputTranslate' %sDecomposeMatrix, '%s.input3D[2]' %sPlus)\n\n\t\t\tsQuatToEuler = cmds.createNode('quatToEuler', name = naming.oName(sType = 'quatToEuler', sSide = oCtrlCls.sSide, sPart = '%sMatrixBend' %oCtrlCls.sPart, iIndex = oCtrlCls.iIndex).sName)\n\t\t\tcmds.connectAttr('%s.outputQuat' %sDecomposeMatrix, '%s.inputQuat' %sQuatToEuler)\n\t\t\tcmds.connectAttr('%s.ro' %oCtrlCls.sPasser, '%s.inputRotateOrder' %sQuatToEuler)\n\n\t\t\tfor sAxis in ['X', 'Y', 'Z']:\n\t\t\t\tcmds.connectAttr('%s.output3D%s' %(sPlus, sAxis.lower()), '%s.translate%s' %(oCtrlCls.sPasser, sAxis))\n\t\t\t\tcmds.connectAttr('%s.outputRotate%s' %(sQuatToEuler, sAxis), '%s.rotate%s' %(oCtrlCls.sPasser, sAxis))\n\n\t\t#### twist matrix connect\n\t\tsMultMatrixTwist_chest = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sMatrixTwistChest' %self._sPart, iIndex = self._iIndex).sName)\n\t\tsMultMatrixTwist_pelvis = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sMatrixTwistPelvis' %self._sPart, iIndex = self._iIndex).sName)\n\t\tlMatrixTop = apiUtils.getLocalMatrixInNode(self._lJnts[-1], oCtrlChest.sName)\n\t\tlMatrixBot = apiUtils.getLocalMatrixInNode(self._lJnts[0], oCtrlPelvis.sName)\n\t\tcmds.setAttr('%s.matrixIn[0]' %sMultMatrixTwist_chest, lMatrixTop, type = 'matrix')\n\t\tcmds.setAttr('%s.matrixIn[0]' %sMultMatrixTwist_pelvis, lMatrixBot, type = 'matrix')\n\t\tcmds.connectAttr('%s.matrixSum' %sMultMatrixWorld_chest, '%s.matrixIn[1]' %sMultMatrixTwist_chest)\n\t\tcmds.connectAttr('%s.matrixSum' %sMultMatrixWorld_pelvis, '%s.matrixIn[1]' %sMultMatrixTwist_pelvis)\n\n\t\tcmds.setAttr('%s.dTwistControlEnable' %self._sIkHnd, 1)\n\t\tcmds.setAttr('%s.dWorldUpType' %self._sIkHnd, 4)\n\t\tattributes.connectAttrs(['%s.matrixSum' %sMultMatrixTwist_pelvis, '%s.matrixSum' %sMultMatrixTwist_chest], ['%s.dWorldUpMatrix' %self._sIkHnd, '%s.dWorldUpMatrixEnd' %self._sIkHnd], bForce = True)\n\n\t\t##  hide tweak controls\n\t\tfor sCtrl in [self._lCtrls[0], self._lCtrls[1], self._lCtrls[-2], self._lCtrls[-1]]:\n\t\t\toCtrl = controls.oControl(sCtrl)\n\t\t\tcmds.setAttr('%s.v' %oCtrl.sZero, 0, lock = True)\n\n\t\tsCtrlShape = naming.oName(sType = 'ctrl', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName\n\t\taddCtrlShape([oCtrlChest.sName, oCtrlPelvis.sName], sCtrlShape, bVis = False)\n\t\tcmds.addAttr(sCtrlShape, ln = 'tweakCtrlVis', at = 'long', min = 0, max = 1, keyable = False)\n\t\tcmds.setAttr('%s.tweakCtrlVis' %sCtrlShape, channelBox = True)\n\t\tfor sCtrl in [self._lCtrls[2: len(self._lCtrls) - 2]]:\n\t\t\toCtrl = controls.oControl(sCtrl)\n\t\t\tcmds.connectAttr('%s.tweakCtrlVis' %sCtrlShape, '%s.v' %oCtrl.sZero )\n\n\t\t## write component info\n\t\tcmds.setAttr('%s.sComponentType' %self._sComponentMaster, lock = False)\n\t\tcmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'spineIkModule', type = 'string', lock = True)\n\n\t\tcmds.setAttr('%s.sControls' %self._sComponentMaster, lock = False)\n\t\tsControlsString = ''\n\t\tfor sCtrl in ([oCtrlPelvis.sName, oCtrlChest.sName] + self._lCtrls[2:len(self._lCtrls) - 2]):\n\t\t\tsControlsString += '%s,' %sCtrl\n\t\tcmds.setAttr('%s.sControls' %self._sComponentMaster, sControlsString[:-1], type = 'string', lock = True)\n\n\t\tself._getComponentInfo(self._sComponentMaster)",
-			"file": "riggingAPI/rigComponents/rigModules/spineIkModule.py",
-			"file_size": 16906,
-			"file_write_time": 131616736216006415,
+			"file": "riggingAPI/rigComponents/baseLimbs/baseFkOnIkSplineLimb.py",
 			"settings":
 			{
-				"buffer_size": 16678,
+				"buffer_size": 16760,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -814,7 +811,7 @@
 			"file": "riggingAPI/constraints.py",
 			"settings":
 			{
-				"buffer_size": 17880,
+				"buffer_size": 18027,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -1023,6 +1020,15 @@
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
+		},
+		{
+			"file": "riggingAPI/rigComponents/baseLimbs/baseIkSplineSolverLimb2.py",
+			"settings":
+			{
+				"buffer_size": 22603,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
 		}
 	],
 	"build_system": "",
@@ -1062,6 +1068,8 @@
 	},
 	"file_history":
 	[
+		"/C/_pipeline/maya/riggingAPI/rigComponents/rigModules/spineIkModule.py",
+		"/C/_pipeline/maya/riggingAPI/rigComponents/rigModules/spineFkModule.py",
 		"/C/Users/harri/Dropbox/Temp file/script_dev/corrective02.py",
 		"/C/_works/maya/faceRigBrenda/assets/charA/model/charA_model_removeUnusedNodes_v004.ma",
 		"/C/Users/harri/Desktop/assignShader.py",
@@ -1160,6 +1168,11 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"oCtrlOffset_top",
+			"sMultMatrixWorld_chest",
+			"sDivideFkRot",
+			"sQuatToEuler",
+			"oCtrl_top",
 			"lCtrls",
 			"apiUtils",
 			"Query",
@@ -1282,12 +1295,7 @@
 			"_fileLayout",
 			"files",
 			"_getCtrlShapeKnots",
-			"_getCtrlShapeControlPoints",
-			"setMFnMesh",
-			"_setSkinBlendWeights",
-			"_setSkinWeights",
-			"getSkinBlendWeights",
-			"_getSkinWeightsData"
+			"_getCtrlShapeControlPoints"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1295,6 +1303,8 @@
 		"regex": false,
 		"replace_history":
 		[
+			"sMultFkRot",
+			"sDivideFkRot",
 			"__sRes",
 			"__sSide",
 			"__sType",
@@ -1411,7 +1421,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 37,
+					"stack_index": 39,
 					"type": "text"
 				},
 				{
@@ -1439,7 +1449,7 @@
 						"translation.y": 1362.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 24,
+					"stack_index": 26,
 					"type": "text"
 				},
 				{
@@ -1468,7 +1478,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 32,
+					"stack_index": 34,
 					"type": "text"
 				},
 				{
@@ -1497,7 +1507,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 38,
+					"stack_index": 40,
 					"type": "text"
 				},
 				{
@@ -1526,7 +1536,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 39,
+					"stack_index": 41,
 					"type": "text"
 				},
 				{
@@ -1542,19 +1552,19 @@
 						"selection":
 						[
 							[
-								2263,
-								2263
+								570,
+								632
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
-						"translation.x": 1250.0,
-						"translation.y": 1584.0,
+						"translation.x": 0.0,
+						"translation.y": 197.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
@@ -1582,7 +1592,7 @@
 						"translation.y": 3366.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
@@ -1610,7 +1620,7 @@
 						"translation.y": 3861.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
@@ -1638,7 +1648,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
@@ -1666,7 +1676,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 40,
+					"stack_index": 42,
 					"type": "text"
 				},
 				{
@@ -1694,7 +1704,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 25,
 					"type": "text"
 				},
 				{
@@ -1722,7 +1732,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 41,
+					"stack_index": 43,
 					"type": "text"
 				},
 				{
@@ -1751,7 +1761,7 @@
 						"translation.y": 693.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 20,
+					"stack_index": 22,
 					"type": "text"
 				},
 				{
@@ -1780,7 +1790,7 @@
 						"translation.y": 198.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 29,
+					"stack_index": 31,
 					"type": "text"
 				},
 				{
@@ -1808,7 +1818,7 @@
 						"translation.y": 198.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 28,
+					"stack_index": 30,
 					"type": "text"
 				},
 				{
@@ -1836,7 +1846,7 @@
 						"translation.y": 709.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 36,
+					"stack_index": 38,
 					"type": "text"
 				},
 				{
@@ -1865,7 +1875,7 @@
 						"translation.y": 2871.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 25,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
@@ -1894,7 +1904,7 @@
 						"translation.y": 990.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 27,
+					"stack_index": 29,
 					"type": "text"
 				},
 				{
@@ -1923,7 +1933,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 26,
+					"stack_index": 28,
 					"type": "text"
 				},
 				{
@@ -1951,7 +1961,7 @@
 						"translation.y": 1699.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
@@ -1979,7 +1989,7 @@
 						"translation.y": 1406.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
@@ -2004,10 +2014,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 5718.0,
+						"translation.y": 273.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -2035,7 +2045,7 @@
 						"translation.y": 1626.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
@@ -2051,8 +2061,8 @@
 						"selection":
 						[
 							[
-								681,
-								660
+								858,
+								0
 							]
 						],
 						"settings":
@@ -2063,7 +2073,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
@@ -2088,10 +2098,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 198.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
@@ -2100,15 +2110,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5307,
+						"buffer_size": 5177,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4976,
-								4791
+								1010,
+								1010
 							]
 						],
 						"settings":
@@ -2116,39 +2126,40 @@
 							"syntax": "Packages/Python/Python.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 4.0,
-						"translation.y": 3069.0,
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
 					"buffer": 26,
-					"file": "riggingAPI/rigComponents/rigModules/spineIkModule.py",
+					"file": "riggingAPI/rigComponents/baseLimbs/baseFkOnIkSplineLimb.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 16678,
+						"buffer_size": 16760,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								16088,
-								16088
+								16760,
+								16175
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6674.0,
+						"translation.y": 7104.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -2174,10 +2185,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 297.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
@@ -2206,7 +2217,7 @@
 						"translation.y": 297.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
@@ -2234,7 +2245,7 @@
 						"translation.y": 693.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
@@ -2262,7 +2273,7 @@
 						"translation.y": 5841.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
@@ -2291,7 +2302,7 @@
 						"translation.y": 5940.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
@@ -2300,15 +2311,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 17880,
+						"buffer_size": 18027,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								11248,
-								11366
+								12063,
+								12063
 							]
 						],
 						"settings":
@@ -2316,11 +2327,11 @@
 							"syntax": "Packages/Python/Python.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 169.0,
-						"translation.y": 6180.0,
+						"translation.x": 0.0,
+						"translation.y": 6378.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -2348,7 +2359,7 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 20,
 					"type": "text"
 				},
 				{
@@ -2377,7 +2388,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 30,
+					"stack_index": 32,
 					"type": "text"
 				},
 				{
@@ -2405,7 +2416,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 31,
+					"stack_index": 33,
 					"type": "text"
 				},
 				{
@@ -2434,7 +2445,7 @@
 						"translation.y": 713.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
@@ -2463,7 +2474,7 @@
 						"translation.y": 2673.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
@@ -2492,7 +2503,7 @@
 						"translation.y": 2253.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 23,
 					"type": "text"
 				},
 				{
@@ -2520,7 +2531,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 33,
+					"stack_index": 35,
 					"type": "text"
 				},
 				{
@@ -2548,7 +2559,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 46,
+					"stack_index": 48,
 					"type": "text"
 				},
 				{
@@ -2576,7 +2587,7 @@
 						"translation.y": 1683.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 34,
+					"stack_index": 36,
 					"type": "text"
 				},
 				{
@@ -2604,7 +2615,7 @@
 						"translation.y": 2277.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 48,
+					"stack_index": 50,
 					"type": "text"
 				},
 				{
@@ -2633,7 +2644,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 47,
+					"stack_index": 49,
 					"type": "text"
 				},
 				{
@@ -2661,7 +2672,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 42,
+					"stack_index": 44,
 					"type": "text"
 				},
 				{
@@ -2690,7 +2701,7 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 50,
+					"stack_index": 51,
 					"type": "text"
 				},
 				{
@@ -2719,7 +2730,7 @@
 						"translation.y": 7673.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 44,
+					"stack_index": 46,
 					"type": "text"
 				},
 				{
@@ -2747,7 +2758,7 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 43,
+					"stack_index": 45,
 					"type": "text"
 				},
 				{
@@ -2775,7 +2786,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 54,
+					"stack_index": 55,
 					"type": "text"
 				},
 				{
@@ -2804,7 +2815,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 35,
+					"stack_index": 37,
 					"type": "text"
 				},
 				{
@@ -2833,7 +2844,7 @@
 						"translation.y": 10651.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 55,
+					"stack_index": 56,
 					"type": "text"
 				},
 				{
@@ -2862,7 +2873,7 @@
 						"translation.y": 7962.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 51,
+					"stack_index": 52,
 					"type": "text"
 				},
 				{
@@ -2890,7 +2901,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 52,
+					"stack_index": 53,
 					"type": "text"
 				},
 				{
@@ -2919,7 +2930,7 @@
 						"translation.y": 2682.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 53,
+					"stack_index": 54,
 					"type": "text"
 				},
 				{
@@ -2948,7 +2959,7 @@
 						"translation.y": 313.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 45,
+					"stack_index": 47,
 					"type": "text"
 				},
 				{
@@ -2977,7 +2988,41 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 49,
+					"stack_index": 4,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 56,
+					"file": "riggingAPI/rigComponents/baseLimbs/baseIkSplineSolverLimb2.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 22603,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								20219,
+								20219
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 9028.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
 					"type": "text"
 				}
 			]
@@ -3000,11 +3045,18 @@
 				0,
 				1,
 				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
 			]
 		],
 		"cols":
 		[
 			0.0,
+			0.293229166667,
 			1.0
 		],
 		"rows":
@@ -3022,7 +3074,7 @@
 	"project": "pipelineMaya.sublime-project",
 	"replace":
 	{
-		"height": 78.0
+		"height": 100.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -3052,7 +3104,7 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 0,
+	"selected_group": 1,
 	"settings":
 	{
 	},

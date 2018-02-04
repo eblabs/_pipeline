@@ -1,7 +1,11 @@
-####################################################
-# spine ik module
-# this module should do the base biped spine ik rig
-####################################################
+########################################################
+# base fk on ik spline limb
+# limb functions
+#     -- spline ik tweaker
+#     -- top and bot bend control, with translate
+#     -- fk bend control
+#     -- individual bend control
+########################################################
 ## import
 import maya.cmds as cmds
 ## import libs
@@ -13,33 +17,35 @@ import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 import riggingAPI.constraints as constraints
 
-import riggingAPI.rigComponents.baseLimbs.baseIkSplineSolverLimb as baseIkSplineSolverLimb
+import baseIkSplineSolverLimb
 
-class spineIkModule(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
-	"""docstring for spineIkModule"""
+class baseFkOnIkSplineLimb(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
+	"""docstring for baseFkOnIkSplineLimb"""
 	def __init__(self, *args, **kwargs):
-		super(spineIkModule, self).__init__(*args, **kwargs)
+		super(baseFkOnIkSplineLimb, self).__init__(*args, **kwargs)
 		if args:
 			self._getComponentInfo(args[0])
+		else:
+			self._iRotateOrder = kwargs.get('iRotateOrder', 0)
 
 	def createComponent(self):
-		super(spineIkModule, self).createComponent()
+		super(baseFkOnIkSplineLimb, self).createComponent()
 		
-		iRotateOrder = cmds.getAttr('%s.ro' %self._lJnts[0])
+		iRotateOrder = self._iRotateOrder
 		## get reverse rotateOrder
 		lRotateOrderRvs = [5, 3, 4, 1, 2, 0]
 		iRotateOrderRvs = lRotateOrderRvs[iRotateOrder]
 		#### chest pelvis bend
 		###### chest pelvis ctrl
-		sGrp_chestRvs = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sChestBendRvs' %self._sName, iIndex = self._iIndex).sName, iRotateOrder = iRotateOrderRvs, sParent = self._sComponentControls)
-		sGrp_pelvisRvs = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sPelvisBendRvs' %self._sName, iIndex = self._iIndex).sName, iRotateOrder = iRotateOrderRvs, sParent = self._sComponentControls)
+		sGrp_topRvs = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sTopBendRvs' %self._sName, iIndex = self._iIndex).sName, iRotateOrder = iRotateOrderRvs, sParent = self._sComponentControls)
+		sGrp_botRvs = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sBotBendRvs' %self._sName, iIndex = self._iIndex).sName, iRotateOrder = iRotateOrderRvs, sParent = self._sComponentControls)
 		
-		oCtrlChest = controls.create('%sChest' %self._sName, sSide = self._sSide, iIndex = self._iIndex, iStacks = self._iStacks, bSub = True, iRotateOrder = iRotateOrder, sParent = sGrp_chestRvs, sShape = 'cube', fSize = 4, lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])
-		oCtrlPelvis = controls.create('%sPelvis' %self._sName, sSide = self._sSide, iIndex = self._iIndex, iStacks = self._iStacks, bSub = True, iRotateOrder = iRotateOrder, sParent = sGrp_pelvisRvs, sShape = 'cube', fSize = 4, lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])
+		oCtrlTop = controls.create('%sTop' %self._sName, sSide = self._sSide, iIndex = self._iIndex, iStacks = self._iStacks, bSub = True, iRotateOrder = iRotateOrder, sParent = sGrp_chestRvs, sShape = 'cube', fSize = 4, lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])
+		oCtrlBot = controls.create('%sBot' %self._sName, sSide = self._sSide, iIndex = self._iIndex, iStacks = self._iStacks, bSub = True, iRotateOrder = iRotateOrder, sParent = sGrp_pelvisRvs, sShape = 'cube', fSize = 4, lLockHideAttrs = ['sx', 'sy', 'sz', 'v'])
 
 		###### matrix connect, add multiply attrs
 		lRotatePlug = []
-		for i, sCtrl in enumerate([oCtrlChest.sName, oCtrlPelvis.sName]):
+		for i, sCtrl in enumerate([oCtrlTop.sName, oCtrlBot.sName]):
 			attributes.addDivider([sCtrl], 'RotMult')
 			for j in range(1, len(self._lCtrls) - 1):
 				cmds.addAttr(sCtrl, ln = 'rotMult%02d' %j, at = 'float', min = 0, max = 1, dv = 1, keyable = True)
@@ -62,13 +68,13 @@ class spineIkModule(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
 
 		###### create null group for each cluster (no pelvis end joint, no chest end joint)
 		sParent_ctrl = self._sComponentControls
-		lGrpBend_chest = []
-		lGrpBend_pelvis = []
+		lGrpBend_top = []
+		lGrpBend_bot = []
 		for i, sCtrl in enumerate(self._lCtrls[1:len(self._lCtrls)-1]):
-			sGrp_chest = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sChestBend' %self._sName, iIndex = i + 1).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz', 'v'], iRotateOrder = iRotateOrder, sPos = sCtrl, sParent = self._sComponentControls)
-			sGrp_pelvis = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sPelvisBend' %self._sName, iIndex = len(self._lCtrls) - i - 2).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz', 'v'], iRotateOrder = iRotateOrder, sPos = sCtrl, sParent = self._sComponentControls)
-			lGrpBend_chest.append(sGrp_chest)
-			lGrpBend_pelvis.append(sGrp_pelvis)
+			sGrp_top = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sChestBend' %self._sName, iIndex = i + 1).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz', 'v'], iRotateOrder = iRotateOrder, sPos = sCtrl, sParent = self._sComponentControls)
+			sGrp_bot = transforms.createTransformNode(naming.oName(sType = 'null', sSide = self._sSide, sPart = '%sPelvisBend' %self._sName, iIndex = len(self._lCtrls) - i - 2).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz', 'v'], iRotateOrder = iRotateOrder, sPos = sCtrl, sParent = self._sComponentControls)
+			lGrpBend_top.append(sGrp_top)
+			lGrpBend_bot.append(sGrp_bot)
 
 			sMultRot_chest = cmds.createNode('multiplyDivide', name = naming.oName(sType = 'multiplyDivide', sSide = self._sSide, sPart = '%sChestBendMult' %self._sName, iIndex = i + 1).sName)
 			sMultRot_pelvis = cmds.createNode('multiplyDivide', name = naming.oName(sType = 'multiplyDivide', sSide = self._sSide, sPart = '%sPelvisBendMult' %self._sName, iIndex = len(self._lCtrls) - i - 2).sName)
