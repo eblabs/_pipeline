@@ -37,6 +37,11 @@ class baseIkRPsolverLimb(baseComponent.baseComponent):
 		lCtrls = []
 		lBindJnts = []
 
+		## put ik joint chain locally
+		sGrp_ikJnts = transforms.createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sRPJointsLocal' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesWorld)
+		sParent_jntLocal = sGrp_ikJnts
+		lJntsLocal = []
+
 		for i, sBpJnt in enumerate(self._lBpJnts):
 			## jnt
 			oJntName = naming.oName(sBpJnt)
@@ -45,6 +50,14 @@ class baseIkRPsolverLimb(baseComponent.baseComponent):
 			sJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sParent_jnt)
 			sParent_jnt = sJnt
 			lJnts.append(sJnt)
+
+			sJntLocal = joints.createJntOnExistingNode(sJnt, 'IkRP', 'IkRPLocal', sParent = sParent_jntLocal)
+			sParent_jntLocal = sJntLocal
+			lJntsLocal.append(sJntLocal)
+			for sAxis in ['X', 'Y', 'Z']:
+				cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(sJnt, sAxis))
+				cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(sJnt, sAxis))
+				cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(sJnt, sAxis))
 
 			## bind jnt
 			if self._bBind:
@@ -70,11 +83,11 @@ class baseIkRPsolverLimb(baseComponent.baseComponent):
 
 		## ik handle
 		sIkHnd = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sRPsolver' %self._sName, iIndex = self._iIndex).sName
-		cmds.ikHandle(sj = lJnts[0], ee = lJnts[-1], sol = 'ikRPsolver', name = sIkHnd)
+		cmds.ikHandle(sj = lJntsLocal[0], ee = lJntsLocal[-1], sol = 'ikRPsolver', name = sIkHnd)
 
 		#### offset group
-		sGrpIk = createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sRPsolver' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesLocal, sPos = lCtrls[-1])
-		sGrpPv = createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sPV' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesLocal, sPos = lCtrls[1])
+		sGrpIk = createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sRPsolver' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesWorld, sPos = lCtrls[-1])
+		sGrpPv = createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sPV' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesWorld, sPos = lCtrls[1])
 		cmds.parent(sIkHnd, sGrpIk)
 
 		#### pole vector constraint
@@ -89,6 +102,7 @@ class baseIkRPsolverLimb(baseComponent.baseComponent):
 		self._lBindJnts = lBindJnts
 		self._sGrpIk = sGrpIk
 		self._sIkHnd = sIkHnd
+		self._lJntsLocal = lJntsLocal
 
 		## matrix connect
 		constraints.matrixConnect(lCtrls[0], [lJnts[0]], 'matrixOutputWorld',lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)

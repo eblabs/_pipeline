@@ -36,6 +36,7 @@ dNameConvension = {
 		'multMatrix': 'multMatrix',
 		'addMatrix': 'addMatrix',
 		'inverseMatrix': 'inverseMatrix',
+		'quatToEuler': 'quatToEuler',
 		'blendColors': 'blend',
 		'clamp': 'clamp',
 		'closetPointOnMesh': 'clsPntOnMesh',
@@ -43,7 +44,18 @@ dNameConvension = {
 		'nearestPointOnCurve': 'clsPntOnCrv',
 		'pointOnCurveInfo': 'pntOnCrvInfo',
 		'pointOnSurfaceInfo': 'pntOnSurfInfo',
-		'choice': 'choice'
+		'choice': 'choice',
+		'rigComponent': 'rigComponent',
+		'xform': 'xform',
+		'rigNodesWorld': 'rigsWorld',
+		'subComponents': 'subComponents',
+		'space': 'space',
+		'controlsXform': 'controlsXform',
+		'controls': 'controls',
+		'joints': 'joints',
+		'driveJoints': 'drvJoints',
+		'bindJoints': 'bindJoints',
+		'rigNodesLocal': 'rigsLocal',
 		},
 
 	'side': {

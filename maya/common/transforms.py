@@ -15,7 +15,7 @@ import namingAPI.naming as naming
 
 #### Functions
 def getNodeTransformInfo(sNode):
-	lPos = cmds.xform(sNode, q = True, t = True, ws = True)
+	lPos = cmds.xform(sNode, q = True, rp = True, ws = True)
 	lRot = cmds.xform(sNode, q = True, ro = True, ws = True)
 	lScl = cmds.xform(sNode, q = True, s = True, ws = True)
 	return [lPos, lRot, lScl]

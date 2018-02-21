@@ -11,10 +11,11 @@ import common.attributes as attributes
 import common.apiUtils as apiUtils
 import riggingAPI.joints as joints
 import riggingAPI.controls as controls
+reload(controls)
 import modelingAPI.curves as curves
 
 import riggingAPI.rigComponents.baseComponent as baseComponent
-
+reload(baseComponent)
 class baseIkSplineSolverLimb(baseComponent.baseComponent):
 	"""docstring for baseIkSplineSolverLimb"""
 	def __init__(self, *args, **kwargs):
@@ -53,8 +54,9 @@ class baseIkSplineSolverLimb(baseComponent.baseComponent):
 		lClsHnds = curves.clusterCurve(sCurve, bRelatives = True)
 		#### rebuild curve
 		iCvs = curves.getCurveCvNum(sCurve)
-		cmds.rebuild(sCurve, ch = 1, rebuildType = 0, degree = 3, s = iCvs - 3, keepRange = 0, rpo = True)
+		cmds.rebuildCurve(sCurve, ch = 1, rebuildType = 0, degree = 3, s = iCvs - 3, keepRange = 0, rpo = True)
 		#### set up ik
+		sIkHnd = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sIkSplineSolver' %self._sName, iIndex = self._iIndex).sName
 		cmds.ikHandle(sj = lJntsLocal[0], ee = lJntsLocal[-1], sol = 'ikSplineSolver', ccv = False, scv = False, curve = sCurve, name = sIkHnd)
 		cmds.makeIdentity(lJntsLocal[0], apply = True, t = 1, r = 1, s = 1)
 
@@ -65,7 +67,7 @@ class baseIkSplineSolverLimb(baseComponent.baseComponent):
 		lBindJnts = []
 
 		for i, sJntLocal in enumerate(lJntsLocal):
-			oJntName = namingAPI.oName(sJntLocal)
+			oJntName = naming.oName(sJntLocal)
 			oJntName.sPart = oJntName.sPart.replace('Local', '')
 			sJnt = joints.createJntOnExistingNode(sJntLocal, sJntLocal, oJntName.sName, sParent = sParent_jnt)
 			sParent_jnt = sJnt

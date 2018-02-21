@@ -37,13 +37,21 @@ class armIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 		oJntName.sType = 'jnt'
 		oJntName.sPart = '%sIkSC' %oJntName.sPart
 		sJntWristEnd = joints.createJntOnExistingNode(sBpJntWristEnd, sBpJntWristEnd, oJntName.sName, sParent = self._lJnts[-1])
-	
+		
+		sJntWristEndLocal = joints.createJntOnExistingNode(sJntWristEnd, 'IkSC', 'IkSCLocal', sParent = self._lJntsLocal[-1])
+
+		for sAxis in ['X', 'Y', 'Z']:
+			cmds.connectAttr('%s.translate%s' %(sJntWristEndLocal, sAxis), '%s.translate%s' %(sJntWristEnd, sAxis))
+			cmds.connectAttr('%s.rotate%s' %(sJntWristEndLocal, sAxis), '%s.rotate%s' %(sJntWristEnd, sAxis))
+			cmds.connectAttr('%s.scale%s' %(sJntWristEndLocal, sAxis), '%s.scale%s' %(sJntWristEnd, sAxis))
+
 		## ik handle
 		sIkHnd = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sSCsolver' %self._sName, iIndex = self._iIndex).sName
-		cmds.ikHandle(sj = self._lJnts[-1], ee = sJntWristEnd, sol = 'ikSCsolver', name = sIkHnd)
+		cmds.ikHandle(sj = self._lJntsLocal[-1], ee = sJntWristEndLocal, sol = 'ikSCsolver', name = sIkHnd)
 		cmds.parent(sIkHnd, self._sGrpIk)
 
 		self._lJnts.append(sJntWristEnd)
+		self._lJntsLocal.append(sJntWristEndLocal)
 
 		## write component info
 		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, lock = False)

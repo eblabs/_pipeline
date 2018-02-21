@@ -37,7 +37,9 @@ class legIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 		## create foot ik rig
 		## jnt
 		lJntsFoot = []
+		lJntsFootLocal = []
 		sJntParent = self._lJnts[-1]
+		sJntParentLocal = self._lJntsLocal[-1]
 		for sBpJnt in [sBpJntBall, sBpJntBallEnd]:
 			oJntName = naming.oName(sBpJnt)
 			oJntName.sType = 'jnt'
@@ -45,16 +47,27 @@ class legIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 			sJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sJntParent)
 			sJntParent = sJnt
 			lJntsFoot.append(sJnt)
+
+			sJntLocal = joints.createJntOnExistingNode(sJnt, 'IkSC', 'IkSCLocal', sParent = sJntParentLocal)
+			sJntParentLocal = sJntLocal
+			lJntsFootLocal.append(sJntLocal)
+
+			for sAxis in ['X', 'Y', 'Z']:
+				cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(sJnt, sAxis))
+				cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(sJnt, sAxis))
+				cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(sJnt, sAxis))
+
 		
 		## ik handle
 		sIkHndBall = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sBallSCsolver' %self._sName, iIndex = self._iIndex).sName
 		sIkHndToe = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sToeSCsolver' %self._sName, iIndex = self._iIndex).sName
 		
-		cmds.ikHandle(sj = self._lJnts[-1], ee = lJntsFoot[0], sol = 'ikSCsolver', name = sIkHndBall)
-		cmds.ikHandle(sj = lJntsFoot[0], ee = lJntsFoot[1], sol = 'ikSCsolver', name = sIkHndToe)
+		cmds.ikHandle(sj = self._lJntsLocal[-1], ee = lJntsFootLocal[0], sol = 'ikSCsolver', name = sIkHndBall)
+		cmds.ikHandle(sj = lJntsFootLocal[0], ee = lJntsFootLocal[1], sol = 'ikSCsolver', name = sIkHndToe)
 		cmds.parent(sIkHndBall, sIkHndToe self._sGrpIk)
 
 		self._lJnts += lJntsFoot
+		self._lJntsLocal += lJntsFootLocal
 
 		## reverse foot setup
 		lJntsFootRvs = []

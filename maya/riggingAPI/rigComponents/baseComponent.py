@@ -110,10 +110,10 @@ class baseComponent(object):
 		cmds.addAttr(sComponentMaster, ln = 'joints', at = 'enum', enumName = 'on:off:tempelate:reference', keyable = False, dv = 1)
 		cmds.setAttr('%s.joints' %sComponentMaster, channelBox = True)
 		### bind joints vis
-		cmds.addAttr(sComponentMaster, ln = 'bindJoints', at = 'long', , min = 0, max = 1, keyable = False, dv = 1)
+		cmds.addAttr(sComponentMaster, ln = 'bindJoints', at = 'long', min = 0, max = 1, keyable = False, dv = 1)
 		cmds.setAttr('%s.bindJoints' %sComponentMaster, channelBox = True)
 		### drive joints vis
-		cmds.addAttr(sComponentMaster, ln = 'drvJoints', at = 'long', , min = 0, max = 1, keyable = False, dv = 0)
+		cmds.addAttr(sComponentMaster, ln = 'drvJoints', at = 'long', min = 0, max = 1, keyable = False, dv = 0)
 		cmds.setAttr('%s.drvJoints' %sComponentMaster, channelBox = True)
 		### controls
 		cmds.addAttr(sComponentMaster, ln = 'controls', at = 'long', min = 0, max = 1, keyable = False, dv = 1)
@@ -148,9 +148,11 @@ class baseComponent(object):
 		cmds.addAttr(sComponentMaster, ln = 'inputMatrixInverse', at = 'matrix')
 		sMultMatrix = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sInputMatrix' %self._sName, iIndex = self._iIndex).sName
 		sDecomposeMatrix = naming.oName(sType = 'decomposeMatrix', sSide = self._sSide, sPart = '%sInputMatrix' %self._sName, iIndex = self._iIndex).sName
+		cmds.createNode('multMatrix', name = sMultMatrix)
+		cmds.createNode('decomposeMatrix', name = sDecomposeMatrix)
 		cmds.connectAttr('%s.inputMatrixInverse' %sComponentMaster, '%s.matrixIn[0]' %sMultMatrix)
 		cmds.connectAttr('%s.inputMatrix' %sComponentMaster, '%s.matrixIn[1]' %sMultMatrix)
-		cmds.conenctAttr('%s.matrixSum' %sMultMaster, '%s.inputMatrix' %sDecomposeMatrix)
+		cmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.inputMatrix' %sDecomposeMatrix)
 		for sAxis in ['X', 'Y', 'Z']:
 			attributes.connectAttrs(['%s.outputTranslate%s' %(sDecomposeMatrix, sAxis), '%s.outputRotate%s' %(sDecomposeMatrix, sAxis), '%s.outputScale%s' %(sDecomposeMatrix, sAxis)], ['%s.translate%s' %(sComponentXform, sAxis), '%s.rotate%s' %(sComponentXform, sAxis), '%s.scale%s' %(sComponentXform, sAxis)], bForce = True)
 		attributes.connectAttrs(['%s.outputShear' %sDecomposeMatrix], ['%s.shear' %sComponentXform], bForce = True)
@@ -170,12 +172,14 @@ class baseComponent(object):
 
 		## add component info
 		#### joint count
-		cmds.addAttr(sComponentMaster, ln = 'sComponentType', at = 'string')
-		cmds.setAttr('%s.sComponentType' %sComponentMaster, 'baseComponent', at = 'string')
-		cmds.addAttr(sComponentMaster, ln = 'sComponentSpace', at = 'string')
-		cmds.setAttr('%s.sComponentSpace' %sComponentMaster, sComponentSpace, at = 'string', lock = True)
-		cmds.addAttr(sComponentMaster, ln = 'sComponentPasser', at = 'string')
-		cmds.setAttr('%s.sComponentPasser' %sComponentMaster, sComponentPasser, at = 'string', lock = True)
+		cmds.addAttr(sComponentMaster, ln = 'sComponentType', dt = 'string')
+		cmds.setAttr('%s.sComponentType' %sComponentMaster, 'baseComponent', type = 'string')
+		cmds.addAttr(sComponentMaster, ln = 'sComponentSpace', dt = 'string')
+		cmds.setAttr('%s.sComponentSpace' %sComponentMaster, sComponentSpace, type = 'string', lock = True)
+		cmds.addAttr(sComponentMaster, ln = 'sComponentPasser', dt = 'string')
+		cmds.setAttr('%s.sComponentPasser' %sComponentMaster, sComponentPasser, type = 'string', lock = True)
+		cmds.addAttr(sComponentMaster, ln = 'sComponentControlsXform', dt = 'string')
+		cmds.setAttr('%s.sComponentControlsXform' %sComponentMaster, sComponentControlsXform, type = 'string', lock = True)
 		cmds.addAttr(sComponentMaster, ln = 'iJointCount', at = 'long')
 		cmds.addAttr(sComponentMaster, ln = 'sControls', dt = 'string')
 		cmds.addAttr(sComponentMaster, ln = 'sBindJoints', dt = 'string')
@@ -215,30 +219,32 @@ class baseComponent(object):
 		cmds.connectAttr('%s.matrix' %self._sComponentSpace, '%s.matrixIn[0]' %sMultMatrixWorldParent)
 		cmds.connectAttr('%s.matrix' %self._sComponentPasser, '%s.matrixIn[1]' %sMultMatrixWorldParent)
 		cmds.connectAttr('%s.inputMatrix' %self._sComponentMaster, '%s.matrixIn[2]' %sMultMatrixWorldParent)
+		sMultMatrixWorldParent = '%s.matrixSum' %sMultMatrixWorldParent
 
 		if bHierarchy:
 			sMultMatrixLocalParent = None
 			for i, sJnt in enumerate(lJnts):
 				cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixLocal%03d' %i, at = 'matrix')
 				cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixWorld%03d' %i, at = 'matrix')
-				if sMultMatrixParent:
+				if sMultMatrixLocalParent:
 					sMultMatrixLocal = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixLocal' %self._sName, iIndex = i).sName)
 					cmds.connectAttr('%s.matrix' %sJnt, '%s.matrixIn[0]' %sMultMatrixLocal)
-					cmds.connectAttr('%s.matrixSum' %sMultMatrixLocalParent, '%s.matrixIn[1]' %sMultMatrixLocal)
+					cmds.connectAttr(sMultMatrixLocalParent, '%s.matrixIn[1]' %sMultMatrixLocal)
 					cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.outputMatrixLocal%03d' %(self._sComponentMaster, i))
 					sMultMatrixWorld = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorld' %self._sName, iIndex = i).sName)
 					cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.matrixIn[0]' %sMultMatrixWorld)
-					cmds.conenctAttr('%s.matrixSum' %sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
-					cmds.conenctAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, i))
+					cmds.connectAttr(sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
+					cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, i))
+					sMultMatrixLocalParent = '%s.matrixSum' %sMultMatrixLocal
+					sMultMatrixWorldParent = '%s.matrixSum' %sMultMatrixWorld
 				else:
 					cmds.connectAttr('%s.matrix' %sJnt, '%s.outputMatrixLocal%03d' %(self._sComponentMaster, i))
 					sMultMatrixWorld = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorld' %self._sName, iIndex = i).sName)					
 					cmds.connectAttr('%s.matrix' %sJnt, '%s.matrixIn[0]' %sMultMatrixWorld)
-					cmds.connectAttr('%s.matrixSum' %sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
+					cmds.connectAttr(sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
 					cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, i))
-
-				cmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.outputMatrix%03d' %(self._sComponentMaster, i))
-				sMultMatrixParent = sMultMatrix
+					sMultMatrixLocalParent = '%s.matrix' %sJnt
+					sMultMatrixWorldParent = '%s.matrixSum' %sMultMatrixWorld
 
 		else:
 			for i, sJnt in enumerate(lJnts):
@@ -247,7 +253,7 @@ class baseComponent(object):
 				sMultMatrixWorld = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorld' %self._sName, iIndex = i).sName)
 				cmds.connectAttr('%s.matrix' %sJnt, '%s.outputMatrixLocal%03d' %(self._sComponentMaster, i))
 				cmds.connectAttr('%s.matrix' %sJnt, '%s.matrixIn[0]' %sMultMatrixWorld)
-				cmds.connectAttr('%s.matrixSum' %sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
+				cmds.connectAttr(sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
 				cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, i))
 
 

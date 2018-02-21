@@ -465,11 +465,11 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 	cmds.addAttr(sCtrl, ln = 'inverseMatrixOutputWorld', at = 'matrix')
 
 	sInverseMatrixOutputLocal = cmds.createNode('inverseMatrix', name = naming.oName(sType = 'inverseMatrix', sSide = sSide, sPart = '%sInverseMatrixOutputLocal' %sPart, iIndex = iIndex).sName)
-	cmds.connectAttr('%s.matrixOutput' %sCtrl, '%s.inputMatrix' %sInverseMatrixOutputLocal)
+	cmds.connectAttr('%s.matrixOutputLocal' %sCtrl, '%s.inputMatrix' %sInverseMatrixOutputLocal)
 	cmds.connectAttr('%s.outputMatrix' %sInverseMatrixOutputLocal, '%s.inverseMatrixOutputLocal' %sCtrl)
 
 	sInverseMatrixOutputWorld = cmds.createNode('inverseMatrix', name = naming.oName(sType = 'inverseMatrix', sSide = sSide, sPart = '%sInverseMatrixOutputWorld' %sPart, iIndex = iIndex).sName)
-	cmds.connectAttr('%s.matrixOutput' %sCtrl, '%s.inputMatrix' %sInverseMatrixOutputWorld)
+	cmds.connectAttr('%s.matrixOutputWorld' %sCtrl, '%s.inputMatrix' %sInverseMatrixOutputWorld)
 	cmds.connectAttr('%s.outputMatrix' %sInverseMatrixOutputWorld, '%s.inverseMatrixOutputWorld' %sCtrl)
 
 	sMultMatrixLocal = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = sSide, sPart = '%sMatrixOutputLocal' %sPart, iIndex = iIndex).sName)
@@ -477,8 +477,9 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 	sMultMatrixStacks = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = sSide, sPart = '%sStacksMatrixOutput' %sPart, iIndex = iIndex).sName)
 
 	cmds.connectAttr('%s.matrix' %sOutput, '%s.matrixIn[0]' %sMultMatrixLocal)
-	cmds.connectAttr('%s.matrixSum' %sMultMatrixStacks, '%s.matrixIn[1]' %sMultMatrixLocal)
-	cmds.connectAttr('%s.matrix' %sPasser, '%s.matrixIn[2]' %sMultMatrixLocal)
+	cmds.connectAttr('%s.matrix' %sCtrl, '%s.matrixIn[1]' %sMultMatrixLocal)
+	cmds.connectAttr('%s.matrixSum' %sMultMatrixStacks, '%s.matrixIn[2]' %sMultMatrixLocal)
+	cmds.connectAttr('%s.matrix' %sPasser, '%s.matrixIn[3]' %sMultMatrixLocal)
 	cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.matrixOutputLocal' %sCtrl)
 
 	for i in range(iStacks):
