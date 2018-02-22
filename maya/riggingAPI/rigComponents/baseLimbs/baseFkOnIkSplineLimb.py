@@ -259,16 +259,20 @@ class baseFkOnIkSplineLimb(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
 				cmds.connectAttr('%s.outputRotate%s' %(sQuatToEuler, sAxis), '%s.rotate%s' %(oCtrlCls.sPasser, sAxis))
 
 		#### twist matrix connect
-		cmds.setAttr('%s.dTwistControlEnable' %self._sIkHnd, 1)
-		cmds.setAttr('%s.dWorldUpType' %self._sIkHnd, 4)
+		lMultMatrixTwist = []
 		for i, sPos in enumerate(['Top', 'Bot']):
 			sMultMatrixTwist = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sMatrixTwist%s' %(self._sName, sPos), iIndex = self._iIndex).sName)
 			lMatrix = apiUtils.getLocalMatrixInNode([self._lJnts[-1], self._lJnts[0]][i], [oCtrlTop, oCtrlBot][i].sName)
 			cmds.setAttr('%s.matrixIn[0]' %sMultMatrixTwist, lMatrix, type = 'matrix')
 			cmds.connectAttr('%s.matrixOutputWorld' %[oCtrlOffset_top, oCtrlOffset_bot][i].sName, '%s.matrixIn[1]' %sMultMatrixTwist)
-			cmds.connectAttr('%s.matrix' %[sGrp_topRvs, sGrp_botRvs][i], '%s.matrixIn[2]' %sMultMatrixTwist)
-			cmds.connectAttr('%s.matrixOutputBend' %[lGrpBend_top, lGrpBend_bot][i][-1].sName, '%s.matrixIn[3]' %sMultMatrixTwist)
-			cmds.connectAttr('%s.matrixSum' %sMultMatrixTwist, '%s.%s' %(self._sIkHnd, ['dWorldUpMatrix', 'dWorldUpMatrixEnd'][i]))
+			cmds.connectAttr('%s.matrixOutputWorld' %lCtrlBend[i].sName, '%s.matrixIn[2]' %sMultMatrixTwist)
+			cmds.connectAttr('%s.matrix' %lGrpRvs[i], '%s.matrixIn[3]' %sMultMatrixTwist)
+			cmds.connectAttr('%s.matrix' %lGrpRvsZero[i], '%s.matrixIn[4]' %sMultMatrixTwist)
+			lMultMatrixTwist.append(sMultMatrixTwist)
+		cmds.setAttr('%s.dTwistControlEnable' %self._sIkHnd, 1)
+		cmds.setAttr('%s.dWorldUpType' %self._sIkHnd, 4)
+		for i, sMultMatrixTwist in enumerate(lMultMatrixTwist):
+			cmds.connectAttr('%s.matrixSum' %sMultMatrixTwist, '%s.%s' %(self._sIkHnd, ['dWorldUpMatrixEnd', 'dWorldUpMatrix'][i]))
 		
 		##  hide controls
 		for sCtrl in [self._lCtrls[0], self._lCtrls[1], self._lCtrls[-2], self._lCtrls[-1]]:
