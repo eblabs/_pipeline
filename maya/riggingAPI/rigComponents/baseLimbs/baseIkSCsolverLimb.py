@@ -27,7 +27,7 @@ class baseIkSCsolverLimb(baseComponent.baseComponent):
 			self._bBind = kwargs.get('bBind', False)
 	
 	def createComponent(self):
-		super(baseIkRPsolverLimb, self).createComponent()
+		super(baseIkSCsolverLimb, self).createComponent()
 
 		sParent_jnt = self._sComponentDrvJoints
 		sParent_ctrl = self._sComponentControls
@@ -109,6 +109,7 @@ class baseIkSCsolverLimb(baseComponent.baseComponent):
 			cmds.setAttr('%s.sBindJoints' %self._sComponentMaster, sBindString[:-1], type = 'string', lock = True)
 
 		## output matrix
-		self._writeOutputMatrixInfo(lJnts, bHierarchy = True)
+		if self._bInfo:
+			self._writeOutputMatrixInfo(lJnts, bHierarchy = True)
 
 		self._getComponentInfo(self._sComponentMaster)

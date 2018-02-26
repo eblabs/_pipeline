@@ -106,10 +106,11 @@ def transformSnap(lNodes, sType = 'parent', sSnapType = 'oneToAll', lSkipTransla
 			transformSnapAll(lTransformInfoDriver, sDriven, lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
 
 
-def createTransformNode(sName, lLockHideAttrs = [], sParent = None, iRotateOrder = 0, bVis = True, sPos = None):
+def createTransformNode(sName, lLockHideAttrs = [], sParent = None, iRotateOrder = 0, bVis = True, sPos = None, bInheritsTransform = True):
 	cmds.group(empty  = True, name = sName)
 	cmds.setAttr('%s.ro' %sName, iRotateOrder)
 	cmds.setAttr('%s.v' %sName, bVis)
+	cmds.setAttr('%s.inheritsTransform' %sName, bInheritsTransform)
 	if sPos:
 		transformSnap([sPos, sName], sType = 'all')
 	if sParent and cmds.objExists(sParent):
@@ -117,7 +118,7 @@ def createTransformNode(sName, lLockHideAttrs = [], sParent = None, iRotateOrder
 	attributes.lockHideAttrs(lLockHideAttrs, sNode = sName)
 	return sName
 
-def createTransformMatcherNode(sNode, sParent = None):
+def createTransformMatcherNode(sNode, sParent = None, bInheritsTransform = True):
 	oName = naming.oName(sNode)
 	sOffset = naming.oName(sType = 'grp', sSide = oName.sSide, sPart = '%sMatcher' %oName.sPart, iIndex = oName.iIndex, iSuffix = oName.iSuffix).sName
 	sMatcher = naming.oName(sType = 'null', sSide = oName.sSide, sPart = '%sMatcher' %oName.sPart, iIndex = oName.iIndex, iSuffix = oName.iSuffix).sName
@@ -125,7 +126,7 @@ def createTransformMatcherNode(sNode, sParent = None):
 	sOffset = createTransformNode(sOffset, sParent = sParent, iRotateOrder = iRotateOrder)
 	transformSnap([sNode, sOffset], sType = 'all')
 	attributes.lockHideAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sNode = sOffset)
-	sMatcher = createTransformNode(sMatcher, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sOffset, sPos = sOffset, iRotateOrder = iRotateOrder)
+	sMatcher = createTransformNode(sMatcher, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sOffset, sPos = sOffset, iRotateOrder = iRotateOrder, bInheritsTransform = bInheritsTransform)
 	return sMatcher, sOffset
 
 def worldOrientTransform(sNode, sFoward = 'z', sUp = 'y'):
