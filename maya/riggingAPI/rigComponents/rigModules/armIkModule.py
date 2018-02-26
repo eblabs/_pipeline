@@ -16,6 +16,7 @@ import riggingAPI.constraints as constraints
 import riggingAPI.rigComponents.baseComponent as baseComponent
 import riggingAPI.rigComponents.baseLimbs.baseIkRPsolverLimb as baseIkRPsolverLimb
 import riggingAPI.rigComponents.baseLimbs.baseIkSCsolverLimb as baseIkSCsolverLimb
+reload(baseIkRPsolverLimb)
 
 class armIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 	"""docstring for armIkModule"""
@@ -60,12 +61,12 @@ class armIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, len(self._lJnts), lock = True)
 
 		## writeOutputMatrixInfo
-		cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixLocal%03d' %len(self._lJnts) - 1, at = 'matrix')
-		cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixWorld%03d' %len(self._lJnts) - 1, at = 'matrix')
+		cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixLocal%03d' %(len(self._lJnts) - 1), at = 'matrix')
+		cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixWorld%03d' %(len(self._lJnts) - 1), at = 'matrix')
 
 
-		sMultMatrixWorldParent = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorldParent' %self._sName).sName					
-		sMultMatrixLocalParent = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixLocalParent' %self._sName, iIndex = len(self._lJnts) - 2).sName
+		sMultMatrixWorldParent = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorld' %self._sName, iIndex = len(self._lJnts) - 2).sName					
+		sMultMatrixLocalParent = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixLocal' %self._sName, iIndex = len(self._lJnts) - 2).sName
 
 		sMultMatrixLocal = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixLocal' %self._sName, iIndex = len(self._lJnts) - 1).sName)
 		cmds.connectAttr('%s.matrix' %sJntWristEnd, '%s.matrixIn[0]' %sMultMatrixLocal)
@@ -73,8 +74,8 @@ class armIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 		cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.outputMatrixLocal%03d' %(self._sComponentMaster, len(self._lJnts) - 1))
 		sMultMatrixWorld = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorld' %self._sName, iIndex = len(self._lJnts) - 1).sName)
 		cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.matrixIn[0]' %sMultMatrixWorld)
-		cmds.conenctAttr('%s.matrixSum' %sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
-		cmds.conenctAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, len(self._lJnts) - 1))
+		cmds.connectAttr('%s.matrixSum' %sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
+		cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, len(self._lJnts) - 1))
 
 		self._getComponentInfo(self._sComponentMaster)
 

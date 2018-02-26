@@ -11,6 +11,8 @@ import common.attributes as attributes
 import common.apiUtils as apiUtils
 import riggingAPI.joints as joints
 import riggingAPI.controls as controls
+import modelingAPI.curves as curves
+import riggingAPI.constraints as constraints
 
 import riggingAPI.rigComponents.baseComponent as baseComponent
 
@@ -86,8 +88,8 @@ class baseIkRPsolverLimb(baseComponent.baseComponent):
 		cmds.ikHandle(sj = lJntsLocal[0], ee = lJntsLocal[-1], sol = 'ikRPsolver', name = sIkHnd)
 
 		#### offset group
-		sGrpIk = createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sRPsolver' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesWorld, sPos = lCtrls[-1])
-		sGrpPv = createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sPV' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesWorld, sPos = lCtrls[1])
+		sGrpIk = transforms.createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sRPsolver' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesWorld, sPos = lCtrls[-1])
+		sGrpPv = transforms.createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sPV' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesWorld, sPos = lCtrls[1])
 		cmds.parent(sIkHnd, sGrpIk)
 
 		#### pole vector constraint
@@ -105,7 +107,7 @@ class baseIkRPsolverLimb(baseComponent.baseComponent):
 		self._lJntsLocal = lJntsLocal
 
 		## matrix connect
-		constraints.matrixConnect(lCtrls[0], [lJnts[0]], 'matrixOutputWorld',lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)
+		constraints.matrixConnect(lCtrls[0], [lJntsLocal[0]], 'matrixOutputWorld',lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)
 		constraints.matrixConnect(lCtrls[1], [sGrpPv, lClsHnds[1]], 'matrixOutputWorld',lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)
 		constraints.matrixConnect(lCtrls[2], [sGrpIk], 'matrixOutputWorld', lSkipScale = ['X', 'Y', 'Z'], bForce = True)
 		sMultMatrixPv = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sPvMatrix' %self._sName, iIndex = self._iIndex).sName)

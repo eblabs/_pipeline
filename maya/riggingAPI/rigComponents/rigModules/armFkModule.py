@@ -14,6 +14,7 @@ import riggingAPI.controls as controls
 import riggingAPI.constraints as constraints
 
 import riggingAPI.rigComponents.baseLimbs.baseFkChainLimb as baseFkChainLimb
+reload(baseFkChainLimb)
 
 class armFkModule(baseFkChainLimb.baseFkChainLimb):
 	"""docstring for armFkModule"""
@@ -24,10 +25,6 @@ class armFkModule(baseFkChainLimb.baseFkChainLimb):
 		
 	def createComponent(self):
 		super(armFkModule, self).createComponent()
-
-		## hide end control
-		oCtrlEnd = controls.oControl(self._lCtrls[-1])
-		cmds.setAttr('%s.v' %oCtrlEnd.sZero, 0, lock = True)
 
 		## remove end bind joint
 		if self._bBind:

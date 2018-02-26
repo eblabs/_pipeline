@@ -25,9 +25,6 @@ class legFkModule(baseFkChainLimb.baseFkChainLimb):
 	def createComponent(self):
 		super(legFkModule, self).createComponent()
 
-		## hide end control
-		oCtrlEnd = controls.oControl(self._lCtrls[-1])
-		cmds.setAttr('%s.v' %oCtrlEnd.sZero, 0, lock = True)
 
 		## remove end bind joint
 		if self._bBind:

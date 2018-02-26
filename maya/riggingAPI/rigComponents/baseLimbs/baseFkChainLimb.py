@@ -33,7 +33,7 @@ class baseFkChainLimb(baseComponent.baseComponent):
 		sParent_jnt = self._sComponentDrvJoints
 		sParent_ctrl = self._sComponentControls
 		sParent_bind = self._sComponentBindJoints
-		slJnts = []
+		lJnts = []
 		lCtrls = []
 		lBindJnts = []
 
