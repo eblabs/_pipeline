@@ -36,25 +36,28 @@ def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None, bTop = 
 	dCtrlShapeInfo: a dictionary contain all the shape node's shape information
 	bTop: either the shape node will be on top of other shape nodes nor not, True/False
 	'''
-	if dCtrlShapeInfo:
-		lCtrlPnts = dCtrlShapeInfo['lCtrlPnts']
-		lKnots = dCtrlShapeInfo['lKnots']
-		iDegree = dCtrlShapeInfo['iDegree']
-		bPeriodic = dCtrlShapeInfo['bPeriodic']
-		bOverride = dCtrlShapeInfo['bOverride']
-		iOverrideType = dCtrlShapeInfo['iOverrideType']
-		iColor = dCtrlShapeInfo['iColor']
+	if not cmds.objExists(sCtrlShape):
+		if dCtrlShapeInfo:
+			lCtrlPnts = dCtrlShapeInfo['lCtrlPnts']
+			lKnots = dCtrlShapeInfo['lKnots']
+			iDegree = dCtrlShapeInfo['iDegree']
+			bPeriodic = dCtrlShapeInfo['bPeriodic']
+			bOverride = dCtrlShapeInfo['bOverride']
+			iOverrideType = dCtrlShapeInfo['iOverrideType']
+			iColor = dCtrlShapeInfo['iColor']
+		else:
+			lCtrlPnts = [[0,0,0], [1,0,0]]
+			lKnots = [0,1]
+			iDegree = 1
+			bPeriodic = False
+			bOverride = False
+			iOverrideType = 0
+			iColor = 0
+		sCrv = cmds.curve(p=lCtrlPnts, k=lKnots, d=iDegree, per = bPeriodic)
+		sCrvShape = getCtrlShape(sCrv)
+		cmds.rename(sCrvShape, sCtrlShape)
 	else:
-		lCtrlPnts = [[0,0,0], [1,0,0]]
-		lKnots = [0,1]
-		iDegree = 1
-		bPeriodic = False
-		bOverride = False
-		iOverrideType = 0
-		iColor = 0
-	sCrv = cmds.curve(p=lCtrlPnts, k=lKnots, d=iDegree, per = bPeriodic)
-	sCrvShape = getCtrlShape(sCrv)
-	cmds.rename(sCrvShape, sCtrlShape)
+		sCrv = None
 
 	cmds.setAttr('%s.overrideEnabled' %sCtrlShape, bOverride)
 	cmds.setAttr('%s.overrideDisplayType' %sCtrlShape, iOverrideType)
@@ -68,7 +71,8 @@ def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None, bTop = 
 		cmds.parent(sCtrlShape, sCtrl, add = True, s = True)
 	if bTop:
 		cmds.reorder(sCtrlShape, f = True)
-	cmds.delete(sCrv)
+	if sCrv:
+		cmds.delete(sCrv)
 
 def scaleCtrlShape(sCtrl, fScale = 1):
 	'''

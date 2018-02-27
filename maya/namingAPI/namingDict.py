@@ -38,6 +38,7 @@ dNameConvension = {
 		'multMatrix': 'multMatrix',
 		'addMatrix': 'addMatrix',
 		'inverseMatrix': 'inverseMatrix',
+		'wtAddMatrix': 'wtAddMatrix',
 		'quatToEuler': 'quatToEuler',
 		'blendColors': 'blend',
 		'clamp': 'clamp',
