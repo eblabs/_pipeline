@@ -102,7 +102,7 @@ class baseComponent(object):
 
 		### space local group
 		sComponentSpaceLocal = naming.oName(sType = 'space', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentSpace, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentPasser)
+		transforms.createTransformNode(sComponentSpaceLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentPasserLocal)
 		attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = sComponentSpace, sDriven = sComponentSpaceLocal, bForce = True)
 		
 		## controls group

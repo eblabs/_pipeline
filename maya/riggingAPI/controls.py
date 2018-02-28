@@ -56,12 +56,11 @@ def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None, bTop = 
 		sCrv = cmds.curve(p=lCtrlPnts, k=lKnots, d=iDegree, per = bPeriodic)
 		sCrvShape = getCtrlShape(sCrv)
 		cmds.rename(sCrvShape, sCtrlShape)
+		cmds.setAttr('%s.overrideEnabled' %sCtrlShape, bOverride)
+		cmds.setAttr('%s.overrideDisplayType' %sCtrlShape, iOverrideType)
+		cmds.setAttr('%s.overrideColor' %sCtrlShape, iColor)
 	else:
 		sCrv = None
-
-	cmds.setAttr('%s.overrideEnabled' %sCtrlShape, bOverride)
-	cmds.setAttr('%s.overrideDisplayType' %sCtrlShape, iOverrideType)
-	cmds.setAttr('%s.overrideColor' %sCtrlShape, iColor)
 
 	if not bVis:
 		cmds.setAttr('%s.v' %sCtrlShape, lock = False)

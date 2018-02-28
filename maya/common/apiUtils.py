@@ -50,7 +50,7 @@ def createMDoubleArray(lList):
 	return mDoubleArray
 
 # ----------------- mMatrix ----------------------
-def createMMatrixFromTransformInfo(lTranslate = [0,0,0], lRotate = [0,0,0], lScale = [1,1,1], iRotateOrder = 0):
+def createMMatrixFromTransformInfo(lTranslate = [0,0,0], lRotate = [0,0,0], lScale = [1,1,1], lShear = [0,0,0], iRotateOrder = 0):
 	lRotateOrder = [OpenMaya.MTransformationMatrix.kXYZ, 
 					OpenMaya.MTransformationMatrix.kYZX,
 					OpenMaya.MTransformationMatrix.kZXY,
@@ -63,10 +63,12 @@ def createMMatrixFromTransformInfo(lTranslate = [0,0,0], lRotate = [0,0,0], lSca
 	mVectorTranslate = OpenMaya.MVector(lTranslate[0], lTranslate[1], lTranslate[2])
 	mDoubleArrayRotate = createMDoubleArray(lRotate)
 	mDoubleArrayScale = createMDoubleArray(lScale)
+	mDoubleArrayShear = createMDoubleArray(lShear)
 
 	mTransformationMatrix.setTranslation(mVectorTranslate, OpenMaya.MSpace.kWorld)
 	mTransformationMatrix.setRotation(mDoubleArrayRotate.asDoublePtr(), lRotateOrder[iRotateOrder], OpenMaya.MSpace.kWorld)
 	mTransformationMatrix.setScale(mDoubleArrayScale.asDoublePtr(), OpenMaya.MSpace.kWorld)
+	mTransformationMatrix.setShear(mDoubleArrayShear.asDoublePtr(), OpenMaya.MSpace.kWorld)
 
 	mMatrix = mTransformationMatrix.asMatrix()
 

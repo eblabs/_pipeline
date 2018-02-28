@@ -8,6 +8,7 @@ import common.transforms as transforms
 import common.attributes as attributes
 import modelingAPI.meshes as meshes
 import modelingAPI.surfaces as surfaces
+import common.apiUtils as apiUtils
 ## functions
 def constraint(lNodes, sType = 'parent', sConstraintType = 'oneToAll', bMaintainOffset = False, lSkipTranslate = None, lSkipRotate = None, lSkipScale = None, bForce = False):
 	if not lSkipTranslate:
@@ -199,7 +200,7 @@ def matrixConnect(sDrvNode, lDrivenNodes, sDrvAttr, lSkipTranslate = [], lSkipRo
 	if not cmds.objExists(sDecomposeMatrix):
 		sDecomposeMatrix = cmds.createNode('decomposeMatrix', name = oName.sName)
 		cmds.connectAttr('%s.%s' %(sDrvNode, sDrvAttr), '%s.inputMatrix' %sDecomposeMatrix)
-	if not lSkipRotate:
+	if len(lSkipRotate) < 3:
 		oName.sType = 'quatToEuler'
 		sQuatToEuler = oName.sName
 		if not cmds.objExists(sQuatToEuler):
@@ -219,17 +220,48 @@ def matrixConnect(sDrvNode, lDrivenNodes, sDrvAttr, lSkipTranslate = [], lSkipRo
 				attributes.connectAttrs(['%s.outputRotate%s' %(sQuatToEuler, sAxis)], ['%s.rotate%s' %(sDriven, sAxis)], bForce = bForce)
 			if sAxis not in lSkipScale:
 				attributes.connectAttrs(['%s.outputScale%s' %(sDecomposeMatrix, sAxis)], ['%s.scale%s' %(sDriven, sAxis)], bForce = bForce)
-				
+	attributes.connectAttrs(['%s.outputShear' %sDecomposeMatrix], ['%s.shear' %sDriven], bForce = bForce)
 
-		
+def matrixConnectJnt(sDrvNode, sDrivenJnt, sDrvAttr, lSkipTranslate = [], lSkipRotate = [], lSkipScale = [], bForce = True):
+	oName = naming.oName(sDrvNode)
+	oName.sType = 'decomposeMatrix'
+	sDecomposeMatrix = oName.sName
+	sDecomposeMatrixRotScale = None
+	if not cmds.objExists(sDecomposeMatrix):
+		sDecomposeMatrix = cmds.createNode('decomposeMatrix', name = oName.sName)
+		cmds.connectAttr('%s.%s' %(sDrvNode, sDrvAttr), '%s.inputMatrix' %sDecomposeMatrix)
+	if len(lSkipRotate) < 3 or len(lSkipScale) < 3:
+		oNameDriven = naming.oName(sDrivenJnt)
+		sMultMatrix = naming.oName(sType = 'multMatrix', sSide = oNameDriven.sSide, sPart = '%sMatrixRotScale' %oNameDriven.sPart, iIndex = oNameDriven.iIndex).sName
+		cmds.createNode('multMatrix', name = sMultMatrix)
+		cmds.connectAttr('%s.%s' %(sDrvNode, sDrvAttr), '%s.matrixIn[0]' %sMultMatrix)
+		fOrientX = cmds.getAttr('%s.jointOrientX' %sDrivenJnt)
+		fOrientY = cmds.getAttr('%s.jointOrientY' %sDrivenJnt)
+		fOrientZ = cmds.getAttr('%s.jointOrientZ' %sDrivenJnt)
+		mMatrix = apiUtils.createMMatrixFromTransformInfo(lRotate = [fOrientX, fOrientY, fOrientZ])
+		lMatrixInverse = apiUtils.convertMMatrixToList(mMatrix.inverse())
+		cmds.setAttr('%s.matrixIn[1]' %sMultMatrix, lMatrixInverse, type = 'matrix')
+		sDecomposeMatrixRotScale = naming.oName(sType = 'decomposeMatrix', sSide = oNameDriven.sSide, sPart = '%sRotScale' %oNameDriven.sPart, iIndex = oNameDriven.iIndex).sName
+		cmds.createNode('decomposeMatrix', name = sDecomposeMatrixRotScale)
+		cmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.inputMatrix' %sDecomposeMatrixRotScale)
+		if len(lSkipRotate) < 3:
+			sQuatToEuler = naming.oName(sType = 'quatToEuler', sSide = oNameDriven.sSide, sPart = '%sRot' %oNameDriven.sPart, iIndex = oNameDriven.iIndex).sName
+			cmds.createNode('quatToEuler', name = sQuatToEuler)
+			cmds.connectAttr('%s.outputQuat' %sDecomposeMatrixRotScale, '%s.inputQuat' %sQuatToEuler)
+			cmds.connectAttr('%s.ro' %sDrivenJnt, '%s.inputRotateOrder' %sQuatToEuler)
 
-
-
-
-
-
-
-
+	## connect matrix
+	for sAxis in ['X', 'Y', 'Z']:
+		if sAxis not in lSkipTranslate:
+			attributes.connectAttrs(['%s.outputTranslate%s' %(sDecomposeMatrix, sAxis)], ['%s.translate%s' %(sDrivenJnt, sAxis)], bForce = bForce)
+		if sAxis not in lSkipRotate:
+			attributes.connectAttrs(['%s.outputRotate%s' %(sQuatToEuler, sAxis)], ['%s.rotate%s' %(sDrivenJnt, sAxis)], bForce = bForce)
+		if sAxis not in lSkipScale:
+			attributes.connectAttrs(['%s.outputScale%s' %(sDecomposeMatrixRotScale, sAxis)], ['%s.scale%s' %(sDrivenJnt, sAxis)], bForce = bForce)
+	if sDecomposeMatrixRotScale:
+		attributes.connectAttrs(['%s.outputShear' %sDecomposeMatrixRotScale], ['%s.shear' %sDrivenJnt], bForce = bForce)
+	else:
+		attributes.connectAttrs(['%s.outputShear' %sDecomposeMatrix], ['%s.shear' %sDrivenJnt], bForce = bForce)
 
 def getWeightAliasList(sConstraint):
 	sConstraintType = cmds.objectType(sConstraint)

@@ -10,13 +10,13 @@ import namingAPI.namingDict as namingDict
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
+import common.importer as importer
 import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 import modelingAPI.curves as curves
 import riggingAPI.constraints as constraints
 
 import riggingAPI.rigComponents.baseComponent as baseComponent
-
 class baseComponentsBlendLimb(baseComponent.baseComponent):
 	"""docstring for baseComponentsBlendLimb"""
 	def __init__(self, *args, **kwargs):
@@ -43,6 +43,8 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 		lJnts = []
 		lBindJnts = []
 
+		cmds.setAttr('%s.subComponents' %self._sComponentMaster, 1)
+
 		for i, sBpJnt in enumerate(self._lBpJnts):
 			## jnt
 			oJntName = naming.oName(sBpJnt)
@@ -65,7 +67,7 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 		## create temp controller
 		sCrv = cmds.curve(p=[[0,0,0], [1,0,0]], k=[0,1], d=1, per = False, name = 'TEMP_CRV')
 		sCtrlShape = naming.oName(sType = 'ctrl', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
-		curves.addCtrlShape([sCrv], sCtrlShape, bVis = False, dCtrlShapeInfo = None, bTop = False)
+		controls.addCtrlShape([sCrv], sCtrlShape, bVis = False, dCtrlShapeInfo = None, bTop = False)
 
 		sEnumName = ''
 		iIndexCustom = 90
@@ -95,8 +97,10 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 		cmds.connectAttr('%s.moduleBlend' %sCtrlShape, '%s.input1' %sMultBlend)
 		cmds.setAttr('%s.input2' %sMultBlend, 0.1, lock = True)
 		sRvsBlend = naming.oName(sType = 'reverse', sSide = self._sSide, sPart = '%sModuleBlendOutput' %self._sName, iIndex = self._iIndex).sName
+		cmds.createNode('reverse', name = sRvsBlend)
 		cmds.connectAttr('%s.output' %sMultBlend, '%s.inputX' %sRvsBlend)
 		sCondBlend = naming.oName(sType = 'condition', sSide = self._sSide, sPart = '%sModuleBlendIndex' %self._sName, iIndex = self._iIndex).sName
+		cmds.createNode('condition', name = sCondBlend)
 		cmds.connectAttr('%s.output' %sMultBlend, '%s.firstTerm' %sCondBlend)
 		cmds.setAttr('%s.secondTerm' %sCondBlend, 0.5, lock = True)
 		cmds.setAttr('%s.operation' %sCondBlend, 4)
@@ -117,9 +121,9 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 			cmds.connectAttr('%s.moduleB' %sCtrlShape, '%s.selector' %sChoiceB)
 			cmds.connectAttr('%s.output' %sChoiceA, '%s.wtMatrix[0].matrixIn' %sWtAddMatrix)
 			cmds.connectAttr('%s.output' %sChoiceB, '%s.wtMatrix[1].matrixIn' %sWtAddMatrix)
-			cmds.connectAttr('%s.output' %sRvsBlend, '%s.wtMatrix[0].weightIn' %sWtAddMatrix)
+			cmds.connectAttr('%s.outputX' %sRvsBlend, '%s.wtMatrix[0].weightIn' %sWtAddMatrix)
 			cmds.connectAttr('%s.output' %sMultBlend, '%s.wtMatrix[1].weightIn' %sWtAddMatrix)
-			constraints.matrixConnect(sWtAddMatrix, [sJnt], 'matrixSum')
+			constraints.matrixConnectJnt(sWtAddMatrix, sJnt, 'matrixSum')
 			lNodes.append([sChoiceA, sChoiceB])
 
 		dModuleInfo = {}
@@ -129,8 +133,8 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 			dKwargs = self._dComponents[sKey]['dKwargs']
 			dKwargs.update({'bInfo': False, 'lBpJnts': self._lBpJnts, 'sParent': self._sComponentSubComponents, 'sName': '%s%s%s' %(self._sName, sKey[0].upper(), sKey[1:]), 'sSide': self._sSide, 'iIndex': self._iIndex})
 
-			oModule = __import__(sModulePath)
-			oLimb = getattr(oMdule, sModuleName)(**dKwargs)
+			oModule = importer.importModule(sModulePath)
+			oLimb = getattr(oModule, sModuleName)(**dKwargs)
 			oLimb.createComponent()
 
 			## connect attrs
@@ -139,14 +143,15 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 			for sAttr in ['inputMatrix', 'inputMatrixOffset', 'deformGeo']:
 				cmds.connectAttr('%s.%s' %(self._sComponentMaster, sAttr), '%s.%s' %(oLimb._sComponentMaster, sAttr))
 
-			for sCtrl in oLimb._lCtrls:
-				controls.addCtrlShape(sCtrl, sCtrlShape, bVis = False, dCtrlShapeInfo = None, bTop = False)
+			controls.addCtrlShape(oLimb._lCtrls, sCtrlShape, bVis = False, dCtrlShapeInfo = None, bTop = False)
 
 			iNum = lKey.index(sKey)
 			iIndex = lIndex[iNum]
+			print sKey
+			print iIndex
 			for i, sJnt in enumerate(lJnts):
-				cmds.connectAttr('%s.matrix' %oLimb._lJnts[i], '%s.input[%d]' %(lNodes[0][0], iIndex))
-				cmds.connectAttr('%s.matrix' %oLimb._lJnts[i], '%s.input[%d]' %(lNodes[0][1], iIndex))
+				cmds.connectAttr('%s.matrix' %oLimb._lJnts[i], '%s.input[%d]' %(lNodes[i][0], iIndex))
+				cmds.connectAttr('%s.matrix' %oLimb._lJnts[i], '%s.input[%d]' %(lNodes[i][1], iIndex))
 
 			## control vis
 			sCondCtrlVis = naming.oName(sType = 'condition', sSide = self._sSide, sPart = '%s%sCtrlVis' %(self._sName, sKey), iIndex = self._iIndex).sName
@@ -173,6 +178,6 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 
 		## output matrix
 		if self._bInfo:
-			self._writeOutputMatrixInfo(lJnts, bHierarchy = True)
+			self._writeOutputMatrixInfo(lJnts)
 
 		self._getComponentInfo(self._sComponentMaster)
