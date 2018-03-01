@@ -91,7 +91,7 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 		## add attrs
 		cmds.addAttr(sCtrlShape, ln = 'moduleA', at = 'enum', keyable = True, en = sEnumName[:-1], dv = lIndexOrder[0])
 		cmds.addAttr(sCtrlShape, ln = 'moduleB', at = 'enum', keyable = True, en = sEnumName[:-1], dv = lIndexOrder[0])
-		cmds.addAttr(sCtrlShape, ln = 'moduleBlend', at = 'float', keyable = True, min = 0, max = 1)
+		cmds.addAttr(sCtrlShape, ln = 'moduleBlend', at = 'float', keyable = True, min = 0, max = 10)
 		sMultBlend = naming.oName(sType = 'multDoubleLinear', sSide = self._sSide, sPart = '%sModuleBlendOutput' %self._sName, iIndex = self._iIndex).sName
 		cmds.createNode('multDoubleLinear', name = sMultBlend)
 		cmds.connectAttr('%s.moduleBlend' %sCtrlShape, '%s.input1' %sMultBlend)
@@ -175,7 +175,8 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 			for sBind in lBindJnts:
 				sBindString += '%s,' %sBind
 			cmds.setAttr('%s.sBindJoints' %self._sComponentMaster, sBindString[:-1], type = 'string', lock = True)
-
+		cmds.addAttr(self._sComponentMaster, ln = 'dModuleInfo', dt = 'string')
+		cmds.setAttr('%s.dModuleInfo' %self._sComponentMaster, str(dModuleInfo), type = 'string', lock = True)
 		## output matrix
 		if self._bInfo:
 			self._writeOutputMatrixInfo(lJnts)

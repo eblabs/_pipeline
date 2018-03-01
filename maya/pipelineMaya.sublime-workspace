@@ -4,6 +4,22 @@
 		"selected_items":
 		[
 			[
+				"con",
+				"convertRotationToRadians"
+			],
+			[
+				"fR",
+				"fRot"
+			],
+			[
+				"conv",
+				"convertDegreeToRadians"
+			],
+			[
+				"lR",
+				"lRotateRadians"
+			],
+			[
 				"sDe",
 				"sDecomposeMatrixRotScale"
 			],
@@ -498,22 +514,6 @@
 			[
 				"matrixO",
 				"matrixOutputBend"
-			],
-			[
-				"ze",
-				"sGrp_topRvsZero"
-			],
-			[
-				"sGrp_topR",
-				"sGrp_topRvsZero"
-			],
-			[
-				"lJnts",
-				"lJntsLocal"
-			],
-			[
-				"sCtrl",
-				"sCtrlShape"
 			]
 		]
 	},
@@ -784,7 +784,7 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseComponentsBlendLimb.py",
 			"settings":
 			{
-				"buffer_size": 8752,
+				"buffer_size": 8931,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -892,7 +892,7 @@
 			"file": "common/apiUtils.py",
 			"settings":
 			{
-				"buffer_size": 4790,
+				"buffer_size": 5096,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -1420,7 +1420,7 @@
 	"groups":
 	[
 		{
-			"selected": 41,
+			"selected": 29,
 			"sheets":
 			[
 				{
@@ -2101,7 +2101,7 @@
 						"translation.y": 3282.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -2252,15 +2252,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8752,
+						"buffer_size": 8931,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1495,
-								1495
+								8806,
+								8806
 							]
 						],
 						"settings":
@@ -2269,10 +2269,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 873.0,
+						"translation.y": 5294.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -2472,7 +2472,7 @@
 						"translation.y": 6817.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -2595,15 +2595,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4790,
+						"buffer_size": 5096,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2044,
-								2038
+								2003,
+								2003
 							]
 						],
 						"settings":
@@ -2611,11 +2611,11 @@
 							"syntax": "Packages/Python/Python.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 274.0,
-						"translation.y": 1516.0,
+						"translation.x": 0.0,
+						"translation.y": 2078.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{

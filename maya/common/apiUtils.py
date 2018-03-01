@@ -2,6 +2,7 @@
 import maya.cmds as cmds
 import maya.mel as mel
 import maya.OpenMaya as OpenMaya
+import math
 
 #### Functions
 def setMObj(sNode):
@@ -49,6 +50,16 @@ def createMDoubleArray(lList):
 	mDoubleArray.createFromList(lList,3)
 	return mDoubleArray
 
+def convertDegreeToRadians(fDegree):
+	return math.radians(fDegree)
+
+def convertRotationToRadians(lRotate):
+	lRotateRadians = []
+	for fRot in lRotate:
+		fRadians = convertDegreeToRadians(fRot)
+		lRotateRadians.append(fRadians)
+	return lRotateRadians
+
 # ----------------- mMatrix ----------------------
 def createMMatrixFromTransformInfo(lTranslate = [0,0,0], lRotate = [0,0,0], lScale = [1,1,1], lShear = [0,0,0], iRotateOrder = 0):
 	lRotateOrder = [OpenMaya.MTransformationMatrix.kXYZ, 
@@ -59,8 +70,8 @@ def createMMatrixFromTransformInfo(lTranslate = [0,0,0], lRotate = [0,0,0], lSca
 					OpenMaya.MTransformationMatrix.kZYX,]
 
 	mTransformationMatrix = OpenMaya.MTransformationMatrix()
-
 	mVectorTranslate = OpenMaya.MVector(lTranslate[0], lTranslate[1], lTranslate[2])
+	lRotate = convertRotationToRadians(lRotate)
 	mDoubleArrayRotate = createMDoubleArray(lRotate)
 	mDoubleArrayScale = createMDoubleArray(lScale)
 	mDoubleArrayShear = createMDoubleArray(lShear)
