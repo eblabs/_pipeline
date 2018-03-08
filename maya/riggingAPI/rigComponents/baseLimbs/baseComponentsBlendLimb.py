@@ -11,6 +11,7 @@ import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
 import common.importer as importer
+import common.dataInfo as dataInfo
 import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 import modelingAPI.curves as curves
@@ -34,6 +35,9 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 			#	 'sModuleName': module name
 			#	 'dKwargs': kwargs,}
 			#}
+	@property
+	def dComponentLimbs(self):
+		return self._dComponentLimbs
 
 	def createComponent(self):
 		super(baseComponentsBlendLimb, self).createComponent()
@@ -55,8 +59,9 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 
 			## bind jnt
 			if self._bBind:
-				oJntName.sType = 'bindJoint'
-				sBindJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sParent_bind)
+				oJntNameBind = naming.oName(sBpJnt)
+				oJntNameBind.sType = 'bindJoint'
+				sBindJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntNameBind.sName, sParent = sParent_bind)
 				sParent_bind = sBindJnt
 				lBindJnts.append(sBindJnt)
 				for sAxis in ['X', 'Y', 'Z']:
@@ -147,8 +152,6 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 
 			iNum = lKey.index(sKey)
 			iIndex = lIndex[iNum]
-			print sKey
-			print iIndex
 			for i, sJnt in enumerate(lJnts):
 				cmds.connectAttr('%s.matrix' %oLimb._lJnts[i], '%s.input[%d]' %(lNodes[i][0], iIndex))
 				cmds.connectAttr('%s.matrix' %oLimb._lJnts[i], '%s.input[%d]' %(lNodes[i][1], iIndex))
@@ -162,7 +165,7 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 			cmds.setAttr('%s.colorIfFalseR' %sCondCtrlVis, 0, lock = True)
 			cmds.connectAttr('%s.outColorR' %sCondCtrlVis, '%s.controls' %oLimb._sComponentMaster)
 
-			dModuleInfo.update({sKey: {'iIndex': iIndex, 'sModulePath': sModulePath, 'sModuleName': sModuleName, 'sComponentMaster': oLimb._sComponentMaster}})
+			dModuleInfo.update({sKey: {'sModulePath': sModulePath, 'sModuleName': sModuleName, 'sComponentNode': oLimb._sComponentMaster}})
 
 		cmds.delete(sCrv)
 
@@ -182,3 +185,17 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 			self._writeOutputMatrixInfo(lJnts)
 
 		self._getComponentInfo(self._sComponentMaster)
+
+	def _getComponentInfo(self, sComponent):
+		super(baseComponentsBlendLimb, self)._getComponentInfo(sComponent)
+		sModuleInfo = cmds.getAttr('%s.dModuleInfo' %sComponent)
+		dModuleInfo = dataInfo.convertStringToDict(sModuleInfo)
+		self._dComponentLimbs = {}
+
+		for sKey in dModuleInfo.keys():
+			sModulePath = dModuleInfo[sKey]['sModulePath']
+			sModuleName = dModuleInfo[sKey]['sModuleName']
+			sComponentNode = dModuleInfo[sKey]['sComponentNode']
+			oModule = importer.importModule(sModulePath)
+			oLimb = getattr(oModule, sModuleName)(sComponentNode)
+			self._dComponentLimbs.update({sKey: oLimb})

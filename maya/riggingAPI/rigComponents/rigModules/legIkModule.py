@@ -189,7 +189,7 @@ class legIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 
 		#### bind joints
 		if self._bBind:
-			oJntName = naming.oName(lJntsFoot[0])
+			oJntName = naming.oName(sBpJntBall)
 			oJntName.sType = 'bindJoint'
 			sBindJnt = joints.createJntOnExistingNode(sBpJntBall, sBpJntBall, oJntName.sName, sParent = self._lBpJnts[-1])
 			self._lBindJnts.append(sBindJnt)

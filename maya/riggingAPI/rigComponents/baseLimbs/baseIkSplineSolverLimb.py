@@ -34,7 +34,7 @@ class baseIkSplineSolverLimb(baseComponent.baseComponent):
 
 		sParent_jntLocal = self._sComponentRigNodesWorld	
 		lJntsLocal = []
-		
+		lJntsBindName = []
 
 		for i, sBpJnt in enumerate(self._lBpJnts):
 			## jnt
@@ -44,6 +44,9 @@ class baseIkSplineSolverLimb(baseComponent.baseComponent):
 			sJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sParent_jntLocal)
 			sParent_jntLocal = sJnt
 			lJntsLocal.append(sJnt)
+			oJntNameBind = naming.oName(sBpJnt)
+			oJntName.sType = 'bindJoint'
+			lJntsBindName.append(oJntName.sName)
 
 		## generate curve
 		if not self._sCrv:
@@ -77,8 +80,7 @@ class baseIkSplineSolverLimb(baseComponent.baseComponent):
 				cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(sJnt, sAxis))
 				cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(sJnt, sAxis))
 			if self._bBind:
-				oJntName.sType = 'bindJoint'
-				sBindJnt = joints.createJntOnExistingNode(sJntLocal, sJntLocal, oJntName.sName, sParent = sParent_bind)
+				sBindJnt = joints.createJntOnExistingNode(sJntLocal, sJntLocal, lJntsBindName[i], sParent = sParent_bind)
 				sParent_bind = sBindJnt
 				lBindJnts.append(sBindJnt)
 				for sAxis in ['X', 'Y', 'Z']:

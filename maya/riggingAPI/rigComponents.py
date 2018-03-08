@@ -10,10 +10,10 @@ import common.files as files
 import common.transforms as transforms
 import common.workspaces as workspaces
 import common.hierarchy as hierarchy
-import controls
-import joints
+import riggingAPI.controls as controls
+import riggingAPI.joints as joints
 reload(joints)
-import deformers
+import riggingAPI.deformers as deformers
 
 #### Functions
 def saveBlueprintJnts(sPath):

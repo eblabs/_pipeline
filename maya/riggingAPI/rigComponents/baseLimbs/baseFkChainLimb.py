@@ -48,8 +48,9 @@ class baseFkChainLimb(baseComponent.baseComponent):
 
 			## bind jnt
 			if self._bBind:
+				oJntBindName = naming.oName(sBpJnt)
 				oJntName.sType = 'bindJoint'
-				sBindJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sParent_bind)
+				sBindJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntBindName.sName, sParent = sParent_bind)
 				sParent_bind = sBindJnt
 				lBindJnts.append(sBindJnt)
 				for sAxis in ['X', 'Y', 'Z']:

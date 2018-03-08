@@ -4,6 +4,86 @@
 		"selected_items":
 		[
 			[
+				"sMo",
+				"sModulePath"
+			],
+			[
+				"sModu",
+				"sModuleInfo"
+			],
+			[
+				"lC",
+				"lComponentLimbs"
+			],
+			[
+				"lCompo",
+				"lComponentNodes"
+			],
+			[
+				"sComponentN",
+				"sComponentNode"
+			],
+			[
+				"sComponen",
+				"sComponentMasterNodes"
+			],
+			[
+				"gte",
+				"getAttr"
+			],
+			[
+				"_sMo",
+				"_sModuleName"
+			],
+			[
+				"_sMod",
+				"_sModulePath"
+			],
+			[
+				"sCom",
+				"sComponentMasterNodes"
+			],
+			[
+				"_sCom",
+				"_sComponentMaster"
+			],
+			[
+				"sCo",
+				"sComponentMasterNodes"
+			],
+			[
+				"_sM",
+				"_sModulePath"
+			],
+			[
+				"sM",
+				"sModulePath"
+			],
+			[
+				"_sCompo",
+				"_sComponentSpace"
+			],
+			[
+				"lNo",
+				"lNodes_delete"
+			],
+			[
+				"lB",
+				"lBpJnts_each"
+			],
+			[
+				"lJnts",
+				"lJntsBindName"
+			],
+			[
+				"bind",
+				"bindJoint"
+			],
+			[
+				"sB",
+				"sBpJnt"
+			],
+			[
 				"con",
 				"convertRotationToRadians"
 			],
@@ -66,14 +146,6 @@
 			[
 				"__",
 				"__import__"
-			],
-			[
-				"sMo",
-				"sModulePathUpper"
-			],
-			[
-				"sM",
-				"sModulePathUpper"
 			],
 			[
 				"impo",
@@ -204,10 +276,6 @@
 				"inputMatrixXform"
 			],
 			[
-				"sComponen",
-				"sComponentMaster"
-			],
-			[
 				"sComponentCo",
 				"sComponentControls"
 			],
@@ -226,10 +294,6 @@
 			[
 				"conn",
 				"connectAttrs"
-			],
-			[
-				"sModu",
-				"sModuleName"
 			],
 			[
 				"sJntP",
@@ -306,10 +370,6 @@
 			[
 				"lGr",
 				"lGrpRvsZero"
-			],
-			[
-				"lC",
-				"lCtrls"
 			],
 			[
 				"sComponentCon",
@@ -454,66 +514,6 @@
 			[
 				"sQ",
 				"sQuatToEulerFkRot"
-			],
-			[
-				"outpu",
-				"outputQuat"
-			],
-			[
-				"output",
-				"matrixOutputLocal"
-			],
-			[
-				"cre",
-				"createNode"
-			],
-			[
-				"oNa",
-				"oNameMatrix"
-			],
-			[
-				"OcTRL",
-				"oCtrlOffset"
-			],
-			[
-				"oC",
-				"oCtrlOffset"
-			],
-			[
-				"oCt",
-				"oCtrlOffset_top"
-			],
-			[
-				"oCtl",
-				"oCtrlTop"
-			],
-			[
-				"sGrpR",
-				"sGrpRvsZero"
-			],
-			[
-				"matrixOutput",
-				"matrixOutputWorld"
-			],
-			[
-				"sMultMa",
-				"sMultMatrix_botTranslate"
-			],
-			[
-				"sMultMatrix",
-				"sMultMatrix_topTranslate"
-			],
-			[
-				"sMUlt",
-				"sMultMatrix"
-			],
-			[
-				"sGrp_bot",
-				"sGrp_botRvs"
-			],
-			[
-				"matrixO",
-				"matrixOutputBend"
 			]
 		]
 	},
@@ -730,7 +730,7 @@
 			"file": "riggingAPI/rigComponents/baseComponent.py",
 			"settings":
 			{
-				"buffer_size": 16946,
+				"buffer_size": 17076,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -739,7 +739,7 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseFkChainLimb.py",
 			"settings":
 			{
-				"buffer_size": 4106,
+				"buffer_size": 4150,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -757,7 +757,7 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseIkSplineSolverLimb.py",
 			"settings":
 			{
-				"buffer_size": 5371,
+				"buffer_size": 5469,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -775,7 +775,7 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseIkRPsolverLimb.py",
 			"settings":
 			{
-				"buffer_size": 6687,
+				"buffer_size": 6735,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -784,7 +784,16 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseComponentsBlendLimb.py",
 			"settings":
 			{
-				"buffer_size": 8931,
+				"buffer_size": 9636,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "riggingAPI/rigComponents/baseLimbs/baseMultiComponentsLimb.py",
+			"settings":
+			{
+				"buffer_size": 4266,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -793,18 +802,9 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseIkSCsolverLimb.py",
 			"settings":
 			{
-				"buffer_size": 5334,
+				"buffer_size": 5382,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "import riggingAPI.rigComponents.baseLimbs.baseComponentsBlendLimb as baseComponentsBlendLimb\nreload(baseComponentsBlendLimb)\ndComponentsInfo = {\n                    'fk': {\n                            'sModulePath': 'riggingAPI.rigComponents.rigModules.armFkModule',\n                            'sModuleName': 'armFkModule',\n                            'dKwargs': {},\n                            },\n                            \n                    'ik': {\n                            'sModulePath': 'riggingAPI.rigComponents.rigModules.armIkModule',\n                            'sModuleName': 'armIkModule',\n                            'dKwargs': {'lBpCtrls': ['bpJnt_l_upperArmIk', 'bpJnt_l_elbowPvIk', 'bpJnt_l_handIk']},\n                            },}\n\n\noArmRig = baseComponentsBlendLimb.baseComponentsBlendLimb(sName = 'arm', sSide = 'l', lBpJnts = ['bpJnt_l_upperArm', 'bpJnt_l_elbow', 'bpJnt_l_wrist', 'bpJnt_l_wristEnd'], dComponents = dComponentsInfo)\n\noArmRig.createComponent()",
-			"settings":
-			{
-				"buffer_size": 987,
-				"line_ending": "Windows",
-				"name": "import riggingAPI.rigComponents.baseLimbs.baseComp"
 			}
 		},
 		{
@@ -838,7 +838,7 @@
 			"file": "riggingAPI/rigComponents/rigModules/legIkModule.py",
 			"settings":
 			{
-				"buffer_size": 12698,
+				"buffer_size": 12696,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -936,7 +936,7 @@
 			"file": "riggingAPI/rigComponents.py",
 			"settings":
 			{
-				"buffer_size": 4275,
+				"buffer_size": 4343,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -1182,7 +1182,7 @@
 	],
 	"find":
 	{
-		"height": 41.0
+		"height": 54.0
 	},
 	"find_in_files":
 	{
@@ -1196,6 +1196,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"iIndex",
+			"self._bInfo",
 			"createMDoubleArray",
 			"bInfo",
 			"constraints",
@@ -1321,9 +1323,7 @@
 			"_setPathWinPop",
 			"_getAssetFolders",
 			"_listItemRightClicked",
-			"_setQMenuItemCreateEnabled",
-			"_openContainFolder",
-			"_QMenuItemDelete"
+			"_setQMenuItemCreateEnabled"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1449,7 +1449,7 @@
 						"translation.y": 1287.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 25,
 					"type": "text"
 				},
 				{
@@ -1477,7 +1477,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 23,
 					"type": "text"
 				},
 				{
@@ -1493,8 +1493,8 @@
 						"selection":
 						[
 							[
-								96,
-								96
+								16,
+								35
 							]
 						],
 						"settings":
@@ -1505,7 +1505,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -1521,8 +1521,8 @@
 						"selection":
 						[
 							[
-								4199,
-								4131
+								1088,
+								0
 							]
 						],
 						"settings":
@@ -1530,10 +1530,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1362.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 33,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
@@ -1562,7 +1562,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 39,
+					"stack_index": 40,
 					"type": "text"
 				},
 				{
@@ -1591,7 +1591,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 43,
+					"stack_index": 44,
 					"type": "text"
 				},
 				{
@@ -1620,7 +1620,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 44,
+					"stack_index": 45,
 					"type": "text"
 				},
 				{
@@ -1648,7 +1648,7 @@
 						"translation.y": 197.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 28,
+					"stack_index": 33,
 					"type": "text"
 				},
 				{
@@ -1676,7 +1676,7 @@
 						"translation.y": 3705.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 24,
+					"stack_index": 30,
 					"type": "text"
 				},
 				{
@@ -1704,7 +1704,7 @@
 						"translation.y": 3861.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 30,
+					"stack_index": 34,
 					"type": "text"
 				},
 				{
@@ -1732,7 +1732,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
@@ -1760,7 +1760,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 45,
+					"stack_index": 46,
 					"type": "text"
 				},
 				{
@@ -1788,7 +1788,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 26,
+					"stack_index": 31,
 					"type": "text"
 				},
 				{
@@ -1816,7 +1816,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 46,
+					"stack_index": 47,
 					"type": "text"
 				},
 				{
@@ -1845,7 +1845,7 @@
 						"translation.y": 693.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 31,
+					"stack_index": 35,
 					"type": "text"
 				},
 				{
@@ -1874,7 +1874,7 @@
 						"translation.y": 198.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 37,
+					"stack_index": 38,
 					"type": "text"
 				},
 				{
@@ -1899,10 +1899,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 198.0,
+						"translation.y": 1386.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 25,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -1918,8 +1918,8 @@
 						"selection":
 						[
 							[
-								4271,
-								4456
+								1392,
+								1392
 							]
 						],
 						"settings":
@@ -1927,11 +1927,11 @@
 							"syntax": "Packages/Python/Python.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 1219.0,
-						"translation.y": 2871.0,
+						"translation.x": 0.0,
+						"translation.y": 957.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 34,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
@@ -1957,10 +1957,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 990.0,
+						"translation.y": 792.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 36,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
@@ -1989,7 +1989,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 35,
+					"stack_index": 37,
 					"type": "text"
 				},
 				{
@@ -2017,7 +2017,7 @@
 						"translation.y": 1699.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
@@ -2045,7 +2045,7 @@
 						"translation.y": 1406.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 29,
 					"type": "text"
 				},
 				{
@@ -2073,7 +2073,7 @@
 						"translation.y": 2888.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
@@ -2082,26 +2082,26 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 16946,
+						"buffer_size": 17076,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5684,
-								5684
+								1394,
+								1334
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
-						"translation.x": 1405.0,
-						"translation.y": 3282.0,
+						"translation.x": 0.0,
+						"translation.y": 1037.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
@@ -2110,15 +2110,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4106,
+						"buffer_size": 4150,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4102,
-								3352
+								1021,
+								1021
 							]
 						],
 						"settings":
@@ -2126,10 +2126,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 2533.0,
+						"translation.y": 2616.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -2154,10 +2154,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 693.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
@@ -2166,15 +2166,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5371,
+						"buffer_size": 5469,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5266,
-								5266
+								3371,
+								3371
 							]
 						],
 						"settings":
@@ -2183,10 +2183,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 3499.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
@@ -2211,11 +2211,11 @@
 							"syntax": "Packages/Python/Python.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 244.0,
-						"translation.y": 4794.0,
+						"translation.x": 0.0,
+						"translation.y": 9942.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
@@ -2224,15 +2224,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6687,
+						"buffer_size": 6735,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3025,
-								1197
+								2687,
+								2687
 							]
 						],
 						"settings":
@@ -2240,10 +2240,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 329.0,
+						"translation.y": 3727.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
@@ -2252,15 +2252,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8931,
+						"buffer_size": 9636,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								8806,
-								8806
+								1321,
+								1321
 							]
 						],
 						"settings":
@@ -2269,7 +2269,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 5294.0,
+						"translation.y": 5734.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -2277,19 +2277,47 @@
 				},
 				{
 					"buffer": 30,
-					"file": "riggingAPI/rigComponents/baseLimbs/baseIkSCsolverLimb.py",
+					"file": "riggingAPI/rigComponents/baseLimbs/baseMultiComponentsLimb.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5334,
+						"buffer_size": 4266,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1029,
-								1029
+								1203,
+								1135
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 678.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 31,
+					"file": "riggingAPI/rigComponents/baseLimbs/baseIkSCsolverLimb.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5382,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								982,
+								716
 							]
 						],
 						"settings":
@@ -2298,38 +2326,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 3234.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 31,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 987,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								987,
-								987
-							]
-						],
-						"settings":
-						{
-							"auto_name": "import riggingAPI.rigComponents.baseLimbs.baseComp",
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
@@ -2355,10 +2355,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
@@ -2383,10 +2383,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 297.0,
+						"translation.y": 2178.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
@@ -2411,10 +2411,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 5841.0,
+						"translation.y": 5675.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 29,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
@@ -2423,15 +2423,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12698,
+						"buffer_size": 12696,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								12552,
-								12552
+								9680,
+								9680
 							]
 						],
 						"settings":
@@ -2440,10 +2440,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1520.0,
+						"translation.y": 150.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
@@ -2472,7 +2472,7 @@
 						"translation.y": 6817.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 20,
 					"type": "text"
 				},
 				{
@@ -2500,7 +2500,7 @@
 						"translation.y": 594.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 28,
 					"type": "text"
 				},
 				{
@@ -2529,7 +2529,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 38,
+					"stack_index": 39,
 					"type": "text"
 				},
 				{
@@ -2557,7 +2557,7 @@
 						"translation.y": 3168.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 20,
+					"stack_index": 26,
 					"type": "text"
 				},
 				{
@@ -2586,7 +2586,7 @@
 						"translation.y": 1881.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 22,
 					"type": "text"
 				},
 				{
@@ -2615,7 +2615,7 @@
 						"translation.y": 2078.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
@@ -2644,7 +2644,7 @@
 						"translation.y": 2253.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 32,
+					"stack_index": 36,
 					"type": "text"
 				},
 				{
@@ -2672,7 +2672,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 40,
+					"stack_index": 41,
 					"type": "text"
 				},
 				{
@@ -2700,7 +2700,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 51,
+					"stack_index": 52,
 					"type": "text"
 				},
 				{
@@ -2728,7 +2728,7 @@
 						"translation.y": 1683.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 41,
+					"stack_index": 42,
 					"type": "text"
 				},
 				{
@@ -2737,15 +2737,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4275,
+						"buffer_size": 4343,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2660,
-								2625
+								883,
+								676
 							]
 						],
 						"settings":
@@ -2753,10 +2753,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 2277.0,
+						"translation.y": 297.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 53,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
@@ -2785,7 +2785,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 52,
+					"stack_index": 53,
 					"type": "text"
 				},
 				{
@@ -2813,7 +2813,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 47,
+					"stack_index": 48,
 					"type": "text"
 				},
 				{
@@ -2871,7 +2871,7 @@
 						"translation.y": 7673.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 49,
+					"stack_index": 50,
 					"type": "text"
 				},
 				{
@@ -2899,7 +2899,7 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 48,
+					"stack_index": 49,
 					"type": "text"
 				},
 				{
@@ -2956,7 +2956,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 42,
+					"stack_index": 43,
 					"type": "text"
 				},
 				{
@@ -3100,7 +3100,7 @@
 						"translation.y": 313.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 50,
+					"stack_index": 51,
 					"type": "text"
 				},
 				{
@@ -3129,7 +3129,7 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 27,
+					"stack_index": 32,
 					"type": "text"
 				}
 			]

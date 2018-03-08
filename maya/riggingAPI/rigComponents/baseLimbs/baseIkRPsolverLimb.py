@@ -63,8 +63,9 @@ class baseIkRPsolverLimb(baseComponent.baseComponent):
 
 			## bind jnt
 			if self._bBind:
-				oJntName.sType = 'bindJoint'
-				sBindJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sParent_bind)
+				oJntNameBind = naming.oName(sBpJnt)
+				oJntNameBind.sType = 'bindJoint'
+				sBindJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntNameBind.sName, sParent = sParent_bind)
 				sParent_bind = sBindJnt
 				lBindJnts.append(sBindJnt)
 				for sAxis in ['X', 'Y', 'Z']:

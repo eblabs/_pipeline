@@ -222,7 +222,11 @@ class baseComponent(object):
 	def _getComponentInfo(self, sComponent):
 		self._sComponentType = cmds.getAttr('%s.sComponentType' %sComponent)
 		self._sComponentSpace = cmds.getAttr('%s.sComponentSpace' %sComponent)
+		if not self._sComponentSpace:
+			self._sComponentSpace = None
 		self._sComponentPasser = cmds.getAttr('%s.sComponentPasser' %sComponent)
+		if not self._sComponentPasser:
+			self._sComponentPasser = None
 		self._iJointCount = cmds.getAttr('%s.iJointCount' %sComponent)
 		sControlsString = cmds.getAttr('%s.sControls' %sComponent)
 		if sControlsString:
