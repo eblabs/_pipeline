@@ -49,7 +49,7 @@ class baseFkChainLimb(baseComponent.baseComponent):
 			## bind jnt
 			if self._bBind:
 				oJntBindName = naming.oName(sBpJnt)
-				oJntName.sType = 'bindJoint'
+				oJntBindName.sType = 'bindJoint'
 				sBindJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntBindName.sName, sParent = sParent_bind)
 				sParent_bind = sBindJnt
 				lBindJnts.append(sBindJnt)
@@ -95,7 +95,7 @@ class baseFkChainLimb(baseComponent.baseComponent):
 
 		## output matrix
 		if self._bInfo:
-			self._writeOutputMatrixInfo(lJnts, bHierarchy = True)
+			self._writeOutputMatrixInfo(lJnts)
 
 		self._getComponentInfo(self._sComponentMaster)
 

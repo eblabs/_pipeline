@@ -219,6 +219,11 @@ class baseComponent(object):
 		cmds.setAttr('%s.inputMatrixInverse' %sComponent, lMatrixInInverse, type = 'matrix')
 		cmds.connectAttr(sMatrixPlug, '%s.inputMatrix' %sComponent, f = True)
 
+	def _addTwistJnts(self, sJntRoot, sJntEnd, sBpJnt, iTwistJntNum):
+		lTwsitJnts = []
+		for i in range(iTwistJntNum):
+			oJntName = naming.oName(sBpJnt)
+
 	def _getComponentInfo(self, sComponent):
 		self._sComponentType = cmds.getAttr('%s.sComponentType' %sComponent)
 		self._sComponentSpace = cmds.getAttr('%s.sComponentSpace' %sComponent)
@@ -261,7 +266,6 @@ class baseComponent(object):
 				cmds.connectAttr(sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
 				cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, i))
 				sMultMatrixLocalParent = '%s.matrixSum' %sMultMatrixLocal
-				sMultMatrixWorldParent = '%s.matrixSum' %sMultMatrixWorld
 			else:
 				cmds.connectAttr('%s.matrix' %sJnt, '%s.outputMatrixLocal%03d' %(self._sComponentMaster, i))
 				sMultMatrixWorld = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorld' %self._sName, iIndex = i).sName)					
@@ -269,4 +273,3 @@ class baseComponent(object):
 				cmds.connectAttr(sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
 				cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, i))
 				sMultMatrixLocalParent = '%s.matrix' %sJnt
-				sMultMatrixWorldParent = '%s.matrixSum' %sMultMatrixWorld
