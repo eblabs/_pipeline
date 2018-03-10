@@ -12,6 +12,7 @@ import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
 import riggingAPI.constraints as constraints
+import riggingAPI.joints as joints
 ## base component class
 class baseComponent(object):
 	"""docstring for baseComponent"""
@@ -220,9 +221,73 @@ class baseComponent(object):
 		cmds.connectAttr(sMatrixPlug, '%s.inputMatrix' %sComponent, f = True)
 
 	def _addTwistJnts(self, sJntRoot, sJntEnd, sBpJnt, iTwistJntNum):
+		## start and end twist
+		oTwistName = naming.oName(sBpJnt)
+		#### start
+		sMultMatrixStart = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = oTwistName.sSide, sPart = '%sTwistStart' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
+		cmds.connectAttr('%s.matrix' %sJntRoot, '%s.matrixIn[0]' %sMultMatrixStart)
+		lJntOrient = joints.getJointOrient(sBpJnt)
+		mMatrix = apiUtils.createMMatrixFromTransformInfo(lRotate = lJntOrient)
+		lMatrixInInverse = apiUtils.convertMMatrixToList(mMatrix.inverse())
+		cmds.setAttr('%s.matrixIn[1]' %sMultMatrixStart, lMatrixInInverse, type = 'matrix')
+		sDecomposeMatrixStart = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = oTwistName.sSide, sPart = '%sTwistStart' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
+		cmds.connectAttr('%s.matrixSum' %sMultMatrixStart, '%s.inputMatrix' %sDecomposeMatrixStart)
+		sQuatToEulerStart = cmds.createNode('quatToEuler', name = naming.oName(sType = 'quatToEuler', sSide = oTwistName.sSide, sPart = '%sTwistStart' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
+		cmds.connectAttr('%s.outputQuatX' %sDecomposeMatrixStart, '%s.inputQuatX' %sQuatToEulerStart)
+		cmds.connectAttr('%s.outputQuatW' %sDecomposeMatrixStart, '%s.inputQuatW' %sQuatToEulerStart)
+		cmds.connectAttr('%s.rotateOrder' %sJntRoot, '%s.inputRotateOrder' %sQuatToEulerStart)
+		sMultTwistStart = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'multDoubleLinear', sSide = oTwistName.sSide, sPart = '%sTwistStart' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
+		cmds.connectAttr('%s.outputRotateX' %sQuatToEulerStart, '%s.input1' %sMultTwistStart)
+		cmds.setAttr('%s.input2' %sMultTwistStart, -1)
+		sTwistStartPlug = '%s.output' %sMultTwistStart
+
+		#### end
+		if iTwistJntNum > 1:
+			sDecomposeMatrixEnd = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = oTwistName.sSide, sPart = '%sTwistEnd' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
+			cmds.connectAttr('%s.matrix' %sJntEnd, '%s.inputMatrix' %sDecomposeMatrixEnd)
+			sQuatToEulerEnd = cmds.createNode('quatToEuler', name = naming.oName(sType = 'quatToEuler', sSide = oTwistName.sSide, sPart = '%sTwistEnd' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
+			cmds.connectAttr('%s.outputQuatX' %sDecomposeMatrixEnd, '%s.inputQuatX' %sQuatToEulerEnd)
+			cmds.connectAttr('%s.outputQuatW' %sDecomposeMatrixEnd, '%s.inputQuatW' %sQuatToEulerEnd)
+			cmds.connectAttr('%s.rotateOrder' %sJntRoot, '%s.inputRotateOrder' %sQuatToEulerEnd)
+			sTwistEndPlug = '%s.outputRotateX' %sQuatToEulerEnd
+
+
 		lTwsitJnts = []
 		for i in range(iTwistJntNum):
 			oJntName = naming.oName(sBpJnt)
+			oJntName.sType = 'joint'
+			oJntName.sPart = '%sTwist%02d' %(oJntName.sPart, i)
+			sTwist = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sJntRoot)
+			lTwsitJnts.append(sTwist)
+
+			if i > 0 and i < iTwistJntNum - 1:
+				fWeight = i/float(iTwistJntNum - 1)
+				## position
+				sMult = cmds.createNode('multiplyDivide', name = naming.oName(sType = 'multiplyDivide', sSide = oJntName.sSide, sPart = '%sPos' %oJntName.sPart, iIndex = oJntName.iIndex).sName)
+				for sAxis in ['X', 'Y', 'Z']:
+					cmds.connectAttr('%s.translate%s' %(sJntEnd, sAxis), '%s.input1%s' %(sMult, sAxis))
+					cmds.setAttr('%s.input2%s' %(sMult, sAxis), fWeight)
+					cmds.connectAttr('%s.output%s' %(sMult, sAxis), '%s.translate%s' %(sTwist, %sAxis))
+
+				## twist
+				sPlus = cmds.createNode('addDoubleLinear', name = naming.oName(sType = 'addDoubleLinear', sSide = oJntName.sSide, sPart = '%sTwistSum' %oJntName.sPart, iIndex = oJntName.iIndex).sName)
+				sMultTwistStart = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'multDoubleLinear', sSide = oJntName.sSide, sPart = '%sTwistStartWeight' %oJntName.sPart, iIndex = oJntName.iIndex).sName)
+				sMultTwistEnd = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'multDoubleLinear', sSide = oJntName.sSide, sPart = '%sTwistEndWeight' %oJntName.sPart, iIndex = oJntName.iIndex).sName)
+				cmds.connectAttr(sTwistStartPlug, '%s.input1' %sMultTwistStart)
+				cmds.connectAttr(sTwistEndPlug, '%s.input1' %sMultTwistEnd)
+				cmds.setAttr('%s.input2' %sMultTwistStart, 1 - fWeight)
+				cmds.setAttr('%s.input2' %sMultTwistEnd, fWeight)
+				cmds.connectAttr('%s.output' %sMultTwistStart, '%s.input1' %sPlus)
+				cmds.connectAttr('%s.output' %sMultTwistEnd, '%s.input2' %sPlus)
+				cmds.connectAttr('%s.output' %sPlus, '%s.rx' %sTwist)
+
+			elif i == iTwistJntNum:
+				fWeight = 1
+				cmds.connectAttr(sTwistEndPlug, '%s.rx' %sTwist)
+			else:
+				fWeight = 0
+				cmds.connectAttr(sTwistStartPlug, '%s.rx' %sTwist)
+		return lTwsitJnts
 
 	def _getComponentInfo(self, sComponent):
 		self._sComponentType = cmds.getAttr('%s.sComponentType' %sComponent)

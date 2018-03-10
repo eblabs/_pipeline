@@ -35,6 +35,12 @@ def createJntOnTransformInfo(sName, lTransformInfo, iRotateOrder = 0, sParent = 
 		cmds.parent(sJnt, sParent)
 	return sJnt
 
+def getJointOrient(sJnt):
+	lJointOrient = []
+	for sAxis in ['X', 'Y', 'Z']:
+		fOrient = cmds.getAttr('%s.jointOrient%s' %(sJnt, sAxis))
+		lOrient.append(fOrient)
+	return lJointOrient
 
 #------------ save & load joints functions -----------
 def getJointInfo(sJnt):
