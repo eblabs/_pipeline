@@ -13,6 +13,7 @@ import common.attributes as attributes
 import common.apiUtils as apiUtils
 import riggingAPI.constraints as constraints
 import riggingAPI.joints as joints
+import riggingAPI.rigComponents.rigUtils.componentInfo as componentInfo
 ## base component class
 class baseComponent(object):
 	"""docstring for baseComponent"""
@@ -27,6 +28,10 @@ class baseComponent(object):
 			self._sParent = kwargs.get('sParent', None)
 			self._sConnectIn = kwargs.get('sConnectIn', None)
 			self._bInfo = kwargs.get('bInfo', True)
+
+	@property
+	def sComponentMaster(self):
+		return self._sComponentMaster
 
 	@property
 	def sComponentType(self):
@@ -207,6 +212,9 @@ class baseComponent(object):
 		cmds.addAttr(sComponentMaster, ln = 'iJointCount', at = 'long')
 		cmds.addAttr(sComponentMaster, ln = 'sControls', dt = 'string')
 		cmds.addAttr(sComponentMaster, ln = 'sBindJoints', dt = 'string')
+		cmds.addAttr(sComponentMaster, ln = 'sTwistSections', dt = 'string')
+		cmds.addAttr(sComponentMaster, ln = 'iTwistJointCount', at = 'long')
+		cmds.addAttr(sComponentMaster, ln = 'sTwistBindJoints', dt = 'string')
 
 		## connect component
 		if self._sConnectIn:
@@ -220,76 +228,8 @@ class baseComponent(object):
 		cmds.setAttr('%s.inputMatrixInverse' %sComponent, lMatrixInInverse, type = 'matrix')
 		cmds.connectAttr(sMatrixPlug, '%s.inputMatrix' %sComponent, f = True)
 
-	def _addTwistJnts(self, sJntRoot, sJntEnd, sBpJnt, iTwistJntNum):
-		## start and end twist
-		oTwistName = naming.oName(sBpJnt)
-		#### start
-		sMultMatrixStart = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = oTwistName.sSide, sPart = '%sTwistStart' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
-		cmds.connectAttr('%s.matrix' %sJntRoot, '%s.matrixIn[0]' %sMultMatrixStart)
-		lJntOrient = joints.getJointOrient(sBpJnt)
-		mMatrix = apiUtils.createMMatrixFromTransformInfo(lRotate = lJntOrient)
-		lMatrixInInverse = apiUtils.convertMMatrixToList(mMatrix.inverse())
-		cmds.setAttr('%s.matrixIn[1]' %sMultMatrixStart, lMatrixInInverse, type = 'matrix')
-		sDecomposeMatrixStart = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = oTwistName.sSide, sPart = '%sTwistStart' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
-		cmds.connectAttr('%s.matrixSum' %sMultMatrixStart, '%s.inputMatrix' %sDecomposeMatrixStart)
-		sQuatToEulerStart = cmds.createNode('quatToEuler', name = naming.oName(sType = 'quatToEuler', sSide = oTwistName.sSide, sPart = '%sTwistStart' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
-		cmds.connectAttr('%s.outputQuatX' %sDecomposeMatrixStart, '%s.inputQuatX' %sQuatToEulerStart)
-		cmds.connectAttr('%s.outputQuatW' %sDecomposeMatrixStart, '%s.inputQuatW' %sQuatToEulerStart)
-		cmds.connectAttr('%s.rotateOrder' %sJntRoot, '%s.inputRotateOrder' %sQuatToEulerStart)
-		sMultTwistStart = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'multDoubleLinear', sSide = oTwistName.sSide, sPart = '%sTwistStart' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
-		cmds.connectAttr('%s.outputRotateX' %sQuatToEulerStart, '%s.input1' %sMultTwistStart)
-		cmds.setAttr('%s.input2' %sMultTwistStart, -1)
-		sTwistStartPlug = '%s.output' %sMultTwistStart
-
-		#### end
-		if iTwistJntNum > 1:
-			sDecomposeMatrixEnd = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = oTwistName.sSide, sPart = '%sTwistEnd' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
-			cmds.connectAttr('%s.matrix' %sJntEnd, '%s.inputMatrix' %sDecomposeMatrixEnd)
-			sQuatToEulerEnd = cmds.createNode('quatToEuler', name = naming.oName(sType = 'quatToEuler', sSide = oTwistName.sSide, sPart = '%sTwistEnd' %oTwistName,sPart, iIndex = oTwistName.iIndex).sName)
-			cmds.connectAttr('%s.outputQuatX' %sDecomposeMatrixEnd, '%s.inputQuatX' %sQuatToEulerEnd)
-			cmds.connectAttr('%s.outputQuatW' %sDecomposeMatrixEnd, '%s.inputQuatW' %sQuatToEulerEnd)
-			cmds.connectAttr('%s.rotateOrder' %sJntRoot, '%s.inputRotateOrder' %sQuatToEulerEnd)
-			sTwistEndPlug = '%s.outputRotateX' %sQuatToEulerEnd
-
-
-		lTwsitJnts = []
-		for i in range(iTwistJntNum):
-			oJntName = naming.oName(sBpJnt)
-			oJntName.sType = 'joint'
-			oJntName.sPart = '%sTwist%02d' %(oJntName.sPart, i)
-			sTwist = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sJntRoot)
-			lTwsitJnts.append(sTwist)
-
-			if i > 0 and i < iTwistJntNum - 1:
-				fWeight = i/float(iTwistJntNum - 1)
-				## position
-				sMult = cmds.createNode('multiplyDivide', name = naming.oName(sType = 'multiplyDivide', sSide = oJntName.sSide, sPart = '%sPos' %oJntName.sPart, iIndex = oJntName.iIndex).sName)
-				for sAxis in ['X', 'Y', 'Z']:
-					cmds.connectAttr('%s.translate%s' %(sJntEnd, sAxis), '%s.input1%s' %(sMult, sAxis))
-					cmds.setAttr('%s.input2%s' %(sMult, sAxis), fWeight)
-					cmds.connectAttr('%s.output%s' %(sMult, sAxis), '%s.translate%s' %(sTwist, %sAxis))
-
-				## twist
-				sPlus = cmds.createNode('addDoubleLinear', name = naming.oName(sType = 'addDoubleLinear', sSide = oJntName.sSide, sPart = '%sTwistSum' %oJntName.sPart, iIndex = oJntName.iIndex).sName)
-				sMultTwistStart = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'multDoubleLinear', sSide = oJntName.sSide, sPart = '%sTwistStartWeight' %oJntName.sPart, iIndex = oJntName.iIndex).sName)
-				sMultTwistEnd = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'multDoubleLinear', sSide = oJntName.sSide, sPart = '%sTwistEndWeight' %oJntName.sPart, iIndex = oJntName.iIndex).sName)
-				cmds.connectAttr(sTwistStartPlug, '%s.input1' %sMultTwistStart)
-				cmds.connectAttr(sTwistEndPlug, '%s.input1' %sMultTwistEnd)
-				cmds.setAttr('%s.input2' %sMultTwistStart, 1 - fWeight)
-				cmds.setAttr('%s.input2' %sMultTwistEnd, fWeight)
-				cmds.connectAttr('%s.output' %sMultTwistStart, '%s.input1' %sPlus)
-				cmds.connectAttr('%s.output' %sMultTwistEnd, '%s.input2' %sPlus)
-				cmds.connectAttr('%s.output' %sPlus, '%s.rx' %sTwist)
-
-			elif i == iTwistJntNum:
-				fWeight = 1
-				cmds.connectAttr(sTwistEndPlug, '%s.rx' %sTwist)
-			else:
-				fWeight = 0
-				cmds.connectAttr(sTwistStartPlug, '%s.rx' %sTwist)
-		return lTwsitJnts
-
 	def _getComponentInfo(self, sComponent):
+		self._sComponentMaster = sComponent
 		self._sComponentType = cmds.getAttr('%s.sComponentType' %sComponent)
 		self._sComponentSpace = cmds.getAttr('%s.sComponentSpace' %sComponent)
 		if not self._sComponentSpace:
@@ -298,43 +238,9 @@ class baseComponent(object):
 		if not self._sComponentPasser:
 			self._sComponentPasser = None
 		self._iJointCount = cmds.getAttr('%s.iJointCount' %sComponent)
+
 		sControlsString = cmds.getAttr('%s.sControls' %sComponent)
-		if sControlsString:
-			self._lCtrls = sControlsString.split(',')
-		else:
-			self._lCtrls = None
+		self._lCtrls = componentInfo.decomposeStringToStrList(sControlsString)
+
 		sBindJointsString = cmds.getAttr('%s.sBindJoints' %sComponent)
-		if sBindJointsString:
-			self._lBindJoints = sBindJointsString.split(',')
-		else:
-			self._lBindJoints = None
-
-	def _writeOutputMatrixInfo(self, lJnts):
-
-		sMultMatrixWorldParent = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorldParent' %self._sName).sName)					
-		cmds.connectAttr('%s.matrix' %self._sComponentSpace, '%s.matrixIn[0]' %sMultMatrixWorldParent)
-		cmds.connectAttr('%s.matrix' %self._sComponentPasser, '%s.matrixIn[1]' %sMultMatrixWorldParent)
-		cmds.connectAttr('%s.inputMatrix' %self._sComponentMaster, '%s.matrixIn[2]' %sMultMatrixWorldParent)
-		sMultMatrixWorldParent = '%s.matrixSum' %sMultMatrixWorldParent
-
-		sMultMatrixLocalParent = None
-		for i, sJnt in enumerate(lJnts):
-			cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixLocal%03d' %i, at = 'matrix')
-			cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixWorld%03d' %i, at = 'matrix')
-			if sMultMatrixLocalParent:
-				sMultMatrixLocal = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixLocal' %self._sName, iIndex = i).sName)
-				cmds.connectAttr('%s.matrix' %sJnt, '%s.matrixIn[0]' %sMultMatrixLocal)
-				cmds.connectAttr(sMultMatrixLocalParent, '%s.matrixIn[1]' %sMultMatrixLocal)
-				cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.outputMatrixLocal%03d' %(self._sComponentMaster, i))
-				sMultMatrixWorld = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorld' %self._sName, iIndex = i).sName)
-				cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.matrixIn[0]' %sMultMatrixWorld)
-				cmds.connectAttr(sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
-				cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, i))
-				sMultMatrixLocalParent = '%s.matrixSum' %sMultMatrixLocal
-			else:
-				cmds.connectAttr('%s.matrix' %sJnt, '%s.outputMatrixLocal%03d' %(self._sComponentMaster, i))
-				sMultMatrixWorld = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorld' %self._sName, iIndex = i).sName)					
-				cmds.connectAttr('%s.matrix' %sJnt, '%s.matrixIn[0]' %sMultMatrixWorld)
-				cmds.connectAttr(sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
-				cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, i))
-				sMultMatrixLocalParent = '%s.matrix' %sJnt
+		self._lBindJoints = componentInfo.decomposeStringToStrList(sBindJointsString)

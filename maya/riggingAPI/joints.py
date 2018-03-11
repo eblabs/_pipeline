@@ -39,7 +39,7 @@ def getJointOrient(sJnt):
 	lJointOrient = []
 	for sAxis in ['X', 'Y', 'Z']:
 		fOrient = cmds.getAttr('%s.jointOrient%s' %(sJnt, sAxis))
-		lOrient.append(fOrient)
+		lJointOrient.append(fOrient)
 	return lJointOrient
 
 #------------ save & load joints functions -----------
