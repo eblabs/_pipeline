@@ -13,17 +13,15 @@ import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 import common.importer as importer
 
-import riggingAPI.rigComponents.baseComponent as baseComponent
+import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
 
-class baseMultiComponentsLimb(baseComponent.baseComponent):
+class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 	"""docstring for baseMultiComponentsLimb"""
 	def __init__(self, *args, **kwargs):
 		super(baseMultiComponentsLimb, self).__init__(*args, **kwargs)
 		if args:
 			self._getComponentInfo(args[0])
 		else:
-			self._lBpJnts = kwargs.get('lBpJnts', None)
-			self._bBind = kwargs.get('bBind', False)
 			self._lParts = kwargs.get('lParts', None)
 			self._sModulePath = kwargs.get('sModulePath', None)
 			self._sModuleName = kwargs.get('sModuleName', None)
@@ -74,6 +72,9 @@ class baseMultiComponentsLimb(baseComponent.baseComponent):
 				cmds.setAttr('%s.%s' %(oLimb._sComponentMaster, sAttr), '', lock = True, type = 'string')
 
 		## write component info
+		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, type = 'string', lock = False)
+		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, lock = False)
+		
 		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'baseMultiComponentsLimb', type = 'string', lock = True)
 		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, iJointCount, lock = True)
 		cmds.addAttr(self._sComponentMaster, ln = 'sModulePath', dt = 'string')

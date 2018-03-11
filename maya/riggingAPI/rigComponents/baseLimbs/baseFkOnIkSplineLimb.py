@@ -13,13 +13,11 @@ import namingAPI.naming as naming
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
-reload(apiUtils)
 import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 import riggingAPI.constraints as constraints
 
 import baseIkSplineSolverLimb
-reload(baseIkSplineSolverLimb)
 
 class baseFkOnIkSplineLimb(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
 	"""docstring for baseFkOnIkSplineLimb"""
@@ -306,13 +304,6 @@ class baseFkOnIkSplineLimb(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
 			cmds.connectAttr('%s.offsetCtrlVis' %sCtrl, '%s.v' %oCtrlOffset.sZero)
 
 		## write component info
-		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, lock = False)
-		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'baseFkOnIkSplineLimb', type = 'string', lock = True)
-
-		cmds.setAttr('%s.sControls' %self._sComponentMaster, lock = False)
-		sControlsString = ''
-		for sCtrl in lCtrlsName:
-			sControlsString += '%s,' %sCtrl
-		cmds.setAttr('%s.sControls' %self._sComponentMaster, sControlsString[:-1], type = 'string', lock = True)
-
+		self._writeGeneralComponentInfo('baseFkOnIkSplineLimb', self._lJnts, lCtrlsName, self._lBindJnts)
+		
 		self._getComponentInfo(self._sComponentMaster)

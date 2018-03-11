@@ -14,6 +14,7 @@ import riggingAPI.controls as controls
 import riggingAPI.constraints as constraints
 
 import riggingAPI.rigComponents.baseLimbs.baseFkChainLimb as baseFkChainLimb
+import riggingAPI.rigComponents.rigUtils.componentInfo as componentInfo
 
 class legFkModule(baseFkChainLimb.baseFkChainLimb):
 	"""docstring for legFkModule"""
@@ -32,9 +33,7 @@ class legFkModule(baseFkChainLimb.baseFkChainLimb):
 			lBindJnts = self._lBindJoints[:-1]
 			cmds.delete(sBindEnd)
 
-			sBindString = ''
-			for sBind in lBindJnts:
-				sBindString += '%s,' %sBind
+			sBindString = componentInfo.composeListToString(lBindJnts)
 			cmds.setAttr('%s.sBindJoints' %self._sComponentMaster, lock = False, type = 'string')
 			cmds.setAttr('%s.sBindJoints' %self._sComponentMaster, sBindString[:-1], type = 'string', lock = True)
 

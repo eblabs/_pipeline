@@ -12,19 +12,17 @@ import common.apiUtils as apiUtils
 import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 
-import riggingAPI.rigComponents.baseComponent as baseComponent
+import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
+## import rig utils
+import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
+import riggingAPI.rigComponents.rigUtils.addTwistJoints as addTwistJoints
 
-class baseIkSCsolverLimb(baseComponent.baseComponent):
+class baseIkSCsolverLimb(baseJointsLimb.baseJointsLimb):
 	"""docstring for baseIkSCsolverLimb"""
 	def __init__(self, *args, **kwargs):
 		super(baseIkSCsolverLimb, self).__init__(*args, **kwargs)
 		if args:
 			self._getComponentInfo(args[0])
-		else:
-			self._lBpJnts = kwargs.get('lBpJnts', None)
-			self._iStacks = kwargs.get('iStacks', 1)
-			self._lLockHideAttrs = kwargs.get('lLockHideAttrs', ['sx', 'sy', 'sz', 'v'])
-			self._bBind = kwargs.get('bBind', False)
 	
 	def createComponent(self):
 		super(baseIkSCsolverLimb, self).createComponent()
@@ -41,34 +39,14 @@ class baseIkSCsolverLimb(baseComponent.baseComponent):
 		sParent_jntLocal = sGrp_ikJnts
 		lJntsLocal = []
 
-		for i, sBpJnt in enumerate(self._lBpJnts):
-			## jnt
-			oJntName = naming.oName(sBpJnt)
-			oJntName.sType = 'jnt'
-			oJntName.sPart = '%sIkSC' %oJntName.sPart
-			sJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sParent_jnt)
-			sParent_jnt = sJnt
-			lJnts.append(sJnt)
+		lJntsLocal, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = sGrp_ikJnts, sSuffix = 'IkSCLocal', bBind = False)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'IkSC', bBind = self._bBind, sBindParent = self._sComponentBindJoints)
 
-			sJntLocal = joints.createJntOnExistingNode(sJnt, 'IkSC', 'IkSCLocal', sParent = sParent_jntLocal)
-			sParent_jntLocal = sJntLocal
-			lJntsLocal.append(sJntLocal)
+		for i, sJnt in enumerate(self._lJntsLocal):
 			for sAxis in ['X', 'Y', 'Z']:
-				cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(sJnt, sAxis))
-				cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(sJnt, sAxis))
-				cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(sJnt, sAxis))
-
-			## bind jnt
-			if self._bBind:
-				oJntNameBind = naming.oName(sBpJnt)
-				oJntNameBind.sType = 'bindJoint'
-				sBindJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntNameBind.sName, sParent = sParent_bind)
-				sParent_bind = sBindJnt
-				lBindJnts.append(sBindJnt)
-				for sAxis in ['X', 'Y', 'Z']:
-					cmds.connectAttr('%s.translate%s' %(sJnt, sAxis), '%s.translate%s' %(sBindJnt, sAxis))
-					cmds.connectAttr('%s.rotate%s' %(sJnt, sAxis), '%s.rotate%s' %(sBindJnt, sAxis))
-					cmds.connectAttr('%s.scale%s' %(sJnt, sAxis), '%s.scale%s' %(sBindJnt, sAxis))
+				cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(lJnts[i], sAxis))
+				cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(lJnts[i], sAxis))
+				cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(lJnts[i], sAxis))
 
 		## ik handles
 		sIkHnd = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sSCsolver' %self._sName, iIndex = self._iIndex).sName
@@ -97,20 +75,13 @@ class baseIkSCsolverLimb(baseComponent.baseComponent):
 		self._lJntslocal = lJntsLocal
 
 		## write component info
-		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'baseIkSCsolcerLimb', type = 'string', lock = True)
-		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, len(lJnts), lock = True)
-		sControlsString = ''
-		for sCtrl in lCtrls:
-			sControlsString += '%s,' %sCtrl
-		cmds.setAttr('%s.sControls' %self._sComponentMaster, sControlsString[:-1], type = 'string', lock = True)
-		if self._bBind:
-			sBindString = ''
-			for sBind in lBindJnts:
-				sBindString += '%s,' %sBind
-			cmds.setAttr('%s.sBindJoints' %self._sComponentMaster, sBindString[:-1], type = 'string', lock = True)
+		self._writeGeneralComponentInfo('baseIkSCsolcerLimb', lJnts, lCtrls, lBindJnts)
 
 		## output matrix
 		if self._bInfo:
-			self._writeOutputMatrixInfo(lJnts, bHierarchy = True)
+			self._writeOutputMatrixInfo(lJnts)
+
+		## add twist joints
+		addTwistJoints.twistJointsForLimb(self._iTwistJntNum, self._lSkipTwist, lJnts, self._lBpJnts, bBind = self._bBind, sNode = self._sComponentMaster, bInfo = self._bInfo)
 
 		self._getComponentInfo(self._sComponentMaster)

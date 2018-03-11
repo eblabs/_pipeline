@@ -22,6 +22,8 @@ class baseFkChainLimb(baseJointsLimb.baseJointsLimb):
 	"""docstring for baseFkChainLimb"""
 	def __init__(self, *args, **kwargs):
 		super(baseFkChainLimb, self).__init__(*args, **kwargs)
+		if args:
+			self._getComponentInfo(args[0])
 
 	def createComponent(self):
 		super(baseFkChainLimb, self).createComponent()

@@ -17,16 +17,17 @@ import riggingAPI.controls as controls
 import modelingAPI.curves as curves
 import riggingAPI.constraints as constraints
 
-import riggingAPI.rigComponents.baseComponent as baseComponent
-class baseComponentsBlendLimb(baseComponent.baseComponent):
+import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
+## import rig utils
+import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
+
+class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 	"""docstring for baseComponentsBlendLimb"""
 	def __init__(self, *args, **kwargs):
 		super(baseComponentsBlendLimb, self).__init__(*args, **kwargs)
 		if args:
 			self._getComponentInfo(args[0])
 		else:
-			self._lBpJnts = kwargs.get('lBpJnts', None)
-			self._bBind = kwargs.get('bBind', False)
 			self._dComponents = kwargs.get('dComponents', {})
 
 			## dComponents example
@@ -42,32 +43,9 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 	def createComponent(self):
 		super(baseComponentsBlendLimb, self).createComponent()
 
-		sParent_jnt = self._sComponentDrvJoints
-		sParent_bind = self._sComponentBindJoints
-		lJnts = []
-		lBindJnts = []
-
 		cmds.setAttr('%s.subComponents' %self._sComponentMaster, 1)
 
-		for i, sBpJnt in enumerate(self._lBpJnts):
-			## jnt
-			oJntName = naming.oName(sBpJnt)
-			oJntName.sType = 'jnt'
-			sJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sParent_jnt)
-			sParent_jnt = sJnt
-			lJnts.append(sJnt)
-
-			## bind jnt
-			if self._bBind:
-				oJntNameBind = naming.oName(sBpJnt)
-				oJntNameBind.sType = 'bindJoint'
-				sBindJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntNameBind.sName, sParent = sParent_bind)
-				sParent_bind = sBindJnt
-				lBindJnts.append(sBindJnt)
-				for sAxis in ['X', 'Y', 'Z']:
-					cmds.connectAttr('%s.translate%s' %(sJnt, sAxis), '%s.translate%s' %(sBindJnt, sAxis))
-					cmds.connectAttr('%s.rotate%s' %(sJnt, sAxis), '%s.rotate%s' %(sBindJnt, sAxis))
-					cmds.connectAttr('%s.scale%s' %(sJnt, sAxis), '%s.scale%s' %(sBindJnt, sAxis))
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = '', bBind = self._bBind, sBindParent = self._sComponentBindJoints)
 
 		## create temp controller
 		sCrv = cmds.curve(p=[[0,0,0], [1,0,0]], k=[0,1], d=1, per = False, name = 'TEMP_CRV')
@@ -136,7 +114,7 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 			sModulePath = self._dComponents[sKey]['sModulePath']
 			sModuleName = self._dComponents[sKey]['sModuleName']
 			dKwargs = self._dComponents[sKey]['dKwargs']
-			dKwargs.update({'bInfo': False, 'lBpJnts': self._lBpJnts, 'sParent': self._sComponentSubComponents, 'sName': '%s%s%s' %(self._sName, sKey[0].upper(), sKey[1:]), 'sSide': self._sSide, 'iIndex': self._iIndex})
+			dKwargs.update({'bInfo': False, 'lBpJnts': self._lBpJnts, 'sParent': self._sComponentSubComponents, 'sName': '%s%s%s' %(self._sName, sKey[0].upper(), sKey[1:]), 'sSide': self._sSide, 'iIndex': self._iIndex}, 'iTwistJntNum': 0)
 
 			oModule = importer.importModule(sModulePath)
 			oLimb = getattr(oModule, sModuleName)(**dKwargs)
@@ -170,14 +148,7 @@ class baseComponentsBlendLimb(baseComponent.baseComponent):
 		cmds.delete(sCrv)
 
 		## write component info
-		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'baseComponentsBlendLimb', type = 'string', lock = True)
-		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, len(lJnts), lock = True)
-		cmds.setAttr('%s.sControls' %self._sComponentMaster, sCtrlShape, type = 'string', lock = True)
-		if self._bBind:
-			sBindString = ''
-			for sBind in lBindJnts:
-				sBindString += '%s,' %sBind
-			cmds.setAttr('%s.sBindJoints' %self._sComponentMaster, sBindString[:-1], type = 'string', lock = True)
+		self._writeGeneralComponentInfo('baseComponentsBlendLimb', lJnts, [sCtrlShape], lBindJnts)
 		cmds.addAttr(self._sComponentMaster, ln = 'dModuleInfo', dt = 'string')
 		cmds.setAttr('%s.dModuleInfo' %self._sComponentMaster, str(dModuleInfo), type = 'string', lock = True)
 		## output matrix

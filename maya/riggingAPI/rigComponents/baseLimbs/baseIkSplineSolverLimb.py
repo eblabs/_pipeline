@@ -11,21 +11,19 @@ import common.attributes as attributes
 import common.apiUtils as apiUtils
 import riggingAPI.joints as joints
 import riggingAPI.controls as controls
-reload(controls)
 import modelingAPI.curves as curves
 
-import riggingAPI.rigComponents.baseComponent as baseComponent
-reload(baseComponent)
-class baseIkSplineSolverLimb(baseComponent.baseComponent):
+import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
+## import rig utils
+import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
+
+class baseIkSplineSolverLimb(baseJointsLimb.baseJointsLimb):
 	"""docstring for baseIkSplineSolverLimb"""
 	def __init__(self, *args, **kwargs):
 		super(baseIkSplineSolverLimb, self).__init__(*args, **kwargs)
 		if args:
 			self._getComponentInfo(args[0])
 		else:
-			self._lBpJnts = kwargs.get('lBpJnts', None)
-			self._iStacks = kwargs.get('iStacks', 1)
-			self._bBind = kwargs.get('bBind', False)
 			self._sCrv = kwargs.get('sCrv', None)
 			
 
@@ -36,17 +34,7 @@ class baseIkSplineSolverLimb(baseComponent.baseComponent):
 		lJntsLocal = []
 		lJntsBindName = []
 
-		for i, sBpJnt in enumerate(self._lBpJnts):
-			## jnt
-			oJntName = naming.oName(sBpJnt)
-			oJntName.sType = 'jnt'
-			oJntName.sPart = '%sIkSplineLocal' %oJntName.sPart
-			sJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sParent_jntLocal)
-			sParent_jntLocal = sJnt
-			lJntsLocal.append(sJnt)
-			oJntNameBind = naming.oName(sBpJnt)
-			oJntName.sType = 'bindJoint'
-			lJntsBindName.append(oJntName.sName)
+		lJntsLocal, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentRigNodesWorld, sSuffix = 'IkSplineLocal', bBind = False, sBindParent = None)
 
 		## generate curve
 		if not self._sCrv:
@@ -64,30 +52,13 @@ class baseIkSplineSolverLimb(baseComponent.baseComponent):
 		cmds.makeIdentity(lJntsLocal[0], apply = True, t = 1, r = 1, s = 1)
 
 		## spline joint and bind jnt
-		sParent_jnt = self._sComponentDrvJoints
-		sParent_bind = self._sComponentBindJoints
-		lJnts = []
-		lBindJnts = []
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(lJntsLocal, sParent = self._sComponentDrvJoints, sSuffix = '', sRemove = 'Local', bBind = self._bBind, sBindParent = self._sComponentBindJoints, lBindNameOverride = self._lBpJnts)
 
 		for i, sJntLocal in enumerate(lJntsLocal):
-			oJntName = naming.oName(sJntLocal)
-			oJntName.sPart = oJntName.sPart.replace('Local', '')
-			sJnt = joints.createJntOnExistingNode(sJntLocal, sJntLocal, oJntName.sName, sParent = sParent_jnt)
-			sParent_jnt = sJnt
-			lJnts.append(sJnt)
 			for sAxis in ['X', 'Y', 'Z']:
-				cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(sJnt, sAxis))
-				cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(sJnt, sAxis))
-				cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(sJnt, sAxis))
-			if self._bBind:
-				sBindJnt = joints.createJntOnExistingNode(sJntLocal, sJntLocal, lJntsBindName[i], sParent = sParent_bind)
-				sParent_bind = sBindJnt
-				lBindJnts.append(sBindJnt)
-				for sAxis in ['X', 'Y', 'Z']:
-					cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(sBindJnt, sAxis))
-					cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(sBindJnt, sAxis))
-					cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(sBindJnt, sAxis))
-
+				cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(lJnts[i], sAxis))
+				cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(lJnts[i], sAxis))
+				cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(lJnts[i], sAxis))
 		## rig setup
 		cmds.parent(sCurve, lClsHnds, sIkHnd, self._sComponentRigNodesWorld)
 
@@ -107,21 +78,10 @@ class baseIkSplineSolverLimb(baseComponent.baseComponent):
 		self._sIkHnd = sIkHnd
 
 		## write component info
-		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'baseIkSplineSolverLimb', type = 'string', lock = True)
-		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, len(lJnts), lock = True)
-		sControlsString = ''
-		for sCtrl in lCtrls:
-			sControlsString += '%s,' %sCtrl
-		cmds.setAttr('%s.sControls' %self._sComponentMaster, sControlsString[:-1], type = 'string', lock = True)
-		if self._bBind:
-			sBindString = ''
-			for sBind in lBindJnts:
-				sBindString += '%s,' %sBind
-			cmds.setAttr('%s.sBindJoints' %self._sComponentMaster, sBindString[:-1], type = 'string', lock = True)
-
+		self._writeGeneralComponentInfo('baseIkSplineSolverLimb', lJnts, lCtrls, lBindJnts)
 		## output matrix
 		if self._bInfo:
-			self._writeOutputMatrixInfo(lJnts, bHierarchy = True)
+			self._writeOutputMatrixInfo(lJnts)
 
 		self._getComponentInfo(self._sComponentMaster)
 

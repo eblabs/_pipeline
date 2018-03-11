@@ -35,6 +35,14 @@ class baseJointsLimb(baseComponent.baseComponent):
 			self._lSkipTwist = kwargs.get('lSkipTwist', [])
 
 	@property
+	def iJointCount(self):
+		return self._iJointCount
+
+	@property
+	def lBindJoints(self):
+		return self._lBindJoints
+
+	@property
 	def iTwistJointCount(self):
 		return self._iTwistJntNum
 
@@ -45,6 +53,16 @@ class baseJointsLimb(baseComponent.baseComponent):
 	@property
 	def lTwistSections(self):
 		return self._lTwistSections
+
+	def createComponent(self):
+		super(baseJointsLimb, self).createComponent()
+
+		cmds.addAttr(sComponentMaster, ln = 'iJointCount', at = 'long')
+		cmds.addAttr(sComponentMaster, ln = 'sControls', dt = 'string')
+		cmds.addAttr(sComponentMaster, ln = 'sBindJoints', dt = 'string')
+		cmds.addAttr(sComponentMaster, ln = 'sTwistSections', dt = 'string')
+		cmds.addAttr(sComponentMaster, ln = 'iTwistJointCount', at = 'long')
+		cmds.addAttr(sComponentMaster, ln = 'sTwistBindJoints', dt = 'string')
 
 	def _writeGeneralComponentInfo(self, sComponentType, lJnts, lCtrls, lBindJnts):
 		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, lock = False, type = 'string')
@@ -68,6 +86,7 @@ class baseJointsLimb(baseComponent.baseComponent):
 		cmds.connectAttr('%s.matrix' %self._sComponentPasser, '%s.matrixIn[1]' %sMultMatrixWorldParent)
 		cmds.connectAttr('%s.inputMatrix' %self._sComponentMaster, '%s.matrixIn[2]' %sMultMatrixWorldParent)
 		sMultMatrixWorldParent = '%s.matrixSum' %sMultMatrixWorldParent
+		self._sMultMatrixWorldParent = sMultMatrixWorldParent
 
 		sMultMatrixLocalParent = None
 		for i, sJnt in enumerate(lJnts):
@@ -94,6 +113,13 @@ class baseJointsLimb(baseComponent.baseComponent):
 	def _getComponentInfo(self, sComponent):
 		super(baseJointsLimb, self)._getComponentInfo(sComponent)
 
+		self._iJointCount = cmds.getAttr('%s.iJointCount' %sComponent)
+		self._addAttribute('jointMatrixLocalPlug', lList = None, sValueName = self._sComponentMaster, sValueSuffix = '.outputMatrixLocal', iAttrs = self._iJointCount)
+		self._addAttribute('jointMatrixWorldPlug', lList = None, sValueName = self._sComponentMaster, sValueSuffix = '.outputMatrixWorld', iAttrs = self._iJointCount)
+
+		sBindJointsString = cmds.getAttr('%s.sBindJoints' %sComponent)
+		self._lBindJoints = componentInfo.decomposeStringToStrList(sBindJointsString)
+
 		self._iTwistJntNum = cmds.getAttr('%s.iTwistJointCount' %sComponent)
 		
 		sTwistBindJoints = cmds.getAttr('%s.sTwistBindJoints' %sComponent)
@@ -101,3 +127,8 @@ class baseJointsLimb(baseComponent.baseComponent):
 
 		sTwistSections = cmds.getAttr('%s.sTwistSections' %sComponent)
 		self._lTwistSections = componentInfo.decomposeStringToIntList(sTwistSections)
+
+		for iTwistSection in self._lTwistSections:
+			self._addAttribute('twist%03dMatrixLocalPlug' %iTwistSection, lList = None, sValueName = self._sComponentMaster, sValueSuffix = '.output%03dTwistMatrixLocal' %iTwistSection, iAttrs = self._iTwistJntNum)
+			self._addAttribute('twist%03dMatrixWorldPlug' %iTwistSection, lList = None, sValueName = self._sComponentMaster, sValueSuffix = '.output%03dTwistMatrixWorld' %iTwistSection, iAttrs = self._iTwistJntNum)
+

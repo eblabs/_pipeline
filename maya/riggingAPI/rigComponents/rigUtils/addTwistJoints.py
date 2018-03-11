@@ -44,12 +44,12 @@ def _writeTwistJointsMatrixInfo(lTwistJnts, iSection, sNode = None):
 		cmds.connectAttr('%s.outputMatrixWorld%03d' %(sNode, iSection), '%s.matrixIn[1]' %sMultMatrixWorld)
 
 		#### add attr
-		cmds.addAttr(sNode, ln = 'output%03dTwist%02dMatrixLocal' %(iSection, i), at = 'matrix')
-		cmds.addAttr(sNode, ln = 'output%03dTwist%02dMatrixWorld' %(iSection, i), at = 'matrix')
+		cmds.addAttr(sNode, ln = 'output%03dTwistMatrixLocal%03d' %(iSection, i), at = 'matrix')
+		cmds.addAttr(sNode, ln = 'output%03dTwistMatrixWorld%03d' %(iSection, i), at = 'matrix')
 
 		#### connect attr
-		cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.output%03dTwist%02dMatrixLocal' %(sNode, iSection, i))
-		cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.output%03dTwist%02dMatrixWorld' %(sNode, iSection, i))
+		cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.output%03dTwistMatrixLocal%03d' %(sNode, iSection, i))
+		cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.output%03dTwistMatrixWorld%03d' %(sNode, iSection, i))
 
 def _addTwistJointsForSection(sJntStart, sJntEnd, sBpJnt, iTwistJntNum, bBind = False):
 	## naming info
@@ -66,7 +66,7 @@ def _addTwistJointsForSection(sJntStart, sJntEnd, sBpJnt, iTwistJntNum, bBind = 
 		## create twist joint
 		oJntName = naming.oName(sBpJnt)
 		oJntName.sType = 'joint'
-		oJntName.sPart = '%sTwist%02d' %(oJntName.sPart, i)
+		oJntName.sPart = '%sTwist%03d' %(oJntName.sPart, i)
 		sTwist = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sJntStart)
 		lTwistJnts.append(sTwist)
 

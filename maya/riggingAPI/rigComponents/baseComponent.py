@@ -46,16 +46,8 @@ class baseComponent(object):
 		return self._sComponentSpace
 
 	@property
-	def iJointCount(self):
-		return self._iJointCount
-
-	@property
 	def lControls(self):
 		return self._lCtrls
-
-	@property
-	def lBindJoints(self):
-		return self._lBindJoints
 
 
 	def createComponent(self):
@@ -209,12 +201,7 @@ class baseComponent(object):
 		cmds.setAttr('%s.sComponentSpace' %sComponentMaster, sComponentSpace, type = 'string', lock = True)
 		cmds.addAttr(sComponentMaster, ln = 'sComponentPasser', dt = 'string')
 		cmds.setAttr('%s.sComponentPasser' %sComponentMaster, sComponentPasser, type = 'string', lock = True)
-		cmds.addAttr(sComponentMaster, ln = 'iJointCount', at = 'long')
-		cmds.addAttr(sComponentMaster, ln = 'sControls', dt = 'string')
-		cmds.addAttr(sComponentMaster, ln = 'sBindJoints', dt = 'string')
-		cmds.addAttr(sComponentMaster, ln = 'sTwistSections', dt = 'string')
-		cmds.addAttr(sComponentMaster, ln = 'iTwistJointCount', at = 'long')
-		cmds.addAttr(sComponentMaster, ln = 'sTwistBindJoints', dt = 'string')
+		
 
 		## connect component
 		if self._sConnectIn:
@@ -237,10 +224,26 @@ class baseComponent(object):
 		self._sComponentPasser = cmds.getAttr('%s.sComponentPasser' %sComponent)
 		if not self._sComponentPasser:
 			self._sComponentPasser = None
-		self._iJointCount = cmds.getAttr('%s.iJointCount' %sComponent)
 
 		sControlsString = cmds.getAttr('%s.sControls' %sComponent)
 		self._lCtrls = componentInfo.decomposeStringToStrList(sControlsString)
+		self._addAttribute('sCtrl', lList = self._lCtrls)
 
-		sBindJointsString = cmds.getAttr('%s.sBindJoints' %sComponent)
-		self._lBindJoints = componentInfo.decomposeStringToStrList(sBindJointsString)
+	def _addAttribute(self, sAttrName, lList = None, sValueName = '', sValueSuffix = '', iAttrs = 0):
+		if lList:
+			dAttrs = self._generateAttrDict(sAttrName, lList = lList, sValueSuffix = sValueSuffix)
+			self._addAttributeFromDict(dAttrs)
+
+	def _addAttributeFromDict(self, dAttrs):
+		for key, value in dAttrs.items():
+			setattr(self, key, value)
+
+	def _generateAttrDict(self, sAttrName, lList = None, sValueName = '', sValueSuffix = '', iAttrs = 0):
+		dAttrs = {}
+		if lList:
+			for i, sItem in enumerate(lList):
+				dAttrs.update({'%s%03d' %(sAttrName, i): '%s%s' %(sItem, sValueSuffix)})
+		else:
+			for i in range(iAttrs):
+				dAttrs.update({'%s%03d' %(sAttrName, i): '%s%s%03d' %(sValueName, sValueSuffix, i)})
+		return dAttrs
