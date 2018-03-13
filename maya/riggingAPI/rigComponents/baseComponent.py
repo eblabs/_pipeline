@@ -14,6 +14,7 @@ import common.apiUtils as apiUtils
 import riggingAPI.constraints as constraints
 import riggingAPI.joints as joints
 import riggingAPI.rigComponents.rigUtils.componentInfo as componentInfo
+import riggingAPI.rigComponents.rigUtils.addObjAttrs as addObjAttrs
 ## base component class
 class baseComponent(object):
 	"""docstring for baseComponent"""
@@ -227,23 +228,22 @@ class baseComponent(object):
 
 		sControlsString = cmds.getAttr('%s.sControls' %sComponent)
 		self._lCtrls = componentInfo.decomposeStringToStrList(sControlsString)
-		self._addAttribute('sCtrl', lList = self._lCtrls)
+		self._addAttributeFromList('sCtrl', self._lCtrls)
 
-	def _addAttribute(self, sAttrName, lList = None, sValueName = '', sValueSuffix = '', iAttrs = 0):
+	def _addAttributeFromList(self, sAttrName, lList):
 		if lList:
-			dAttrs = self._generateAttrDict(sAttrName, lList = lList, sValueSuffix = sValueSuffix)
+			dAttrs = self._generateAttrDict(sAttrName, lList)
 			self._addAttributeFromDict(dAttrs)
 
 	def _addAttributeFromDict(self, dAttrs):
 		for key, value in dAttrs.items():
 			setattr(self, key, value)
 
-	def _generateAttrDict(self, sAttrName, lList = None, sValueName = '', sValueSuffix = '', iAttrs = 0):
+	def _generateAttrDict(self, sAttrName, lList):
 		dAttrs = {}
-		if lList:
-			for i, sItem in enumerate(lList):
-				dAttrs.update({'%s%03d' %(sAttrName, i): '%s%s' %(sItem, sValueSuffix)})
-		else:
-			for i in range(iAttrs):
-				dAttrs.update({'%s%03d' %(sAttrName, i): '%s%s%03d' %(sValueName, sValueSuffix, i)})
+		for i, sItem in enumerate(lList):
+			dAttrs.update({'%s%03d' %(sAttrName, i): sItem})
 		return dAttrs
+
+	def _addObjAttr(self, sAttrName, dAttrs):
+		setattr(self, sAttrName, addObjAttrs.objectview(dAttrs))

@@ -46,14 +46,6 @@ class baseJointsLimb(baseComponent.baseComponent):
 	def iTwistJointCount(self):
 		return self._iTwistJntNum
 
-	@property
-	def lTwistBindJoints(self):
-		return self._lTwistBindJnts
-
-	@property
-	def lTwistSections(self):
-		return self._lTwistSections
-
 	def createComponent(self):
 		super(baseJointsLimb, self).createComponent()
 
@@ -114,8 +106,6 @@ class baseJointsLimb(baseComponent.baseComponent):
 		super(baseJointsLimb, self)._getComponentInfo(sComponent)
 
 		self._iJointCount = cmds.getAttr('%s.iJointCount' %sComponent)
-		self._addAttribute('jointMatrixLocalPlug', lList = None, sValueName = self._sComponentMaster, sValueSuffix = '.outputMatrixLocal', iAttrs = self._iJointCount)
-		self._addAttribute('jointMatrixWorldPlug', lList = None, sValueName = self._sComponentMaster, sValueSuffix = '.outputMatrixWorld', iAttrs = self._iJointCount)
 
 		sBindJointsString = cmds.getAttr('%s.sBindJoints' %sComponent)
 		self._lBindJoints = componentInfo.decomposeStringToStrList(sBindJointsString)
@@ -128,7 +118,24 @@ class baseJointsLimb(baseComponent.baseComponent):
 		sTwistSections = cmds.getAttr('%s.sTwistSections' %sComponent)
 		self._lTwistSections = componentInfo.decomposeStringToIntList(sTwistSections)
 
-		for iTwistSection in self._lTwistSections:
-			self._addAttribute('twist%03dMatrixLocalPlug' %iTwistSection, lList = None, sValueName = self._sComponentMaster, sValueSuffix = '.output%03dTwistMatrixLocal' %iTwistSection, iAttrs = self._iTwistJntNum)
-			self._addAttribute('twist%03dMatrixWorldPlug' %iTwistSection, lList = None, sValueName = self._sComponentMaster, sValueSuffix = '.output%03dTwistMatrixWorld' %iTwistSection, iAttrs = self._iTwistJntNum)
+		iSectionIndex = 0
+		for i in range(self._iJointCount):
+			dAttrs = {'localMatrixPlug': '%s.outputMatrixLocal%03d' %(self._sComponentMaster, i),
+					  'worldMatrixPlug': '%s.outputMatrixWorld%03d' %(self._sComponentMaster, i)}
 
+			if i < len(self._lBindJoints):
+				dAttrs.update({'bindJoint': self._lBindJoints[i]})
+
+			if i in sTwistSections:
+				lTwistOutputLocal = []
+				lTwistOutputWorld = []
+				lTwistBind = []
+				for iTwist in range(self._iTwistJntNum):
+					lTwistOutputLocal.append('%s.output%03dTwistMatrixLocal%03d' %(self._sComponentMaster, i, iTwist))
+					lTwistOutputWorld.append('%s.output%03dTwistMatrixWorld%03d' %(self._sComponentMaster, i, iTwist))
+					lTwistBind.append(self._lTwistBindJnts[iSectionIndex*(self._iTwistJntNum - 1) + iTwist])
+				dAttrs.update({'twistLocalMatrixPlug': lTwistOutputLocal, 
+							   'twistWorldMatrixPlug': lTwistOutputWorld,
+							   'twistBindJoint': lTwistBind})
+
+			self._addObjAttr('joint%03d' %i, dAttrs)
