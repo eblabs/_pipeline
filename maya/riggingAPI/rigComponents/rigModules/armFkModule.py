@@ -16,6 +16,14 @@ import riggingAPI.constraints as constraints
 import riggingAPI.rigComponents.baseLimbs.baseFkChainLimb as baseFkChainLimb
 import riggingAPI.rigComponents.rigUtils.componentInfo as componentInfo
 
+## kwarg class
+class kwargsGenerator(baseFkChainLimb.kwargsGenerator):
+	"""docstring for kwargsGenerator"""
+	def __init__(self):
+		super(kwargsGenerator, self).__init__()
+		self.dKwargs = {}
+		self.addKwargs()
+
 class armFkModule(baseFkChainLimb.baseFkChainLimb):
 	"""docstring for armFkModule"""
 	def __init__(self, *args, **kwargs):

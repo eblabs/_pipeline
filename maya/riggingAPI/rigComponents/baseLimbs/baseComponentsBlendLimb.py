@@ -21,6 +21,14 @@ import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
 ## import rig utils
 import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 
+## kwarg class
+class kwargsGenerator(baseJointsLimb.kwargsGenerator):
+	"""docstring for kwargsGenerator"""
+	def __init__(self):
+		super(kwargsGenerator, self).__init__()
+		self.dKwargs = {'dComponents': {}}
+		self.addKwargs()
+
 class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 	"""docstring for baseComponentsBlendLimb"""
 	def __init__(self, *args, **kwargs):
@@ -45,7 +53,7 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 
 		cmds.setAttr('%s.subComponents' %self._sComponentMaster, 1)
 
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = '', bBind = self._bBind, sBindParent = self._sComponentBindJoints)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = '', bBind = self._bBind, sBindParent = self._sBindParent)
 
 		## create temp controller
 		sCrv = cmds.curve(p=[[0,0,0], [1,0,0]], k=[0,1], d=1, per = False, name = 'TEMP_CRV')

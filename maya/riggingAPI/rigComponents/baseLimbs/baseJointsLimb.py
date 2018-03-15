@@ -20,6 +20,21 @@ import riggingAPI.rigComponents.rigUtils.componentInfo as componentInfo
 import riggingAPI.rigComponents.baseComponent as baseComponent
 reload(baseComponent)
 
+## kwarg class
+class kwargsGenerator(baseComponent.kwargsGenerator):
+	"""docstring for kwargsGenerator"""
+	def __init__(self):
+		super(kwargsGenerator, self).__init__()
+		self.dKwargs = {'lBpJnts': None,
+						'iStacks': 1,
+						'lLockHideAttrs': ['tx', 'ty', 'tz', 'sx', 'sy', 'sz', 'v'],
+						'bBind': False,
+						'iTwistJntNum': 0,
+						'lSkipTwist': [],
+						'sBindParent': None,
+							}
+		self.addKwargs()
+
 class baseJointsLimb(baseComponent.baseComponent):
 	"""docstring for baseJointsLimb"""
 	def __init__(self, arg):
@@ -33,6 +48,7 @@ class baseJointsLimb(baseComponent.baseComponent):
 			self._bBind = kwargs.get('bBind', False)
 			self._iTwistJntNum = kwargs.get('iTwistJntNum', 0)
 			self._lSkipTwist = kwargs.get('lSkipTwist', [])
+			self._sBindParent = kwargs.get('sBindParent', None)
 
 	@property
 	def iJointCount(self):
@@ -49,12 +65,81 @@ class baseJointsLimb(baseComponent.baseComponent):
 	def createComponent(self):
 		super(baseJointsLimb, self).createComponent()
 
-		cmds.addAttr(sComponentMaster, ln = 'iJointCount', at = 'long')
-		cmds.addAttr(sComponentMaster, ln = 'sControls', dt = 'string')
-		cmds.addAttr(sComponentMaster, ln = 'sBindJoints', dt = 'string')
-		cmds.addAttr(sComponentMaster, ln = 'sTwistSections', dt = 'string')
-		cmds.addAttr(sComponentMaster, ln = 'iTwistJointCount', at = 'long')
-		cmds.addAttr(sComponentMaster, ln = 'sTwistBindJoints', dt = 'string')
+		### inherits local group
+		sComponentInheritsLocal = naming.oName(sType = 'inherits', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
+		transforms.createTransformNode(sComponentInheritsLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentOffset, bInheritsTransform = False)
+
+		### xform local group
+		sComponentXformLocal = naming.oName(sType = 'xform', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
+		transforms.createTransformNode(sComponentXformLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentInheritsLocal)
+		attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = self._sComponentXform, sDriven = sComponentXformLocal, bForce = True)
+
+		### passer local group
+		sComponentPasserLocal = naming.oName(sType = 'passer', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
+		transforms.createTransformNode(sComponentPasserLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentXformLocal)
+		attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = self._sComponentPasser, sDriven = sComponentPasserLocal, bForce = True)
+
+		### space local group
+		sComponentSpaceLocal = naming.oName(sType = 'space', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
+		transforms.createTransformNode(sComponentSpaceLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentPasserLocal)
+		attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = self._sComponentSpace, sDriven = sComponentSpaceLocal, bForce = True)
+		
+
+		## joints group
+		sComponentJoints = naming.oName(sType = 'joints', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
+		transforms.createTransformNode(sComponentJoints, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentSpaceLocal)
+				
+		### drive joints group
+		sComponentDrvJoints = naming.oName(sType = 'drvJoints', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
+		transforms.createTransformNode(sComponentDrvJoints, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentJoints)
+
+		### bind joints group
+		# sComponentBindJoints = naming.oName(sType = 'bindJoints', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
+		# transforms.createTransformNode(sComponentBindJoints, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentJoints)
+
+		# visibility switch
+		### joints
+		cmds.addAttr(self._sComponentMaster, ln = 'joints', at = 'enum', enumName = 'on:off:tempelate:reference', keyable = False, dv = 1)
+		cmds.setAttr('%s.joints' %self._sComponentMaster, channelBox = True)
+		### bind joints vis
+		# cmds.addAttr(self._sComponentMaster, ln = 'bindJoints', at = 'long', min = 0, max = 1, keyable = False, dv = 1)
+		# cmds.setAttr('%s.bindJoints' %self._sComponentMaster, channelBox = True)
+		### drive joints vis
+		cmds.addAttr(self._sComponentMaster, ln = 'drvJoints', at = 'long', min = 0, max = 1, keyable = False, dv = 0)
+		cmds.setAttr('%s.drvJoints' %self._sComponentMaster, channelBox = True)
+
+		### move/deform geo
+		cmds.addAttr(self._sComponentMaster, ln = 'localize', at = 'long', min = 0, max = 1, keyable = False, dv = 0)
+		cmds.setAttr('%s.localize' %self._sComponentMaster, channelBox = True)
+		sRvs = cmds.createNode('reverse', naming.oName(sType = 'reverse', sSide = self._sSide, sPart = '%sLocalize' %self._sName, iIndex = self._iIndex).sName)
+		cmds.connectAttr('%s.localize' %self._sComponentMaster, '%s.inputX' %sRvs)
+		cmds.connectAttr('%s.outputX' %sRvs, '%s.inheritsTransform' %sComponentInheritsLocal)
+
+		cmds.addAttr(self._sComponentMaster, ln = 'iJointCount', at = 'long')
+		cmds.addAttr(self._sComponentMaster, ln = 'sControls', dt = 'string')
+		#cmds.addAttr(self._sComponentMaster, ln = 'sBindJoints', dt = 'string')
+		cmds.addAttr(self._sComponentMaster, ln = 'sTwistSections', dt = 'string')
+		cmds.addAttr(self._sComponentMaster, ln = 'iTwistJointCount', at = 'long')
+		cmds.addAttr(self._sComponentMaster, ln = 'sTwistBindJoints', dt = 'string')
+
+		### connect attrs
+		sConditionJointsVis = naming.oName(sType = 'condition', sSide = self._sSide, sPart = '%sJointVis' %self._sName, iIndex = self._iIndex).sName
+		cmds.createNode('condition', name = sConditionJointsVis)
+		cmds.connectAttr('%s.joints' %self._sComponentMaster, '%s.firstTerm' %sConditionJointsVis)
+		cmds.setAttr('%s.secondTerm' %sConditionJointsVis, 1)
+		cmds.setAttr('%s.colorIfTrueR' %sConditionJointsVis, 0)
+		cmds.setAttr('%s.colorIfFalseR' %sConditionJointsVis, 1)
+		attributes.connectAttrs(['%s.outColorR' %sConditionJointsVis], ['%s.v' %sComponentJoints], bForce = True)
+		cmds.setAttr('%s.overrideEnabled' %sComponentJoints, 1)
+		attributes.enumToSingleAttrs('joints', ['%s.overrideDisplayType' %sComponentJoints], iEnumRange = 4, lValRange = [[0,0],[0,0],[0,1],[0,2]], sEnumObj = self._sComponentMaster)
+
+		#attributes.connectAttrs(['%s.bindJoints' %self._sComponentMaster], ['%s.v' %sComponentBindJoints], bForce = True)
+		attributes.connectAttrs(['%s.drvJoints' %self._sComponentMaster], ['%s.v' %sComponentDrvJoints], bForce = True)
+
+		self._sComponentJoints = sComponentJoints
+		self._sComponentDrvJoints = sComponentDrvJoints
+		#self._sComponentBindJoints = sComponentBindJoints
+
 
 	def _writeGeneralComponentInfo(self, sComponentType, lJnts, lCtrls, lBindJnts):
 		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, lock = False, type = 'string')

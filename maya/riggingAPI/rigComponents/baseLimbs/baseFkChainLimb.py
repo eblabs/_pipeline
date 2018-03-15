@@ -18,6 +18,14 @@ import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
 import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 import riggingAPI.rigComponents.rigUtils.addTwistJoints as addTwistJoints
 
+## kwarg class
+class kwargsGenerator(baseJointsLimb.kwargsGenerator):
+	"""docstring for kwargsGenerator"""
+	def __init__(self):
+		super(kwargsGenerator, self).__init__()
+		self.dKwargs = {}
+		self.addKwargs()
+
 class baseFkChainLimb(baseJointsLimb.baseJointsLimb):
 	"""docstring for baseFkChainLimb"""
 	def __init__(self, *args, **kwargs):
@@ -28,7 +36,7 @@ class baseFkChainLimb(baseJointsLimb.baseJointsLimb):
 	def createComponent(self):
 		super(baseFkChainLimb, self).createComponent()
 
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'Fk', bBind = self._bBind, sBindParent = self._sComponentBindJoints)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'Fk', bBind = self._bBind, sBindParent = self._sBindParent)
 
 		## controls
 		sParent_ctrl = self._sComponentControls

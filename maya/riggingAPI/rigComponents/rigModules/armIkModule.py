@@ -16,6 +16,14 @@ import riggingAPI.constraints as constraints
 import riggingAPI.rigComponents.baseComponent as baseComponent
 import riggingAPI.rigComponents.baseLimbs.baseIkRPsolverLimb as baseIkRPsolverLimb
 
+## kwarg class
+class kwargsGenerator(baseIkRPsolverLimb.kwargsGenerator):
+	"""docstring for kwargsGenerator"""
+	def __init__(self):
+		super(kwargsGenerator, self).__init__()
+		self.dKwargs = {}
+		self.addKwargs()
+
 class armIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 	"""docstring for armIkModule"""
 	def __init__(self, *args, **kwargs):

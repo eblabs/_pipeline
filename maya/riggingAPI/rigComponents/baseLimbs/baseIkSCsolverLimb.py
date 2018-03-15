@@ -17,6 +17,14 @@ import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
 import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 import riggingAPI.rigComponents.rigUtils.addTwistJoints as addTwistJoints
 
+## kwarg class
+class kwargsGenerator(baseJointsLimb.kwargsGenerator):
+	"""docstring for kwargsGenerator"""
+	def __init__(self):
+		super(kwargsGenerator, self).__init__()
+		self.dKwargs = {}
+		self.addKwargs()
+
 class baseIkSCsolverLimb(baseJointsLimb.baseJointsLimb):
 	"""docstring for baseIkSCsolverLimb"""
 	def __init__(self, *args, **kwargs):
@@ -40,7 +48,7 @@ class baseIkSCsolverLimb(baseJointsLimb.baseJointsLimb):
 		lJntsLocal = []
 
 		lJntsLocal, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = sGrp_ikJnts, sSuffix = 'IkSCLocal', bBind = False)
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'IkSC', bBind = self._bBind, sBindParent = self._sComponentBindJoints)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'IkSC', bBind = self._bBind, sBindParent = self._sBindParent)
 
 		for i, sJnt in enumerate(self._lJntsLocal):
 			for sAxis in ['X', 'Y', 'Z']:

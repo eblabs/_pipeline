@@ -15,6 +15,14 @@ import riggingAPI.constraints as constraints
 
 import riggingAPI.rigComponents.baseLimbs.baseIkRPsolverLimb as baseIkRPsolverLimb
 
+## kwarg class
+class kwargsGenerator(baseIkRPsolverLimb.kwargsGenerator):
+	"""docstring for kwargsGenerator"""
+	def __init__(self):
+		super(kwargsGenerator, self).__init__()
+		self.dKwargs = {'lBpJntsFootRvs': None}
+		self.addKwargs()
+
 class legIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 	"""docstring for armIkModule"""
 	def __init__(self, *args, **kwargs):
@@ -191,9 +199,8 @@ class legIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 			oJntName.sType = 'bindJoint'
 			sBindJnt = joints.createJntOnExistingNode(sBpJntBall, sBpJntBall, oJntName.sName, sParent = self._lBpJnts[-1])
 			self._lBindJnts.append(sBindJnt)
+			cmds.parentConstraint(lJntsFoot[0], sBindJnt, mo = False)
 			for sAxis in ['X', 'Y', 'Z']:
-				cmds.connectAttr('%s.translate%s' %(lJntsFoot[0], sAxis), '%s.translate%s' %(sBindJnt, sAxis))
-				cmds.connectAttr('%s.rotate%s' %(lJntsFoot[0], sAxis), '%s.rotate%s' %(sBindJnt, sAxis))
 				cmds.connectAttr('%s.scale%s' %(lJntsFoot[0], sAxis), '%s.scale%s' %(sBindJnt, sAxis))
 
 

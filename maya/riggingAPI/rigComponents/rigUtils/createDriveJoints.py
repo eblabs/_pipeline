@@ -29,9 +29,8 @@ def createDriveJoints(lBpJnts, sParent = None, sSuffix = '', sRemove = '', bBind
 			sBindJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sBindParent)
 			sBindParent = sBindJnt
 			lBindJnts.append(sBindJnt)
+			cmds.parentConstraint(sJnt, sBindJnt, mo = False)
 			for sAxis in ['X', 'Y', 'Z']:
-				cmds.connectAttr('%s.translate%s' %(sJnt, sAxis), '%s.translate%s' %(sBindJnt, sAxis))
-				cmds.connectAttr('%s.rotate%s' %(sJnt, sAxis), '%s.rotate%s' %(sBindJnt, sAxis))
 				cmds.connectAttr('%s.scale%s' %(sJnt, sAxis), '%s.scale%s' %(sBindJnt, sAxis))
 
 	return lJnts, lBindJnts

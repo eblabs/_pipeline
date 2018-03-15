@@ -15,6 +15,17 @@ import common.importer as importer
 
 import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
 
+## kwarg class
+class kwargsGenerator(baseJointsLimb.kwargsGenerator):
+	"""docstring for kwargsGenerator"""
+	def __init__(self):
+		super(kwargsGenerator, self).__init__()
+		self.dKwargs = {'lParts': None,
+						'sModulePath': None,
+						'sModuleName': None,
+						'dKwargs': {}}
+		self.addKwargs()
+
 class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 	"""docstring for baseMultiComponentsLimb"""
 	def __init__(self, *args, **kwargs):
@@ -43,7 +54,7 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 				sName = self._lParts[i]
 			else:
 				sName = '%s%02d'%(self._sName, i + 1)
-			dKwargs.update({'bInfo': True, 'lBpJnts': lBpJnts_each, 'sParent': self._sComponentRigNodesWorld, 'sName': sName, 'sSide': self._sSide, 'iIndex': self._iIndex, 'bBind': self._bBind})
+			dKwargs.update({'bInfo': True, 'lBpJnts': lBpJnts_each, 'sParent': self._sComponentRigNodesWorld, 'sName': sName, 'sSide': self._sSide, 'iIndex': self._iIndex, 'bBind': self._bBind, 'sBindParent': self._sBindParent})
 			oModule = importer.importModule(self._sModulePath)
 			oLimb = getattr(oModule, self._sModuleName)(**dKwargs)
 			oLimb.createComponent()

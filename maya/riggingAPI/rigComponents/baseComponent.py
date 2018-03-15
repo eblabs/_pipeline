@@ -15,6 +15,28 @@ import riggingAPI.constraints as constraints
 import riggingAPI.joints as joints
 import riggingAPI.rigComponents.rigUtils.componentInfo as componentInfo
 import riggingAPI.rigComponents.rigUtils.addObjAttrs as addObjAttrs
+
+## kwarg class
+class kwargsGenerator(object):
+	"""docstring for kwargsGenerator"""
+	def __init__(self):
+		super(kwargsGenerator, self).__init__()
+		self.dKwargs = {'sName': None,
+						'sSide': 'm',
+						'iIndex': None,
+						'sParent': None,
+						'sConnectIn': None,
+						'bInfo': True,
+							}
+		self.dKwargsAll = {}
+		self.addKwargs()
+
+	def addKwargs(self):
+		for sKwarg, sKey in self.dKwargs.items():
+			self.dKwargsAll.update({sKwarg: sKey})
+
+						
+
 ## base component class
 class baseComponent(object):
 	"""docstring for baseComponent"""
@@ -50,7 +72,6 @@ class baseComponent(object):
 	def lControls(self):
 		return self._lCtrls
 
-
 	def createComponent(self):
 		# create groups
 		### master group
@@ -85,55 +106,15 @@ class baseComponent(object):
 		sComponentSpace = naming.oName(sType = 'space', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
 		transforms.createTransformNode(sComponentSpace, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentPasser)
 
-		### inherits local group
-		sComponentInheritsLocal = naming.oName(sType = 'inherits', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentInheritsLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentOffset, bInheritsTransform = False)
-
-		### xform local group
-		sComponentXformLocal = naming.oName(sType = 'xform', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentXformLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentInheritsLocal)
-		attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = sComponentXform, sDriven = sComponentXformLocal, bForce = True)
-
-		### passer local group
-		sComponentPasserLocal = naming.oName(sType = 'passer', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentPasserLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentXformLocal)
-		attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = sComponentPasser, sDriven = sComponentPasserLocal, bForce = True)
-
-		### space local group
-		sComponentSpaceLocal = naming.oName(sType = 'space', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentSpaceLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentPasserLocal)
-		attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = sComponentSpace, sDriven = sComponentSpaceLocal, bForce = True)
-		
 		## controls group
 		sComponentControls = naming.oName(sType = 'controls', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
 		transforms.createTransformNode(sComponentControls, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentSpace)
 		
-		## joints group
-		sComponentJoints = naming.oName(sType = 'joints', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentJoints, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentSpaceLocal)
-				
-		### drive joints group
-		sComponentDrvJoints = naming.oName(sType = 'drvJoints', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentDrvJoints, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentJoints)
-
-		### bind joints group
-		sComponentBindJoints = naming.oName(sType = 'bindJoints', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentBindJoints, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentJoints)
-
 		### rig nodes local group
 		sComponentRigNodesLocal = naming.oName(sType = 'rigNodesLocal', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
 		transforms.createTransformNode(sComponentRigNodesLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentSpace)
 
 		# visibility switch
-		### joints
-		cmds.addAttr(sComponentMaster, ln = 'joints', at = 'enum', enumName = 'on:off:tempelate:reference', keyable = False, dv = 1)
-		cmds.setAttr('%s.joints' %sComponentMaster, channelBox = True)
-		### bind joints vis
-		cmds.addAttr(sComponentMaster, ln = 'bindJoints', at = 'long', min = 0, max = 1, keyable = False, dv = 1)
-		cmds.setAttr('%s.bindJoints' %sComponentMaster, channelBox = True)
-		### drive joints vis
-		cmds.addAttr(sComponentMaster, ln = 'drvJoints', at = 'long', min = 0, max = 1, keyable = False, dv = 0)
-		cmds.setAttr('%s.drvJoints' %sComponentMaster, channelBox = True)
 		### controls
 		cmds.addAttr(sComponentMaster, ln = 'controls', at = 'long', min = 0, max = 1, keyable = False, dv = 1)
 		cmds.setAttr('%s.controls' %sComponentMaster, channelBox = True)
@@ -143,24 +124,8 @@ class baseComponent(object):
 		### sub components
 		cmds.addAttr(sComponentMaster, ln = 'subComponents', at = 'long', min = 0, max = 1, keyable = False, dv = 0)
 		cmds.setAttr('%s.subComponents' %sComponentMaster, channelBox = True)
-		### move/deform geo
-		cmds.addAttr(sComponentMaster, ln = 'deformGeo', at = 'long', min = 0, max = 1, keyable = False, dv = 0)
-		cmds.setAttr('%s.deformGeo' %sComponentMaster, channelBox = True)
-		cmds.connectAttr('%s.deformGeo' %sComponentMaster, '%s.inheritsTransform' %sComponentInheritsLocal)
 
 		### connect attrs
-		sConditionJointsVis = naming.oName(sType = 'condition', sSide = self._sSide, sPart = '%sJointVis' %self._sName, iIndex = self._iIndex).sName
-		cmds.createNode('condition', name = sConditionJointsVis)
-		cmds.connectAttr('%s.joints' %sComponentMaster, '%s.firstTerm' %sConditionJointsVis)
-		cmds.setAttr('%s.secondTerm' %sConditionJointsVis, 1)
-		cmds.setAttr('%s.colorIfTrueR' %sConditionJointsVis, 0)
-		cmds.setAttr('%s.colorIfFalseR' %sConditionJointsVis, 1)
-		attributes.connectAttrs(['%s.outColorR' %sConditionJointsVis], ['%s.v' %sComponentJoints], bForce = True)
-		cmds.setAttr('%s.overrideEnabled' %sComponentJoints, 1)
-		attributes.enumToSingleAttrs('joints', ['%s.overrideDisplayType' %sComponentJoints], iEnumRange = 4, lValRange = [[0,0],[0,0],[0,1],[0,2]], sEnumObj = sComponentMaster)
-
-		attributes.connectAttrs(['%s.bindJoints' %sComponentMaster], ['%s.v' %sComponentBindJoints], bForce = True)
-		attributes.connectAttrs(['%s.drvJoints' %sComponentMaster], ['%s.v' %sComponentDrvJoints], bForce = True)
 		attributes.connectAttrs(['%s.controls' %sComponentMaster], ['%s.v' %sComponentControls], bForce = True)
 		attributes.connectAttrs(['%s.rigNodes' %sComponentMaster, '%s.rigNodes' %sComponentMaster], ['%s.v' %sComponentRigNodesLocal, '%s.v' %sComponentRigNodesWorld], bForce = True)
 		attributes.connectAttrs(['%s.subComponents' %sComponentMaster], ['%s.v' %sComponentSubComponents], bForce = True)
@@ -182,20 +147,17 @@ class baseComponent(object):
 		attributes.connectAttrs(['%s.outputShear' %sDecomposeMatrix], ['%s.shear' %sComponentXform], bForce = True)
 		constraints.matrixConnect(sComponentMaster, [sComponentOffset], 'inputMatrixOffset', bForce = True)
 
-		self._sComponentMaster = sComponentMaster	
+		self._sComponentMaster = sComponentMaster
+		self._sComponentOffset = sComponentOffset
 		self._sComponentXform = sComponentXform
 		self._sComponentPasser = sComponentPasser
 		self._sComponentSpace = sComponentSpace
 		self._sComponentRigNodesWorld = sComponentRigNodesWorld
 		self._sComponentSubComponents = sComponentSubComponents
 		self._sComponentControls = sComponentControls
-		self._sComponentJoints = sComponentJoints
-		self._sComponentDrvJoints = sComponentDrvJoints
-		self._sComponentBindJoints = sComponentBindJoints
 		self._sComponentRigNodesLocal = sComponentRigNodesLocal
 
 		## add component info
-		#### joint count
 		cmds.addAttr(sComponentMaster, ln = 'sComponentType', dt = 'string')
 		cmds.setAttr('%s.sComponentType' %sComponentMaster, 'baseComponent', type = 'string')
 		cmds.addAttr(sComponentMaster, ln = 'sComponentSpace', dt = 'string')

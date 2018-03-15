@@ -19,6 +19,16 @@ import riggingAPI.constraints as constraints
 
 import baseIkSplineSolverLimb
 
+## kwarg class
+class kwargsGenerator(baseIkSplineSolverLimb.kwargsGenerator):
+	"""docstring for kwargsGenerator"""
+	def __init__(self):
+		super(kwargsGenerator, self).__init__()
+		self.dKwargs = {'iRotateOrder': 0,
+						'bTop': True,
+						'bBot': True}
+		self.addKwargs()
+
 class baseFkOnIkSplineLimb(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
 	"""docstring for baseFkOnIkSplineLimb"""
 	def __init__(self, *args, **kwargs):
