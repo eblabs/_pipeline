@@ -14,7 +14,7 @@ import riggingAPI.controls as controls
 import riggingAPI.constraints as constraints
 
 import riggingAPI.rigComponents.baseLimbs.baseIkRPsolverLimb as baseIkRPsolverLimb
-
+import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 ## kwarg class
 class kwargsGenerator(baseIkRPsolverLimb.kwargsGenerator):
 	"""docstring for kwargsGenerator"""
@@ -199,13 +199,11 @@ class legIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 			oJntName.sType = 'bindJoint'
 			sBindJnt = joints.createJntOnExistingNode(sBpJntBall, sBpJntBall, oJntName.sName, sParent = self._lBpJnts[-1])
 			self._lBindJnts.append(sBindJnt)
-			cmds.parentConstraint(lJntsFoot[0], sBindJnt, mo = False)
-			for sAxis in ['X', 'Y', 'Z']:
-				cmds.connectAttr('%s.scale%s' %(lJntsFoot[0], sAxis), '%s.scale%s' %(sBindJnt, sAxis))
-
+			createDriveJoints.tagBindJoint(sBindJnt, lJntsFoot[0])
+			createDriveJoints.labelBindJoint(sBindJnt)
 
 		## write component info
-		self._writeGeneralComponentInfo('armIkModule', self._lJnts, self._lCtrls, self._lBindJnts)
+		self._writeGeneralComponentInfo('armIkModule', self._lJnts, self._lCtrls, self._lBindJnts, self._lBindRootJnts)
 
 		## writeOutputMatrixInfo
 

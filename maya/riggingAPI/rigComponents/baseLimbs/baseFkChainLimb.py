@@ -13,7 +13,7 @@ import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 import riggingAPI.constraints as constraints
 
-import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
+import riggingAPI.rigComponents.baseLimbs.baseJointsLimb as baseJointsLimb
 ## import rig utils
 import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 import riggingAPI.rigComponents.rigUtils.addTwistJoints as addTwistJoints
@@ -36,7 +36,7 @@ class baseFkChainLimb(baseJointsLimb.baseJointsLimb):
 	def createComponent(self):
 		super(baseFkChainLimb, self).createComponent()
 
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'Fk', bBind = self._bBind, sBindParent = self._sBindParent)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'Fk', bBind = self._bBind, lBindNameOverride = self._lBpJnts)
 
 		## controls
 		sParent_ctrl = self._sComponentControls
@@ -64,9 +64,13 @@ class baseFkChainLimb(baseJointsLimb.baseJointsLimb):
 		self._lJnts = lJnts
 		self._lCtrls = lCtrls
 		self._lBindJnts = lBindJnts
+		if lBindJnts:
+			self._lBindRootJnts = [lBindJnts[0]]
+		else:
+			self._lBindRootJnts = None
 
 		## write component info
-		self._writeGeneralComponentInfo('baseFkChainLimb', lJnts, lCtrls, lBindJnts)
+		self._writeGeneralComponentInfo('baseFkChainLimb', lJnts, lCtrls, lBindJnts, self._lBindRootJnts)
 		## output matrix
 		if self._bInfo:
 			self._writeOutputMatrixInfo(lJnts)

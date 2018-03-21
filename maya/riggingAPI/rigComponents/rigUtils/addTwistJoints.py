@@ -7,6 +7,7 @@ import namingAPI.naming as naming
 import common.apiUtils as apiUtils
 import riggingAPI.joints as joints
 import riggingAPI.rigComponents.rigUtils.componentInfo as componentInfo
+import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 
 def twistJointsForLimb(iTwistJntNum, lSkipSections, lJnts, lBpJnts, bBind = False, sNode = None, bInfo = True):
 	lTwistBindJnts_all = []
@@ -16,7 +17,8 @@ def twistJointsForLimb(iTwistJntNum, lSkipSections, lJnts, lBpJnts, bBind = Fals
 			if i not in lSkipSections:
 				lTwistJntSections.append(i)
 				lTwistJnts, lTwistBindJnts = _addTwistJointsForSection(sJnt, lJnts[i + 1], lBpJnts[i], iTwistJntNum, bBind = bBind)
-				lTwistJntsBindAll += lTwistBindJnts
+				lTwistBindJnts_all += lTwistBindJnts
+
 				if bInfo:
 					_writeTwistJointsMatrixInfo(lTwistJnts, i, sNode = sNode)
 
@@ -56,8 +58,8 @@ def _addTwistJointsForSection(sJntStart, sJntEnd, sBpJnt, iTwistJntNum, bBind = 
 	oTwistName = naming.oName(sBpJnt)
 
 	## start end twist driver
-	sTwistPlug_start = _twistMatrixDriver(sJntStart, oTwistName, sPart = 'Start')
-	sTwistPlug_end = _twistMatrixDriver(sJntEnd, oTwistName, sPart = 'End', sRotateReference = sJntStart)
+	sTwistStartPlug = _twistMatrixDriver(sJntStart, oTwistName, sPos = 'Start')
+	sTwistEndPlug = _twistMatrixDriver(sJntEnd, oTwistName, sPos = 'End', sRotateReference = sJntStart)
 
 	## create twist joints
 	lTwistJnts = []
@@ -71,15 +73,16 @@ def _addTwistJointsForSection(sJntStart, sJntEnd, sBpJnt, iTwistJntNum, bBind = 
 		lTwistJnts.append(sTwist)
 
 		if bBind:
-			oJntName.sType = 'bindJoint'
 			oBindName = naming.oName(sBpJnt)
 			oBindName.sType = 'bindJoint'
-			sBindJnt = joints.createJntOnExistingNode(sTwist, sTwist, oJntName.sName, sParent = oBindName.sName)
+			oBindName.sPart = '%sTwist%03d' %(oBindName.sPart, i)
+			oJntName = naming.oName(sBpJnt)
+			oJntName.sType = 'bindJoint'
+			sBindJnt = joints.createJntOnExistingNode(sTwist, sTwist, oBindName.sName, sParent = oJntName.sName)
 			lTwistBindJnts.append(sBindJnt)
-			for sAxis in ['X', 'Y', 'Z']:
-				cmds.connectAttr('%s.translate%s' %(sTwist, sAxis), '%s.translate%s' %(sBindJnt, sAxis))
-				cmds.connectAttr('%s.rotate%s' %(sTwist, sAxis), '%s.rotate%s' %(sBindJnt, sAxis))
-				cmds.connectAttr('%s.scale%s' %(sTwist, sAxis), '%s.scale%s' %(sBindJnt, sAxis))
+
+			## tag drv joint
+			createDriveJoints.tagBindJoint(sBindJnt, sTwist)
 
 		if i > 0 and i < iTwistJntNum - 1:
 			fWeight = i/float(iTwistJntNum - 1)
@@ -102,24 +105,23 @@ def _addTwistJointsForSection(sJntStart, sJntEnd, sBpJnt, iTwistJntNum, bBind = 
 			cmds.connectAttr('%s.output' %sMultTwistEnd, '%s.input2' %sPlus)
 			cmds.connectAttr('%s.output' %sPlus, '%s.rx' %sTwist)
 
-		elif i == iTwistJntNum - 1:
+		elif i == 0:
+			fWeight = 0
+			cmds.connectAttr(sTwistStartPlug, '%s.rx' %sTwist)
+
+		else:
 			fWeight = 1
 			cmds.connectAttr(sTwistEndPlug, '%s.rx' %sTwist)
 			for sAxis in ['X', 'Y', 'Z']:
 				cmds.connectAttr('%s.translate%s' %(sJntEnd, sAxis), '%s.translate%s' %(sTwist, sAxis))
-		else:
-			fWeight = 0
-			cmds.connectAttr(sTwistStartPlug, '%s.rx' %sTwist)
+			
 	return lTwistJnts, lTwistBindJnts
 
 
 def _twistMatrixDriver(sJnt, oName, sPos = 'Start', sRotateReference = None):
-	else:
-		sMultMatrix = '%s.matrix' %sJnt
 
-	sDecomposeMatrix = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = oName.sSide, sPart = '%sTwist%s' %(oName.sPart, sPart), iIndex = oName.iIndex).sName)
-	cmds.connectAttr('%s.matrixSum' %sMultMatrixStart, '%s.inputMatrix' %sDecomposeMatrixStart)
-	sQuatToEuler = cmds.createNode('quatToEuler', name = naming.oName(sType = 'quatToEuler', sSide = oName.sSide, sPart = '%sTwist%s' %(oName.sPart, sPart), iIndex = oName.iIndex).sName)
+	sDecomposeMatrix = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = oName.sSide, sPart = '%sTwist%s' %(oName.sPart, sPos), iIndex = oName.iIndex).sName)
+	sQuatToEuler = cmds.createNode('quatToEuler', name = naming.oName(sType = 'quatToEuler', sSide = oName.sSide, sPart = '%sTwist%s' %(oName.sPart, sPos), iIndex = oName.iIndex).sName)
 	cmds.connectAttr('%s.outputQuatX' %sDecomposeMatrix, '%s.inputQuatX' %sQuatToEuler)
 	cmds.connectAttr('%s.outputQuatW' %sDecomposeMatrix, '%s.inputQuatW' %sQuatToEuler)
 	if not sRotateReference:
@@ -135,7 +137,7 @@ def _twistMatrixDriver(sJnt, oName, sPos = 'Start', sRotateReference = None):
 		cmds.setAttr('%s.matrixIn[1]' %sMultMatrix, lMatrixInInverse, type = 'matrix')
 		cmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.inputMatrix' %sDecomposeMatrix)
 
-		sMultTwist = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'multDoubleLinear', sSide = oTwist.sSide, sPart = '%sTwist%s' %(oName.sPart, sPos), iIndex = oName.iIndex).sName)
+		sMultTwist = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'multDoubleLinear', sSide = oName.sSide, sPart = '%sTwist%s' %(oName.sPart, sPos), iIndex = oName.iIndex).sName)
 		cmds.connectAttr('%s.outputRotateX' %sQuatToEuler, '%s.input1' %sMultTwist)
 		cmds.setAttr('%s.input2' %sMultTwist, -1)
 		sTwistPlug = '%s.output' %sMultTwist

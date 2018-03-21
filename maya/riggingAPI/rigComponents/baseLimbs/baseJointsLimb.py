@@ -27,7 +27,7 @@ class kwargsGenerator(baseComponent.kwargsGenerator):
 		super(kwargsGenerator, self).__init__()
 		self.dKwargs = {'lBpJnts': None,
 						'iStacks': 1,
-						'lLockHideAttrs': ['tx', 'ty', 'tz', 'sx', 'sy', 'sz', 'v'],
+						'lLockHideAttrs': ['sx', 'sy', 'sz', 'v'],
 						'bBind': False,
 						'iTwistJntNum': 0,
 						'lSkipTwist': [],
@@ -37,7 +37,7 @@ class kwargsGenerator(baseComponent.kwargsGenerator):
 
 class baseJointsLimb(baseComponent.baseComponent):
 	"""docstring for baseJointsLimb"""
-	def __init__(self, arg):
+	def __init__(self, *args, **kwargs):
 		super(baseJointsLimb, self).__init__(*args, **kwargs)
 		if args:
 			self._getComponentInfo(args[0])
@@ -57,6 +57,10 @@ class baseJointsLimb(baseComponent.baseComponent):
 	@property
 	def lBindJoints(self):
 		return self._lBindJoints
+
+	@property
+	def lBindRootJoints(self):
+		return self._lBindRootJoints
 
 	@property
 	def iTwistJointCount(self):
@@ -111,19 +115,20 @@ class baseJointsLimb(baseComponent.baseComponent):
 		### move/deform geo
 		cmds.addAttr(self._sComponentMaster, ln = 'localize', at = 'long', min = 0, max = 1, keyable = False, dv = 0)
 		cmds.setAttr('%s.localize' %self._sComponentMaster, channelBox = True)
-		sRvs = cmds.createNode('reverse', naming.oName(sType = 'reverse', sSide = self._sSide, sPart = '%sLocalize' %self._sName, iIndex = self._iIndex).sName)
+		sRvs = cmds.createNode('reverse', name = naming.oName(sType = 'reverse', sSide = self._sSide, sPart = '%sLocalize' %self._sName, iIndex = self._iIndex).sName)
 		cmds.connectAttr('%s.localize' %self._sComponentMaster, '%s.inputX' %sRvs)
 		cmds.connectAttr('%s.outputX' %sRvs, '%s.inheritsTransform' %sComponentInheritsLocal)
 
 		cmds.addAttr(self._sComponentMaster, ln = 'iJointCount', at = 'long')
 		cmds.addAttr(self._sComponentMaster, ln = 'sControls', dt = 'string')
-		#cmds.addAttr(self._sComponentMaster, ln = 'sBindJoints', dt = 'string')
+		cmds.addAttr(self._sComponentMaster, ln = 'sBindJoints', dt = 'string')
+		cmds.addAttr(self._sComponentMaster, ln = 'sBindRootJoints', dt = 'string')
 		cmds.addAttr(self._sComponentMaster, ln = 'sTwistSections', dt = 'string')
 		cmds.addAttr(self._sComponentMaster, ln = 'iTwistJointCount', at = 'long')
 		cmds.addAttr(self._sComponentMaster, ln = 'sTwistBindJoints', dt = 'string')
 
 		### connect attrs
-		sConditionJointsVis = naming.oName(sType = 'condition', sSide = self._sSide, sPart = '%sJointVis' %self._sName, iIndex = self._iIndex).sName
+		sConditionJointsVis = cmds.createNode('condition', name = naming.oName(sType = 'condition', sSide = self._sSide, sPart = '%sJointVis' %self._sName, iIndex = self._iIndex).sName)
 		cmds.createNode('condition', name = sConditionJointsVis)
 		cmds.connectAttr('%s.joints' %self._sComponentMaster, '%s.firstTerm' %sConditionJointsVis)
 		cmds.setAttr('%s.secondTerm' %sConditionJointsVis, 1)
@@ -141,7 +146,7 @@ class baseJointsLimb(baseComponent.baseComponent):
 		#self._sComponentBindJoints = sComponentBindJoints
 
 
-	def _writeGeneralComponentInfo(self, sComponentType, lJnts, lCtrls, lBindJnts):
+	def _writeGeneralComponentInfo(self, sComponentType, lJnts, lCtrls, lBindJnts, lBindRootJnts):
 		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, lock = False, type = 'string')
 		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, sComponentType, type = 'string', lock = True)
 
@@ -154,8 +159,11 @@ class baseJointsLimb(baseComponent.baseComponent):
 
 		sBindString = componentInfo.composeListToString(lBindJnts)
 		cmds.setAttr('%s.sBindJoints' %self._sComponentMaster, lock = False, type = 'string')
-		cmds.setAttr('%s.sBindJoints' %self._sComponentMaster, sBindString[:-1], type = 'string', lock = True)
+		cmds.setAttr('%s.sBindJoints' %self._sComponentMaster, sBindString, type = 'string', lock = True)
 
+		sBindRootString = componentInfo.composeListToString(lBindRootJnts)
+		cmds.setAttr('%s.sBindRootJoints' %self._sComponentMaster, lock = False, type = 'string')
+		cmds.setAttr('%s.sBindRootJoints' %self._sComponentMaster, sBindRootString, type = 'string', lock = True)
 
 	def _writeOutputMatrixInfo(self, lJnts):
 		sMultMatrixWorldParent = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorldParent' %self._sName).sName)					
@@ -203,24 +211,25 @@ class baseJointsLimb(baseComponent.baseComponent):
 		sTwistSections = cmds.getAttr('%s.sTwistSections' %sComponent)
 		self._lTwistSections = componentInfo.decomposeStringToIntList(sTwistSections)
 
+		sBindRootJointsString = cmds.getAttr('%s.sBindRootJoints' %sComponent)
+		self._lBindRootJoints = componentInfo.decomposeStringToStrList(sBindRootJointsString)
+
 		iSectionIndex = 0
 		for i in range(self._iJointCount):
 			dAttrs = {'localMatrixPlug': '%s.outputMatrixLocal%03d' %(self._sComponentMaster, i),
 					  'worldMatrixPlug': '%s.outputMatrixWorld%03d' %(self._sComponentMaster, i)}
 
-			if i < len(self._lBindJoints):
+			if self._lBindJoints and i < len(self._lBindJoints):
 				dAttrs.update({'bindJoint': self._lBindJoints[i]})
 
-			if i in sTwistSections:
-				lTwistOutputLocal = []
-				lTwistOutputWorld = []
-				lTwistBind = []
-				for iTwist in range(self._iTwistJntNum):
-					lTwistOutputLocal.append('%s.output%03dTwistMatrixLocal%03d' %(self._sComponentMaster, i, iTwist))
-					lTwistOutputWorld.append('%s.output%03dTwistMatrixWorld%03d' %(self._sComponentMaster, i, iTwist))
-					lTwistBind.append(self._lTwistBindJnts[iSectionIndex*(self._iTwistJntNum - 1) + iTwist])
-				dAttrs.update({'twistLocalMatrixPlug': lTwistOutputLocal, 
-							   'twistWorldMatrixPlug': lTwistOutputWorld,
-							   'twistBindJoint': lTwistBind})
-
 			self._addObjAttr('joint%03d' %i, dAttrs)
+
+			if self._lTwistSections:
+				if i in self._lTwistSections:
+					for iTwist in range(self._iTwistJntNum):
+						dAttrs = {'localMatrixPlug': '%s.output%03dTwistMatrixLocal%03d' %(self._sComponentMaster, i, iTwist),
+								  'worldMatrixPlug': '%s.output%03dTwistMatrixWorld%03d' %(self._sComponentMaster, i, iTwist),
+								  'bindJoint': self._lTwistBindJnts[iSectionIndex*(self._iTwistJntNum - 1) + iTwist]}
+						self._addObjAttr('joint%03d.twist%03d' %(i, iTwist), dAttrs)
+
+			

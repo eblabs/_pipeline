@@ -209,6 +209,41 @@ class oControl(object):
 		sKey = getFullNameFromKey(self.__sSide, 'side')
 		return sKey
 
+	@property
+	def lMatrixOutputLocal(self):
+		lMatrix = cmds.getAttr('%s.matrixOutputLocal' %self.__sName)
+		return lMatrix
+
+	@property
+	def lInverseMatrixOutputLocal(self):
+		lMatrix = cmds.getAttr('%s.inverseMatrixOutputLocal' %self.__sName)
+		return lMatrix
+
+	@property
+	def lMatrixOutputWorld(self):
+		lMatrix = cmds.getAttr('%s.matrixOutputWorld' %self.__sName)
+		return lMatrix
+
+	@property
+	def lInverseMatrixOutputWorld(self):
+		lMatrix = cmds.getAttr('%s.inverseMatrixOutputWorld' %self.__sName)
+		return lMatrix
+
+	@property
+	def sMatrixOutputLocalPlug(self):
+		return '%s.matrixOutputLocal' %self.__sName
+	@property
+	def sInverseMatrixOutputLocalPlug(self):
+		return '%s.inverseMatrixOutputLocal' %self.__sName
+
+	@property
+	def sMatrixOutputWorldPlug(self):
+		return '%s.matrixOutputWorld' %self.__sName
+
+	@property
+	def sInverseMatrixOutputWorldPlug(self):
+		return '%s.inverseMatrixOutputWorld' %self.__sName
+
 	@sSide.setter
 	def sSide(self, sKey):
 		if sKey:

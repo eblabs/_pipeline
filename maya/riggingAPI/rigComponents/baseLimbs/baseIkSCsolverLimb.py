@@ -12,7 +12,7 @@ import common.apiUtils as apiUtils
 import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 
-import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
+import riggingAPI.rigComponents.baseLimbs.baseJointsLimb as baseJointsLimb
 ## import rig utils
 import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 import riggingAPI.rigComponents.rigUtils.addTwistJoints as addTwistJoints
@@ -48,9 +48,9 @@ class baseIkSCsolverLimb(baseJointsLimb.baseJointsLimb):
 		lJntsLocal = []
 
 		lJntsLocal, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = sGrp_ikJnts, sSuffix = 'IkSCLocal', bBind = False)
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'IkSC', bBind = self._bBind, sBindParent = self._sBindParent)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'IkSC', bBind = self._bBind)
 
-		for i, sJnt in enumerate(self._lJntsLocal):
+		for i, sJntLocal in enumerate(lJntsLocal):
 			for sAxis in ['X', 'Y', 'Z']:
 				cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(lJnts[i], sAxis))
 				cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(lJnts[i], sAxis))
@@ -81,9 +81,13 @@ class baseIkSCsolverLimb(baseJointsLimb.baseJointsLimb):
 		self._sGrpIk = sGrpIk
 		self._sIkHnd = sIkHnd
 		self._lJntslocal = lJntsLocal
+		if lBindJnts:
+			self._lBindRootJnts = [lBindJnts[0]]
+		else:
+			self._lBindRootJnts = None
 
 		## write component info
-		self._writeGeneralComponentInfo('baseIkSCsolcerLimb', lJnts, lCtrls, lBindJnts)
+		self._writeGeneralComponentInfo('baseIkSCsolcerLimb', lJnts, lCtrls, lBindJnts, self._lBindRootJnts)
 
 		## output matrix
 		if self._bInfo:

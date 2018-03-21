@@ -208,4 +208,10 @@ class baseComponent(object):
 		return dAttrs
 
 	def _addObjAttr(self, sAttrName, dAttrs):
-		setattr(self, sAttrName, addObjAttrs.objectview(dAttrs))
+		lAttrs = sAttrName.split('.')
+		sAttrParent = self
+		if len(lAttrs) > 1:
+			for sAttr in lAttrs[:-1]:
+				sAttrParent = getattr(sAttrParent, sAttr)
+			
+		setattr(sAttrParent, lAttrs[-1], addObjAttrs.objectview(dAttrs))

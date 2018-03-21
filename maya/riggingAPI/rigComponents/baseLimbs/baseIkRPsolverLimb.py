@@ -14,7 +14,7 @@ import riggingAPI.controls as controls
 import modelingAPI.curves as curves
 import riggingAPI.constraints as constraints
 
-import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
+import riggingAPI.rigComponents.baseLimbs.baseJointsLimb as baseJointsLimb
 ## import rig utils
 import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 import riggingAPI.rigComponents.rigUtils.addTwistJoints as addTwistJoints
@@ -48,15 +48,16 @@ class baseIkRPsolverLimb(baseJointsLimb.baseJointsLimb):
 		lJntsLocal = []
 
 		lJntsLocal, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = sGrp_ikJnts, sSuffix = 'IkRPLocal', bBind = False)
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'IkRP', bBind = self._bBind, sBindParent = self._sBindParent)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'IkRP', bBind = self._bBind)
 
-		for i, sJnt in enumerate(self._lJntsLocal):
+		for i, sJntLocal in enumerate(lJntsLocal):
 			for sAxis in ['X', 'Y', 'Z']:
 				cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(lJnts[i], sAxis))
 				cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(lJnts[i], sAxis))
 				cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(lJnts[i], sAxis))
 
 		## ctrls
+		lCtrls = []
 		for i, sBpCtrl in enumerate(self._lBpCtrls):
 			oJntName = naming.oName(sBpCtrl)
 			iRotateOrder = cmds.getAttr('%s.ro' %sBpCtrl)
@@ -89,6 +90,10 @@ class baseIkRPsolverLimb(baseJointsLimb.baseJointsLimb):
 		self._sGrpIk = sGrpIk
 		self._sIkHnd = sIkHnd
 		self._lJntsLocal = lJntsLocal
+		if lBindJnts:
+			self._lBindRootJnts = [lBindJnts[0]]
+		else:
+			self._lBindRootJnts = None
 
 		## matrix connect
 		constraints.matrixConnect(lCtrls[0], [lJntsLocal[0]], 'matrixOutputWorld',lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)
@@ -100,7 +105,7 @@ class baseIkRPsolverLimb(baseJointsLimb.baseJointsLimb):
 		constraints.matrixConnect(sMultMatrixPv, [lClsHnds[0]], 'matrixSum', lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)
 
 		## write component info
-		self._writeGeneralComponentInfo('baseFkChainLimb', lJnts, lCtrls, lBindJnts)
+		self._writeGeneralComponentInfo('baseFkChainLimb', lJnts, lCtrls, lBindJnts, self._lBindRootJnts)
 
 		## output matrix
 		if self._bInfo:

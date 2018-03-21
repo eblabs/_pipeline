@@ -61,7 +61,7 @@ class armIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 		self._lJntsLocal.append(sJntWristEndLocal)
 
 		## write component info
-		self._writeGeneralComponentInfo('armIkModule', self._lJnts, self._lCtrls, self._lBindJnts)
+		self._writeGeneralComponentInfo('armIkModule', self._lJnts, self._lCtrls, self._lBindJnts, self._lBindRootJnts)
 
 		## writeOutputMatrixInfo
 		if self._bInfo:

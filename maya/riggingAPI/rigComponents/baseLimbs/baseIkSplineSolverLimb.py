@@ -13,7 +13,7 @@ import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 import modelingAPI.curves as curves
 
-import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
+import riggingAPI.rigComponents.baseLimbs.baseJointsLimb as baseJointsLimb
 ## import rig utils
 import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 
@@ -32,7 +32,7 @@ class baseIkSplineSolverLimb(baseJointsLimb.baseJointsLimb):
 		if args:
 			self._getComponentInfo(args[0])
 		else:
-			self._sCrv = kwargs.get('sCrv', None)
+			self._sBpCrv = kwargs.get('sBpCrv', None)
 			
 
 	def createComponent(self):
@@ -42,14 +42,14 @@ class baseIkSplineSolverLimb(baseJointsLimb.baseJointsLimb):
 		lJntsLocal = []
 		lJntsBindName = []
 
-		lJntsLocal, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentRigNodesWorld, sSuffix = 'IkSplineLocal', bBind = False, sBindParent = self._sBindParent)
+		lJntsLocal, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentRigNodesWorld, sSuffix = 'IkSplineLocal', bBind = False)
 
 		## generate curve
-		if not self._sCrv:
-			sCurve = naming.oName(sType = 'curve', sSide = self._sSide, sPart = '%sSplineSolver' %self._sName, iIndex = self._iIndex).sName
+		sCurve = naming.oName(sType = 'curve', sSide = self._sSide, sPart = '%sSplineSolver' %self._sName, iIndex = self._iIndex).sName
+		if not self._sBpCrv:
 			sCurve = curves.createCurveOnNodes(sCurve, lJntsLocal, iDegree = 3, sParent = None)
 		else:
-			sCurve = self._sCrv
+			sCurve = cmds.duplicate(self._sBpCrv, name = sCurve)[0]
 		lClsHnds = curves.clusterCurve(sCurve, bRelatives = True)
 		#### rebuild curve
 		iCvs = curves.getCurveCvNum(sCurve)
@@ -60,7 +60,7 @@ class baseIkSplineSolverLimb(baseJointsLimb.baseJointsLimb):
 		cmds.makeIdentity(lJntsLocal[0], apply = True, t = 1, r = 1, s = 1)
 
 		## spline joint and bind jnt
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(lJntsLocal, sParent = self._sComponentDrvJoints, sSuffix = '', sRemove = 'Local', bBind = self._bBind, sBindParent = self._sBindParent, lBindNameOverride = self._lBpJnts)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(lJntsLocal, sParent = self._sComponentDrvJoints, sSuffix = '', sRemove = 'Local', bBind = self._bBind, lBindNameOverride = self._lBpJnts)
 
 		for i, sJntLocal in enumerate(lJntsLocal):
 			for sAxis in ['X', 'Y', 'Z']:
@@ -84,9 +84,13 @@ class baseIkSplineSolverLimb(baseJointsLimb.baseJointsLimb):
 		self._lCtrls = lCtrls
 		self._lBindJnts = lBindJnts
 		self._sIkHnd = sIkHnd
+		if lBindJnts:
+			self._lBindRootJnts = [lBindJnts[0]]
+		else:
+			self._lBindRootJnts = None
 
 		## write component info
-		self._writeGeneralComponentInfo('baseIkSplineSolverLimb', lJnts, lCtrls, lBindJnts)
+		self._writeGeneralComponentInfo('baseIkSplineSolverLimb', lJnts, lCtrls, lBindJnts, self._lBindRootJnts)
 		## output matrix
 		if self._bInfo:
 			self._writeOutputMatrixInfo(lJnts)

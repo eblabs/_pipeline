@@ -16,7 +16,7 @@ import common.apiUtils as apiUtils
 import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 import riggingAPI.constraints as constraints
-
+import common.debug as debug
 import baseIkSplineSolverLimb
 
 ## kwarg class
@@ -273,9 +273,9 @@ class baseFkOnIkSplineLimb(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
 			lMatrix = apiUtils.getLocalMatrixInNode([self._lJnts[-1], self._lJnts[0]][i], [oCtrlTop, oCtrlBot][i].sName)
 			cmds.setAttr('%s.matrixIn[0]' %sMultMatrixTwist, lMatrix, type = 'matrix')
 			cmds.connectAttr('%s.matrixOutputWorld' %[oCtrlOffset_top, oCtrlOffset_bot][i].sName, '%s.matrixIn[1]' %sMultMatrixTwist)
-			cmds.connectAttr('%s.matrixOutputWorld' %lCtrlBend[i].sName, '%s.matrixIn[2]' %sMultMatrixTwist)
-			cmds.connectAttr('%s.matrix' %lGrpRvs[i], '%s.matrixIn[3]' %sMultMatrixTwist)
-			cmds.connectAttr('%s.matrix' %lGrpRvsZero[i], '%s.matrixIn[4]' %sMultMatrixTwist)
+			cmds.connectAttr('%s.matrixOutputWorld' %[oCtrlTop, oCtrlBot][i].sName, '%s.matrixIn[2]' %sMultMatrixTwist)
+			cmds.connectAttr('%s.matrix' %[sGrp_topRvs, sGrp_botRvs][i], '%s.matrixIn[3]' %sMultMatrixTwist)
+			cmds.connectAttr('%s.matrix' %[sGrp_topRvsZero, sGrp_botRvsZero][i], '%s.matrixIn[4]' %sMultMatrixTwist)
 			lMultMatrixTwist.append(sMultMatrixTwist)
 		cmds.setAttr('%s.dTwistControlEnable' %self._sIkHnd, 1)
 		cmds.setAttr('%s.dWorldUpType' %self._sIkHnd, 4)
@@ -314,6 +314,6 @@ class baseFkOnIkSplineLimb(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
 			cmds.connectAttr('%s.offsetCtrlVis' %sCtrl, '%s.v' %oCtrlOffset.sZero)
 
 		## write component info
-		self._writeGeneralComponentInfo('baseFkOnIkSplineLimb', self._lJnts, lCtrlsName, self._lBindJnts)
+		self._writeGeneralComponentInfo('baseFkOnIkSplineLimb', self._lJnts, lCtrlsName, self._lBindJnts, self._lBindRootJnts)
 		
 		self._getComponentInfo(self._sComponentMaster)

@@ -17,10 +17,10 @@ import riggingAPI.controls as controls
 import modelingAPI.curves as curves
 import riggingAPI.constraints as constraints
 
-import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
+import riggingAPI.rigComponents.baseLimbs.baseJointsLimb as baseJointsLimb
 ## import rig utils
 import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
-
+import riggingAPI.rigComponents.rigUtils.addTwistJoints as addTwistJoints
 ## kwarg class
 class kwargsGenerator(baseJointsLimb.kwargsGenerator):
 	"""docstring for kwargsGenerator"""
@@ -53,7 +53,7 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 
 		cmds.setAttr('%s.subComponents' %self._sComponentMaster, 1)
 
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = '', bBind = self._bBind, sBindParent = self._sBindParent)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = '', bBind = self._bBind)
 
 		## create temp controller
 		sCrv = cmds.curve(p=[[0,0,0], [1,0,0]], k=[0,1], d=1, per = False, name = 'TEMP_CRV')
@@ -122,7 +122,7 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 			sModulePath = self._dComponents[sKey]['sModulePath']
 			sModuleName = self._dComponents[sKey]['sModuleName']
 			dKwargs = self._dComponents[sKey]['dKwargs']
-			dKwargs.update({'bInfo': False, 'lBpJnts': self._lBpJnts, 'sParent': self._sComponentSubComponents, 'sName': '%s%s%s' %(self._sName, sKey[0].upper(), sKey[1:]), 'sSide': self._sSide, 'iIndex': self._iIndex}, 'iTwistJntNum': 0)
+			dKwargs.update({'bInfo': False, 'lBpJnts': self._lBpJnts, 'sParent': self._sComponentSubComponents, 'sName': '%s%s%s' %(self._sName, sKey[0].upper(), sKey[1:]), 'sSide': self._sSide, 'iIndex': self._iIndex, 'iTwistJntNum': 0})
 
 			oModule = importer.importModule(sModulePath)
 			oLimb = getattr(oModule, sModuleName)(**dKwargs)
@@ -131,7 +131,7 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 			## connect attrs
 			attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = self._sComponentPasser, sDriven = oLimb._sComponentPasser, bForce = True)
 			attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = self._sComponentSpace, sDriven = oLimb._sComponentSpace, bForce = True)
-			for sAttr in ['inputMatrix', 'inputMatrixOffset', 'deformGeo']:
+			for sAttr in ['inputMatrix', 'inputMatrixOffset', 'localize']:
 				cmds.connectAttr('%s.%s' %(self._sComponentMaster, sAttr), '%s.%s' %(oLimb._sComponentMaster, sAttr))
 
 			controls.addCtrlShape(oLimb._lCtrls, sCtrlShape, bVis = False, dCtrlShapeInfo = None, bTop = False)
@@ -155,13 +155,20 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 
 		cmds.delete(sCrv)
 
+		if lBindJnts:
+			self._lBindRootJnts = [lBindJnts[0]]
+		else:
+			self._lBindRootJnts = None
 		## write component info
-		self._writeGeneralComponentInfo('baseComponentsBlendLimb', lJnts, [sCtrlShape], lBindJnts)
+		self._writeGeneralComponentInfo('baseComponentsBlendLimb', lJnts, [sCtrlShape], lBindJnts, self._lBindRootJnts)
 		cmds.addAttr(self._sComponentMaster, ln = 'dModuleInfo', dt = 'string')
 		cmds.setAttr('%s.dModuleInfo' %self._sComponentMaster, str(dModuleInfo), type = 'string', lock = True)
 		## output matrix
 		if self._bInfo:
 			self._writeOutputMatrixInfo(lJnts)
+
+		## add twist joints
+		addTwistJoints.twistJointsForLimb(self._iTwistJntNum, self._lSkipTwist, lJnts, self._lBpJnts, bBind = self._bBind, sNode = self._sComponentMaster, bInfo = self._bInfo)
 
 		self._getComponentInfo(self._sComponentMaster)
 

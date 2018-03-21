@@ -4,20 +4,140 @@
 		"selected_items":
 		[
 			[
-				"lBp",
-				"lBpJntsFootRvs"
+				"sMult",
+				"sMultMatrix"
+			],
+			[
+				"mat",
+				"matrixIn"
+			],
+			[
+				"inputM",
+				"inputMatrixPlug"
+			],
+			[
+				"crea",
+				"createNewScene"
+			],
+			[
+				"conn",
+				"connectLimb"
+			],
+			[
+				"imp",
+				"importDeformationSkeleton"
+			],
+			[
+				"impo",
+				"importComponents"
+			],
+			[
+				"oLimb",
+				"oLimbConnect"
+			],
+			[
+				"s",
+				"sComponents"
+			],
+			[
+				"oL",
+				"oLimb"
+			],
+			[
+				"sM",
+				"sModuleName"
 			],
 			[
 				"sMod",
 				"sModuleName"
 			],
 			[
-				"d",
-				"dComponents"
+				"sBind",
+				"sBindRoot"
+			],
+			[
+				"joint",
+				"joint000"
+			],
+			[
+				"tw",
+				"twistLocalMatrixPlug"
+			],
+			[
+				"join",
+				"joint000"
+			],
+			[
+				"local",
+				"localMatrixPlug"
+			],
+			[
+				"joint0",
+				"joint011"
+			],
+			[
+				"arm",
+				"armLeft"
+			],
+			[
+				"sMo",
+				"sModulePath"
+			],
+			[
+				"clavi",
+				"clavicleLeft"
+			],
+			[
+				"sModu",
+				"sModulePath"
 			],
 			[
 				"base",
-				"baseComponent"
+				"baseFkOnIkSplineLimb"
+			],
+			[
+				"sp",
+				"sPosNode"
+			],
+			[
+				"sR",
+				"sRigNodes"
+			],
+			[
+				"sS",
+				"sSkeleton"
+			],
+			[
+				"outpu",
+				"outputMatrix"
+			],
+			[
+				"def",
+				"deformationSkeleton"
+			],
+			[
+				"matr",
+				"matrixSum"
+			],
+			[
+				"mati",
+				"matrixOutputLocal"
+			],
+			[
+				"matrix",
+				"matrixOutputLocal"
+			],
+			[
+				"sB",
+				"sBindJnt"
+			],
+			[
+				"lBp",
+				"lBpJntsFootRvs"
+			],
+			[
+				"d",
+				"dComponents"
 			],
 			[
 				"kw",
@@ -80,10 +200,6 @@
 				"_lBpJnts"
 			],
 			[
-				"sBind",
-				"sBindString"
-			],
-			[
 				"03d",
 				"03d"
 			],
@@ -112,10 +228,6 @@
 				"componentInfo"
 			],
 			[
-				"sS",
-				"sStr"
-			],
-			[
 				"_sC",
 				"_sComponentMaster"
 			],
@@ -142,18 +254,6 @@
 			[
 				"lTwistB",
 				"lTwistBindJnts_all"
-			],
-			[
-				"sMult",
-				"sMultMatrixLocal"
-			],
-			[
-				"matr",
-				"matrixIn"
-			],
-			[
-				"mat",
-				"matrix"
 			],
 			[
 				"lTwistJ",
@@ -240,14 +340,6 @@
 				"multMatrix"
 			],
 			[
-				"sMo",
-				"sModulePath"
-			],
-			[
-				"sModu",
-				"sModuleInfo"
-			],
-			[
 				"lC",
 				"lComponentLimbs"
 			],
@@ -288,10 +380,6 @@
 				"_sModulePath"
 			],
 			[
-				"sM",
-				"sModulePath"
-			],
-			[
 				"_sCompo",
 				"_sComponentSpace"
 			],
@@ -306,10 +394,6 @@
 			[
 				"bind",
 				"bindJoint"
-			],
-			[
-				"sB",
-				"sBpJnt"
 			],
 			[
 				"fR",
@@ -352,16 +436,8 @@
 				"lSkipRotate"
 			],
 			[
-				"sp",
-				"sPart"
-			],
-			[
 				"__",
 				"__import__"
-			],
-			[
-				"impo",
-				"importer"
 			],
 			[
 				"contro",
@@ -438,82 +514,6 @@
 			[
 				"iIndex",
 				"iIndexCustom"
-			],
-			[
-				"att",
-				"attributes"
-			],
-			[
-				"inputM",
-				"inputMatrixOffset"
-			],
-			[
-				"sComponentX",
-				"sComponentXform"
-			],
-			[
-				"sComponentI",
-				"sComponentInheritsLocal"
-			],
-			[
-				"in",
-				"bInheritsTransform"
-			],
-			[
-				"sComponent",
-				"sComponentMaster"
-			],
-			[
-				"sCOmpone",
-				"sComponentMaster"
-			],
-			[
-				"deform",
-				"deformGeo"
-			],
-			[
-				"sComponentCo",
-				"sComponentControls"
-			],
-			[
-				"sCompo",
-				"sComponentControls"
-			],
-			[
-				"sComponentPa",
-				"sComponentPasserLocal"
-			],
-			[
-				"sComponents",
-				"sComponentPasser"
-			],
-			[
-				"conn",
-				"connectAttrs"
-			],
-			[
-				"sJntP",
-				"sJntParentRvs"
-			],
-			[
-				"oJnt",
-				"oJntParentName"
-			],
-			[
-				"_lB",
-				"_lBpJntsFootRvs"
-			],
-			[
-				"smult",
-				"sMultMatrixLocal"
-			],
-			[
-				"baseIk",
-				"baseIkRPsolverLimb"
-			],
-			[
-				"lMul",
-				"lMultMatrixTwist"
 			]
 		]
 	},
@@ -547,33 +547,6 @@
 			}
 		},
 		{
-			"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript.py",
-			"settings":
-			{
-				"buffer_size": 63744,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseLimbs/singleJointRig.py",
-			"settings":
-			{
-				"buffer_size": 2742,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseLimbs/ribbonRig.py",
-			"settings":
-			{
-				"buffer_size": 6564,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
 			"file": "modelingAPI/surfaces.py",
 			"settings":
 			{
@@ -601,127 +574,10 @@
 			}
 		},
 		{
-			"file": "riggingAPI/rigLimbs/baseLimbs/ikSplineRig.py",
-			"settings":
-			{
-				"buffer_size": 7313,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseBiped/armFkRig.py",
-			"settings":
-			{
-				"buffer_size": 1577,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseBiped/spineRig.py",
-			"settings":
-			{
-				"buffer_size": 6755,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseBiped/armIkRig.py",
-			"settings":
-			{
-				"buffer_size": 1910,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseBiped/armRig.py",
-			"settings":
-			{
-				"buffer_size": 2576,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseBiped/legFkRig.py",
-			"settings":
-			{
-				"buffer_size": 1647,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseBiped/legRig.py",
-			"settings":
-			{
-				"buffer_size": 2652,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseLimbs/blendModeRig.py",
-			"settings":
-			{
-				"buffer_size": 6729,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseLimbs/ikRPsolverRig.py",
-			"settings":
-			{
-				"buffer_size": 5757,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseLimbs/ikSCsolverRig.py",
-			"settings":
-			{
-				"buffer_size": 4899,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseHierarchy/baseRigNode.py",
-			"settings":
-			{
-				"buffer_size": 7033,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseLimbs/baseLimbRig.py",
-			"settings":
-			{
-				"buffer_size": 2200,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigLimbs/baseLimbs/fkJointChainRig.py",
-			"settings":
-			{
-				"buffer_size": 3181,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
 			"file": "namingAPI/namingDict.py",
 			"settings":
 			{
-				"buffer_size": 2271,
+				"buffer_size": 2366,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -736,10 +592,27 @@
 			}
 		},
 		{
+			"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript.py",
+			"settings":
+			{
+				"buffer_size": 21848,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript_old.py",
+			"settings":
+			{
+				"buffer_size": 63744,
+				"line_ending": "Windows"
+			}
+		},
+		{
 			"file": "riggingAPI/rigComponents/baseLimbs/baseJointsLimb.py",
 			"settings":
 			{
-				"buffer_size": 12995,
+				"buffer_size": 13099,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -748,7 +621,7 @@
 			"file": "riggingAPI/rigComponents/rigUtils/addTwistJoints.py",
 			"settings":
 			{
-				"buffer_size": 7991,
+				"buffer_size": 7867,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -757,7 +630,7 @@
 			"file": "riggingAPI/rigComponents/rigUtils/createDriveJoints.py",
 			"settings":
 			{
-				"buffer_size": 1197,
+				"buffer_size": 1903,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -792,7 +665,7 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseIkSplineSolverLimb.py",
 			"settings":
 			{
-				"buffer_size": 4249,
+				"buffer_size": 4225,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -810,7 +683,7 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseFkChainLimb.py",
 			"settings":
 			{
-				"buffer_size": 3216,
+				"buffer_size": 3184,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -819,7 +692,7 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseIkRPsolverLimb.py",
 			"settings":
 			{
-				"buffer_size": 5810,
+				"buffer_size": 5791,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -828,7 +701,7 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseComponentsBlendLimb.py",
 			"settings":
 			{
-				"buffer_size": 8730,
+				"buffer_size": 8963,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -837,7 +710,7 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseMultiComponentsLimb.py",
 			"settings":
 			{
-				"buffer_size": 4869,
+				"buffer_size": 4779,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -846,7 +719,7 @@
 			"file": "riggingAPI/rigComponents/baseLimbs/baseIkSCsolverLimb.py",
 			"settings":
 			{
-				"buffer_size": 4565,
+				"buffer_size": 4532,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -870,19 +743,10 @@
 			}
 		},
 		{
-			"file": "riggingAPI/rigLimbs/baseBiped/legIkRig.py",
-			"settings":
-			{
-				"buffer_size": 10704,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
 			"file": "riggingAPI/rigComponents/rigModules/legIkModule.py",
 			"settings":
 			{
-				"buffer_size": 11905,
+				"buffer_size": 11902,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -906,15 +770,6 @@
 			}
 		},
 		{
-			"file": "riggingAPI/rigLimbs/baseHierarchy/cogRig.py",
-			"settings":
-			{
-				"buffer_size": 664,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
 			"file": "namingAPI/naming.py",
 			"settings":
 			{
@@ -927,7 +782,7 @@
 			"file": "riggingAPI/controls.py",
 			"settings":
 			{
-				"buffer_size": 22717,
+				"buffer_size": 23636,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -938,14 +793,6 @@
 			{
 				"buffer_size": 5096,
 				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "/C/Users/harri/Dropbox/Projects/SCRIPTS/correctiveShape2.py",
-			"settings":
-			{
-				"buffer_size": 5883,
 				"line_ending": "Windows"
 			}
 		},
@@ -963,15 +810,6 @@
 			"settings":
 			{
 				"buffer_size": 3299,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "riggingAPI/rigBuild/baseHierarchy.py",
-			"settings":
-			{
-				"buffer_size": 11268,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -1139,6 +977,26 @@
 	},
 	"file_history":
 	[
+		"/C/_pipeline/maya/riggingAPI/rigBuild/baseHierarchy.py",
+		"/C/Users/harri/Dropbox/Projects/SCRIPTS/correctiveShape2.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseHierarchy/cogRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseBiped/legIkRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/fkJointChainRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/baseLimbRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseHierarchy/baseRigNode.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/ikSCsolverRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/ikRPsolverRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/blendModeRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseBiped/legRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseBiped/legFkRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseBiped/armRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseBiped/armIkRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseBiped/spineRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseBiped/armFkRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/ribbonRig.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/singleJointRig.py",
+		"/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript.py",
+		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/ikSplineRig.py",
 		"/C/_pipeline/maya/riggingAPI/rigComponents/rigUtils/addAttr.py",
 		"/C/_pipeline/maya/riggingAPI/rigComponents/rigUtils/writeOutputMatrixInfo.py",
 		"/C/_pipeline/maya/riggingAPI/rigComponents/baseLimbs/baseIkSplineSolverLimb2.py",
@@ -1149,8 +1007,6 @@
 		"/C/Users/harri/Desktop/assignShader.py",
 		"/C/Users/harri/Desktop/exportObj.py",
 		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/ikfkBlendRig.py",
-		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseBiped/spineRig.py",
-		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseBiped/armRig.py",
 		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/ikSCSolverRig.py",
 		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/ikRPSolverRig.py",
 		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseLimbs/ikSCSolverRig",
@@ -1160,7 +1016,6 @@
 		"/C/_pipeline/maya/riggingAPI/rigLimbs/baseRig.py",
 		"/C/Users/harri/Documents/maya/scripts/userSetup.py",
 		"/C/Users/harri/Downloads/edgeFlowMirror.py",
-		"/C/Users/harri/Dropbox/Projects/SCRIPTS/correctiveShape2.py",
 		"/C/_works/maya/BromProject/assets/chrBrom/rig/components/rigGeometry/skeletonGeo.ma",
 		"/C/_works/maya/BromProject/assets/chrBrom/model/chrBrom_model_fixResVis_v099_1.ma",
 		"/C/Users/harri/Dropbox/Projects/SCRIPTS/shelf_harris_toolkit.mel",
@@ -1239,9 +1094,21 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": false,
+		"case_sensitive": true,
 		"find_history":
 		[
+			"spine.joint000.bindJoint",
+			"_addTwistJointsForSection",
+			"sTwistStartPlug",
+			"apiUtils",
+			"_twistMatrixDriver",
+			"lCtrls",
+			"lJntsLocal",
+			"importer",
+			"createDriveJoints",
+			"constraints",
+			"apiUtils",
+			"blueprint",
 			"sBindParent",
 			"lCtrlsName",
 			"02d",
@@ -1357,19 +1224,7 @@
 			"._",
 			"_transformSnapAll",
 			"_transformSnapParent",
-			"_transformSnapScale",
-			"_transformSnapOrient",
-			"_transformSnapPoint",
-			"_decomposeName",
-			"._",
-			"_setPathWinPop",
-			"._",
-			"workspaces",
-			"_setPath",
-			"_setPushButtonEnabled",
-			"_listTypes",
-			"_listAssets",
-			"_listProjects"
+			"_transformSnapScale"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1466,7 +1321,7 @@
 	"groups":
 	[
 		{
-			"selected": 40,
+			"selected": 8,
 			"sheets":
 			[
 				{
@@ -1482,8 +1337,8 @@
 						"selection":
 						[
 							[
-								2550,
-								2550
+								660,
+								669
 							]
 						],
 						"settings":
@@ -1492,10 +1347,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1287.0,
+						"translation.y": 200.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 33,
+					"stack_index": 46,
 					"type": "text"
 				},
 				{
@@ -1523,7 +1378,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 24,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
@@ -1551,97 +1406,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 25,
+					"stack_index": 45,
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 63744,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1088,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 29,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "riggingAPI/rigLimbs/baseLimbs/singleJointRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2742,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								478,
-								478
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 47,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "riggingAPI/rigLimbs/baseLimbs/ribbonRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6564,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								304,
-								304
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 50,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
 					"file": "modelingAPI/surfaces.py",
 					"semi_transient": false,
 					"settings":
@@ -1666,11 +1435,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 51,
+					"stack_index": 44,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 4,
 					"file": "modelingAPI/curves.py",
 					"semi_transient": false,
 					"settings":
@@ -1694,11 +1463,11 @@
 						"translation.y": 197.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 40,
+					"stack_index": 43,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 5,
 					"file": "common/transforms.py",
 					"semi_transient": false,
 					"settings":
@@ -1719,396 +1488,27 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 3705.0,
+						"translation.y": 207.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 37,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
-					"file": "riggingAPI/rigLimbs/baseLimbs/ikSplineRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7313,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5619,
-								5350
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 3861.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 41,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "riggingAPI/rigLimbs/baseBiped/armFkRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1577,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								464,
-								449
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 32,
-					"type": "text"
-				},
-				{
-					"buffer": 11,
-					"file": "riggingAPI/rigLimbs/baseBiped/spineRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6755,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5201,
-								5201
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 52,
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "riggingAPI/rigLimbs/baseBiped/armIkRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1910,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								332,
-								332
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 38,
-					"type": "text"
-				},
-				{
-					"buffer": 13,
-					"file": "riggingAPI/rigLimbs/baseBiped/armRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2576,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								362,
-								362
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 53,
-					"type": "text"
-				},
-				{
-					"buffer": 14,
-					"file": "riggingAPI/rigLimbs/baseBiped/legFkRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1647,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								623,
-								563
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 693.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 42,
-					"type": "text"
-				},
-				{
-					"buffer": 15,
-					"file": "riggingAPI/rigLimbs/baseBiped/legRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2652,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								502,
-								517
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 198.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 45,
-					"type": "text"
-				},
-				{
-					"buffer": 16,
-					"file": "riggingAPI/rigLimbs/baseLimbs/blendModeRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6729,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								267,
-								267
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 1386.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 26,
-					"type": "text"
-				},
-				{
-					"buffer": 17,
-					"file": "riggingAPI/rigLimbs/baseLimbs/ikRPsolverRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5757,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1392,
-								1392
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 957.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 28,
-					"type": "text"
-				},
-				{
-					"buffer": 18,
-					"file": "riggingAPI/rigLimbs/baseLimbs/ikSCsolverRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4899,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								145,
-								112
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 792.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 27,
-					"type": "text"
-				},
-				{
-					"buffer": 19,
-					"file": "riggingAPI/rigLimbs/baseHierarchy/baseRigNode.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7033,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								184,
-								146
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 44,
-					"type": "text"
-				},
-				{
-					"buffer": 20,
-					"file": "riggingAPI/rigLimbs/baseLimbs/baseLimbRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2200,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1169,
-								1108
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 1699.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 35,
-					"type": "text"
-				},
-				{
-					"buffer": 21,
-					"file": "riggingAPI/rigLimbs/baseLimbs/fkJointChainRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3181,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2663,
-								2663
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 1406.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 19,
-					"type": "text"
-				},
-				{
-					"buffer": 22,
+					"buffer": 6,
 					"file": "namingAPI/namingDict.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2271,
+						"buffer_size": 2366,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								969,
-								969
+								1036,
+								1047
 							]
 						],
 						"settings":
@@ -2116,14 +1516,14 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 2393.0,
+						"translation.y": 990.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 18,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 7,
 					"file": "riggingAPI/rigComponents/baseComponent.py",
 					"semi_transient": false,
 					"settings":
@@ -2135,8 +1535,8 @@
 						"selection":
 						[
 							[
-								1047,
-								1047
+								1249,
+								1266
 							]
 						],
 						"settings":
@@ -2144,27 +1544,85 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 428.0,
+						"translation.y": 5098.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 8,
+					"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 21848,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								21848
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 858.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/buildScript_old.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 63744,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								240,
+								202
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1089.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
 					"file": "riggingAPI/rigComponents/baseLimbs/baseJointsLimb.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12995,
+						"buffer_size": 13099,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1192,
-								776
+								12963,
+								12963
 							]
 						],
 						"settings":
@@ -2172,27 +1630,27 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 481.0,
+						"translation.y": 6614.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
-					"buffer": 25,
+					"buffer": 11,
 					"file": "riggingAPI/rigComponents/rigUtils/addTwistJoints.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7991,
+						"buffer_size": 7867,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2374,
-								2404
+								3577,
+								3577
 							]
 						],
 						"settings":
@@ -2200,27 +1658,27 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1230.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
-					"buffer": 26,
+					"buffer": 12,
 					"file": "riggingAPI/rigComponents/rigUtils/createDriveJoints.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1197,
+						"buffer_size": 1903,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1000,
-								1000
+								352,
+								352
 							]
 						],
 						"settings":
@@ -2228,14 +1686,14 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 527.0,
+						"translation.y": 99.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 20,
 					"type": "text"
 				},
 				{
-					"buffer": 27,
+					"buffer": 13,
 					"file": "riggingAPI/rigComponents/rigUtils/addObjAttrs.py",
 					"semi_transient": false,
 					"settings":
@@ -2247,8 +1705,8 @@
 						"selection":
 						[
 							[
-								6,
-								24
+								90,
+								0
 							]
 						],
 						"settings":
@@ -2259,11 +1717,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
-					"buffer": 28,
+					"buffer": 14,
 					"file": "riggingAPI/rigComponents/rigUtils/componentInfo.py",
 					"semi_transient": false,
 					"settings":
@@ -2291,7 +1749,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 29,
+					"buffer": 15,
 					"file": "riggingAPI/rigComponents/rigModules/armFkModule.py",
 					"semi_transient": false,
 					"settings":
@@ -2303,8 +1761,8 @@
 						"selection":
 						[
 							[
-								842,
-								633
+								490,
+								540
 							]
 						],
 						"settings":
@@ -2312,27 +1770,27 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 500.0,
+						"translation.y": 1007.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
-					"buffer": 30,
+					"buffer": 16,
 					"file": "riggingAPI/rigComponents/baseLimbs/baseIkSplineSolverLimb.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4249,
+						"buffer_size": 4225,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								903,
-								683
+								1880,
+								1880
 							]
 						],
 						"settings":
@@ -2341,14 +1799,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 428.0,
+						"translation.y": 42.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 31,
+					"buffer": 17,
 					"file": "riggingAPI/rigComponents/baseLimbs/baseFkOnIkSplineLimb.py",
 					"semi_transient": false,
 					"settings":
@@ -2360,7 +1818,7 @@
 						"selection":
 						[
 							[
-								895,
+								883,
 								895
 							]
 						],
@@ -2370,27 +1828,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 548.0,
+						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 32,
+					"buffer": 18,
 					"file": "riggingAPI/rigComponents/baseLimbs/baseFkChainLimb.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3216,
+						"buffer_size": 3184,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								924,
-								924
+								735,
+								735
 							]
 						],
 						"settings":
@@ -2398,84 +1856,27 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 494.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
-				},
-				{
-					"buffer": 33,
-					"file": "riggingAPI/rigComponents/baseLimbs/baseIkRPsolverLimb.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5810,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								984,
-								984
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 396.0,
+						"translation.y": 2079.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 6,
 					"type": "text"
 				},
 				{
-					"buffer": 34,
-					"file": "riggingAPI/rigComponents/baseLimbs/baseComponentsBlendLimb.py",
+					"buffer": 19,
+					"file": "riggingAPI/rigComponents/baseLimbs/baseIkRPsolverLimb.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8730,
+						"buffer_size": 5791,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1032,
-								1032
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 561.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 35,
-					"file": "riggingAPI/rigComponents/baseLimbs/baseMultiComponentsLimb.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4869,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								869,
-								869
+								5742,
+								5552
 							]
 						],
 						"settings":
@@ -2483,27 +1884,84 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 511.0,
+						"translation.y": 2979.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
-					"buffer": 36,
-					"file": "riggingAPI/rigComponents/baseLimbs/baseIkSCsolverLimb.py",
+					"buffer": 20,
+					"file": "riggingAPI/rigComponents/baseLimbs/baseComponentsBlendLimb.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4565,
+						"buffer_size": 8963,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								894,
-								894
+								8311,
+								8311
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 949.0,
+						"translation.y": 5090.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 21,
+					"file": "riggingAPI/rigComponents/baseLimbs/baseMultiComponentsLimb.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4779,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2430,
+								2430
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 529.0,
+						"translation.y": 1881.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 22,
+					"file": "riggingAPI/rigComponents/baseLimbs/baseIkSCsolverLimb.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4532,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2090,
+								2090
 							]
 						],
 						"settings":
@@ -2512,14 +1970,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 383.0,
+						"translation.y": 999.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
-					"buffer": 37,
+					"buffer": 23,
 					"file": "riggingAPI/rigComponents/rigModules/legFkModule.py",
 					"semi_transient": false,
 					"settings":
@@ -2531,8 +1989,8 @@
 						"selection":
 						[
 							[
-								821,
-								821
+								175,
+								175
 							]
 						],
 						"settings":
@@ -2541,14 +1999,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 152.0,
+						"translation.y": 132.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
-					"buffer": 38,
+					"buffer": 24,
 					"file": "riggingAPI/rigComponents/rigModules/armIkModule.py",
 					"semi_transient": false,
 					"settings":
@@ -2569,55 +2027,27 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 396.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 39,
-					"file": "riggingAPI/rigLimbs/baseBiped/legIkRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10704,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								10462,
-								10462
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 5972.0,
+						"translation.y": 1814.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 15,
 					"type": "text"
 				},
 				{
-					"buffer": 40,
+					"buffer": 25,
 					"file": "riggingAPI/rigComponents/rigModules/legIkModule.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 11905,
+						"buffer_size": 11902,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								774,
-								774
+								1156,
+								1170
 							]
 						],
 						"settings":
@@ -2626,14 +2056,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 315.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 41,
+					"buffer": 26,
 					"file": "riggingAPI/constraints.py",
 					"semi_transient": false,
 					"settings":
@@ -2655,14 +2085,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6817.0,
+						"translation.y": 6223.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 30,
+					"stack_index": 22,
 					"type": "text"
 				},
 				{
-					"buffer": 42,
+					"buffer": 27,
 					"file": "common/attributes.py",
 					"semi_transient": false,
 					"settings":
@@ -2686,40 +2116,11 @@
 						"translation.y": 594.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 36,
+					"stack_index": 42,
 					"type": "text"
 				},
 				{
-					"buffer": 43,
-					"file": "riggingAPI/rigLimbs/baseHierarchy/cogRig.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 664,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								164,
-								164
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 46,
-					"type": "text"
-				},
-				{
-					"buffer": 44,
+					"buffer": 28,
 					"file": "namingAPI/naming.py",
 					"semi_transient": false,
 					"settings":
@@ -2740,27 +2141,27 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 3168.0,
+						"translation.y": 2145.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 34,
+					"stack_index": 25,
 					"type": "text"
 				},
 				{
-					"buffer": 45,
+					"buffer": 29,
 					"file": "riggingAPI/controls.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 22717,
+						"buffer_size": 23636,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1932,
-								1932
+								6495,
+								6517
 							]
 						],
 						"settings":
@@ -2769,14 +2170,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1881.0,
+						"translation.y": 7456.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 31,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
-					"buffer": 46,
+					"buffer": 30,
 					"file": "common/apiUtils.py",
 					"semi_transient": false,
 					"settings":
@@ -2788,8 +2189,8 @@
 						"selection":
 						[
 							[
-								1425,
-								1455
+								2916,
+								2945
 							]
 						],
 						"settings":
@@ -2798,43 +2199,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1979.0,
+						"translation.y": 2870.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 23,
 					"type": "text"
 				},
 				{
-					"buffer": 47,
-					"file": "/C/Users/harri/Dropbox/Projects/SCRIPTS/correctiveShape2.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5883,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2302,
-								2309
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 2253.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 43,
-					"type": "text"
-				},
-				{
-					"buffer": 48,
+					"buffer": 31,
 					"file": "common/maths.py",
 					"semi_transient": false,
 					"settings":
@@ -2858,11 +2230,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 48,
+					"stack_index": 41,
 					"type": "text"
 				},
 				{
-					"buffer": 49,
+					"buffer": 32,
 					"file": "modelingAPI/meshes.py",
 					"semi_transient": false,
 					"settings":
@@ -2886,39 +2258,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 57,
+					"stack_index": 40,
 					"type": "text"
 				},
 				{
-					"buffer": 50,
-					"file": "riggingAPI/rigBuild/baseHierarchy.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 11268,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								8874,
-								9151
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 1683.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 22,
-					"type": "text"
-				},
-				{
-					"buffer": 51,
+					"buffer": 33,
 					"file": "riggingAPI/rigComponents.py",
 					"semi_transient": false,
 					"settings":
@@ -2930,8 +2274,8 @@
 						"selection":
 						[
 							[
-								883,
-								676
+								1307,
+								1316
 							]
 						],
 						"settings":
@@ -2939,14 +2283,14 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 297.0,
+						"translation.y": 1025.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 39,
 					"type": "text"
 				},
 				{
-					"buffer": 52,
+					"buffer": 34,
 					"file": "riggingAPI/deformers.py",
 					"semi_transient": false,
 					"settings":
@@ -2971,11 +2315,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 58,
+					"stack_index": 38,
 					"type": "text"
 				},
 				{
-					"buffer": 53,
+					"buffer": 35,
 					"file": "riggingAPI/controlShapeDict.py",
 					"semi_transient": false,
 					"settings":
@@ -2999,11 +2343,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 54,
+					"stack_index": 37,
 					"type": "text"
 				},
 				{
-					"buffer": 54,
+					"buffer": 36,
 					"file": "riggingAPI/rigBuild/baseCore.py",
 					"semi_transient": false,
 					"settings":
@@ -3028,11 +2372,11 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 59,
+					"stack_index": 36,
 					"type": "text"
 				},
 				{
-					"buffer": 55,
+					"buffer": 37,
 					"file": "riggingAPI/rigBuilderUI.py",
 					"semi_transient": false,
 					"settings":
@@ -3044,8 +2388,8 @@
 						"selection":
 						[
 							[
-								8956,
-								8956
+								4327,
+								4336
 							]
 						],
 						"settings":
@@ -3053,15 +2397,15 @@
 							"syntax": "Packages/Python/Python.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 0.0,
-						"translation.y": 7673.0,
+						"translation.x": 49.0,
+						"translation.y": 3771.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 56,
+					"stack_index": 35,
 					"type": "text"
 				},
 				{
-					"buffer": 56,
+					"buffer": 38,
 					"file": "modelingAPI/models.py",
 					"semi_transient": false,
 					"settings":
@@ -3085,11 +2429,11 @@
 						"translation.y": 396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 55,
+					"stack_index": 34,
 					"type": "text"
 				},
 				{
-					"buffer": 57,
+					"buffer": 39,
 					"file": "riggingAPI/rigBuild/rigData.py",
 					"semi_transient": false,
 					"settings":
@@ -3113,11 +2457,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 63,
+					"stack_index": 33,
 					"type": "text"
 				},
 				{
-					"buffer": 58,
+					"buffer": 40,
 					"file": "UI/assetsManagerUI.py",
 					"semi_transient": false,
 					"settings":
@@ -3142,11 +2486,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 49,
+					"stack_index": 32,
 					"type": "text"
 				},
 				{
-					"buffer": 59,
+					"buffer": 41,
 					"file": "common/workspaces.py",
 					"semi_transient": false,
 					"settings":
@@ -3171,11 +2515,11 @@
 						"translation.y": 10651.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 64,
+					"stack_index": 31,
 					"type": "text"
 				},
 				{
-					"buffer": 60,
+					"buffer": 42,
 					"file": "UI/syncAssetsUI.py",
 					"semi_transient": false,
 					"settings":
@@ -3200,11 +2544,11 @@
 						"translation.y": 7962.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 60,
+					"stack_index": 30,
 					"type": "text"
 				},
 				{
-					"buffer": 61,
+					"buffer": 43,
 					"file": "UI/baseUI.py",
 					"semi_transient": false,
 					"settings":
@@ -3228,11 +2572,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 61,
+					"stack_index": 29,
 					"type": "text"
 				},
 				{
-					"buffer": 62,
+					"buffer": 44,
 					"file": "UI/saveAssetUI.py",
 					"semi_transient": false,
 					"settings":
@@ -3257,11 +2601,11 @@
 						"translation.y": 2682.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 62,
+					"stack_index": 28,
 					"type": "text"
 				},
 				{
-					"buffer": 63,
+					"buffer": 45,
 					"file": "riggingAPI/joints.py",
 					"semi_transient": false,
 					"settings":
@@ -3286,11 +2630,11 @@
 						"translation.y": 610.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 20,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
-					"buffer": 64,
+					"buffer": 46,
 					"file": "common/hierarchy.py",
 					"semi_transient": false,
 					"settings":
@@ -3312,10 +2656,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 396.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 39,
+					"stack_index": 26,
 					"type": "text"
 				}
 			]

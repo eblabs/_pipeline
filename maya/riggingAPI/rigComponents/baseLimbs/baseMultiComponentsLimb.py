@@ -13,7 +13,7 @@ import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 import common.importer as importer
 
-import riggingAPI.rigComponents.baseLimb.baseJointsLimb as baseJointsLimb
+import riggingAPI.rigComponents.baseLimbs.baseJointsLimb as baseJointsLimb
 
 ## kwarg class
 class kwargsGenerator(baseJointsLimb.kwargsGenerator):
@@ -45,26 +45,26 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 	def createComponent(self):
 		super(baseMultiComponentsLimb, self).createComponent()
 		
-		iJointCount = 0
 		sComponentMasterNodes = ''
-
+		self._lBindRootJnts = []
 		for i, lBpJnts_each in enumerate(self._lBpJnts):
 			dKwargs = self._dKwargs
 			if self._lParts:
 				sName = self._lParts[i]
 			else:
 				sName = '%s%02d'%(self._sName, i + 1)
-			dKwargs.update({'bInfo': True, 'lBpJnts': lBpJnts_each, 'sParent': self._sComponentRigNodesWorld, 'sName': sName, 'sSide': self._sSide, 'iIndex': self._iIndex, 'bBind': self._bBind, 'sBindParent': self._sBindParent})
+			dKwargs.update({'bInfo': True, 'lBpJnts': lBpJnts_each, 'sParent': self._sComponentRigNodesWorld, 'sName': sName, 'sSide': self._sSide, 'iIndex': self._iIndex, 'bBind': self._bBind})
 			oModule = importer.importModule(self._sModulePath)
 			oLimb = getattr(oModule, self._sModuleName)(**dKwargs)
 			oLimb.createComponent()
 
-			iJointCount += oLimb._iJointCount
+			if self._bBind:
+				self._lBindRootJnts += oLimb.lBindRootJoints
 			sComponentMasterNodes += '%s,' %oLimb._sComponentMaster
 
 			## reparent nodes
-			sGrp = [self._sComponentControls, self._sComponentDrvJoints, self._sComponentBindJoints, self._sComponentRigNodesLocal, self._sComponentRigNodesWorld, self._sComponentSubComponents]
-			for j, sGrp_limb in enumerate([oLimb._sComponentControls, oLimb._sComponentDrvJoints, oLimb._sComponentBindJoints, oLimb._sComponentRigNodesLocal, oLimb._sComponentRigNodesWorld, oLimb._sComponentSubComponents]):
+			sGrp = [self._sComponentControls, self._sComponentDrvJoints, self._sComponentRigNodesLocal, self._sComponentRigNodesWorld, self._sComponentSubComponents]
+			for j, sGrp_limb in enumerate([oLimb._sComponentControls, oLimb._sComponentDrvJoints, oLimb._sComponentRigNodesLocal, oLimb._sComponentRigNodesWorld, oLimb._sComponentSubComponents]):
 				lNodes = cmds.listRelatives(sGrp_limb, c = True)
 				if lNodes:
 					cmds.parent(lNodes, sGrp[j])
@@ -83,11 +83,7 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 				cmds.setAttr('%s.%s' %(oLimb._sComponentMaster, sAttr), '', lock = True, type = 'string')
 
 		## write component info
-		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, type = 'string', lock = False)
-		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, lock = False)
-		
-		cmds.setAttr('%s.sComponentType' %self._sComponentMaster, 'baseMultiComponentsLimb', type = 'string', lock = True)
-		cmds.setAttr('%s.iJointCount' %self._sComponentMaster, iJointCount, lock = True)
+		self._writeGeneralComponentInfo('baseMultiComponentsLimb', [], None, None, self._lBindRootJnts)
 		cmds.addAttr(self._sComponentMaster, ln = 'sModulePath', dt = 'string')
 		cmds.setAttr('%s.sModulePath' %self._sComponentMaster, self._sModulePath, type = 'string', lock = True)
 		cmds.addAttr(self._sComponentMaster, ln = 'sModuleName', dt = 'string')
