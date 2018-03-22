@@ -143,8 +143,6 @@ class baseFkOnIkSplineLimb(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
 		lGrpBend = []
 		for lCtrls in [lGrpBend_top, lGrpBend_bot]:
 			if lCtrls:
-				for oCtrl in lCtrls:
-					print oCtrl.sName
 				lGrpBend.append(lCtrls)
 
 				for i, oCtrl in enumerate(lCtrls[1:]):

@@ -74,8 +74,7 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 			cmds.delete(lNodes_delete)
 
 			## connect matrix
-			for sAttr in ['inputMatrix', 'inputMatrixOffset']:
-				cmds.connectAttr('%s.%s' %(self._sComponentMaster, sAttr), '%s.%s' %(oLimb._sComponentMaster, sAttr))
+			cmds.connectAttr('%s.inputMatrix' %self._sComponentMaster, '%s.inputMatrix' %oLimb._sComponentMaster)
 
 			## overwrite component info
 			for sAttr in ['sComponentSpace', 'sComponentPasser']:

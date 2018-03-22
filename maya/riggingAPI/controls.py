@@ -185,6 +185,10 @@ class oControl(object):
 		return self.__sPasser
 
 	@property
+	def sSpace(self):
+		return self.__sSpace
+
+	@property
 	def lStacks(self):
 		return self.__lStacks
 
@@ -302,6 +306,7 @@ class oControl(object):
 			self.__lStacks.append(sStack)
 		self.__iStacks = iStacks
 
+		self.__sSpace = naming.oName(sType = 'space', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName		
 		self.__sPasser = naming.oName(sType = 'passer', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
 		self.__sZero = naming.oName(sType = 'zero', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
 
@@ -315,6 +320,8 @@ class oControl(object):
 		cmds.rename(self.__sZero, sZero)
 		sPasser = naming.oName(sType = 'passer', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
 		cmds.rename(self.__sPasser, sPasser)
+		sSpace = naming.oName(sType = 'space', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex).sName
+		cmds.rename(self.__sSpace, sSpace)
 		lStacks = []
 		for i in range(len(self.__lStacks)):
 			sStack = naming.oName(sType = 'stack', sSide = self.__sSide, sPart = self.__sPart, iIndex = self.__iIndex, iSuffix = i + 1).sName
@@ -427,8 +434,12 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 	sPasser = naming.oName(sType = 'passer', sSide = sSide, sPart = sPart, iIndex = iIndex).sName
 	sPasser = transforms.createTransformNode(sPasser, sParent = sZero, iRotateOrder = iRotateOrder)
 
+	## passer grp
+	sSpace = naming.oName(sType = 'space', sSide = sSide, sPart = sPart, iIndex = iIndex).sName
+	sSpace = transforms.createTransformNode(sSpace, sParent = sPasser, iRotateOrder = iRotateOrder)
+
 	## stacks grp
-	sParentStack = sPasser
+	sParentStack = sSpace
 	for i in range(iStacks):
 		sStack = naming.oName(sType = 'stack', sSide = sSide, sPart = sPart, iIndex = iIndex, iSuffix = i + 1).sName
 		sStack = transforms.createTransformNode(sStack, sParent = sParentStack, iRotateOrder = iRotateOrder)
@@ -517,7 +528,8 @@ def create(sPart, sSide = 'middle', iIndex = None, bSub = False, iStacks = 1, sP
 	cmds.connectAttr('%s.matrix' %sOutput, '%s.matrixIn[0]' %sMultMatrixLocal)
 	cmds.connectAttr('%s.matrix' %sCtrl, '%s.matrixIn[1]' %sMultMatrixLocal)
 	cmds.connectAttr('%s.matrixSum' %sMultMatrixStacks, '%s.matrixIn[2]' %sMultMatrixLocal)
-	cmds.connectAttr('%s.matrix' %sPasser, '%s.matrixIn[3]' %sMultMatrixLocal)
+	cmds.connectAttr('%s.matrix' %sSpace, '%s.matrixIn[3]' %sMultMatrixLocal)
+	cmds.connectAttr('%s.matrix' %sPasser, '%s.matrixIn[4]' %sMultMatrixLocal)
 	cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.matrixOutputLocal' %sCtrl)
 
 	for i in range(iStacks):

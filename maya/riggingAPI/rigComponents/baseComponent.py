@@ -49,7 +49,6 @@ class baseComponent(object):
 			self._sSide = kwargs.get('sSide', 'm')
 			self._iIndex = kwargs.get('iIndex', None)
 			self._sParent = kwargs.get('sParent', None)
-			self._sConnectIn = kwargs.get('sConnectIn', None)
 			self._bInfo = kwargs.get('bInfo', True)
 
 	@property
@@ -78,10 +77,6 @@ class baseComponent(object):
 		sComponentMaster = naming.oName(sType = 'rigComponent', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
 		transforms.createTransformNode(sComponentMaster, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sParent)
 
-		### transform group
-		sComponentOffset = naming.oName(sType = 'offset', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentOffset, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentMaster)
-
 		### rig nodes world group
 		sComponentRigNodesWorld = naming.oName(sType = 'rigNodesWorld', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
 		transforms.createTransformNode(sComponentRigNodesWorld, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentMaster)
@@ -92,7 +87,7 @@ class baseComponent(object):
 
 		### inherits group
 		sComponentInherits = naming.oName(sType = 'inherits', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentInherits, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentOffset)
+		transforms.createTransformNode(sComponentInherits, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentMaster)
 
 		### xform group
 		sComponentXform = naming.oName(sType = 'xform', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
@@ -134,7 +129,6 @@ class baseComponent(object):
 		### input matrix
 		cmds.addAttr(sComponentMaster, ln = 'inputMatrix', at = 'matrix')
 		cmds.addAttr(sComponentMaster, ln = 'inputMatrixInverse', at = 'matrix')
-		cmds.addAttr(sComponentMaster, ln = 'inputMatrixOffset', at = 'matrix')
 		sMultMatrix = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sInputMatrix' %self._sName, iIndex = self._iIndex).sName
 		sDecomposeMatrix = naming.oName(sType = 'decomposeMatrix', sSide = self._sSide, sPart = '%sInputMatrix' %self._sName, iIndex = self._iIndex).sName
 		cmds.createNode('multMatrix', name = sMultMatrix)
@@ -145,10 +139,8 @@ class baseComponent(object):
 		for sAxis in ['X', 'Y', 'Z']:
 			attributes.connectAttrs(['%s.outputTranslate%s' %(sDecomposeMatrix, sAxis), '%s.outputRotate%s' %(sDecomposeMatrix, sAxis), '%s.outputScale%s' %(sDecomposeMatrix, sAxis)], ['%s.translate%s' %(sComponentXform, sAxis), '%s.rotate%s' %(sComponentXform, sAxis), '%s.scale%s' %(sComponentXform, sAxis)], bForce = True)
 		attributes.connectAttrs(['%s.outputShear' %sDecomposeMatrix], ['%s.shear' %sComponentXform], bForce = True)
-		constraints.matrixConnect(sComponentMaster, [sComponentOffset], 'inputMatrixOffset', bForce = True)
 
 		self._sComponentMaster = sComponentMaster
-		self._sComponentOffset = sComponentOffset
 		self._sComponentXform = sComponentXform
 		self._sComponentPasser = sComponentPasser
 		self._sComponentSpace = sComponentSpace
@@ -164,22 +156,26 @@ class baseComponent(object):
 		cmds.setAttr('%s.sComponentSpace' %sComponentMaster, sComponentSpace, type = 'string', lock = True)
 		cmds.addAttr(sComponentMaster, ln = 'sComponentPasser', dt = 'string')
 		cmds.setAttr('%s.sComponentPasser' %sComponentMaster, sComponentPasser, type = 'string', lock = True)
-		
 
-		## connect component
-		if self._sConnectIn:
-			self.connectComponents(sComponentMaster, self._sConnectIn)
-
-	def connectComponents(self, sComponent, sMatrixPlug):
+	def connectComponents(self, sMatrixPlug):
+		mMatrixOrig = apiUtils.createMMatrixFromTransformInfo()
+		lMatrixOrig = apiUtils.convertMMatrixToList(mMatrixOrig)
 		lMatrixIn = cmds.getAttr(sMatrixPlug)
 		mMatrix = apiUtils.convertListToMMatrix(lMatrixIn)
 		mMatrixInverse = mMatrix.inverse()
 		lMatrixInInverse = apiUtils.convertMMatrixToList(mMatrixInverse)
-		cmds.setAttr('%s.inputMatrixInverse' %sComponent, lMatrixInInverse, type = 'matrix')
-		cmds.connectAttr(sMatrixPlug, '%s.inputMatrix' %sComponent, f = True)
+		sMultMatrix = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sConnectIn' %self._sName, iIndex = self._iIndex).sName)
+		cmds.setAttr('%s.matrixIn[0]' %sMultMatrix, lMatrixOrig, type = 'matrix')
+		cmds.setAttr('%s.matrixIn[1]' %sMultMatrix, lMatrixInInverse, type = 'matrix')
+		cmds.connectAttr(sMatrixPlug, '%s.matrixIn[2]' %sMultMatrix)
+		cmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.inputMatrix' %self._sComponentMaster, f = True)
 
 	def _getComponentInfo(self, sComponent):
 		self._sComponentMaster = sComponent
+		oName = naming.oName(sComponent)
+		self._sSide = oName.sSide
+		self._sName = oName.sPart
+		self._iIndex = oName.iIndex
 		self._sComponentType = cmds.getAttr('%s.sComponentType' %sComponent)
 		self._sComponentSpace = cmds.getAttr('%s.sComponentSpace' %sComponent)
 		if not self._sComponentSpace:

@@ -41,7 +41,9 @@ class baseFkChainLimb(baseJointsLimb.baseJointsLimb):
 		## controls
 		sParent_ctrl = self._sComponentControls
 		lCtrls = []
-		for sJnt in lJnts[:-1]:
+		for i, sJnt in enumerate(lJnts):
+			if len(lJnts) > 1 and i == len(lJnts) - 1:
+				break
 			# naming info
 			oJntName = naming.oName(sJnt)
 

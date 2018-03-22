@@ -71,7 +71,7 @@ class baseJointsLimb(baseComponent.baseComponent):
 
 		### inherits local group
 		sComponentInheritsLocal = naming.oName(sType = 'inherits', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentInheritsLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentOffset, bInheritsTransform = False)
+		transforms.createTransformNode(sComponentInheritsLocal, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentMaster, bInheritsTransform = False)
 
 		### xform local group
 		sComponentXformLocal = naming.oName(sType = 'xform', sSide = self._sSide, sPart = '%sLocal' %self._sName, iIndex = self._iIndex).sName
@@ -111,13 +111,6 @@ class baseJointsLimb(baseComponent.baseComponent):
 		### drive joints vis
 		cmds.addAttr(self._sComponentMaster, ln = 'drvJoints', at = 'long', min = 0, max = 1, keyable = False, dv = 0)
 		cmds.setAttr('%s.drvJoints' %self._sComponentMaster, channelBox = True)
-
-		### move/deform geo
-		cmds.addAttr(self._sComponentMaster, ln = 'localize', at = 'long', min = 0, max = 1, keyable = False, dv = 0)
-		cmds.setAttr('%s.localize' %self._sComponentMaster, channelBox = True)
-		sRvs = cmds.createNode('reverse', name = naming.oName(sType = 'reverse', sSide = self._sSide, sPart = '%sLocalize' %self._sName, iIndex = self._iIndex).sName)
-		cmds.connectAttr('%s.localize' %self._sComponentMaster, '%s.inputX' %sRvs)
-		cmds.connectAttr('%s.outputX' %sRvs, '%s.inheritsTransform' %sComponentInheritsLocal)
 
 		cmds.addAttr(self._sComponentMaster, ln = 'iJointCount', at = 'long')
 		cmds.addAttr(self._sComponentMaster, ln = 'sControls', dt = 'string')
