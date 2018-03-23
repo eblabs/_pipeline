@@ -8,13 +8,16 @@
 import maya.cmds as cmds
 ## import libs
 import namingAPI.naming as naming
+import namingAPI.namingDict as namingDict
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
 import riggingAPI.constraints as constraints
 import riggingAPI.joints as joints
+import riggingAPI.controls as controls
 import riggingAPI.rigComponents.rigUtils.componentInfo as componentInfo
 import riggingAPI.rigComponents.rigUtils.addObjAttrs as addObjAttrs
+import common.debug as debug
 
 ## kwarg class
 class kwargsGenerator(object):
@@ -169,6 +172,163 @@ class baseComponent(object):
 		cmds.setAttr('%s.matrixIn[1]' %sMultMatrix, lMatrixInInverse, type = 'matrix')
 		cmds.connectAttr(sMatrixPlug, '%s.matrixIn[2]' %sMultMatrix)
 		cmds.connectAttr('%s.matrixSum' %sMultMatrix, '%s.inputMatrix' %self._sComponentMaster, f = True)
+
+	def addSpace(self, sCtrl, dSpace):
+		#dSpace {'world': {'sPlug': 'object.matrixOutput', 'lType': ['t', 'r', 's'], 'lDefaultsA': ['t'], 'lDefaultsB': ['r']}}
+		lKeys, lIndex, lPlugs, lDefaultsA, lDefaultsB = self._decomposeSpaceDict(dSpace)
+
+		for i, sType in enumerate(['t', 'r', 's']):
+			if lKeys[i]:
+				if not cmds.attributeQuery('spaceA%s' %sType.upper(), node = sCtrl, ex = True):
+					self._addSpaceAttr(sCtrl, sType, lKeys[i], lIndex[i], lPlugs[i], lDefaultsA[i], lDefaultsB[i])
+				else:
+					self._editSpaceAttr(sCtrl, sType, lKeys[i], lIndex[i], lPlugs[i], lDefaultsA[i], lDefaultsB[i])
+
+	def _decomposeSpaceDict(self, dSpace):
+		lKeys = []
+		lIndex = []
+		lPlugs = []
+		lDefaultsA = []
+		lDefaultsB = []
+		
+		dKeyIndex = {}
+		iIndexCustom = 90
+
+		for sPos in ['t', 'r', 's']:
+			lKeys_pos = []
+			lIndex_pos = []
+			lPlugs_pos = []
+			lDefaultsA_pos = None
+			lDefaultsB_pos = None
+			
+			for sKey in dSpace.keys():
+				if sPos in dSpace[sKey]['lType']:
+					if namingDict.spaceDict.has_key(sKey):
+						iIndexKey = namingDict.spaceDict[sKey]
+					elif dKeyIndex.has_key(sKey):
+						iIndexKey = dKeyIndex[sKey]
+					else:
+						iIndexKey = iIndexCustom
+						iIndexCustom += 1
+						dKeyIndex.update({sKey:iIndexKey})
+					lKeys_pos.append(sKey)
+					lIndex_pos.append(iIndexKey)
+					lPlugs_pos.append(dSpace[sKey]['sPlug'])
+
+					if dSpace[sKey]['lDefaultsA'] and sPos in dSpace[sKey]['lDefaultsA']:
+						lDefaultsA_pos = iIndexKey
+					if dSpace[sKey]['lDefaultsB'] and sPos in dSpace[sKey]['lDefaultsB']:
+						lDefaultsB_pos = iIndexKey
+
+			lKeys.append(lKeys_pos)
+			lIndex.append(lIndex_pos)
+			lPlugs.append(lPlugs_pos)
+			lDefaultsA.append(lDefaultsA_pos)
+			lDefaultsB.append(lDefaultsB_pos)
+
+		return lKeys, lIndex, lPlugs, lDefaultsA, lDefaultsB
+
+
+
+
+	def _addSpaceAttr(self, sCtrl, sType, lKeys, lIndex, lPlugs, iDefaultA, iDefaultB):
+		oCtrl = controls.oControl(sCtrl)
+
+		sEnumName = ''
+		for i, sKey in enumerate(lKeys):
+			sEnumName += '%s=%d:' %(sKey, lIndex[i])
+
+		if iDefaultA == None:
+			iDefaultA = lIndex[0]
+		if iDefaultB == None:
+			iDefaultB = lIndex[0]
+
+		attributes.addDivider([sCtrl], 'space%s' %sType.upper())
+		cmds.addAttr(sCtrl, ln = 'spaceA%s' %sType.upper(), nn = 'Space A %s' %sType.upper(), at = 'enum', keyable = True, en = sEnumName[:-1], dv = iDefaultA)
+		cmds.addAttr(sCtrl, ln = 'spaceB%s' %sType.upper(), nn = 'Space B %s' %sType.upper(), at = 'enum', keyable = True, en = sEnumName[:-1], dv = iDefaultB)
+		cmds.addAttr(sCtrl, ln = 'spaceBlend%s' %sType.upper(), at = 'float', keyable = True, min = 0, max = 10)
+		sMultBlend = naming.oName(sType = 'multDoubleLinear', sSide = oCtrl.sSide, sPart = '%sSpaceBlendOutput%s' %(oCtrl.sPart, sType.upper()), iIndex = oCtrl.iIndex).sName
+		cmds.createNode('multDoubleLinear', name = sMultBlend)
+		cmds.connectAttr('%s.spaceBlend%s'%(sCtrl, sType.upper()), '%s.input1' %sMultBlend)
+		cmds.setAttr('%s.input2' %sMultBlend, 0.1, lock = True)
+		sRvsBlend = naming.oName(sType = 'reverse', sSide = oCtrl.sSide, sPart = '%sSpaceBlendOutput%s' %(oCtrl.sPart, sType.upper()), iIndex = oCtrl.iIndex).sName
+		cmds.createNode('reverse', name = sRvsBlend)
+		cmds.connectAttr('%s.output' %sMultBlend, '%s.inputX' %sRvsBlend)
+		## choice
+		sChoiceA = naming.oName(sType = 'choice', sSide = oCtrl.sSide, sPart = '%sSpaceA%s' %(oCtrl.sPart, sType.upper()), iIndex = oCtrl.iIndex).sName
+		sChoiceB = naming.oName(sType = 'choice', sSide = oCtrl.sSide, sPart = '%sSpaceB%s' %(oCtrl.sPart, sType.upper()), iIndex = oCtrl.iIndex).sName
+		sWtAddMatrix = naming.oName(sType = 'wtAddMatrix', sSide = oCtrl.sSide, sPart = '%sSpace%s' %(oCtrl.sPart, sType.upper()), iIndex = oCtrl.iIndex).sName
+		cmds.createNode('choice', name = sChoiceA)
+		cmds.createNode('choice', name = sChoiceB)
+		cmds.createNode('wtAddMatrix', name = sWtAddMatrix)
+		cmds.connectAttr('%s.spaceA%s' %(sCtrl, sType.upper()), '%s.selector' %sChoiceA)
+		cmds.connectAttr('%s.spaceB%s' %(sCtrl, sType.upper()), '%s.selector' %sChoiceB)
+		cmds.connectAttr('%s.output' %sChoiceA, '%s.wtMatrix[0].matrixIn' %sWtAddMatrix)
+		cmds.connectAttr('%s.output' %sChoiceB, '%s.wtMatrix[1].matrixIn' %sWtAddMatrix)
+		cmds.connectAttr('%s.outputX' %sRvsBlend, '%s.wtMatrix[0].weightIn' %sWtAddMatrix)
+		cmds.connectAttr('%s.output' %sMultBlend, '%s.wtMatrix[1].weightIn' %sWtAddMatrix)
+		sMultMatrix = naming.oName(sType = 'multMatrix', sSide = oCtrl.sSide, sPart = '%sSpace%s' %(oCtrl.sPart, sType.upper()), iIndex = oCtrl.iIndex).sName
+		cmds.createNode('multMatrix', name = sMultMatrix)
+		cmds.connectAttr('%s.matrixSum' %sWtAddMatrix, '%s.matrixIn[0]' %sMultMatrix)
+		cmds.connectAttr('%s.worldInverseMatrix[0]' %oCtrl.sPasser, '%s.matrixIn[1]' %sMultMatrix)
+
+		for i, sPlug in enumerate(lPlugs):
+			sPlug_space = self._spaceMatrix(sCtrl, sPlug, lIndex[i])
+			cmds.connectAttr(sPlug_space, '%s.input[%d]' %(sChoiceA, lIndex[i]), f = True)
+			cmds.connectAttr(sPlug_space, '%s.input[%d]' %(sChoiceB, lIndex[i]), f = True)
+
+		lSkipTranslate = ['x', 'y', 'z']
+		lSkipRotate = ['x', 'y', 'z']
+		lSkipScale = ['x', 'y', 'z']
+
+		if sType == 't':
+			lSkipTranslate = []
+		elif sType == 'r':
+			lSkipRotate = []
+		else:
+			lSkipScale = []
+		constraints.matrixConnect(sMultMatrix, [oCtrl.sSpace], 'matrixSum', lSkipTranslate = lSkipTranslate, lSkipRotate = lSkipRotate, lSkipScale = lSkipScale)
+
+	def _editSpaceAttr(self, sCtrl, sType, lKeys, lIndex, lPlugs, iDefaultA, iDefaultB):
+		iDefaultA_orig = cmds.addAttr('%s.spaceA%s' %(sCtrl, sType.upper()), q = True, dv = True)
+		iDefaultB_orig = cmds.addAttr('%s.spaceB%s' %(sCtrl, sType.upper()), q = True, dv = True)
+		sEnumName_orig = cmds.addAttr('%s.spaceA%s' %(sCtrl, sType.upper()), q = True, en = True)
+
+		sEnumName_orig += ':'
+
+		if iDefaultA == None:
+			iDefaultA = iDefaultA_orig
+		if iDefaultB == None:
+			iDefaultB = iDefaultB_orig
+
+		for i, sKey in enumerate(lKeys):
+			sEnumName_orig += '%s=%s:' %(sKey, lIndex[i])
+
+		cmds.addAttr('%s.spaceA%s' %(sCtrl, sType.upper()), e = True, en = sEnumName_orig[:-1], dv = iDefaultA)
+		cmds.addAttr('%s.spaceB%s' %(sCtrl, sType.upper()), e = True, en = sEnumName_orig[:-1], dv = iDefaultB)
+
+		oCtrl = controls.oControl(sCtrl)
+		sChoiceA = naming.oName(sType = 'choice', sSide = oCtrl.sSide, sPart = '%sSpaceA%s' %(oCtrl.sPart, sType.upper()), iIndex = oCtrl.iIndex).sName
+		sChoiceB = naming.oName(sType = 'choice', sSide = oCtrl.sSide, sPart = '%sSpaceB%s' %(oCtrl.sPart, sType.upper()), iIndex = oCtrl.iIndex).sName
+		
+		for i, sPlug in enumerate(lPlugs):
+			sPlug_space = self._spaceMatrix(sCtrl, sPlug, lIndex[i])
+			cmds.connectAttr(sPlug_space, '%s.input[%d]' %(sChoiceA, lIndex[i]), f = True)
+			cmds.connectAttr(sPlug_space, '%s.input[%d]' %(sChoiceB, lIndex[i]), f = True)
+
+	def _spaceMatrix(self, sCtrl, sPlug, iIndex):
+		oCtrl = controls.oControl(sCtrl)
+		sMultMatrix = naming.oName(sType = 'multMatrix', sSide = oCtrl.sSide, sPart = '%sSpace%dMatrix' %(oCtrl.sPart, iIndex), iIndex = oCtrl.iIndex).sName
+		if not cmds.objExists(sMultMatrix):
+			cmds.createNode('multMatrix', name = sMultMatrix)
+		lPlugMatrix = cmds.getAttr(sPlug)
+		lMatrixLocal = apiUtils.getLocalMatrixInMatrix(oCtrl.sSpace, lPlugMatrix, sNodeAttr = 'worldMatrix[0]')
+		cmds.setAttr('%s.matrixIn[0]' %sMultMatrix, lMatrixLocal, type = 'matrix')
+		attributes.connectAttrs([sPlug], ['%s.matrixIn[1]' %sMultMatrix], bForce = True)
+		return '%s.matrixSum' %sMultMatrix
+
+
+
 
 	def _getComponentInfo(self, sComponent):
 		self._sComponentMaster = sComponent

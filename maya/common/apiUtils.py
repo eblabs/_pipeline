@@ -116,6 +116,15 @@ def getLocalMatrixInNode(sNode, sParent, sNodeAttr = 'worldMatrix[0]', sParentAt
 	lMatrixLocal = convertMMatrixToList(mMatrix_local)
 	return lMatrixLocal
 
+def getLocalMatrixInMatrix(sNode, lParentMatrix, sNodeAttr = 'worldMatrix[0]'):
+	lMatrix_node = cmds.getAttr('%s.%s' %(sNode, sNodeAttr))
+	mMatrix_node = convertListToMMatrix(lMatrix_node)
+	mMatrix_parent = convertListToMMatrix(lParentMatrix)
+	mMatrixInverse_parent = mMatrix_parent.inverse()
+	mMatrix_local = mMatrix_node * mMatrixInverse_parent
+	lMatrixLocal = convertMMatrixToList(mMatrix_local)
+	return lMatrixLocal
+
 def decomposeMMatrix(mMatrix, sSpace = 'world', iRotateOrder = 0):
 	if sSpace == 'world':
 		mSpace = OpenMaya.MSpace.kWorld

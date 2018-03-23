@@ -21,6 +21,7 @@ import riggingAPI.rigComponents.baseLimbs.baseJointsLimb as baseJointsLimb
 ## import rig utils
 import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 import riggingAPI.rigComponents.rigUtils.addTwistJoints as addTwistJoints
+import riggingAPI.rigComponents.rigUtils.componentInfo as componentInfo
 ## kwarg class
 class kwargsGenerator(baseJointsLimb.kwargsGenerator):
 	"""docstring for kwargsGenerator"""
@@ -37,6 +38,8 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 			self._getComponentInfo(args[0])
 		else:
 			self._dComponents = kwargs.get('dComponents', {})
+			self._sDefaultA = kwargs.get('sDefaultA', None)
+			self._sDefaultB = kwargs.get('sDefaultB', None)
 
 			## dComponents example
 			#{Key name: 
@@ -44,9 +47,6 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 			#	 'sModuleName': module name
 			#	 'dKwargs': kwargs,}
 			#}
-	@property
-	def dComponentLimbs(self):
-		return self._dComponentLimbs
 
 	def createComponent(self):
 		super(baseComponentsBlendLimb, self).createComponent()
@@ -64,7 +64,8 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 		iIndexCustom = 90
 		lKey = self._dComponents.keys()
 		lIndex = []
-		lIndexOrder = []
+		iDefaultA = None
+		iDefaultB = None
 		for sKey in lKey:
 			if namingDict.spaceDict.has_key(sKey):
 				iIndexKey = namingDict.spaceDict[sKey]
@@ -72,16 +73,20 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 				iIndexKey = iIndexCustom
 				iIndexCustom += 1
 			lIndex.append(iIndexKey)
-			lIndexOrder.append(iIndexKey)
+			sEnumName += '%s=%d:' %(sKey, iIndexKey)
+			if sKey == self._sDefaultA:
+				iDefaultA = iIndexKey
+			if sKey == self._sDefaultB:
+				iDefaultB = iIndexKey
 
-		lIndexOrder.sort()
-		for iIndex in lIndexOrder:
-			iNum = lIndex.index(iIndex)
-			sEnumName += '%s=%d:' %(lKey[iNum], iIndex)
+		if iDefaultA == None:
+			iDefaultA = lIndex[0]
+		if iDefaultB == None:
+			iDefaultB = lIndex[0]
 
 		## add attrs
-		cmds.addAttr(sCtrlShape, ln = 'moduleA', at = 'enum', keyable = True, en = sEnumName[:-1], dv = lIndexOrder[0])
-		cmds.addAttr(sCtrlShape, ln = 'moduleB', at = 'enum', keyable = True, en = sEnumName[:-1], dv = lIndexOrder[0])
+		cmds.addAttr(sCtrlShape, ln = 'moduleA', at = 'enum', keyable = True, en = sEnumName[:-1], dv = iDefaultA)
+		cmds.addAttr(sCtrlShape, ln = 'moduleB', at = 'enum', keyable = True, en = sEnumName[:-1], dv = iDefaultB)
 		cmds.addAttr(sCtrlShape, ln = 'moduleBlend', at = 'float', keyable = True, min = 0, max = 10)
 		sMultBlend = naming.oName(sType = 'multDoubleLinear', sSide = self._sSide, sPart = '%sModuleBlendOutput' %self._sName, iIndex = self._iIndex).sName
 		cmds.createNode('multDoubleLinear', name = sMultBlend)
@@ -176,7 +181,8 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 		super(baseComponentsBlendLimb, self)._getComponentInfo(sComponent)
 		sModuleInfo = cmds.getAttr('%s.dModuleInfo' %sComponent)
 		dModuleInfo = dataInfo.convertStringToDict(sModuleInfo)
-		self._dComponentLimbs = {}
+
+		dAttrs = {'limbs': dModuleInfo.keys()}
 
 		for sKey in dModuleInfo.keys():
 			sModulePath = dModuleInfo[sKey]['sModulePath']
@@ -184,4 +190,6 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 			sComponentNode = dModuleInfo[sKey]['sComponentNode']
 			oModule = importer.importModule(sModulePath)
 			oLimb = getattr(oModule, sModuleName)(sComponentNode)
-			self._dComponentLimbs.update({sKey: oLimb})
+			dAttrs.update({sKey: oLimb})
+		
+		self._addObjAttr('componentLimbs', dAttrs)

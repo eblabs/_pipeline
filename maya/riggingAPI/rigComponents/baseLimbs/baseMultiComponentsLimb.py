@@ -14,7 +14,7 @@ import riggingAPI.controls as controls
 import common.importer as importer
 
 import riggingAPI.rigComponents.baseLimbs.baseJointsLimb as baseJointsLimb
-
+import riggingAPI.rigComponents.rigUtils.componentInfo as componentInfo
 ## kwarg class
 class kwargsGenerator(baseJointsLimb.kwargsGenerator):
 	"""docstring for kwargsGenerator"""
@@ -38,21 +38,19 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 			self._sModuleName = kwargs.get('sModuleName', None)
 			self._dKwargs = kwargs.get('dKwargs', {})
 
-	@property
-	def lComponentLimbs(self):
-		return self._lComponentLimbs
-
 	def createComponent(self):
 		super(baseMultiComponentsLimb, self).createComponent()
 		
 		sComponentMasterNodes = ''
 		self._lBindRootJnts = []
+		sNameString = ''
 		for i, lBpJnts_each in enumerate(self._lBpJnts):
 			dKwargs = self._dKwargs
 			if self._lParts:
 				sName = self._lParts[i]
 			else:
 				sName = '%s%02d'%(self._sName, i + 1)
+			sNameString += '%s,' %sName
 			dKwargs.update({'bInfo': True, 'lBpJnts': lBpJnts_each, 'sParent': self._sComponentRigNodesWorld, 'sName': sName, 'sSide': self._sSide, 'iIndex': self._iIndex, 'bBind': self._bBind})
 			oModule = importer.importModule(self._sModulePath)
 			oLimb = getattr(oModule, self._sModuleName)(**dKwargs)
@@ -89,6 +87,8 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 		cmds.setAttr('%s.sModuleName' %self._sComponentMaster, self._sModuleName, type = 'string', lock = True)
 		cmds.addAttr(self._sComponentMaster, ln = 'sComponentNodes', dt = 'string')
 		cmds.setAttr('%s.sComponentNodes' %self._sComponentMaster, sComponentMasterNodes[:-1], type = 'string', lock = True)
+		cmds.addAttr(self._sComponentMaster, ln = 'sComponentParts', dt = 'string')
+		cmds.setAttr('%s.sComponentParts' %self._sComponentMaster, sNameString[:-1], type = 'string', lock = True)
 
 		self._getComponentInfo(self._sComponentMaster)
 
@@ -99,11 +99,17 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 		sModuleName = cmds.getAttr('%s.sModuleName' %sComponent)
 		sComponentNodes = cmds.getAttr('%s.sComponentNodes' %sComponent)
 		lComponentNodes = sComponentNodes.split(',')
-		self._lComponentLimbs = []
-		for sComponentNode in lComponentNodes:
+		sComponentParts = cmds.getAttr('%s.sComponentParts' %sComponent)
+		lComponentParts = sComponentParts.split(',')
+
+		dAttrs = {'limbs': lComponentParts}
+		for i, sComponentNode in enumerate(lComponentNodes):
 			oModule = importer.importModule(sModulePath)
 			oLimb = getattr(oModule, sModuleName)(sComponentNode)
-			self._lComponentLimbs.append(oLimb)
+			dAttrs.update({lComponentParts[i]: oLimb})
+
+		self._addObjAttr('componentLimbs', dAttrs)
+
 
 
 		

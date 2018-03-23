@@ -214,12 +214,12 @@ def matrixConnect(sDrvNode, lDrivenNodes, sDrvAttr, lSkipTranslate = [], lSkipRo
 	## connect matrix
 	for sDriven in lDrivenNodes:
 		for sAxis in ['X', 'Y', 'Z']:
-			if sAxis not in lSkipTranslate:
-				attributes.connectAttrs(['%s.outputTranslate%s' %(sDecomposeMatrix, sAxis)], ['%s.translate%s' %(sDriven, sAxis)], bForce = bForce)
-			if sAxis not in lSkipRotate:
-				attributes.connectAttrs(['%s.outputRotate%s' %(sQuatToEuler, sAxis)], ['%s.rotate%s' %(sDriven, sAxis)], bForce = bForce)
-			if sAxis not in lSkipScale:
-				attributes.connectAttrs(['%s.outputScale%s' %(sDecomposeMatrix, sAxis)], ['%s.scale%s' %(sDriven, sAxis)], bForce = bForce)
+			if sAxis.lower() not in lSkipTranslate and sAxis.upper() not in lSkipTranslate:
+				attributes.connectAttrs(['%s.outputTranslate%s' %(sDecomposeMatrix, sAxis.upper())], ['%s.translate%s' %(sDriven, sAxis.upper())], bForce = bForce)
+			if sAxis.lower() not in lSkipRotate and sAxis.upper() not in lSkipRotate:
+				attributes.connectAttrs(['%s.outputRotate%s' %(sQuatToEuler, sAxis.upper())], ['%s.rotate%s' %(sDriven, sAxis.upper())], bForce = bForce)
+			if sAxis.lower() not in lSkipScale and sAxis.upper() not in lSkipScale:
+				attributes.connectAttrs(['%s.outputScale%s' %(sDecomposeMatrix, sAxis.upper())], ['%s.scale%s' %(sDriven, sAxis.upper())], bForce = bForce)
 	attributes.connectAttrs(['%s.outputShear' %sDecomposeMatrix], ['%s.shear' %sDriven], bForce = bForce)
 
 def matrixConnectJnt(sDrvNode, sDrivenJnt, sDrvAttr, lSkipTranslate = [], lSkipRotate = [], lSkipScale = [], bForce = True):

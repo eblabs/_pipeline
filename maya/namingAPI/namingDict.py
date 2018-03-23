@@ -102,4 +102,12 @@ for sKey in dNameConvension.keys():
 spaceDict = {
 				'fk': 0,
 				'ik': 1,
+				'world': 2,
+				'cog': 3,
+				'chest': 4,
+				'pelvis': 5,
+				'head': 6,
+				'clavicle': 7,
+				'hand': 8,
+				'foot': 9,
 				}
