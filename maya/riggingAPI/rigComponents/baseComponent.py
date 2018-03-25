@@ -336,17 +336,24 @@ class baseComponent(object):
 		self._sSide = oName.sSide
 		self._sName = oName.sPart
 		self._iIndex = oName.iIndex
-		self._sComponentType = cmds.getAttr('%s.sComponentType' %sComponent)
-		self._sComponentSpace = cmds.getAttr('%s.sComponentSpace' %sComponent)
+		self._sComponentType = self._getComponentAttr(sComponent, 'sComponentType')
+		self._sComponentSpace = self._getComponentAttr(sComponent, 'sComponentSpace')
 		if not self._sComponentSpace:
 			self._sComponentSpace = None
-		self._sComponentPasser = cmds.getAttr('%s.sComponentPasser' %sComponent)
+		self._sComponentPasser = self._getComponentAttr(sComponent, 'sComponentPasser')
 		if not self._sComponentPasser:
 			self._sComponentPasser = None
 
-		sControlsString = cmds.getAttr('%s.sControls' %sComponent)
+		sControlsString = self._getComponentAttr(sComponent, 'sControls')
 		self._lCtrls = componentInfo.decomposeStringToStrList(sControlsString)
 		self._addAttributeFromList('sCtrl', self._lCtrls)
+
+	def _getComponentAttr(self, sComponent, sAttr):
+		if cmds.attributeQuery(sAttr, node = sComponent, ex = True):
+			sValue = cmds.getAttr('%s.%s' %(sComponent, sAttr))
+		else:
+			sValue = None
+		return sValue
 
 	def _addAttributeFromList(self, sAttrName, lList):
 		if lList:

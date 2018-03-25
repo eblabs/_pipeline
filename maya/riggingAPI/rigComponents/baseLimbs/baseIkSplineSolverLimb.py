@@ -60,7 +60,7 @@ class baseIkSplineSolverLimb(baseJointsLimb.baseJointsLimb):
 		cmds.makeIdentity(lJntsLocal[0], apply = True, t = 1, r = 1, s = 1)
 
 		## spline joint and bind jnt
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(lJntsLocal, sParent = self._sComponentDrvJoints, sSuffix = '', sRemove = 'Local', bBind = self._bBind, lBindNameOverride = self._lBpJnts)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(lJntsLocal, sParent = self._sComponentJoints, sSuffix = '', sRemove = 'Local', bBind = self._bBind, lBindNameOverride = self._lBpJnts)
 
 		for i, sJntLocal in enumerate(lJntsLocal):
 			for sAxis in ['X', 'Y', 'Z']:

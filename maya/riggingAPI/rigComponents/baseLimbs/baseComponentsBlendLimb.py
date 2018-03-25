@@ -53,7 +53,7 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 
 		cmds.setAttr('%s.subComponents' %self._sComponentMaster, 1)
 
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = '', bBind = self._bBind)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentJoints, sSuffix = '', bBind = self._bBind)
 
 		## create temp controller
 		sCrv = cmds.curve(p=[[0,0,0], [1,0,0]], k=[0,1], d=1, per = False, name = 'TEMP_CRV')
@@ -154,7 +154,11 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 			cmds.setAttr('%s.secondTerm' %sCondCtrlVis, iIndex, lock = True)
 			cmds.setAttr('%s.colorIfTrueR' %sCondCtrlVis, 1, lock = True)
 			cmds.setAttr('%s.colorIfFalseR' %sCondCtrlVis, 0, lock = True)
-			cmds.connectAttr('%s.outColorR' %sCondCtrlVis, '%s.controls' %oLimb._sComponentMaster)
+			sMultVis = naming.oName(sType = 'multDoubleLinear', sSide = self._sSide, sPart = '%s%sCtrlVis' %(self._sName, sKey), iIndex = self._iIndex).sName
+			cmds.createNode('multDoubleLinear', name = sMultVis)
+			cmds.connectAttr('%s.outColorR' %sCondCtrlVis, '%s.input1' %sMultVis)
+			cmds.connectAttr('%s.controls' %self._sComponentMaster, '%s.input2' %sMultVis)
+			cmds.connectAttr('%s.output' %sMultVis, '%s.controls' %oLimb._sComponentMaster)
 
 			dModuleInfo.update({sKey: {'sModulePath': sModulePath, 'sModuleName': sModuleName, 'sComponentNode': oLimb._sComponentMaster}})
 
@@ -179,7 +183,7 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 
 	def _getComponentInfo(self, sComponent):
 		super(baseComponentsBlendLimb, self)._getComponentInfo(sComponent)
-		sModuleInfo = cmds.getAttr('%s.dModuleInfo' %sComponent)
+		sModuleInfo = self._getComponentAttr(sComponent, 'dModuleInfo')
 		dModuleInfo = dataInfo.convertStringToDict(sModuleInfo)
 
 		dAttrs = {'limbs': dModuleInfo.keys()}

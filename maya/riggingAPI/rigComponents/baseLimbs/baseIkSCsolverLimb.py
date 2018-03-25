@@ -35,7 +35,7 @@ class baseIkSCsolverLimb(baseJointsLimb.baseJointsLimb):
 	def createComponent(self):
 		super(baseIkSCsolverLimb, self).createComponent()
 
-		sParent_jnt = self._sComponentDrvJoints
+		sParent_jnt = self._sComponentJoints
 		sParent_ctrl = self._sComponentControls
 		sParent_bind = self._sComponentBindJoints
 		lJnts = []
@@ -48,7 +48,7 @@ class baseIkSCsolverLimb(baseJointsLimb.baseJointsLimb):
 		lJntsLocal = []
 
 		lJntsLocal, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = sGrp_ikJnts, sSuffix = 'IkSCLocal', bBind = False)
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'IkSC', bBind = self._bBind)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentJoints, sSuffix = 'IkSC', bBind = self._bBind)
 
 		for i, sJntLocal in enumerate(lJntsLocal):
 			for sAxis in ['X', 'Y', 'Z']:

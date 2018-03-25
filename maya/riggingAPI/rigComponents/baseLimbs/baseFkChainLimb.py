@@ -36,7 +36,7 @@ class baseFkChainLimb(baseJointsLimb.baseJointsLimb):
 	def createComponent(self):
 		super(baseFkChainLimb, self).createComponent()
 
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentDrvJoints, sSuffix = 'Fk', bBind = self._bBind, lBindNameOverride = self._lBpJnts)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentJoints, sSuffix = 'Fk', bBind = self._bBind, lBindNameOverride = self._lBpJnts)
 
 		## controls
 		sParent_ctrl = self._sComponentControls

@@ -61,8 +61,8 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 			sComponentMasterNodes += '%s,' %oLimb._sComponentMaster
 
 			## reparent nodes
-			sGrp = [self._sComponentControls, self._sComponentDrvJoints, self._sComponentRigNodesLocal, self._sComponentRigNodesWorld, self._sComponentSubComponents]
-			for j, sGrp_limb in enumerate([oLimb._sComponentControls, oLimb._sComponentDrvJoints, oLimb._sComponentRigNodesLocal, oLimb._sComponentRigNodesWorld, oLimb._sComponentSubComponents]):
+			sGrp = [self._sComponentControls, self._sComponentJoints, self._sComponentRigNodesLocal, self._sComponentRigNodesWorld, self._sComponentSubComponents]
+			for j, sGrp_limb in enumerate([oLimb._sComponentControls, oLimb._sComponentJoints, oLimb._sComponentRigNodesLocal, oLimb._sComponentRigNodesWorld, oLimb._sComponentSubComponents]):
 				lNodes = cmds.listRelatives(sGrp_limb, c = True)
 				if lNodes:
 					cmds.parent(lNodes, sGrp[j])
@@ -95,11 +95,11 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 	def _getComponentInfo(self, sComponent):
 		super(baseMultiComponentsLimb, self)._getComponentInfo(sComponent)
 
-		sModulePath = cmds.getAttr('%s.sModulePath' %sComponent)
-		sModuleName = cmds.getAttr('%s.sModuleName' %sComponent)
-		sComponentNodes = cmds.getAttr('%s.sComponentNodes' %sComponent)
+		sModulePath = self._getComponentAttr(sComponent, 'sModulePath')
+		sModuleName = self._getComponentAttr(sComponent, 'sModuleName')
+		sComponentNodes = self._getComponentAttr(sComponent, 'sComponentNodes')
 		lComponentNodes = sComponentNodes.split(',')
-		sComponentParts = cmds.getAttr('%s.sComponentParts' %sComponent)
+		sComponentParts = self._getComponentAttr(sComponent, 'sComponentParts')
 		lComponentParts = sComponentParts.split(',')
 
 		dAttrs = {'limbs': lComponentParts}

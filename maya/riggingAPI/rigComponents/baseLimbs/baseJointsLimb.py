@@ -92,25 +92,11 @@ class baseJointsLimb(baseComponent.baseComponent):
 		## joints group
 		sComponentJoints = naming.oName(sType = 'joints', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
 		transforms.createTransformNode(sComponentJoints, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentSpaceLocal)
-				
-		### drive joints group
-		sComponentDrvJoints = naming.oName(sType = 'drvJoints', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
-		transforms.createTransformNode(sComponentDrvJoints, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentJoints)
-
-		### bind joints group
-		# sComponentBindJoints = naming.oName(sType = 'bindJoints', sSide = self._sSide, sPart = self._sName, iIndex = self._iIndex).sName
-		# transforms.createTransformNode(sComponentBindJoints, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = sComponentJoints)
 
 		# visibility switch
 		### joints
 		cmds.addAttr(self._sComponentMaster, ln = 'joints', at = 'enum', enumName = 'on:off:tempelate:reference', keyable = False, dv = 1)
 		cmds.setAttr('%s.joints' %self._sComponentMaster, channelBox = True)
-		### bind joints vis
-		# cmds.addAttr(self._sComponentMaster, ln = 'bindJoints', at = 'long', min = 0, max = 1, keyable = False, dv = 1)
-		# cmds.setAttr('%s.bindJoints' %self._sComponentMaster, channelBox = True)
-		### drive joints vis
-		cmds.addAttr(self._sComponentMaster, ln = 'drvJoints', at = 'long', min = 0, max = 1, keyable = False, dv = 0)
-		cmds.setAttr('%s.drvJoints' %self._sComponentMaster, channelBox = True)
 
 		cmds.addAttr(self._sComponentMaster, ln = 'iJointCount', at = 'long')
 		cmds.addAttr(self._sComponentMaster, ln = 'sControls', dt = 'string')
@@ -131,12 +117,7 @@ class baseJointsLimb(baseComponent.baseComponent):
 		cmds.setAttr('%s.overrideEnabled' %sComponentJoints, 1)
 		attributes.enumToSingleAttrs('joints', ['%s.overrideDisplayType' %sComponentJoints], iEnumRange = 4, lValRange = [[0,0],[0,0],[0,1],[0,2]], sEnumObj = self._sComponentMaster)
 
-		#attributes.connectAttrs(['%s.bindJoints' %self._sComponentMaster], ['%s.v' %sComponentBindJoints], bForce = True)
-		attributes.connectAttrs(['%s.drvJoints' %self._sComponentMaster], ['%s.v' %sComponentDrvJoints], bForce = True)
-
 		self._sComponentJoints = sComponentJoints
-		self._sComponentDrvJoints = sComponentDrvJoints
-		#self._sComponentBindJoints = sComponentBindJoints
 
 
 	def _writeGeneralComponentInfo(self, sComponentType, lJnts, lCtrls, lBindJnts, lBindRootJnts):
@@ -191,20 +172,20 @@ class baseJointsLimb(baseComponent.baseComponent):
 	def _getComponentInfo(self, sComponent):
 		super(baseJointsLimb, self)._getComponentInfo(sComponent)
 
-		self._iJointCount = cmds.getAttr('%s.iJointCount' %sComponent)
+		self._iJointCount = self._getComponentAttr(sComponent, 'iJointCount')
 
-		sBindJointsString = cmds.getAttr('%s.sBindJoints' %sComponent)
+		sBindJointsString = self._getComponentAttr(sComponent, 'sBindJoints')
 		self._lBindJoints = componentInfo.decomposeStringToStrList(sBindJointsString)
 
-		self._iTwistJntNum = cmds.getAttr('%s.iTwistJointCount' %sComponent)
+		self._iTwistJntNum = self._getComponentAttr(sComponent, 'iTwistJointCount')
 		
-		sTwistBindJoints = cmds.getAttr('%s.sTwistBindJoints' %sComponent)
+		sTwistBindJoints = self._getComponentAttr(sComponent, 'sTwistBindJoints')
 		self._lTwistBindJnts = componentInfo.decomposeStringToStrList(sTwistBindJoints)
 
-		sTwistSections = cmds.getAttr('%s.sTwistSections' %sComponent)
+		sTwistSections = self._getComponentAttr(sComponent, 'sTwistSections')
 		self._lTwistSections = componentInfo.decomposeStringToIntList(sTwistSections)
 
-		sBindRootJointsString = cmds.getAttr('%s.sBindRootJoints' %sComponent)
+		sBindRootJointsString = self._getComponentAttr(sComponent, 'sBindRootJoints')
 		self._lBindRootJoints = componentInfo.decomposeStringToStrList(sBindRootJointsString)
 
 		iSectionIndex = 0
