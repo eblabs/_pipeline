@@ -138,6 +138,7 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 			attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'], sDriver = self._sComponentSpace, sDriven = oLimb._sComponentSpace, bForce = True)
 
 			cmds.connectAttr('%s.inputMatrix' %self._sComponentMaster, '%s.inputMatrix' %oLimb._sComponentMaster)
+			cmds.connectAttr('%s.lWorldMatrix' %self._sComponentMaster, '%s.lWorldMatrix' %oLimb._sComponentMaster)
 
 			controls.addCtrlShape(oLimb._lCtrls, sCtrlShape, bVis = False, dCtrlShapeInfo = None, bTop = False)
 

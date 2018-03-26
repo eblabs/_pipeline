@@ -17,6 +17,26 @@ def getSkinCluster(sNode):
 	sSkinCluster = mel.eval('findRelatedSkinCluster("' + sNode + '")')
 	return sSkinCluster
 
+def getInfluenceObjects(sSkin):
+	lJnts = cmds.skinCluster(sSkin, q = True, inf = True)
+	return lJnts
+
+def copySkinCluster(sSourceMesh, lTargetMeshes, bRemove = True, bOverride = True):
+	sSkinSource = getSkinCluster(sSourceMesh)
+	if sSkinSource:
+		lJnts = getInfluenceObjects(sSkinSource)
+	for sMesh in lTargetMeshes:
+		sSkinTarget = getSkinCluster(sMesh)
+		if sSkinTarget:
+			if bOverride:
+				cmds.delete(sSkinTarget) 
+				sSkinTarget = createSkinCluster(sMesh, lJnts)
+		else:
+			sSkinTarget = createSkinCluster(sMesh, lJnts)
+		cmds.copySkinWeights(ss = sSkinSource, ds = sSkinTarget, noMirror = True, surfaceAssociation  = 'closestPoint', influenceAssociation = ['label', 'oneToOne'], normalize = True)
+		if bRemove:
+			removeUnusedInfluence(sMesh)
+			
 def createSkinCluster(sNode, lInfluences):
 	lJnts = []
 	lGeos = []
@@ -33,7 +53,7 @@ def createSkinCluster(sNode, lInfluences):
 			else:
 				lGeos.append(sInfluence)
 		else:
-			createJnt(sInfluence)
+			joints.createJnt(sInfluence)
 			lJnts.append(sInfluence)
 			if not cmds.objExists(sGrp):
 				cmds.group(empty = True, name = sGrp)

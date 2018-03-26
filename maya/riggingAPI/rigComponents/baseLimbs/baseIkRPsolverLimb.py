@@ -105,7 +105,7 @@ class baseIkRPsolverLimb(baseJointsLimb.baseJointsLimb):
 		constraints.matrixConnect(sMultMatrixPv, [lClsHnds[0]], 'matrixSum', lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)
 
 		## write component info
-		self._writeGeneralComponentInfo('baseFkChainLimb', lJnts, lCtrls, lBindJnts, self._lBindRootJnts)
+		self._writeGeneralComponentInfo('baseIkRPsolverLimb', lJnts, lCtrls, lBindJnts, self._lBindRootJnts)
 
 		## output matrix
 		if self._bInfo:
@@ -115,3 +115,9 @@ class baseIkRPsolverLimb(baseJointsLimb.baseJointsLimb):
 		addTwistJoints.twistJointsForLimb(self._iTwistJntNum, self._lSkipTwist, lJnts, self._lBpJnts, bBind = self._bBind, sNode = self._sComponentMaster, bInfo = self._bInfo)
 
 		self._getComponentInfo(self._sComponentMaster)
+
+	def _getComponentInfo(self, sComponent):
+		super(baseIkRPsolverLimb, self)._getComponentInfo(sComponent)
+		self.rootCtrl = self._lCtrls[0]
+		self.pvCtrl = self._lCtrls[1]
+		self.ikCtrl = self._lCtrls[2]

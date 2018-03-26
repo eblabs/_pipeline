@@ -53,6 +53,7 @@ class baseComponent(object):
 			self._iIndex = kwargs.get('iIndex', None)
 			self._sParent = kwargs.get('sParent', None)
 			self._bInfo = kwargs.get('bInfo', True)
+			self._sWorldMatrixInput = kwargs.get('sWorldMatrixInput', None)
 
 	@property
 	def sComponentMaster(self):
@@ -159,6 +160,10 @@ class baseComponent(object):
 		cmds.setAttr('%s.sComponentSpace' %sComponentMaster, sComponentSpace, type = 'string', lock = True)
 		cmds.addAttr(sComponentMaster, ln = 'sComponentPasser', dt = 'string')
 		cmds.setAttr('%s.sComponentPasser' %sComponentMaster, sComponentPasser, type = 'string', lock = True)
+		cmds.addAttr(sComponentMaster, ln = 'lWorldMatrix', dt = 'matrix')
+		if self._sWorldMatrixInput:
+			cmds.connectAttr(self._sWorldMatrixInput, '%s.lWorldMatrix' %sComponentMaster, f = True)
+		self._sWorldMatrixPlug = '%s.lWorldMatrix' %sComponentMaster
 
 	def connectComponents(self, sMatrixPlug):
 		mMatrixOrig = apiUtils.createMMatrixFromTransformInfo()
@@ -271,6 +276,7 @@ class baseComponent(object):
 		cmds.createNode('multMatrix', name = sMultMatrix)
 		cmds.connectAttr('%s.matrixSum' %sWtAddMatrix, '%s.matrixIn[0]' %sMultMatrix)
 		cmds.connectAttr('%s.worldInverseMatrix[0]' %oCtrl.sPasser, '%s.matrixIn[1]' %sMultMatrix)
+		cmds.connectAttr(self._sWorldMatrixPlug, '%s.matrixIn[2]' %sMultMatrix)
 
 		for i, sPlug in enumerate(lPlugs):
 			sPlug_space = self._spaceMatrix(sCtrl, sPlug, lIndex[i])
@@ -347,6 +353,11 @@ class baseComponent(object):
 		sControlsString = self._getComponentAttr(sComponent, 'sControls')
 		self._lCtrls = componentInfo.decomposeStringToStrList(sControlsString)
 		self._addAttributeFromList('sCtrl', self._lCtrls)
+
+		self._sWorldMatrixPlug = '%s.lWorldMatrix' %self._sComponentMaster
+		self.worldMatrixPlug = self._sWorldMatrixPlug
+		self._sInputMatrixPlug = '%s.inputMatrix' %self._sComponentMaster
+		self.inputMatrixPlug = self._sInputMatrixPlug
 
 	def _getComponentAttr(self, sComponent, sAttr):
 		if cmds.attributeQuery(sAttr, node = sComponent, ex = True):

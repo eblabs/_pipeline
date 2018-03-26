@@ -87,7 +87,7 @@ class baseIkSCsolverLimb(baseJointsLimb.baseJointsLimb):
 			self._lBindRootJnts = None
 
 		## write component info
-		self._writeGeneralComponentInfo('baseIkSCsolcerLimb', lJnts, lCtrls, lBindJnts, self._lBindRootJnts)
+		self._writeGeneralComponentInfo('baseIkSCsolverLimb', lJnts, lCtrls, lBindJnts, self._lBindRootJnts)
 
 		## output matrix
 		if self._bInfo:
@@ -97,3 +97,8 @@ class baseIkSCsolverLimb(baseJointsLimb.baseJointsLimb):
 		addTwistJoints.twistJointsForLimb(self._iTwistJntNum, self._lSkipTwist, lJnts, self._lBpJnts, bBind = self._bBind, sNode = self._sComponentMaster, bInfo = self._bInfo)
 
 		self._getComponentInfo(self._sComponentMaster)
+
+	def _getComponentInfo(self, sComponent):
+		super(baseIkSCsolverLimb, self)._getComponentInfo(sComponent)
+		self.rootCtrl = self._lCtrls[0]
+		self.ikCtrl = self._lCtrls[1]

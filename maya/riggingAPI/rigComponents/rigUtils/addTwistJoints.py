@@ -59,7 +59,7 @@ def _addTwistJointsForSection(sJntStart, sJntEnd, sBpJnt, iTwistJntNum, bBind = 
 
 	## start end twist driver
 	sTwistStartPlug = _twistMatrixDriver(sJntStart, oTwistName, sPos = 'Start')
-	sTwistEndPlug = _twistMatrixDriver(sJntEnd, oTwistName, sPos = 'End', sRotateReference = sJntStart)
+	sTwistEndPlug = _twistMatrixDriver(sJntEnd, oTwistName, sPos = 'End')
 
 	## create twist joints
 	lTwistJnts = []
@@ -118,15 +118,13 @@ def _addTwistJointsForSection(sJntStart, sJntEnd, sBpJnt, iTwistJntNum, bBind = 
 	return lTwistJnts, lTwistBindJnts
 
 
-def _twistMatrixDriver(sJnt, oName, sPos = 'Start', sRotateReference = None):
+def _twistMatrixDriver(sJnt, oName, sPos = 'Start'):
 
 	sDecomposeMatrix = cmds.createNode('decomposeMatrix', name = naming.oName(sType = 'decomposeMatrix', sSide = oName.sSide, sPart = '%sTwist%s' %(oName.sPart, sPos), iIndex = oName.iIndex).sName)
 	sQuatToEuler = cmds.createNode('quatToEuler', name = naming.oName(sType = 'quatToEuler', sSide = oName.sSide, sPart = '%sTwist%s' %(oName.sPart, sPos), iIndex = oName.iIndex).sName)
 	cmds.connectAttr('%s.outputQuatX' %sDecomposeMatrix, '%s.inputQuatX' %sQuatToEuler)
 	cmds.connectAttr('%s.outputQuatW' %sDecomposeMatrix, '%s.inputQuatW' %sQuatToEuler)
-	if not sRotateReference:
-		sRotateReference = sJnt
-	cmds.connectAttr('%s.rotateOrder' %sRotateReference, '%s.inputRotateOrder' %sQuatToEuler)
+	cmds.connectAttr('%s.rotateOrder' %sJnt, '%s.inputRotateOrder' %sQuatToEuler)
 
 	if sPos == 'Start':
 		sMultMatrix = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = oName.sSide, sPart = '%sTwist%s' %(oName.sPart, sPos), iIndex = oName.iIndex).sName)

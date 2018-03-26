@@ -73,7 +73,7 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 
 			## connect matrix
 			cmds.connectAttr('%s.inputMatrix' %self._sComponentMaster, '%s.inputMatrix' %oLimb._sComponentMaster)
-
+			cmds.connectAttr('%s.lWorldMatrix' %self._sComponentMaster, '%s.lWorldMatrix' %oLimb._sComponentMaster)
 			## overwrite component info
 			for sAttr in ['sComponentSpace', 'sComponentPasser']:
 				cmds.setAttr('%s.%s' %(oLimb._sComponentMaster, sAttr), lock = False, type = 'string')

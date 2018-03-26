@@ -73,14 +73,17 @@ def addCtrlShape(lCtrls, sCtrlShape, bVis = True, dCtrlShapeInfo = None, bTop = 
 	if sCrv:
 		cmds.delete(sCrv)
 
-def scaleCtrlShape(sCtrl, fScale = 1):
+def scaleCtrlShape(sCtrl, fScale = 1, sPivot = 'transform'):
 	'''
 	scale the shape node in the control's transform space
 	'''
-	lPosPivot = cmds.xform(sCtrl, q = True, t = True, ws = True)
 	sCtrlShape = getCtrlShape(sCtrl)
 	if sCtrlShape:
 		lCtrlPnts = __getCtrlShapeControlPoints(sCtrlShape)
+		if sPivot == 'transform':
+			lPosPivot = cmds.xform(sCtrl, q = True, t = True, ws = True)
+		else:
+			lPosPivot = transforms.getNodesPivotFromBoundingBox(lCtrlPnts, bPointInfo = True)[0]
 		for i, lCtrlPntPos in enumerate(lCtrlPnts):
 			vCtrlPnt = maths.vector(lPosPivot, lCtrlPntPos)
 			vCtrlPnt = maths.vectorScale(vCtrlPnt, fScale)
@@ -126,7 +129,15 @@ def mirrorCtrlShape(sCtrl):
 
 		buildCtrlShape(sCtrlMirror, dCtrlShapeInfo[sCtrl], bColor = True, bTop = True)
 
-
+def matchSubCtrlShape(sCtrl, fScale = 0.8, sPivot = 'transform'):
+	oCtrl = oControl(sCtrl)
+	sSubCtrl = oCtrl.sSub
+	if sSubCtrl:
+		sSubCtrlShape = getCtrlShape(sSubCtrl)
+		dCtrlShapeInfo = getCtrlShapeInfo(sCtrl)
+		dCtrlShapeInfo[sCtrl]['sCtrlShape'] = sSubCtrlShape
+		buildCtrlShape(sSubCtrl, dCtrlShapeInfo[sCtrl], bColor = True, bTop = True)
+		scaleCtrlShape(sSubCtrl, fScale = fScale, sPivot = sPivot)
 
 
 #------------ create controller wrapper -----------
