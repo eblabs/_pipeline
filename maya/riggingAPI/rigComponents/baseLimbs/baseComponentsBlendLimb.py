@@ -67,8 +67,8 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 		iDefaultA = None
 		iDefaultB = None
 		for sKey in lKey:
-			if namingDict.spaceDict.has_key(sKey):
-				iIndexKey = namingDict.spaceDict[sKey]
+			if namingDict.dSpaceDict.has_key(sKey):
+				iIndexKey = namingDict.dSpaceDict[sKey]
 			else:
 				iIndexKey = iIndexCustom
 				iIndexCustom += 1

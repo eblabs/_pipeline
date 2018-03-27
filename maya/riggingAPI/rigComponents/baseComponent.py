@@ -54,6 +54,7 @@ class baseComponent(object):
 			self._sParent = kwargs.get('sParent', None)
 			self._bInfo = kwargs.get('bInfo', True)
 			self._sWorldMatrixInput = kwargs.get('sWorldMatrixInput', None)
+			self._sWorldMatrixRvsInput = kwargs.get('sWorldMatrixRvsInput', None)
 
 	@property
 	def sComponentMaster(self):
@@ -161,9 +162,13 @@ class baseComponent(object):
 		cmds.addAttr(sComponentMaster, ln = 'sComponentPasser', dt = 'string')
 		cmds.setAttr('%s.sComponentPasser' %sComponentMaster, sComponentPasser, type = 'string', lock = True)
 		cmds.addAttr(sComponentMaster, ln = 'lWorldMatrix', dt = 'matrix')
+		cmds.addAttr(sComponentMaster, ln = 'lWorldMatrixRvs', dt = 'matrix')
 		if self._sWorldMatrixInput:
 			cmds.connectAttr(self._sWorldMatrixInput, '%s.lWorldMatrix' %sComponentMaster, f = True)
+		if self._sWorldMatrixRvsInput:
+			cmds.connectAttr(self._sWorldMatrixRvsInput, '%s.lWorldMatrixRvs' %sComponentMaster, f = True)
 		self._sWorldMatrixPlug = '%s.lWorldMatrix' %sComponentMaster
+		self._sWorldMatrixRvsPlug = '%s.lWorldMatrixRvs' %sComponentMaster
 
 	def connectComponents(self, sMatrixPlug):
 		mMatrixOrig = apiUtils.createMMatrixFromTransformInfo()
@@ -208,8 +213,8 @@ class baseComponent(object):
 			
 			for sKey in dSpace.keys():
 				if sPos in dSpace[sKey]['lType']:
-					if namingDict.spaceDict.has_key(sKey):
-						iIndexKey = namingDict.spaceDict[sKey]
+					if namingDict.dSpaceDict.has_key(sKey):
+						iIndexKey = namingDict.dSpaceDict[sKey]
 					elif dKeyIndex.has_key(sKey):
 						iIndexKey = dKeyIndex[sKey]
 					else:
@@ -276,10 +281,9 @@ class baseComponent(object):
 		cmds.createNode('multMatrix', name = sMultMatrix)
 		cmds.connectAttr('%s.matrixSum' %sWtAddMatrix, '%s.matrixIn[0]' %sMultMatrix)
 		cmds.connectAttr('%s.worldInverseMatrix[0]' %oCtrl.sPasser, '%s.matrixIn[1]' %sMultMatrix)
-		cmds.connectAttr(self._sWorldMatrixPlug, '%s.matrixIn[2]' %sMultMatrix)
 
 		for i, sPlug in enumerate(lPlugs):
-			sPlug_space = self._spaceMatrix(sCtrl, sPlug, lIndex[i])
+			sPlug_space = self._spaceMatrix(sCtrl, sPlug, lKeys[i])
 			cmds.connectAttr(sPlug_space, '%s.input[%d]' %(sChoiceA, lIndex[i]), f = True)
 			cmds.connectAttr(sPlug_space, '%s.input[%d]' %(sChoiceB, lIndex[i]), f = True)
 
@@ -318,19 +322,20 @@ class baseComponent(object):
 		sChoiceB = naming.oName(sType = 'choice', sSide = oCtrl.sSide, sPart = '%sSpaceB%s' %(oCtrl.sPart, sType.upper()), iIndex = oCtrl.iIndex).sName
 		
 		for i, sPlug in enumerate(lPlugs):
-			sPlug_space = self._spaceMatrix(sCtrl, sPlug, lIndex[i])
+			sPlug_space = self._spaceMatrix(sCtrl, sPlug, lKeys[i])
 			cmds.connectAttr(sPlug_space, '%s.input[%d]' %(sChoiceA, lIndex[i]), f = True)
 			cmds.connectAttr(sPlug_space, '%s.input[%d]' %(sChoiceB, lIndex[i]), f = True)
 
-	def _spaceMatrix(self, sCtrl, sPlug, iIndex):
+	def _spaceMatrix(self, sCtrl, sPlug, sKey):
 		oCtrl = controls.oControl(sCtrl)
-		sMultMatrix = naming.oName(sType = 'multMatrix', sSide = oCtrl.sSide, sPart = '%sSpace%dMatrix' %(oCtrl.sPart, iIndex), iIndex = oCtrl.iIndex).sName
+		sMultMatrix = naming.oName(sType = 'multMatrix', sSide = oCtrl.sSide, sPart = '%sSpace%sMatrix' %(oCtrl.sPart, sKey.title()), iIndex = oCtrl.iIndex).sName
 		if not cmds.objExists(sMultMatrix):
 			cmds.createNode('multMatrix', name = sMultMatrix)
 		lPlugMatrix = cmds.getAttr(sPlug)
 		lMatrixLocal = apiUtils.getLocalMatrixInMatrix(oCtrl.sSpace, lPlugMatrix, sNodeAttr = 'worldMatrix[0]')
 		cmds.setAttr('%s.matrixIn[0]' %sMultMatrix, lMatrixLocal, type = 'matrix')
 		attributes.connectAttrs([sPlug], ['%s.matrixIn[1]' %sMultMatrix], bForce = True)
+		attributes.connectAttrs([self._sWorldMatrixRvsPlug], ['%s.matrixIn[2]' %sMultMatrix], bForce = True)
 		return '%s.matrixSum' %sMultMatrix
 
 
@@ -356,6 +361,8 @@ class baseComponent(object):
 
 		self._sWorldMatrixPlug = '%s.lWorldMatrix' %self._sComponentMaster
 		self.worldMatrixPlug = self._sWorldMatrixPlug
+		self._sWorldMatrixRvsPlug = '%s.lWorldMatrixRvs' %self._sComponentMaster
+		self.worldMatrixRvsPlug = self._sWorldMatrixRvsPlug
 		self._sInputMatrixPlug = '%s.inputMatrix' %self._sComponentMaster
 		self.inputMatrixPlug = self._sInputMatrixPlug
 

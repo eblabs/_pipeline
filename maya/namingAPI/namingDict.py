@@ -99,7 +99,7 @@ for sKey in dNameConvension.keys():
 	dInverse = {sKey: {v: k for k, v in dNameConvension[sKey].iteritems()}}
 	dNameConvensionInverse.update(dInverse)
 
-spaceDict = {
+dSpaceDict = {
 				'fk': 0,
 				'ik': 1,
 				'world': 2,
@@ -111,3 +111,8 @@ spaceDict = {
 				'hand': 8,
 				'foot': 9,
 				}
+
+dSpaceDictInverse = {}
+for sKey in dSpaceDictInverse.keys():
+	dInverse = {sKey: {v: k for k, v in dSpaceDict[sKey].iteritems()}}
+	dSpaceDictInverse.update(dInverse)
