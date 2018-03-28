@@ -44,6 +44,7 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 		sComponentMasterNodes = ''
 		self._lBindRootJnts = []
 		sNameString = ''
+		self._lLimbs = []
 		for i, lBpJnts_each in enumerate(self._lBpJnts):
 			dKwargs = self._dKwargs
 			if self._lParts:
@@ -55,6 +56,7 @@ class baseMultiComponentsLimb(baseJointsLimb.baseJointsLimb):
 			oModule = importer.importModule(self._sModulePath)
 			oLimb = getattr(oModule, self._sModuleName)(**dKwargs)
 			oLimb.createComponent()
+			self._lLimbs.append(oLimb)
 
 			if self._bBind:
 				self._lBindRootJnts += oLimb.lBindRootJoints
