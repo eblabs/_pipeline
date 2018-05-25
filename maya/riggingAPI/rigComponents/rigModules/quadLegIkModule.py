@@ -1,6 +1,6 @@
 #################################################
-# leg ik module
-# this module should do the base biped leg ik rig
+# quad leg ik module
+# this module should do the base quadruped leg ik rig
 #################################################
 ## import
 import maya.cmds as cmds
@@ -13,20 +13,20 @@ import riggingAPI.joints as joints
 import riggingAPI.controls as controls
 import riggingAPI.constraints as constraints
 
-import riggingAPI.rigComponents.baseLimbs.baseIkRPsolverLimb as baseIkRPsolverLimb
+import riggingAPI.rigComponents.baseLimbs.baseIkSpringSolverLimb as baseIkSpringSolverLimb
 import riggingAPI.rigComponents.rigUtils.createDriveJoints as createDriveJoints
 ## kwarg class
-class kwargsGenerator(baseIkRPsolverLimb.kwargsGenerator):
+class kwargsGenerator(baseIkSpringSolverLimb.kwargsGenerator):
 	"""docstring for kwargsGenerator"""
 	def __init__(self):
 		super(kwargsGenerator, self).__init__()
 		self.dKwargs = {'lBpJntsFootRvs': None}
 		self.addKwargs()
 
-class legIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
-	"""docstring for armIkModule"""
+class quadLegIkModule(baseIkSpringSolverLimb.baseIkSpringSolverLimb):
+	"""docstring for quadLegIkModule"""
 	def __init__(self, *args, **kwargs):
-		super(legIkModule, self).__init__(*args, **kwargs)
+		super(quadLegIkModule, self).__init__(*args, **kwargs)
 		if args:
 			self._getComponentInfo(args[0])
 		else:
@@ -203,7 +203,7 @@ class legIkModule(baseIkRPsolverLimb.baseIkRPsolverLimb):
 			createDriveJoints.labelBindJoint(sBindJnt)
 
 		## write component info
-		self._writeGeneralComponentInfo('legIkModule', self._lJnts, self._lCtrls, self._lBindJnts, self._lBindRootJnts)
+		self._writeGeneralComponentInfo('quadLegIkModule', self._lJnts, self._lCtrls, self._lBindJnts, self._lBindRootJnts)
 
 		## writeOutputMatrixInfo
 
