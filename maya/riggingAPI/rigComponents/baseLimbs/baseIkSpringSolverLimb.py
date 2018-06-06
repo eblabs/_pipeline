@@ -4,6 +4,7 @@
 #####################################################
 ## import
 import maya.cmds as cmds
+import maya.mel as mel
 ## import libs
 import namingAPI.naming as naming
 import common.transforms as transforms
@@ -30,6 +31,7 @@ class kwargsGenerator(baseJointsLimb.kwargsGenerator):
 class baseIkSpringSolverLimb(baseJointsLimb.baseJointsLimb):
 	"""docstring for baseIkSpringSolverLimb"""
 	def __init__(self, *args, **kwargs):
+		mel.eval('ikSpringSolver')
 		super(baseIkSpringSolverLimb, self).__init__(*args, **kwargs)
 		if args:
 			self._getComponentInfo(args[0])
@@ -70,7 +72,7 @@ class baseIkSpringSolverLimb(baseJointsLimb.baseJointsLimb):
 
 		## ik handle
 		sIkHnd = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sSpringSolver' %self._sName, iIndex = self._iIndex).sName
-		cmds.ikHandle(sj = lJntsLocal[0], ee = lJntsLocal[-1], sol = 'ikSplineSolver', name = sIkHnd)
+		cmds.ikHandle(sj = lJntsLocal[0], ee = lJntsLocal[-1], sol = 'ikSpringSolver', name = sIkHnd)
 
 		#### offset group
 		sGrpIk = transforms.createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sSpringSolver' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesWorld, sPos = lCtrls[-1])
@@ -84,10 +86,10 @@ class baseIkSpringSolverLimb(baseJointsLimb.baseJointsLimb):
 		cmds.parent(lClsHnds, sCrv, self._sComponentControls)
 
 		#### angle bias 
-		cmds.addAttr(lCtrls[1], ln = 'angleBias', min = 0, max = 1, dv = 0.5, at = 'float', keyable = True)
-		cmds.connectAttr('%s.angleBias' %lCtrls[1], '%s.springAngleBias[0].springAngleBias_FloatValue' %sIkHnd)
+		cmds.addAttr(lCtrls[2], ln = 'angleBias', min = 0, max = 1, dv = 0.5, at = 'float', keyable = True)
+		cmds.connectAttr('%s.angleBias' %lCtrls[2], '%s.springAngleBias[0].springAngleBias_FloatValue' %sIkHnd)
 		sRvs = cmds.createNode('reverse', name = naming.oName(sType = 'reverse', sSide = self._sSide, sPart = '%sAngleBias' %self._sName, iIndex = self._iIndex).sName)
-		cmds.connectAttr('%s.angleBias' %lCtrls[1], '%s.inputX' %sRvs)
+		cmds.connectAttr('%s.angleBias' %lCtrls[2], '%s.inputX' %sRvs)
 		cmds.connectAttr('%s.outputX' %sRvs, '%s.springAngleBias[1].springAngleBias_FloatValue' %sIkHnd)
 
 		## pass info to class
@@ -97,6 +99,8 @@ class baseIkSpringSolverLimb(baseJointsLimb.baseJointsLimb):
 		self._sGrpIk = sGrpIk
 		self._sIkHnd = sIkHnd
 		self._lJntsLocal = lJntsLocal
+		self._sGrp_ikJnts = sGrp_ikJnts
+		self._sGrpPv = sGrpPv
 		if lBindJnts:
 			self._lBindRootJnts = [lBindJnts[0]]
 		else:
@@ -124,7 +128,7 @@ class baseIkSpringSolverLimb(baseJointsLimb.baseJointsLimb):
 		self._getComponentInfo(self._sComponentMaster)
 
 	def _getComponentInfo(self, sComponent):
-		super(baseIkRPsolverLimb, self)._getComponentInfo(sComponent)
+		super(baseIkSpringSolverLimb, self)._getComponentInfo(sComponent)
 		self.rootCtrl = self._lCtrls[0]
 		self.pvCtrl = self._lCtrls[1]
 		self.ikCtrl = self._lCtrls[2]

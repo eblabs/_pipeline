@@ -38,50 +38,83 @@ class quadLegIkModule(baseIkSpringSolverLimb.baseIkSpringSolverLimb):
 			# ---- toe roll
 			# ------ side out
 			# -------- side inn
-			# ---------- ball roll
-			# ------------- ball roll end
-			# ---------- toe tap
-			# ------------- toe tap end
+			# ---------- ball end
 		
 	def createComponent(self):
 		lBpJnts = self._lBpJnts
-		self._lBpJnts = lBpJnts[:-2]
+		self._lBpJnts = lBpJnts[:-1]
 		sBpJntBall = lBpJnts[-2]
 		sBpJntBallEnd = lBpJnts[-1]
 
-		super(legIkModule, self).createComponent()
+		super(quadLegIkModule, self).createComponent()
+
+		## ik driver
+		lJntsDrv, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sGrp_ikJnts, sSuffix = 'IkSpringDriverLocal', bBind = False)
+		for sAxis in ['X', 'Y', 'Z']:
+			cmds.connectAttr('%s.translate%s' %(self._lJntsLocal[0], sAxis), '%s.translate%s' %(lJntsDrv[0], sAxis))
+		#### ik rp solver
+		sIkHnd_rp = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sUpperRPsolver' %self._sName, iIndex = self._iIndex).sName
+		cmds.ikHandle(sj = lJntsDrv[0], ee = lJntsDrv[2], sol = 'ikRPsolver', name = sIkHnd_rp)
+		#### ik sc solver
+		sIkHnd_sc = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sLowerSCsolver' %self._sName, iIndex = self._iIndex).sName
+		cmds.ikHandle(sj = lJntsDrv[2], ee = lJntsDrv[-1], sol = 'ikSCsolver', name = sIkHnd_sc)
+
+		for i, sJntDrv in enumerate(lJntsDrv):
+			for sAxis in ['X', 'Y', 'Z']:
+				cmds.connectAttr('%s.translate%s' %(sJntDrv, sAxis), '%s.translate%s' %(self._lJnts[i], sAxis), f = True)
+				cmds.connectAttr('%s.rotate%s' %(sJntDrv, sAxis), '%s.rotate%s' %(self._lJnts[i], sAxis), f = True)
+				cmds.connectAttr('%s.scale%s' %(sJntDrv, sAxis), '%s.scale%s' %(self._lJnts[i], sAxis), f = True)
+
+		#### rig ik handle
+		cmds.parent(sIkHnd_sc, self._sGrpIk)
+
+		oCtrl_leg = controls.oControl(self._lCtrls[2])
+		iRotateOrder = cmds.getAttr('%s.ro' %self._lBpJnts[-1])
+		oCtrl_bend = controls.create('%sBend' %oCtrl_leg.sPart, sSide = oCtrl_leg.sSide, iIndex = oCtrl_leg.iIndex, iStacks = self._iStacks, bSub = True, sParent = self._sComponentControls, sPos = self._lBpJnts[-1], iRotateOrder = iRotateOrder, sShape = 'cube', fSize = 4, lLockHideAttrs = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz', 'v'])
+
+		sMultMatrix_ctrl = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = oCtrl_leg.sSide, sPart = '%sBendPos' %oCtrl_leg.sPart, iIndex = oCtrl_leg.iIndex).sName)
+		cmds.connectAttr('%s.worldMatrix[0]' %self._lJntsLocal[-1], '%s.matrixIn[0]' %sMultMatrix_ctrl)
+		lMatrix_zero = cmds.getAttr('%s.inverseMatrix' %oCtrl_bend.sZero)
+		cmds.setAttr('%s.matrixIn[1]' %sMultMatrix_ctrl, lMatrix_zero, type = 'matrix')
+		constraints.matrixConnect(sMultMatrix_ctrl, [oCtrl_bend.sPasser], 'matrixSum', lSkipScale = ['X', 'Y', 'Z'], bForce = True)
+		sGrpIk_bend = transforms.createTransformNode(naming.oName(sType = 'group', sSide = self._sSide, sPart = '%sSpringSolverBend' %self._sName, iIndex = self._iIndex).sName, lLockHideAttrs = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], sParent = self._sComponentRigNodesWorld, sPos = oCtrl_bend.sName)
+		constraints.matrixConnect(oCtrl_bend.sName, [sGrpIk_bend], 'matrixOutputWorld', lSkipScale = ['X', 'Y', 'Z'], bForce = True)
+		cmds.parent(sIkHnd_rp, sGrpIk_bend)
+
+		cmds.addAttr(oCtrl_bend.sName, ln = 'twist', at = 'float', keyable = True)
+		cmds.connectAttr('%s.twist' %oCtrl_bend.sName, '%s.twist' %sIkHnd_rp)
+
+		cmds.poleVectorConstraint(self._sGrpPv, sIkHnd_rp)
+
+		self._lCtrls.append(oCtrl_bend.sName)
+		self._lJntsLocal = lJntsDrv		
 
 		## create foot ik rig
 		## jnt
 		lJntsFoot = []
 		lJntsFootLocal = []
 		sJntParent = self._lJnts[-1]
-		sJntParentLocal = self._lJntsLocal[-1]
-		for sBpJnt in [sBpJntBall, sBpJntBallEnd]:
-			oJntName = naming.oName(sBpJnt)
-			oJntName.sType = 'jnt'
-			oJntName.sPart = '%sIkSC' %oJntName.sPart
-			sJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sJntParent)
-			sJntParent = sJnt
-			lJntsFoot.append(sJnt)
+		sJntParentLocal = lJntsDrv[-1]
+		oJntName = naming.oName(sBpJntBallEnd)
+		oJntName.sType = 'jnt'
+		oJntName.sPart = '%sIkSC' %oJntName.sPart
+		sJnt = joints.createJntOnExistingNode(sBpJntBallEnd, sBpJntBallEnd, oJntName.sName, sParent = sJntParent)
+		lJntsFoot.append(sJnt)
 
-			sJntLocal = joints.createJntOnExistingNode(sJnt, 'IkSC', 'IkSCLocal', sParent = sJntParentLocal)
-			sJntParentLocal = sJntLocal
-			lJntsFootLocal.append(sJntLocal)
+		sJntLocal = joints.createJntOnExistingNode(sJnt, 'IkSC', 'IkSCLocal', sParent = sJntParentLocal)
+		lJntsFootLocal.append(sJntLocal)
 
-			for sAxis in ['X', 'Y', 'Z']:
-				cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(sJnt, sAxis))
-				cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(sJnt, sAxis))
-				cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(sJnt, sAxis))
+		for sAxis in ['X', 'Y', 'Z']:
+			cmds.connectAttr('%s.translate%s' %(sJntLocal, sAxis), '%s.translate%s' %(sJnt, sAxis))
+			cmds.connectAttr('%s.rotate%s' %(sJntLocal, sAxis), '%s.rotate%s' %(sJnt, sAxis))
+			cmds.connectAttr('%s.scale%s' %(sJntLocal, sAxis), '%s.scale%s' %(sJnt, sAxis))
 
 		
 		## ik handle
-		sIkHndBall = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sBallSCsolver' %self._sName, iIndex = self._iIndex).sName
 		sIkHndToe = naming.oName(sType = 'ikHandle', sSide = self._sSide, sPart = '%sToeSCsolver' %self._sName, iIndex = self._iIndex).sName
 		
-		cmds.ikHandle(sj = self._lJntsLocal[-1], ee = lJntsFootLocal[0], sol = 'ikSCsolver', name = sIkHndBall)
-		cmds.ikHandle(sj = lJntsFootLocal[0], ee = lJntsFootLocal[1], sol = 'ikSCsolver', name = sIkHndToe)
-		cmds.parent(sIkHndBall, sIkHndToe, self._sGrpIk)
+		cmds.ikHandle(sj = lJntsDrv[-1], ee = lJntsFootLocal[0], sol = 'ikSCsolver', name = sIkHndToe)
+		cmds.parent(sIkHndToe, self._sGrpIk)
 
 		self._lJnts += lJntsFoot
 		self._lJntsLocal += lJntsFootLocal
@@ -103,70 +136,13 @@ class quadLegIkModule(baseIkSpringSolverLimb.baseIkSpringSolverLimb):
 			sJnt = joints.createJntOnExistingNode(sBpJnt, sBpJnt, oJntName.sName, sParent = sJntParentRvs)
 			lJntsFootRvs.append(sJnt)
 
-		cmds.parent(self._sIkHnd, lJntsFootRvs[6])
-		cmds.parent(sIkHndBall, lJntsFootRvs[5])
-		cmds.parent(sIkHndToe, lJntsFootRvs[-1])
+		cmds.parent(self._sIkHnd,sIkHndToe, sIkHnd_sc,lJntsFootRvs[-1])
 
 		## reverse foot connections
 		###### add attrs
 		attributes.addDivider([self._lCtrls[2]], 'footCtrl')
-		for sAttr in ['footRoll', 'toeTap', 'ballRoll', 'toeRoll', 'heelRoll',  'footBank', 'toeSlide', 'heelSlide', 'ballSlide', 'toeWiggle', 'toeTwist', 'footSlide']:
+		for sAttr in ['toeRoll', 'heelRoll',  'footBank', 'toeSlide', 'heelSlide', 'footSlide']:
 			cmds.addAttr(self._lCtrls[2], ln = sAttr, at = 'float', keyable = True)
-		attributes.addDivider([self._lCtrls[2]], 'footExtraCtrl')
-		for sAttr in ['toeLift', 'toeStraight']:
-			cmds.addAttr(self._lCtrls[2], ln = sAttr, at = 'float', min = 0, max = 90, keyable = True)
-		cmds.setAttr('%s.toeLift' %self._lCtrls[2], 30)
-		cmds.setAttr('%s.toeStraight' %self._lCtrls[2], 45)
-
-		#### ball Roll
-		sClamp_footRoll = cmds.createNode('clamp', name = naming.oName(sType = 'clamp', sSide = self._sSide, sPart = '%sFootRoll' %self._sName).sName)
-		cmds.connectAttr('%s.footRoll' %self._lCtrls[2], '%s.inputR' %sClamp_footRoll)
-		cmds.connectAttr('%s.toeLift' %self._lCtrls[2], '%s.maxR' %sClamp_footRoll) 
-		sPlus_ballRoll = cmds.createNode('addDoubleLinear', name = naming.oName(sType = 'add', sSide = self._sSide, sPart = '%sBallRoll' %self._sName).sName)
-		cmds.connectAttr('%s.outputR' %sClamp_footRoll, '%s.input1' %sPlus_ballRoll)
-		sRemap_ballRoll = cmds.createNode('remapValue', name = naming.oName(sType = 'remap', sSide = self._sSide, sPart = '%sBallRollStraight' %self._sName).sName)
-		cmds.connectAttr('%s.footRoll' %self._lCtrls[2], '%s.inputValue' %sRemap_ballRoll)
-		cmds.connectAttr('%s.toeLift' %self._lCtrls[2], '%s.inputMin' %sRemap_ballRoll)
-		cmds.connectAttr('%s.toeStraight' %self._lCtrls[2], '%s.inputMax' %sRemap_ballRoll)
-		cmds.connectAttr('%s.outValue' %sRemap_ballRoll, '%s.input2' %sPlus_ballRoll)
-		sMult_ballRollLift = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'mult', sSide = self._sSide, sPart = '%sBallRollLiftNeg' %self._sName).sName)
-		cmds.connectAttr('%s.toeLift' %self._lCtrls[2], '%s.input1' %sMult_ballRollLift)
-		cmds.setAttr('%s.input2' %sMult_ballRollLift, -1, lock = True)
-		cmds.connectAttr('%s.output' %sMult_ballRollLift, '%s.outputMax' %sRemap_ballRoll)
-		sPlus_ballRollSum = cmds.createNode('addDoubleLinear', name = naming.oName(sType = 'add', sSide = self._sSide, sPart = '%sBallRollSum' %self._sName).sName)
-		cmds.connectAttr('%s.output' %sPlus_ballRoll, '%s.input1' %sPlus_ballRollSum)
-		cmds.connectAttr('%s.ballRoll' %self._lCtrls[2], '%s.input2' %sPlus_ballRollSum)
-		cmds.connectAttr('%s.output' %sPlus_ballRollSum, '%s.rz' %lJntsFootRvs[5])
-
-		#### toe roll
-		sRemap_toeRoll = cmds.createNode('remapValue', name = naming.oName(sType = 'remapValue', sSide = self._sSide, sPart = '%sToeRoll' %self._sName).sName)
-		cmds.connectAttr('%s.footRoll' %self._lCtrls[2], '%s.inputValue' %sRemap_toeRoll)
-		cmds.connectAttr('%s.toeLift' %self._lCtrls[2], '%s.inputMin' %sRemap_toeRoll)
-		cmds.connectAttr('%s.toeStraight' %self._lCtrls[2], '%s.inputMax' %sRemap_toeRoll)
-		sMult_toeRoll = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'mult', sSide = self._sSide, sPart = '%sToeRoll' %self._sName).sName)
-		cmds.connectAttr('%s.footRoll' %self._lCtrls[2], '%s.input1' %sMult_toeRoll)
-		cmds.connectAttr('%s.outValue' %sRemap_toeRoll, '%s.input2' %sMult_toeRoll)
-		sPlus_toeRollSum = cmds.createNode('addDoubleLinear', name = naming.oName(sType = 'add', sSide = self._sSide, sPart = '%sToeRollSum' %self._sName).sName)
-		cmds.connectAttr('%s.output' %sMult_toeRoll, '%s.input1' %sPlus_toeRollSum)
-		cmds.connectAttr('%s.toeRoll' %self._lCtrls[2], '%s.input2' %sPlus_toeRollSum)
-		cmds.connectAttr('%s.output' %sPlus_toeRollSum, '%s.rz' %lJntsFootRvs[2])
-
-		#### heel Roll
-		sCond_heel = cmds.createNode('condition', name = naming.oName(sType = 'condition', sSide = self._sSide, sPart = '%sHeelRoll' %self._sName).sName)
-		cmds.connectAttr('%s.footRoll' %self._lCtrls[2], '%s.firstTerm' %sCond_heel)
-		cmds.setAttr('%s.operation' %sCond_heel, 4)
-		cmds.setAttr('%s.colorIfFalseR' %sCond_heel, 0)
-		sMult_heelRoll = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'multDoubleLinear', sSide = self._sSide, sPart = '%sHeelRollRvs' %self._sName).sName)
-		cmds.connectAttr('%s.footRoll' %self._lCtrls[2], '%s.input1' %sMult_heelRoll)
-		cmds.setAttr('%s.input2' %sMult_heelRoll, -1, lock = True)
-		cmds.connectAttr('%s.output' %sMult_heelRoll, '%s.colorIfTrueR' %sCond_heel)
-		sPlus_heelRollSum = cmds.createNode('addDoubleLinear', name = naming.oName(sType = 'addDoubleLinear', sSide = self._sSide, sPart = '%sHeelRollSum' %self._sName).sName)
-		cmds.connectAttr('%s.outColorR' %sCond_heel, '%s.input1' %sPlus_heelRollSum)
-		cmds.connectAttr('%s.heelRoll' %self._lCtrls[2], '%s.input2' %sPlus_heelRollSum)
-		cmds.connectAttr('%s.output' %sPlus_heelRollSum, '%s.rz' %lJntsFootRvs[1])
-
-		#### toe tap
-		cmds.connectAttr('%s.toeTap' %self._lCtrls[2], '%s.rz' %lJntsFootRvs[-2])
 
 		#### foot bank
 		sMult_footBank = cmds.createNode('multDoubleLinear', name = naming.oName(sType = 'mult', sSide = self._sSide, sPart = '%sFootBankRvs' %self._sName).sName)
@@ -177,18 +153,17 @@ class quadLegIkModule(baseIkSpringSolverLimb.baseIkSpringSolverLimb):
 		cmds.transformLimits(lJntsFootRvs[3], rz = [0,360], erz = [1,0])
 		cmds.transformLimits(lJntsFootRvs[4], rz = [0,360], erz = [1,0])
 
+		#### toe roll
+		cmds.connectAttr('%s.toeRoll' %self._lCtrls[2], '%s.rz' %lJntsFootRvs[2])
+
 		#### toeSlide
 		cmds.connectAttr('%s.toeSlide' %self._lCtrls[2], '%s.ry' %lJntsFootRvs[2])
 
+		#### heel Roll
+		cmds.connectAttr('%s.heelRoll' %self._lCtrls[2], '%s.rz' %lJntsFootRvs[1])
+
 		#### heelSlide
 		cmds.connectAttr('%s.heelSlide' %self._lCtrls[2], '%s.ry' %lJntsFootRvs[1])
-
-		#### ballSlide ballTwist 
-		cmds.connectAttr('%s.ballSlide' %self._lCtrls[2], '%s.ry' %lJntsFootRvs[5])
-
-		#### toeWiggle toeTwist
-		cmds.connectAttr('%s.toeWiggle' %self._lCtrls[2], '%s.ry' %lJntsFootRvs[-2])
-		cmds.connectAttr('%s.toeTwist' %self._lCtrls[2], '%s.rx' %lJntsFootRvs[-2])
 
 		#### footSlide
 		cmds.connectAttr('%s.footSlide' %self._lCtrls[2], '%s.ry' %lJntsFootRvs[0])
@@ -208,22 +183,19 @@ class quadLegIkModule(baseIkSpringSolverLimb.baseIkSpringSolverLimb):
 		## writeOutputMatrixInfo
 
 		if self._bInfo:
-			sMultMatrixLocalParent = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixLocal' %self._sName, iIndex = len(self._lJnts) - 3).sName
+			sMultMatrixLocalParent = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixLocal' %self._sName, iIndex = len(self._lJnts) - 2).sName
 
-			for i, sJnt in enumerate(lJntsFoot):
-				cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixLocal%03d' %(len(self._lJnts) - 2 + i), at = 'matrix')
-				cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixWorld%03d' %(len(self._lJnts) - 2 + i), at = 'matrix')
+			cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixLocal%03d' %(len(self._lJnts) - 1), at = 'matrix')
+			cmds.addAttr(self._sComponentMaster, ln = 'outputMatrixWorld%03d' %(len(self._lJnts) - 1), at = 'matrix')
 
-				sMultMatrixLocal = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixLocal' %self._sName, iIndex = len(self._lJnts) - 2 + i).sName)
-				cmds.connectAttr('%s.matrix' %sJnt, '%s.matrixIn[0]' %sMultMatrixLocal)
-				cmds.connectAttr('%s.matrixSum' %sMultMatrixLocalParent, '%s.matrixIn[1]' %sMultMatrixLocal)
-				cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.outputMatrixLocal%03d' %(self._sComponentMaster, len(self._lJnts) - 2 + i))
-				sMultMatrixWorld = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorld' %self._sName, iIndex = len(self._lJnts) - 2 + i).sName)
-				cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.matrixIn[0]' %sMultMatrixWorld)
-				cmds.connectAttr(self._sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
-				cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, len(self._lJnts) - 2 + i))
-
-				sMultMatrixLocalParent = sMultMatrixLocal
+			sMultMatrixLocal = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixLocal' %self._sName, iIndex = len(self._lJnts) - 1).sName)
+			cmds.connectAttr('%s.matrix' %lJntsFoot[0], '%s.matrixIn[0]' %sMultMatrixLocal)
+			cmds.connectAttr('%s.matrixSum' %sMultMatrixLocalParent, '%s.matrixIn[1]' %sMultMatrixLocal)
+			cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.outputMatrixLocal%03d' %(self._sComponentMaster, len(self._lJnts) - 1))
+			sMultMatrixWorld = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = self._sSide, sPart = '%sOutputMatrixWorld' %self._sName, iIndex = len(self._lJnts) - 1).sName)
+			cmds.connectAttr('%s.matrixSum' %sMultMatrixLocal, '%s.matrixIn[0]' %sMultMatrixWorld)
+			cmds.connectAttr(self._sMultMatrixWorldParent, '%s.matrixIn[1]' %sMultMatrixWorld)
+			cmds.connectAttr('%s.matrixSum' %sMultMatrixWorld, '%s.outputMatrixWorld%03d' %(self._sComponentMaster, len(self._lJnts) - 1))
 
 		self._getComponentInfo(self._sComponentMaster)
 
