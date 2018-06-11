@@ -69,7 +69,8 @@ class baseIkOnFkSplineLimb(baseIkSplineSolverLimb.baseIkSplineSolverLimb):
 		lCtrls_bend = []
 		lCtrls_bendRvs = []
 		iBend = 1
-		iBendRvs = len(self._lCtrls) - 3 
+		iBendRvs = len(self._lCtrls) - 3
+
 		for i, sCtrl_tweak in enumerate(self._lCtrls):
 			if i != 1 and i != len(self._lCtrls) - 2:
 				if i < len(self._lCtrls) - 1:

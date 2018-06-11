@@ -54,13 +54,18 @@ class baseFkChainLimb(baseJointsLimb.baseJointsLimb):
 
 			## connect ctrl to joint
 			sMultMatrix = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = oJntName.sSide, sPart = '%sFkConstraint' %oJntName.sPart, iIndex = oJntName.iIndex).sName)
+			sMultMatrixTrans = cmds.createNode('multMatrix', name = naming.oName(sType = 'multMatrix', sSide = oJntName.sSide, sPart = '%sFkTranslateConstraint' %oJntName.sPart, iIndex = oJntName.iIndex).sName)
 			cmds.connectAttr('%s.matrixOutputLocal' %oCtrl.sName, '%s.matrixIn[0]' %sMultMatrix)
+			cmds.connectAttr('%s.matrixOutputLocal' %oCtrl.sName, '%s.matrixIn[0]' %sMultMatrixTrans)
 			lTranslate = cmds.getAttr('%s.translate' %sJnt)[0]
 			mMatrix = apiUtils.createMMatrixFromTransformInfo(lTranslate = [lTranslate[0], lTranslate[1], lTranslate[2]])
 			lMatrix = apiUtils.convertMMatrixToList(mMatrix)
+			lMatrixZero = cmds.getAttr('%s.matrix' %oCtrl.sZero)
 			cmds.setAttr('%s.matrixIn[1]' %sMultMatrix, lMatrix, type = 'matrix')
+			cmds.setAttr('%s.matrixIn[1]' %sMultMatrixTrans, lMatrixZero, type = 'matrix')
 
-			constraints.matrixConnect(sMultMatrix, [sJnt], 'matrixSum', lSkipScale = ['X', 'Y', 'Z'], bForce = True)
+			constraints.matrixConnect(sMultMatrix, [sJnt], 'matrixSum', lSkipTranslate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)
+			constraints.matrixConnect(sMultMatrixTrans, [sJnt], 'matrixSum', lSkipRotate = ['X', 'Y', 'Z'], lSkipScale = ['X', 'Y', 'Z'], bForce = True)
 
 		## pass info to class
 		self._lJnts = lJnts

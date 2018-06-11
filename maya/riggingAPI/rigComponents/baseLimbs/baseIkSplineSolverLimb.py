@@ -48,8 +48,10 @@ class baseIkSplineSolverLimb(baseJointsLimb.baseJointsLimb):
 		sCurve = naming.oName(sType = 'curve', sSide = self._sSide, sPart = '%sSplineSolver' %self._sName, iIndex = self._iIndex).sName
 		if not self._sBpCrv:
 			sCurve = curves.createCurveOnNodes(sCurve, lJntsLocal, iDegree = 3, sParent = None)
+			print 'No sBpCrv ==========================='
 		else:
 			sCurve = cmds.duplicate(self._sBpCrv, name = sCurve)[0]
+			print 'sBpCrv exists =================='
 		lClsHnds = curves.clusterCurve(sCurve, bRelatives = True)
 		#### rebuild curve
 		iCvs = curves.getCurveCvNum(sCurve)
