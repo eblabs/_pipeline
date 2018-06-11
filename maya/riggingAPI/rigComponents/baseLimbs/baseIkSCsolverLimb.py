@@ -140,7 +140,7 @@ class baseIkSCsolverLimb(baseJointsLimb.baseJointsLimb):
 			cmds.connectAttr('%s.outColorG' %sConditionStretchOutput, '%s.sy' %lJntsLocal[0])
 			cmds.connectAttr('%s.outColorB' %sConditionStretchOutput, '%s.sz' %lJntsLocal[0])
 
-		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentJoints, sSuffix = 'IkSC', bBind = self._bBind)
+		lJnts, lBindJnts = createDriveJoints.createDriveJoints(self._lBpJnts, sParent = self._sComponentJoints, sSuffix = 'IkSC', bBind = self._bBind, lBindNameOverride = self._lBpJnts)
 
 		for i, sJntLocal in enumerate(lJntsLocal):
 			for sAxis in ['X', 'Y', 'Z']:
