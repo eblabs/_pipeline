@@ -101,17 +101,23 @@ def getClosestPointOnMesh(lPos, sMesh):
 	
 	return (mPointClst[0], mPointClst[1], mPointClst[2]), [fVal_u, fVal_v]
 
-def getClosestVtxInMesh(lPos, sMesh):
+def getClosestVtxInMesh(sMesh, lPos = None, mPoint = None, sSpace = 'object'):
 	mFnMesh = __setMFnMesh(sMesh)
-	mPoint = apiUtils.setMPoint(lPos)
-	mPointArray = getMeshVtxPntArray(sMesh)
+	if not mPoint:
+		mPoint = apiUtils.setMPoint(lPos)
+	mPointArray = getMeshVtxPntArray(sMesh, sSpace = sSpace)
 
 	mPointClst = OpenMaya.MPoint()
 	id_util = OpenMaya.MScriptUtil()
 	id_util.createFromInt(0)
 	id_param = id_util.asIntPtr()
 
-	mFnMesh.getClosestPoint(mPoint, mPointClst, OpenMaya.MSpace.kWorld, id_param)
+	if sSpace == 'object':
+		mSpace = OpenMaya.MSpace.kObject
+	elif sSpace == 'world':
+		mSpace = OpenMaya.MSpace.kWorld
+
+	mFnMesh.getClosestPoint(mPoint, mPointClst, mSpace, id_param)
 
 	iFace = OpenMaya.MScriptUtil.getInt(id_param)
 
@@ -131,105 +137,64 @@ def getClosestVtxInMesh(lPos, sMesh):
 			fDisMin = fDis
 			iVtxClst = iVtx
 
-	return iVtxClst, [mPointArray[iVtxClst].x, mPointArray[iVtxClst].y, mPointArray[iVtxClst].z], fDisMin
+	return iVtxClst, mPointArray[iVtxClst], fDisMin
 
-
-
-
-def meshSymmetrical(sMesh, sBaseMesh, sAxis = 'YZ', iDirection = 1, fTolerance = 0.00001, sSymmtrical = 'world', bMirrorMesh = True, bCheck = False):
-	if sSymmtrical == 'world' or sSymmtrical == 'object':
-		bSymmetrical, lPnts_source, lPnts_target, lPnts_middle = __meshVtxSymRemap(sBaseMesh, sAxis = sAxis, iDirection = iDirection, fTolerance = fTolerance, sSpace = sSymmtrical)
+def symEdit(sMesh, sBaseMesh = None, sAxis = 'YZ', iDirection = 1, fTolerance = 0.00001, sSpace = 'object', lBaseMeshInfo = None):
+	if lBaseMeshInfo:
+		bSymmetrical = lBaseMeshInfo[0]
+		lPnts_source = lBaseMeshInfo[1][0]
+		lPnts_target = lBaseMeshInfo[1][1]
+		lPnts_middle = lBaseMeshInfo[1][2]
 	else:
-		pass
+		bSymmetrical, [lPnts_source, lPnts_target, lPnts_middle] = symCheck(sBaseMesh, sAxis = sAxis, iDirection = iDirection, fTolerance = fTolerance, sSpace = sSpace)
 
-	if sSymmtrical == 'world':
-		sSpace = 'world'
-		mSpace = OpenMaya.MSpace.kWorld 
-	else:
-		sSpace = 'object'
-		mSpace = OpenMaya.MSpace.kObject
-		
-	lPnts_nonSym = []
-	mVtxPntArray = getMeshVtxPntArray(sMesh, sSpace = sSpace)
-	mFnMesh = __setMFnMesh(sMesh)
-	iLength_sym = len(lPnts_source)
-	if not bCheck:
+	if bSymmetrical:
+		if sSpace == 'object':
+			mSpace = OpenMaya.MSpace.kObject
+		elif sSpace == 'world':
+			mSpace = OpenMaya.MSpace.kWorld
+
+		mVtxPntArray = getMeshVtxPntArray(sMesh, sSpace = sSpace)
+		mFnMesh = __setMFnMesh(sMesh)
+
 		for i, iVtx in enumerate(lPnts_source):
-			print 'symmetrical check %f' %((i + 1)/float(iLength_sym))
-			if iVtx:
-				fPntX = mVtxPntArray[iVtx].x
-				fPntY = mVtxPntArray[iVtx].y
-				fPntZ = mVtxPntArray[iVtx].z
+			print 'symmetrical mirror side %f' %((i + 1)/float(len(lPnts_source)))
+			mPnt = mVtxPntArray[iVtx]
+			iVtx_mirror = lPnts_target[i]
+			if sAxis == 'YZ':
+				mVtxPntArray[iVtx_mirror].x = -mPnt.x
+				mVtxPntArray[iVtx_mirror].y = mPnt.y
+				mVtxPntArray[iVtx_mirror].z = mPnt.z
+			elif sAxis == 'XZ':
+				mVtxPntArray[iVtx_mirror].x = mPnt.x
+				mVtxPntArray[iVtx_mirror].y = -mPnt.y
+				mVtxPntArray[iVtx_mirror].z = mPnt.z
+			else:
+				mVtxPntArray[iVtx_mirror].x = mPnt.x
+				mVtxPntArray[iVtx_mirror].y = mPnt.y
+				mVtxPntArray[iVtx_mirror].z = -mPnt.z
+		for i, iVtx in enumerate(lPnts_middle):
+			print 'symmetrical mirror middle %f' %((i + 1)/float(len(lPnts_middle)))
+			mPnt = mVtxPntArray[iVtx]
+			if sAxis == 'YZ':
+				mVtxPntArray[iVtx_mirror].x = 0
+				mVtxPntArray[iVtx_mirror].y = mPnt.y
+				mVtxPntArray[iVtx_mirror].z = mPnt.z
+			elif sAxis == 'XZ':
+				mVtxPntArray[iVtx_mirror].x = mPnt.x
+				mVtxPntArray[iVtx_mirror].y = 0
+				mVtxPntArray[iVtx_mirror].z = mPnt.z
+			else:
+				mVtxPntArray[iVtx_mirror].x = mPnt.x
+				mVtxPntArray[iVtx_mirror].y = mPnt.y
+				mVtxPntArray[iVtx_mirror].z = 0
 
-				iVtx_mirror = lPnts_target[i]
-				if iVtx_mirror != None:
-					fPntX_target = mVtxPntArray[iVtx_mirror].x
-					fPntY_target = mVtxPntArray[iVtx_mirror].y
-					fPntZ_target = mVtxPntArray[iVtx_mirror].z
-
-					fPntX_source = fPntX
-					fPntY_source = fPntY
-					fPntZ_source = fPntZ
-
-					if sAxis == 'YZ':
-						fPntX_source = -fPntX
-					elif sAxis == 'XZ':
-						fPntY_source = -fPntY
-					else:
-						fPntZ_source = -fPntZ
-
-					mVtxPntArray[iVtx_mirror].x = fPntX_source
-					mVtxPntArray[iVtx_mirror].y = fPntY_source
-					mVtxPntArray[iVtx_mirror].z = fPntZ_source
-
-	else:
-		for i, iVtx in enumerate(lPnts_source):
-			print 'symmetrical check %f' %((i + 1)/float(iLength_sym))
-			if iVtx:
-				fPntX = mVtxPntArray[iVtx].x
-				fPntY = mVtxPntArray[iVtx].y
-				fPntZ = mVtxPntArray[iVtx].z
-
-				iVtx_mirror = lPnts_target[i]
-				if iVtx_mirror != None:
-					fPntX_target = mVtxPntArray[iVtx_mirror].x
-					fPntY_target = mVtxPntArray[iVtx_mirror].y
-					fPntZ_target = mVtxPntArray[iVtx_mirror].z
-
-					fPntX_source = fPntX
-					fPntY_source = fPntY
-					fPntZ_source = fPntZ
-
-					if sAxis == 'YZ':
-						fPntX_source = -fPntX
-					elif sAxis == 'XZ':
-						fPntY_source = -fPntY
-					else:
-						fPntZ_source = -fPntZ
-
-					bPntX = (fPntX_source >= fPntX_target - fTolerance and fPntX_source <= fPntX_target + fTolerance)
-					bPntY = (fPntY_source >= fPntY_target - fTolerance and fPntY_source <= fPntY_target + fTolerance)
-					bPntZ = (fPntZ_source >= fPntZ_target - fTolerance and fPntZ_source <= fPntZ_target + fTolerance)
-
-					if not bPntX or not bPntY or not bPntZ:
-						lPnts_nonSym.append(iVtx)
-
-						mVtxPntArray[iVtx_mirror].x = fPntX_source
-						mVtxPntArray[iVtx_mirror].y = fPntY_source
-						mVtxPntArray[iVtx_mirror].z = fPntZ_source
-
-	if bMirrorMesh:
 		mFnMesh.setPoints(mVtxPntArray, mSpace)
+		print '%s symmetrical mirrored' %sMesh
+	else:
+		print '%s is not symmetrical, skipped' %sMesh
 
-	return lPnts_nonSym
-
-#### Sub Functions
-def __setMFnMesh(sMesh):
-	mDagPath, mComponents = apiUtils.setDagPath(sMesh)
-	mFnMesh = OpenMaya.MFnMesh(mDagPath)
-	return mFnMesh
-
-def __meshVtxSymRemap(sMesh, sAxis = 'YZ', iDirection = 1, fTolerance = 0.00001, sSpace = 'world'):
+def symCheck(sMesh, sAxis = 'YZ', iDirection = 1, fTolerance = 0.00001, sSpace = 'object'):
 	mVtxPntArray = getMeshVtxPntArray(sMesh, sSpace = sSpace)
 
 	lPnts_source = []
@@ -243,18 +208,14 @@ def __meshVtxSymRemap(sMesh, sAxis = 'YZ', iDirection = 1, fTolerance = 0.00001,
 
 		print 'initialize mesh %f' %((i+1)/float(iLength))
 
-		fPntX = mVtxPntArray[i].x
-		fPntY = mVtxPntArray[i].y
-		fPntZ = mVtxPntArray[i].z
-
 		if sAxis == 'YZ':
-			fAxis = fPntX
+			fAxis = mVtxPntArray[i].x
 		elif sAxis == 'XZ':
-			fAxis = fPntY
+			fAxis = mVtxPntArray[i].y
 		else:
-			fAxis = fPntZ
+			fAxis = mVtxPntArray[i].z
 
-		if fAxis == 0:
+		if fAxis <= fTolerance and fAxis >= -fTolerance:
 			lPnts_middle.append(i)
 		elif iDirection == 1:
 			if fAxis > 0:
@@ -267,35 +228,44 @@ def __meshVtxSymRemap(sMesh, sAxis = 'YZ', iDirection = 1, fTolerance = 0.00001,
 			else:
 				lPnts_temp.append(i)
 
-	iLength_remap = len(lPnts_source)
-	for i, iVtx in enumerate(lPnts_source):
+	if len(lPnts_source) != len(lPnts_temp):
+		bSymmetrical = False
+	else:
+		iLength_remap = len(lPnts_source)
+		for i, iVtx in enumerate(lPnts_source):
 
-		print'remap mesh vtx %f' %((i+1)/float(iLength_remap))
+			print'remap mesh vtx %f' %((i+1)/float(iLength_remap))
 
-		fPntX = mVtxPntArray[iVtx].x
-		fPntY = mVtxPntArray[iVtx].y
-		fPntZ = mVtxPntArray[iVtx].z
+			mPnt = mVtxPntArray[iVtx]
 
-		if sAxis == 'YZ':
-			lPos = [-fPntX, fPntY, fPntZ]
-		elif sAxis == 'XZ':
-			lPos = [fPntX, -fPntY, fPntZ]
-		else:
-			lPos = [-fPntX, fPntY, -fPntZ]
+			if sAxis == 'YZ':
+				mPnt_mirror = apiUtils.setMPoint([-mPnt.x, mPnt.y, mPnt.z])
+			elif sAxis == 'XZ':
+				mPnt_mirror = apiUtils.setMPoint([mPnt.x, -mPnt.y, mPnt.z])
+			else:
+				mPnt_mirror = apiUtils.setMPoint([mPnt.x, mPnt.y, -mPnt.z])
 
-		bSymmetrical_pnt = False
-		iVtxClst, lPosClst, fDisClst = getClosestVtxInMesh(lPos, sMesh)
+			bSymmetrical_pnt = False
+			iVtxClst, mPntClst, fDisClst = getClosestVtxInMesh(sMesh, mPoint = mPnt_mirror, sSpace = sSpace)
 
-		if fDisClst > -fTolerance and fDisClst < fTolerance:
-			lPnts_target.append(iVtxClst)
-		else:
-			lPnts_target.append(None)
+			if fDisClst >= -fTolerance and fDisClst <= fTolerance:
+				lPnts_target.append(iVtxClst)
+				lPnts_temp.remove(iVtxClst)
+			else:
+				bSymmetrical = False
+				break
+		if lPnts_temp:
 			bSymmetrical = False
+		
+	if bSymmetrical:
+		print '%s is symmetrical' %sMesh
+		return bSymmetrical, [lPnts_source, lPnts_target, lPnts_middle]
+	else:
+		print '%s is not symmetrical' %sMesh
+		return bSymmetrical, [None, None, None]
 
-	for j in lPnts_temp:
-		if j not in lPnts_target:
-			lPnts_target.append(j)
-			lPnts_source.append(None)
-			bSymmetrical = False
-
-	return bSymmetrical, lPnts_source, lPnts_target, lPnts_middle
+#### Sub Functions
+def __setMFnMesh(sMesh):
+	mDagPath, mComponents = apiUtils.setDagPath(sMesh)
+	mFnMesh = OpenMaya.MFnMesh(mDagPath)
+	return mFnMesh
