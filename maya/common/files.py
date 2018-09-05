@@ -30,7 +30,7 @@ sBlueprintGrp = '_blueprint_'
 #------------ custom file functions -----------
 def writeJsonFile(sPath, data):
 	with open(sPath, 'w') as sOutfile:
-		json.dump(data, sOutfile)
+		json.dump(data, sOutfile, indent=4, sort_keys=True)
 	file.close(sOutfile)
 
 def readJsonFile(sPath):
