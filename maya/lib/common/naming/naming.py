@@ -63,15 +63,15 @@ class Naming(object):
 			suffix = kwargs.get('suffix', None)
 
 			# get keys short name from dictionary
-			self.__type, longName = Naming.getKeyFullNameFromDict(type, 
+			self.__type, longName = self.getKeyFullNameFromDict(type, 
 									namingDict.dNameConvension['type'], 
 									namingDict.dNameConvensionInverse['type'])
 
-			self.__side, longName = Naming.getKeyFullNameFromDict(side, 
+			self.__side, longName = self.getKeyFullNameFromDict(side, 
 									namingDict.dNameConvension['side'], 
 									namingDict.dNameConvensionInverse['side'])
 
-			self.__res, longName = Naming.getKeyFullNameFromDict(res, 
+			self.__res, longName = self.getKeyFullNameFromDict(res, 
 								namingDict.dNameConvension['resolution'], 
 								namingDict.dNameConvensionInverse['resolution'])
 
@@ -89,7 +89,7 @@ class Naming(object):
 
 	@property
 	def typeLongName(self):
-		shortName, longName = Naming.getKeyFullNameFromDict(self.__type, 
+		shortName, longName = self.getKeyFullNameFromDict(self.__type, 
 									namingDict.dNameConvension['type'], 
 									namingDict.dNameConvensionInverse['type'])
 		return longName
@@ -100,7 +100,7 @@ class Naming(object):
 
 	@property
 	def sideLongName(self):
-		shortName, longName = Naming.getKeyFullNameFromDict(self.__side, 
+		shortName, longName = self.getKeyFullNameFromDict(self.__side, 
 									namingDict.dNameConvension['side'], 
 									namingDict.dNameConvensionInverse['side'])
 		return longName
@@ -111,7 +111,7 @@ class Naming(object):
 
 	@property
 	def resolutionLongName(self):
-		shortName, longName = Naming.getKeyFullNameFromDict(self.__res, 
+		shortName, longName = self.getKeyFullNameFromDict(self.__res, 
 								namingDict.dNameConvension['resolution'], 
 								namingDict.dNameConvensionInverse['resolution'])
 		return longName
@@ -135,21 +135,21 @@ class Naming(object):
 
 	@type.setter
 	def type(self, key):
-		shortName, longName = Naming.getKeyFullNameFromDict(key, 
+		shortName, longName = self.getKeyFullNameFromDict(key, 
 									namingDict.dNameConvension['type'], 
 									namingDict.dNameConvensionInverse['type'])
 		self.__type = shortName
 
 	@side.setter
 	def side(self, key):
-		shortName, longName = Naming.getKeyFullNameFromDict(key, 
+		shortName, longName = self.getKeyFullNameFromDict(key, 
 									namingDict.dNameConvension['side'], 
 									namingDict.dNameConvensionInverse['side'])
 		self.__side = shortName
 
 	@resolution.setter
 	def resolution(self, key):
-		shortName, longName = Naming.getKeyFullNameFromDict(key, 
+		shortName, longName = self.getKeyFullNameFromDict(key, 
 								namingDict.dNameConvension['resolution'], 
 								namingDict.dNameConvensionInverse['resolution'])
 		self.__res = shortName

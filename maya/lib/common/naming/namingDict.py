@@ -88,6 +88,17 @@ dNameConvension = {
 							'pointOnSurfaceInfo': 'pntOnSurfInfo',
 							'choice': 'choice',
 							'angleBetween': 'angleBtw',
+
+							# rig component
+							'rigComponent': 'rigComponent',
+							'rigLocal': 'rigLocal',
+							'controlsGrp': 'controlsGrp',
+							'jointsGrp': 'jointsGrp',
+							'nodesLocal': 'nodesLocal',
+							'rigWorld': 'rigWorld',
+							'nodesHide': 'nodesHide',
+							'nodesShow': 'nodesShow',
+							'subComponents': 'subComponents',
 						},
 
 				'side': {

@@ -33,8 +33,6 @@ class Control(object):
 	"""
 	a wrapper for controller
 
-	control's hierarchy: sZero/sPasser/sStack01/.../sName/sSub
-
 	property:
 	name: return the control's name
 	side: return the control's side
@@ -42,26 +40,38 @@ class Control(object):
 	index: return the control's index
 	zero: return the control's zero group
 	passer: return the control's passer group
+	space: return the control's space group
 	stacks: return the control's stack groups list
 	StacksNum: return how many stack groups the control have
 	sub: return the control's sub control name
 	output: return the node used to constraint with other objects
 	sideLongName: return the control's side's long name
 	MMatrixLocal: return the control's local matrix as MMatrix(or MMatrixV2) 
-				  object (local matrix is from output to zero)
+				  object (local matrix is from output to passer)
 	MMatrixWorld: return the control's world matrix as MMatrix(or MMatrixV2)
-				  object
+				  object (world matrix is from output to zero)
 	MMatrixLocalInverse: return the control's local matrix inverse as 
 						 MMatrix(or MMatrixV2) object (local matrix is from 
-						 output to zero)
+						 output to passer)
 	MMatrixWorldInverse: return the control's world matrix inverse as 
-						 MMatrix(or MMatrixV2) object
-	matrixLocalPlug: return the control's local matrix attribute(local matrix
-					 is from output to zero)
-	matrixWorldPlug: return the control's world matrix attribute
-	matrixLocalInversePlug: return the control's local inverse matrix attribute
-							(local matrix is from output to zero)
-	matrixWorldInversePlug: return the control's world inverse matrix attribute
+						 MMatrix(or MMatrixV2) object (world matrix is from 
+						 output to zero)
+	matrixLocalPlug: return the control's local matrix attribute plug(local matrix
+					 is from output to passer)// format: control.attr
+	matrixWorldPlug: return the control's world matrix attribute plug() (world matrix 
+					 is from output to zero)// format: control.attr
+	matrixLocalInversePlug: return the control's local inverse matrix attribute plug
+							(local matrix is from output to passer)// format: control.attr
+	matrixWorldInversePlug: return the control's world inverse matrix attribute plug
+							(world matrix is from output to zero)// format: control.attr
+	matrixLocalAttr: return the control's local matrix attribute(local matrix
+					 is from output to passer)
+	matrixWorldAttr: return the control's world matrix attribute (world matrix is from 
+					 output to zero)
+	matrixLocalInverseAttr: return the control's local inverse matrix attribute
+							(local matrix is from output to passer)
+	matrixWorldInverseAttr: return the control's world inverse matrix attribute
+							(world matrix is from output to zero)
 
 	functions:
 	transformCtrlShape: transform control's shape node
@@ -198,12 +208,28 @@ class Control(object):
 		return '{}.matrixWorld'.format(self.__name)
 
 	@property
-	def matrixLocalInverse(self):
+	def matrixLocalInversePlug(self):
 		return '{}.matrixLocalInverse'.format(self.__name)
 
 	@property
-	def matrixWorldInverse(self):
+	def matrixWorldInversePlug(self):
 		return '{}.matrixWorldInverse'.format(self.__name)
+
+	@property
+	def matrixLocalAttr(self):		
+		return 'matrixLocal'
+
+	@property
+	def matrixWorldAttr(self):
+		return 'matrixWorld'
+
+	@property
+	def matrixLocalInverseAttr(self):
+		return 'matrixLocalInverse'
+
+	@property
+	def matrixWorldInverseAttr(self):
+		return 'matrixWorldInverse'
 
 	def __getControlInfo(self, ctrl):
 		# get controller's information
@@ -386,6 +412,16 @@ class Control(object):
 		self.__subExists = key
 		attributes.setAttrs('sub', key, node = self.__name, force=True)
 
+	def __getControllers(self, sub=True, subOnly=False):
+		ctrls = []
+		if not subOnly:
+			ctrls.append(self.__name)
+			if sub and self.__subExists:
+				ctrls.append(self.__sub)
+		elif self.__subExists:
+			ctrls.append(self.__sub)
+		return ctrls
+
 	def transformCtrlShape(self, translate = [0,0,0], rotate=[0,0,0], scale=[1,1,1], pivot = 'transform', sub=False):
 		ctrlShapes = [cmds.listRelatives(self.__name, s = True)[0]]
 		if sub and self.__subExists:
@@ -409,12 +445,8 @@ class Control(object):
 			addCtrlShape(ctrlTarget, shape = ctrlShapeInfo, size = size)
 
 	def changeCtrlShape(self, shape, size=1, color=None, colorOverride=False, sub=True, subOnly=False):
-		if not subOnly:
-			ctrls = [self.__name]
-			if sub and self.__subExists:
-				ctrls.append(self.__sub)
-		elif self.__subExists:
-			ctrls = [self.__sub]
+		
+		ctrls = self.__getControllers(sub=True, subOnly=False)
 
 		for i, c in enumerate(ctrls):
 			ctrlShapeInfo = __getCtrlShapeInfo(c)
@@ -428,16 +460,25 @@ class Control(object):
 						 colorOverride = True)
 
 	def setCtrlShapeColor(self, color, sub=False, subOnly=False):
-		ctrls = []
-		if not subOnly:
-			ctrls.append(self.__name)
-			if sub and self.__subExists:
-				ctrls.append(self.__sub)
-		elif self.__subExists:
-			ctrls.append(self.__sub)
+		
+		ctrls = self.__getControllers(sub=True, subOnly=False)
 		
 		for c in ctrls:
 			setCtrlShapeColor(c, color)
+
+	def setRotateOrder(self, ro, sub=True, subOnly=False):
+		
+		ctrls = self.__getControllers(sub=True, subOnly=False)
+		
+		for c in ctrls:
+			cmds.setAttr('{}.ro'.format(c), ro)
+
+	def lockHideAttrs(self, attrs, sub=True, subOnly=False):
+		
+		ctrls = self.__getControllers(sub=True, subOnly=False)
+		
+		for c in ctrls:
+			attributes.lockHideAttrs(c, attrs)
 
 # -- function ------
 
@@ -549,6 +590,7 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 		NamingGrp.part = '{}Sub'.format(NamingGrp.part)
 
 		sub = transforms.createTransformNode(NamingGrp.name, parent = ctrl,
+											 rotateOrder = rotateOrder,
 											 posParent = ctrl,
 											 lockHide = lockHide)
 
@@ -587,13 +629,15 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 
 	# connect matrix
 	# matrix world and inverse
-	attributes.connectAttrs(['worldMatrix[0]', 'worldInverseMatrix[0]'],
-							['matrixWorld', 'matrixWorldInverse'],
-							driver = output, driven = ctrl, force = True)
+	createLocalMatrix(output, zero, attrNode = ctrl, 
+					  nodeMatrix = 'worldMatrix[0]', 
+					  parentMatrix = 'parentInverseMatrix[0]', 
+					  attr = 'matrixWorld',
+					  inverseAttr = 'matrixWorldInverse', inverse=True)
 
 	# matrix local and inverse
 	transforms.createLocalMatrix(output, zero, attrNode = ctrl,
-								 matrixAttr = 'matrixLocal', 
+								 attr = 'matrixLocal', 
 					  			 inverseAttr = 'matrixLocalInverse')
 
 	return Control(ctrl)

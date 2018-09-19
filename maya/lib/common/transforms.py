@@ -48,27 +48,7 @@ def createTransformNode(name, lockHide=[], parent=None, rotateOrder=0,vis=True, 
 	cmds.setAttr('{}.inheritsTransform'.format(name), inheritsTransform)
 
 	# matach position
-	# check if need match both translation and rotation
-	if posParent:
-		if isinstance(posParent, basestring) and cmds.objExists(posParent):
-			transformSnap([posParent, name], type = 'parent')
-		elif isinstance(posParent, list):
-			cmds.xform(name, t = posParent[0], ws = True)
-			cmds.xform(name, ro = posParent[1], ws = True)
-	else:
-		# check if need match translation
-		if posPoint:
-			if isinstance(posPoint, basestring) and cmds.objExists(posPoint):
-				transformSnap([posPoint, name], type = 'point')
-			elif isinstance(posPoint, list):
-				cmds.xform(name, t = posPoint, ws = True)
-
-		# check if need match rotation
-		if posOrient:
-			if isinstance(posOrient, basestring) and cmds.objExists(posOrient):
-				transformSnap([posOrient, name], type = 'orient')
-			elif isinstance(posOrient, list):
-				cmds.xform(name, ro = posOrient, ws = True)
+	setNodePos(name, posPoint = posPoint, posOrient = posOrient, posParent = posParent)
 
 	# check if need parent the transform node to given object
 	if parent and cmds.objExists(parent):
@@ -78,6 +58,30 @@ def createTransformNode(name, lockHide=[], parent=None, rotateOrder=0,vis=True, 
 	attributes.lockHideAttrs(name, lockHide)
 
 	return name
+
+# set position
+def setNodePos(node, posPoint=None, posOrient=None, posParent=None):
+	# check if need match both translation and rotation
+	if posParent:
+		if isinstance(posParent, basestring) and cmds.objExists(posParent):
+			transformSnap([posParent, node], type = 'parent')
+		elif isinstance(posParent, list):
+			cmds.xform(node, t = posParent[0], ws = True)
+			cmds.xform(node, ro = posParent[1], ws = True)
+	else:
+		# check if need match translation
+		if posPoint:
+			if isinstance(posPoint, basestring) and cmds.objExists(posPoint):
+				transformSnap([posPoint, node], type = 'point')
+			elif isinstance(posPoint, list):
+				cmds.xform(node, t = posPoint, ws = True)
+
+		# check if need match rotation
+		if posOrient:
+			if isinstance(posOrient, basestring) and cmds.objExists(posOrient):
+				transformSnap([posOrient, node], type = 'orient')
+			elif isinstance(posOrient, list):
+				cmds.xform(node, ro = posOrient, ws = True)
 
 # transform snap
 def transformSnap(nodes, type = 'parent', snapType = 'oneToAll', skipTranslate = None, skipRotate = None, skipScale = None, centerPivot = True, weight=0.5):
@@ -160,7 +164,6 @@ def transformSnap(nodes, type = 'parent', snapType = 'oneToAll', skipTranslate =
 							  skipRotate = skipRotate,
 							  skipScale = skipScale)
 
-
 # get node's transform info
 def getNodeTransformInfo(node, rotateOrder = None):
 	'''
@@ -208,7 +211,7 @@ def getNodesBoundingBoxInfo(nodes):
 	return centerPivot, pntMax, pntMin
 
 # create local matrix
-def createLocalMatrix(node, parent, attrNode=None, matrixAttr='matrixLocal', inverseAttr='matrixLocalInverse', inverse=True):
+def createLocalMatrix(node, parent, attrNode=None, nodeMatrix='worldMatrix[0]', parentMatrix='worldInverseMatrix[0]', attr='matrixLocal', inverseAttr='matrixLocalInverse', inverse=True):
 	'''
 	create local matrix, node' worldMatrix * parent's worldInverseMatrix
 
@@ -216,7 +219,9 @@ def createLocalMatrix(node, parent, attrNode=None, matrixAttr='matrixLocal', inv
 	node(string): child node
 	parent(string): parent node
 	attrNode(string): where to put the attrs, None will be the child node
-	matrixAttr(string): where to connect the matrix, create if not set
+	nodeMatrix(string): node's attr to plug into multMatrix node
+	parentMatrix(string): parent's attr to plug into multMatrix node
+	attr(string): where to connect the matrix, create if not set
 	inverseAttr(string): where to connect the inverse matrix, create if not set
 	inverse(bool): if need add inverse matrix, default is True
 	'''
@@ -227,16 +232,16 @@ def createLocalMatrix(node, parent, attrNode=None, matrixAttr='matrixLocal', inv
 	NamingNode.part = NamingNode.part + matrixAttr[0].upper() + matrixAttr[1:]
 
 	multMatrix = createNode('multMatrix', name = NamingNode.name)
-	attributes.connectAttrs(['{}.worldMatrix[0]'.format(node),
-							 '{}.worldInverseMatrix[0]'.format(parent)],
+	attributes.connectAttrs(['{}.{}'.format(node, nodeMatrix),
+							 '{}.{}'.format(parent, parentMatrix)],
 							 ['matrixIn[0]', 'matrixIn[1]'], 
 							 driven = multMatrix, force = True)
 
-	if not cmds.attributeQuery(matrixAttr, node = node, ex = True):
-		cmds.addAttr(node, ln = matrixAttr, at = 'matrix')
+	if not cmds.attributeQuery(attr, node = node, ex = True):
+		cmds.addAttr(node, ln = attr, at = 'matrix')
 
 	driverAttrs = ['{}.matrixSum'.format(multMatrix)]
-	drivenAttrs = ['{}.{}'.format(node, matrixAttr)]
+	drivenAttrs = ['{}.{}'.format(node, attr)]
 
 	if inverse:
 		NamingNode.type = 'inverseMatrix'
@@ -252,8 +257,23 @@ def createLocalMatrix(node, parent, attrNode=None, matrixAttr='matrixLocal', inv
 
 	attributes.connectAttrs(driverAttrs, drivenAttrs, force = True)
 
+# get node local matrix on the parent node
+def getLocalMatrix(node, parent, nodeMatrix='worldMatrix[0]', parentMatrix='worldMatrix[0]', returnType = 'list'):
+	matrixNode = cmds.getAttr('{}.{}'.format(node, nodeMatrix))
+	matrixParent = cmds.getAttr('{}.{}'.format(parent, parentMatrix))
 
+	MMatrixNode = apiUtils.convertListToMMatrix(matrixNode)
+	MMatrixParent = apiUtils.convertListToMMatrix(matrixParent)
 
+	outputMatrix = MMatrixNode * MMatrixParent.inverse()
+
+	if returnType == 'list':
+		outputMatrix = apiUtils.convertMMatrixToList(outputMatrix)
+	elif returnType == 'MMatrixV2':
+		outputMatrix = apiUtils.convertMMatrixToList(outputMatrix)
+		outputMatrix = apiUtils.convertListToMMatrix(outputMatrix, type = 'MMatrixV2')
+
+	return outputMatrix
 
 # ---- sub function
 # single transform snap 

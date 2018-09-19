@@ -25,7 +25,7 @@ def addAttrs(node, attrs, attributeType='float', minValue=None, maxValue=None, d
 						   'string', 'matrix'
 	minValue(float/int): min value
 	maxValue(float/int): max value
-	defaultValue(float/int): default value
+	defaultValue(float/int/list): default value
 	keyable(bool): set attr keyable, default is True
 	channelBox(bool): show attr in channel box, default is True
 	enumName(string): enum attr name
@@ -34,7 +34,10 @@ def addAttrs(node, attrs, attributeType='float', minValue=None, maxValue=None, d
 	if isinstance(attrs, basestring):
 		attrs = [attrs]
 
-	for attr in attrs:
+	if not isinstance(defaultValue, list):
+		defaultValue = [defaultValue]*len(attrs)
+
+	for i, attr in enumerate(attrs):
 		if not cmds.attributeQuery(attr, node = node, ex = True):
 			# skip if the attr already exists
 			# update parameters
@@ -45,8 +48,8 @@ def addAttrs(node, attrs, attributeType='float', minValue=None, maxValue=None, d
 					attrDic.update('keyable': keyable)
 					if not channelBox:
 						attrDic['keyable'] = False
-					if defaultValue != None:
-						attrDic.update('defaultValue': defaultValue)
+					if defaultValue[i] != None:
+						attrDic.update('defaultValue': defaultValue[i])
 					if attributeType not in ['bool', 'enum']:
 						if minValue != None:
 							attrDic.update('minValue': minValue)
