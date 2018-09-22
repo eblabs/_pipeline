@@ -18,10 +18,10 @@ import rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
-import rigSys.core.rigComponent as rigComponent
+import rigSys.core.jointComponent as jointComponent
 # -- import end ----
 
-class FkChainComponent(rigComponent.RigComponent):
+class FkChainComponent(jointComponent.JointComponent):
 	"""
 	FkChainComponent
 
@@ -31,15 +31,18 @@ class FkChainComponent(rigComponent.RigComponent):
 	def __init__(self, *args,**kwargs):
 		super(FkChainComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.modules.base.fkChainComponent'
-		if args:
-			self._rigComponent = args[0]
-			self._getRigComponentInfo()
 
-	def create(self):
-		super(FkChainComponent, self).create()
+		kwargsDefault = {'lockHide': {'value': ['sx', 'sy', 'sz'],
+						 			  'type': 'list'},
+							}
+
+		self._registerAttributes(kwargsDefault)
+
+	def _createRigComponent(self):
+		super(FkChainComponent, self)._createRigComponent()
 
 		# create joints
-		fkJnts = self.createJntsFromBpJnts(self._bpJnts, type = 'jnt', suffix = 'Fk', parent = self._jointsGrp)
+		fkJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = 'Fk', parent = self._jointsGrp)
 		
 		# create control
 		fkControls = []
@@ -48,7 +51,8 @@ class FkChainComponent(rigComponent.RigComponent):
 			NamingCtrl = naming.Naming(jnt)
 			ro = cmds.getAttr('{}.ro'.format(jnt))
 			Control = controls.create(NamingCtrl.part, side = NamingCtrl.side, index = NamingCtrl.index, 
-				stacks = self._stacks, parent = ctrlParent, posParent = jnt, rotateOrder = ro)
+				stacks = self._stacks, parent = ctrlParent, posParent = jnt, rotateOrder = ro, 
+				lockHide = self._lockHide)
 
 			## connect ctrl to joint
 			constraints.matrixConnect(Control.name, matrixLocalAttr, jnt, skipTranslate = ['x', 'y', 'z'], 
@@ -62,8 +66,3 @@ class FkChainComponent(rigComponent.RigComponent):
 		# pass info
 		self._joints += fkJnts
 		self._controls += fkControls
-
-		# write component info
-		self._writeRigComponentType()
-		self._writeJointsInfo()
-		self._writeControlsInfo()

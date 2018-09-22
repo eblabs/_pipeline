@@ -480,6 +480,13 @@ class Control(object):
 		for c in ctrls:
 			attributes.lockHideAttrs(c, attrs)
 
+	def unlockAttrs(self, attrs, sub=True, subOnly=False):
+		
+		ctrls = self.__getControllers(sub=True, subOnly=False)
+		
+		for c in ctrls:
+			attributes.unlockAttrs(c, attrs)
+
 # -- function ------
 
 def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, posPoint=None, posOrient=None, posParent=None, rotateOrder=0, shape='cube', size=1, color=None, colorSub = None, lockHide=[]):

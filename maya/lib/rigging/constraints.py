@@ -15,7 +15,7 @@ import common.apiUtils
 # ---- import end ----
 
 # matrix connect
-def matrixConnect(driver, attr, drivens, skipTranslate=None, skipRotate=None, skipScale=None, force=True, quatToEuler=True):
+def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, skipRotate=None, skipScale=None, force=True, quatToEuler=True):
 	'''
 	matrix connect
 
@@ -24,6 +24,7 @@ def matrixConnect(driver, attr, drivens, skipTranslate=None, skipRotate=None, sk
 	driver(string)
 	attr(string)
 	drivens(string/list)
+	offset(string): will maintain offset base on the given node, default is False
 	skipTranslate(list)
 	skipRotate(list)
 	skipScale(list)
@@ -31,27 +32,69 @@ def matrixConnect(driver, attr, drivens, skipTranslate=None, skipRotate=None, sk
 	quatToEuler(bool)
 	'''
 	# get name
-	NamingNode = naming.Naming(driver)
+	NamingDecompose = naming.Naming(driver)
+	NamingDecompose.type = 'decomposeMatrix'
+	NamingOffset = naming.Naming(driver)
+	NamingOffset.type = 'multMatrix'
+	NamingOffset.part = '{}Offset'.format(NamingOffset.part)
 
 	if isinstance(drivens, basestring):
 		drivens = [drivens]
 
-	# create decompose matrix node
-	NamingNode.type = 'decomposeMatrix'
-	decomposeMatrix = cmds.createNode('decomposeMatrix', name = NamingNode.name)
-	cmds.connectAttr('{}.{}'.format(driver, attr), '{}.inputMatrix'.format(decomposeMatrix))
+	if offset:
+		offsetList = cmds.getAttr('{}.worldMatrix[0]'.format(offset))
+		MMatrixOffset = apiUtils.convertListToMMatrix(offsetList)
+		
+	for d in driven:
+		decomposeMatrix = NamingDecompose.name
 
-	decomposeRot = decomposeMatrix
+		if offset:
+			drivenList = cmds.getAttr('{}.worldMatrix[0]'.format(d))
+			# check if need offset
+			if drivenList != offsetList:
+				MMatrixDriven = apiUtils.convertListToMMatrix(drivenList)
+				matrixLocal = apiUtils.convertMMatrixToList(MMatrixDriven * MMatrixOffset.inverse())
+				
+				multMatrixOffsetList = cmds.ls('{}_*'.format(NamingOffset.name))
+				NamingOffset.suffix = len(multMatrixOffsetList) + 1
+				multMatrixOffset = cmds.createNode('multMatrix', name = NamingOffset.name)
+				NamingOffset.suffix = None
 
-	if not skipRoate or len(skipRotate) < 3:
-		if quatToEuler:
-			NamingNode.type = 'quatToEuler'
-			decomposeRot = cmds.createNode('quatToEuler', name = NamingNode.name)
-			cmds.connectAttr('{}.outputQuat'.format(decomposeMatrix), 
-							 '{}.inputQuat'.format(decomposeRot))
-			cmds.connectAttr('{}.ro'.format(drivens[0]), '{}.inputRotateOrder'.format(decomposeRot))
+				cmds.setAttr('{}.matrixIn[0]'.format(multMatrixOffset), matrixLocal, type = 'matrix')
+				cmds.connectAttr('{}.{}'.format(driver, attr), '{}.matrixIn[1]'.format(multMatrixOffset))
 
-	for d in drivens:
+				NamingOffset.type = 'decomposeMatrix'
+				decomposeMatrixList = cmds.ls('{}_*'.format(NamingOffset.name))
+				NamingOffset.suffix = len(decomposeMatrixList) + 1
+				decomposeMatrix = cmds.createNode('decomposeMatrix', name = NamingOffset.name)
+				NamingOffset.type = 'multMatrix'
+				NamingOffset.suffix = None
+
+				cmds.connectAttr('{}.matrixSum'.format(multMatrixOffset), '{}.inputMatrix'.format(decomposeMatrix))
+
+			else:
+				if not cmds.objExists(decomposeMatrix):
+					decomposeMatrix = cmds.createNode('decomposeMatrix', name = decomposeMatrix)
+					cmds.connectAttr('{}.{}'.format(driver, attr), '{}.inputMatrix'.format(decomposeMatrix))
+		else:
+			if not cmds.objExists(decomposeMatrix):
+				decomposeMatrix = cmds.createNode('decomposeMatrix', name = decomposeMatrix)
+				cmds.connectAttr('{}.{}'.format(driver, attr), '{}.inputMatrix'.format(decomposeMatrix))
+		
+		decomposeRot = decomposeMatrix
+
+		if not skipRoate or len(skipRotate) < 3:
+			if quatToEuler:
+				NamingRot = naming.Naming(decomposeMatrix)
+				NamingRot.type = 'quatToEuler'
+				decomposeRot = NamingRot.name
+
+				if not cmds.objExists(decomposeRot):
+					decomposeRot = cmds.createNode('quatToEuler', name = decomposeRot)
+					cmds.connectAttr('{}.outputQuat'.format(decomposeMatrix), 
+									 '{}.inputQuat'.format(decomposeRot))
+					cmds.connectAttr('{}.ro'.format(d), '{}.inputRotateOrder'.format(decomposeRot))
+
 		for axis in ['x', 'y', 'z']:
 			if axis not in skipTranslate:
 				attributes.connectAttrs('outputTranslate{}'.format(axis.upper()), 

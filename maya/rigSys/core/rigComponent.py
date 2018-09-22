@@ -19,27 +19,32 @@ import rigging.joints as joints
 
 class RigComponent(object):
 	"""rigComponent template"""
+	_kwargs = {}
+	_controls = []
 	def __init__(self, *args,**kwargs):
 		super(RigComponent, self).__init__()
 		self._rigComponentType = 'rigSys.core.rigComponent'
+
+		kwargsDefault = {'side': {'value': 'middle', 
+								  'type' : 'basestring'},
+						 'part': {'value': '',
+						 		  'type': 'basestring'},
+						 'index': {'value': None,
+						 		   'type': 'int'},
+						 'parent': {'value': '',
+						 			'type': 'basestring'},
+						 'stacks': {'value': 3,
+						 			'type': 'int'},
+						 'controlsDescriptor': {'value': [],
+						 						'type': 'list'},
+							}
+
+		self._registerInput(kwargs)
+		self._registerAttributes(kwargsDefault)
+
 		if args:
 			self._rigComponent = args[0]
 			self._getRigComponentInfo()
-		else:
-			self._side = kwargs.get('side', 'middle')
-			self._part = kwargs.get('part', None)
-			self._index = kwargs.get('index', None)
-			self._parent = kwargs.get('parent', None)
-
-			self._bpJnts = kwargs.get('blueprintJoints', None) # blueprint joints
-			self._bpCtrls = kwargs.get('blueprintControls', None)
-			self._stacks = kwargs.get('stacks', 3) # control's stacks
-			self._lockHide = kwargs.get('lockHide', ['sx', 'sy', 'sz', 'v']) # lock hide control's attrs
-			self._ctrlDescriptor = kwargs.get('controlsDescriptor', [])
-			self._jntDescriptor = kwargs.get('jointsDescriptor', [])
-
-			self._joints = []
-			self._controls = []
 
 	def __str__(self):
 		return self._rigComponentType
@@ -75,36 +80,23 @@ class RigComponent(object):
 		attrList = attrString.split(',')
 		return attrList
 
-	@ staticmethod
-	def createJntsFromBpJnts(bpJnts, type='jnt', search='', replace='', suffix='', parent=None):
-		jntList = []
-		# create jnts
-		for j in bpJnts:
-			NamingJnt = naming.Naming(j)
-			NamingJnt.type = type
-			NamingJnt.part = NamingJnt.part.replace(search, replace) + suffix
-			joints.createOnNode(j, j, NamingJnt.name)
-			jntList.append(NamingJnt.name)
-
-		# parent jnts
-		for i, j in enumerate(bpJnts):
-			jntParent = cmds.listRelatives(j, p = True)
-			if jntParent:
-				NamingJnt = naming.Nameing(jntParent)
-				NamingJnt.type = type
-				NamingJnt.part = NamingJnt.part.replace(search, replace) + suffix
-				if NamingJnt.name in jntList:
-					jntParent = NamingJnt.name
-				else:
-					jntParent = parent
-			else:
-				jntParent = parent
-			if jntParent and cmds.objExists(jntParent):
-				cmds.parent(jntList[i], jntParent)
-
-		return jntList
-		
 	def create(self):
+		self._createComponent()
+		self._writeRigComponentInfo()
+
+	def connect(self, inputPlug):
+		inputMatrixList = cmds.getAttr(inputPlug)
+		componentMatrixList = cmds.getAttr('{}.worldMatrix[0]'.format(self._rigComponent))
+
+		MMatrixComponent = apiUtils.convertListToMMatrix(componentMatrixList)
+		MMatrixInput = apiUtils.convertListToMMatrix(inputMatrixList)
+
+		offsetMatrixList = apiUtils.convertMMatrixToList(MMatrixComponent * MMatrixInput.inverse())
+
+		attributes.connectAttrs(inputPlug, self._inputMatrixPlug, force = True)
+		attributes.setAttrs(self._offsetMatrixPlug, offsetMatrixList, type = 'matrix', force = True)
+
+	def _createComponent(self):
 		'''
 		create rig component hierarchy
 
@@ -158,9 +150,6 @@ class RigComponent(object):
 		# hide nodesHide
 		attributes.setAttrs('{}.v'.format(self._nodesHide), 0, force = True)
 
-		# add attrs
-		self._writeRigComponentType()
-
 		# input matrix, offset matrix, component type, controls, joints, rigNodes
 		attributes.addAttrs(self._rigComponent, ['inputMatrix', 'offsetMatrix', 'outputMatrix', 'outputInverseMatrix'], 
 							attributeType = 'matrix', lock = True)
@@ -172,10 +161,6 @@ class RigComponent(object):
 		attributes.addAttrs(self._rigComponent, ['controls', 'joints', 'controlsDescriptor', 'jointsDescriptor'],
 							attributeType = 'string')
 
-		for items in [[self._ctrlDescriptor, 'controlsDescriptor'], [self._jntDescriptor, 'jointsDescriptor']]:
-			descriptorString = self.composeListToString(itmes[0])
-			attributes.setAttrs('{}.{}'.format(self._rigComponent, items[1]), descriptorString, force = True)
-		
 		# connect attrs
 		attributes.connectAttrs(['controlsVis', 'jointsVis', 'rigNodesVis', 'rigNodesVis'], 
 								['{}.v'.format(self._controlsGrp), '{}.v'.format(self._jointsGrp),
@@ -209,18 +194,29 @@ class RigComponent(object):
 		self._inputMatrixPlug = '{}.inputMatrix'.format(self._rigComponent)
 		self._offsetMatrixPlug = '{}.offsetMatrix'.format(self._rigComponent)
 
-	def connect(self, inputPlug):
-		inputMatrixList = cmds.getAttr(inputPlug)
-		componentMatrixList = cmds.getAttr('{}.worldMatrix[0]'.format(self._rigComponent))
+	def _writeRigComponentInfo(self):
+		# rig component type
+		self._writeRigComponentType()
 
-		MMatrixComponent = apiUtils.convertListToMMatrix(componentMatrixList)
-		MMatrixInput = apiUtils.convertListToMMatrix(inputMatrixList)
+		# controls
+		self._writeControlsInfo()
 
-		offsetMatrixList = apiUtils.convertMMatrixToList(MMatrixComponent * MMatrixInput.inverse())
+	def _registerInput(self, kwargs):
+		for key, val in kwargs.iteritems():
+            self._kwargs.update({key: {'value': val}})
+            self._addObjAttr('_' + key, val)
 
-		attributes.connectAttrs(inputPlug, self._inputMatrixPlug, force = True)
-		attributes.setAttrs(self._offsetMatrixPlug, offsetMatrixList, type = 'matrix', force = True)
+	def _registerAttributes(self, kwargs):
+		for key, valDic in kwargs.iteritems():
+			self._kwargs[key]['type'] = valDic['type']
+            if key not in self._kwargs:
+                self._kwargs[key]['value'] = valDic['value']
+                self._addObjAttr('_' + key, valDic['value'])
 
+    def _removeAttributes(self, kwargs):
+    	for key in kwargs:
+    		self._kwargs.pop(key, None)
+            	
 	def _getRigComponentInfo(self):
 		# get groups
 		NamingGrp = naming.Naming(self._rigComponent)
@@ -243,7 +239,6 @@ class RigComponent(object):
 		self._offsetMatrixPlug = '{}.offsetMatrix'.format(self._rigComponent)
 
 		self._getControlsInfo()
-		self._getJointsInfo()
 
 	def _getControlsInfo(self):
 		controlsName = cmds.getAttr('{}.controls'.format(self._rigComponent))
@@ -253,37 +248,15 @@ class RigComponent(object):
 			controlDic = {'list': controlList,
 						  'count': len(controlList)}
 
-			self._ctrlDescriptor = self.getListFromStringAttr('{}.controlsDescriptor'.format(self._rigComponent))
+			self._controlsDescriptor = self.getListFromStringAttr('{}.controlsDescriptor'.format(self._rigComponent))
 
 			for i, control in enumerate(controlList):
 				ControlObj = controls.Control(control)
 				controlObjList.append(ControlObj)
-				if self._ctrlDescriptor:
-					controlDic.append(self._ctrlDescriptor[i]: ControlObj)
+				if self._controlsDescriptor:
+					controlDic.append(self._controlsDescriptor[i]: ControlObj)
 			self._addAttributeFromList('controls', controlObjList)
 			self._addObjAttr('controls', controlDic)
-
-	def _getJointsInfo(self):
-		jointsName = cmds.getAttr('{}.joints'.format(self._rigComponent))
-		if jointsName:
-			jointList = jointsName.split(',')
-
-			jointsDic = {'list': jointList,
-						 'count': len(jointList)}
-
-			self._jntDescriptor = self.getListFromStringAttr('{}.jointsDescriptor'.format(self._rigComponent))
-
-			for i, joint in enumerate(jointList):
-				jointsDicUpdate = {'joint{:03d}'.format(i) : {'name': jnt,
-															  'matrixPlug': '{}.joint{:03d}Matrix'.format(self._rigComponent, i)}}
-				jointsDic.update(jointsDicUpdate)
-
-				if self._jntDescriptor:
-					jointsDicUpdate = {self._jntDescriptor[i] : {'name': jnt,
-															  'matrixPlug': '{}.joint{:03d}Matrix'.format(self._rigComponent, i)}}
-					jointsDic.update(jointsDicUpdate)
-
-			self._addObjAttr('joints', jointsDic)
 
 	def _writeRigComponentType(self):
 		if not cmds.attributeQuery('rigComponentType', node = self._rigComponent, ex = True):
@@ -291,32 +264,14 @@ class RigComponent(object):
 		attributes.setAttrs('componentType', self._rigComponentType, 
 							node = self._rigComponent, type = 'string', force = True)
 
-	def _writeJointsInfo(self):
-		if self._joints:
-			jointsName = self.composeListToString(self._joints)
-			attributes.addAttrs(self._rigComponent, 'joints', attributeType = 'string', lock = True)
-			attributes.setAttrs('joints', jointsName, node = self._rigComponent, type = 'string', force = True)
-
-			for i, jnt in enumerate(self._joints):
-				NamingJnt = naming.Naming(jnt)
-				NamingJnt.type = 'multMatrix'
-				multMatrixJnt = cmds.createNode('multMatrix', name = NamingJnt.name)
-				attributes.connectAttrs(['{}.worldMatrix[0]'.format(jnt), '{}.outputInverseMatrix'.format(self._rigComponent)],
-										['matrixIn[0]', 'matrix[1]'], driven = multMatrixJnt)
-				
-				cmds.addAttr(self._rigComponent, ln = 'joint{:03d}Matrix'.format(i), at = 'matrix')
-
-				cmds.connectAttr('{}.matrixSum'.format(multMatrixJnt), '{}.joint{:03d}Matrix'.format(self._rigComponent, i))
-
-		self._getJointsInfo()
-
 	def _writeControlsInfo(self):
-		if self._controls:
-			controlsName = self.composeListToString(self._controls)
-			attributes.addAttrs(self._rigComponent, 'controls', attributeType = 'string', lock = True)
-			attributes.setAttrs('controls', controlsName, node = self._rigComponent, type = 'string', force = True)
+		# controls
+		self._addListAsStringAttr('controls', self._controls)
+		self._getControlsInfo()
 
-			self._getControlsInfo()
+		# discriptor
+		self._addListAsStringAttr(self._rigComponent, 'controlsDescriptor', self._controlsDescriptor)
+
 			
 	def _addAttributeFromList(self, attr, valList):
 		if valList:
@@ -340,6 +295,12 @@ class RigComponent(object):
 			for a in attrSplit[:-1]:
 				attrParent = getattr(attrParent, a)
 		setattr(attrParent, attrSplit[-1], objectview(attrDic))
+
+	def _addListAsStringAttr(self, attr, listAttr):
+		listName = self.composeListToString(listAttr)
+		if not cmds.attributeQuery(attr, node = self._rigComponent, ex = True):
+			attributes.addAttrs(self._rigComponent, attr, attributeType = 'string', lock = True)
+		attributes.setAttrs(attr, listName, node = self._rigComponent, type = 'string', force = True)
 
 class Objectview(object):
     def __init__(self, kwargs):

@@ -19,10 +19,10 @@ import rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
-import rigSys.core.rigComponent as rigComponent
+import rigSys.core.ikSolverComponent as ikSolverComponent
 # -- import end ----
 
-class IkRPsolverComponent(rigComponent.RigComponent):
+class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 	"""
 	IkRPsolverComponent
 
@@ -32,28 +32,30 @@ class IkRPsolverComponent(rigComponent.RigComponent):
 	def __init__(self, *args,**kwargs):
 		super(IkRPsolverComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.modules.base.ikRPsolverComponent'
-		if args:
-			self._rigComponent = args[0]
-			self._getRigComponentInfo()
 
-	def create(self):
-		super(IkRPsolverComponent, self).create()
+		kwargsDefault = {'blueprintControls': {'value': [],
+						 					   'type': 'list'}}
+		self._registerAttributes(kwargsDefault)
+
+	def _createRigComponent(self):
+		super(IkRPsolverComponent, self)._createRigComponent()
 
 		# create joints
-		ikJnts = self.createJntsFromBpJnts(self._bpJnts, type = 'jnt', suffix = 'Ik', parent = self._jointsGrp)
+		ikJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = 'Ik', parent = self._jointsGrp)
 		
 		# create controls
 		ikControls = []
 
-		for bpCtrl in self._bpCtrls:
+		for bpCtrl in self._blueprintControls:
 			NamingCtrl = naming.Naming(bpCtrl)
 			ro = cmds.getAttr('{}.ro'.format(bpCtrl))
 			Control = controls.create(NamingCtrl.part, side = NamingCtrl.side, index = NamingCtrl.index, 
-				stacks = self._stacks, parent = self._controlsGrp, posParent = bpCtrl, rotateOrder = ro)
+				stacks = self._stacks, parent = self._controlsGrp, posParent = bpCtrl, rotateOrder = ro,
+				lockHide = ['sx', 'sy', 'sz'])
 			ikControls.append(Control.name)
 
 		# set ik solver
-		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = '%sIk' %self._part, iIndex = self._index).name
+		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = '{}Ik'.format(self._part), iIndex = self._index).name
 		cmds.ikHandle(sj = ikJnts[0], ee = ikJnts[-1], sol = 'ikRPsolver', name = ikHandle)
 
 		# add transfrom group to control ik (pv and ik ctrl)
@@ -72,41 +74,39 @@ class IkRPsolverComponent(rigComponent.RigComponent):
 		# pole vector constraint
 		cmds.poleVectorConstraint(nodes[0], ikHandle)
 
+		# pole vector line
+		crvLine = naming.Naming(type = 'crvLine', side = self._side, part = self._part, index = self._index).name
+		crvLine, clsHndList = curves.createCurveLine(crvLine, [ikControls[1], ikJnts[1]])
+		cmds.parent(crvLine, self._controlsGrp)
+
+		# connect pole vector line
+		ControlPv = controls.Control(ikControls[1])
+		constraints.matrixConnect(ControlPv.name, ControlPv.matrixWorldAttr, clsHndList[0], skipTranslate=None, 
+								  skipRotate=['x', 'y', 'z'], skipScale=['x', 'y', 'z'])
+
+		multMatrixPv = naming.Naming(type = 'multMatrix', side = self._side, part = '{}PvCrvLine'.format(self._part), index = self._index).name
+		attributes.connectAttrs(['{}.matrix'.format(ikJnts[1]), '{}.matrix'.format(ikJnts[0])],
+								['matrixIn[0]', 'matrixIn[1]'], driven = multMatrixPv)
+		constraints.matrixConnect(multMatrixPv, 'matrixSum', clsHndList[1], skipTranslate=None, 
+								  skipRotate=['x', 'y', 'z'], skipScale=['x', 'y', 'z'])
+
 		# connect root jnt with controller
 		constraints.matrixConnect(ikControls[0], matrixWorldAttr, ikJnts[0], force = True, skipRotate = ['x', 'y', 'z'], 
 						  		  skipScale = ['x', 'y', 'z'])
 
-		# connect tip jnt rotation with controller
-		Control = controls.Control(ikControls[-1])
-
-		multMatrix = naming.Naming(type = 'multMatrix', side = Control.side, part = '{}JntRot'.format(Control.part), index = Control.index).name
-		cmds.createNode('multMatrix', name = multMatrix)
-
-		matrixLocalJoint = transforms.getLocalMatrix(ikJnts[-1], Control.output)
-		matrixLocalControl = transforms.getLocalMatrix(Control.output, ikJnts[-2])
-
-		orient = joints.getJointOrient(ikJnts[-1])
-		MMatrixOrient = apiUtils.composeMMatrix(rotate = orient)
-		matrixOrientInverse = apiUtils.convertMMatrixToList(MMatrixOrient.inverse())
-
-		attributes.setAttrs(['matrixIn[0]', 'matrixIn[2]', 'matrixIn[3]'], 
-							[matrixLocalJoint, matrixLocalControl, matrixOrientInverse], 
-							node = multMatrix, type = 'matrix')
-
-		cmds.connectAttr(Control.matrixLocalPlug, '{}.matrixIn[1]'.format(multMatrix))
-		constraints.matrixConnect(multMatrix, 'matrixSum', ikJnts[-1], force = True, skipTranslate = ['x', 'y', 'z'], 
-						  		  skipScale = ['x', 'y', 'z'])
+		# connect twist attr
+		cmds.addAttr(ikControls[-1], ln = 'twist', at = 'float', dv = 0, keyable = True)
+		cmds.connectAttr('{}.twist'.format(ikControls[-1]), '{}.twist'.format(ikHandle))
 
 		# lock hide attrs
 		for ctrl in ikControls[:-1]:
 			Control = controls.Control(ctrl)
-			Control.lockHideAttrs(['rx', 'ry', 'rz', 'sx', 'sy', 'sz'])
+			Control.lockHideAttrs(['rx', 'ry', 'rz'])
 
 		# pass info
 		self._joints += ikJnts
 		self._controls += ikControls
+		self._ikHandles = [ikHandle]
+		self._ikControls = self._controls
 
-		# write component info
-		self._writeRigComponentType()
-		self._writeJointsInfo()
-		self._writeControlsInfo()
+
