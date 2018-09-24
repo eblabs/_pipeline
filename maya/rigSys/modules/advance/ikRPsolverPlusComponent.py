@@ -36,12 +36,12 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 		super(IkRPsolverPlusComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.modules.advance.ikRPsolverPlusComponent'
 
-		kwargsDefault = {'blueprintReverseJoints': {'value': [], 'type': 'list'}
+		kwargsDefault = {'blueprintReverseJoints': {'value': [], 'type': list}
 						 'reverseJointsDescriptor': {'value': ['heel', 'toe', 'sideInn', 'sideOut', 'ball'],
-						 							 'type': 'list'}}
+						 							 'type': list}}
 		self._registerAttributes(kwargsDefault)
 
-	def _createRigComponent(self):
+	def _createComponent(self):
 		if len(self._blueprintJoints) == 4:
 			bpJointsSC = self._blueprintJoints[-2:]
 			self._blueprintJoints = self._blueprintJoints[:-2]
@@ -51,16 +51,16 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			self._blueprintJoints = self._blueprintJoints[:-3]
 			descriptor = ['Roll', 'Tip']
 
-		super(IkRPsolverPlusComponent, self)._createRigComponent()
+		super(IkRPsolverPlusComponent, self)._createComponent()
 
 		# create rest jnts
-		ikJnts = self.createJntsFromBpJnts(bpJointsSC[1:], type = 'jnt', suffix = 'Ik', parent = self._joints[-1])
+		ikJnts = self.createJntsFromBpJnts(bpJointsSC[1:], type = 'jnt', suffix = 'IkSC', parent = self._joints[-1])
 		ikRpTipJnt = self._joints[-1]
 		ikJntsSC = [ikRpTipJnt] + ikJnts
 		ikSCHandleList = []
 
 		for i, jnt in enumerate(ikJntsSC[:-1]):
-			ikSCHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = '{}{}Ik'.format(self._part, descriptor[i]), iIndex = self._index).name
+			ikSCHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = '{}{}IkSC'.format(self._part, descriptor[i]), iIndex = self._index).name
 			cmds.ikHandle(sj = jnt, ee = ikJntsSC[i+1], sol = 'ikSCsolver', name = ikSCHandle)
 			ikSCHandleList.append(ikSCHandle)
 

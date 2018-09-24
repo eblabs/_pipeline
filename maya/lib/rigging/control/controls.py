@@ -650,7 +650,7 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 	return Control(ctrl)
 
 # add ctrl shape
-def addCtrlShape(ctrls, shape='cube', size=1, color=None, asCtrl=False, overrideType=0, colorOverride=False):
+def addCtrlShape(ctrls, shape='cube', size=1, color=None, asCtrl=None, overrideType=0, colorOverride=False):
 	'''
 	add shape node to ctrls
 
@@ -660,7 +660,7 @@ def addCtrlShape(ctrls, shape='cube', size=1, color=None, asCtrl=False, override
 	shape(string/dictionary): ctrl shape
 	size(flaot/list): ctrl shape size
 	color(int/string): ctrl shape color
-	asCtrl(bool): if this shape is an extra ctrl (like ikfk switch)
+	asCtrl(string): if this shape is an extra ctrl (like ikfk switch)
 	overrideType(int/string): 0 normal
 							  1 template
 							  2 reference

@@ -48,8 +48,8 @@ class baseComponentsBlendLimb(baseJointsLimb.baseJointsLimb):
 			#	 'dKwargs': kwargs,}
 			#}
 
-	def createComponent(self):
-		super(baseComponentsBlendLimb, self).createComponent()
+	def _createComponent(self):
+		super(baseComponentsBlendLimb, self)._createComponent()
 
 		cmds.setAttr('%s.subComponents' %self._sComponentMaster, 1)
 

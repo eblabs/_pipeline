@@ -33,14 +33,14 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 		super(IkSplineSolverComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.modules.base.ikSplineSolverComponent'
 
-		kwargsDefault = {'blueprintCurve': {'value': '', 'type': 'basestring'}}
+		kwargsDefault = {'blueprintCurve': {'value': '', 'type': basestring}}
 		self._registerAttributes(kwargsDefault)
 
-	def _createRigComponent(self):
-		super(IkSCsolverComponent, self)._createRigComponent()
+	def _createComponent(self):
+		super(IkSplineSolverComponent, self)._createComponent()
 
 		# create joints
-		ikJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = 'Ik', parent = self._jointsGrp)
+		ikJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = 'IkSpline', parent = self._jointsGrp)
 		
 		# generate curve
 		crv = naming.Naming(type = 'curve', side = self._side, part = '{}IkSpline'.format(self._part), index = self._index).name

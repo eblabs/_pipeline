@@ -26,9 +26,9 @@ class JointComponent(rigComponent.RigComponent):
 		self._rigComponentType = 'rigSys.core.jointComponent'
 
 		kwargsDefault = {'blueprintJoints': {'value': [],
-						 					 'type': 'list'},
+						 					 'type': list},
 						 'jointsDescriptor': {'value': [],
-						 					  'type': 'list'},
+						 					  'type': list},
 							}
 
 		self._registerAttributes(kwargsDefault)
@@ -61,6 +61,37 @@ class JointComponent(rigComponent.RigComponent):
 				cmds.parent(jntList[i], jntParent)
 
 		return jntList
+
+	def _createComponent(self):
+		super(JointComponent, self)._createComponent()
+
+		# create groups
+		NamingGrp = naming.Naming(type = 'jointsGrp', 
+								  side = self._side,
+								  part = self._part,
+								  index = self._index)
+
+		transformNode = transforms.createTransformNode(NamingGrp.name, 
+													   lockHide = ['tx', 'ty', 'tz',
+																  'rx', 'ry', 'rz',
+																  'sx', 'sy', 'sz',
+																  'v'])
+
+		self._addAttributeFromDict({'_jointsGrp': transformNode})
+
+		cmds.parent(self._jointsGrp, self._rigLocal)
+
+		attributes.addAttrs(self._rigComponent, ['jointsVis'],
+							attributeType = 'long', minValue = 0, maxValue = 1, 
+							defaultValue = [0], keyable = False, channelBox = True)
+
+		attributes.addAttrs(self._rigComponent, ['joints', 'jointsDescriptor'],
+							attributeType = 'string')
+
+		# connect attrs
+		attributes.connectAttrs(['jointsVis'], 
+								[ '{}.v'.format(self._jointsGrp)], 
+								 driver = self._rigComponent, force=True)
 
 	def _writeRigComponentInfo(self):
 		super(JointComponent, self)._writeRigComponentInfo()
@@ -110,4 +141,9 @@ class JointComponent(rigComponent.RigComponent):
 
 	def _getRigComponentInfo(self):
 		super(JointComponent, self)._getRigComponentInfo()
+		
+		NamingGrp = naming.Naming(self._rigComponent)
+		NamingGrp.type = 'jointsGrp'
+		self._addAttributeFromDict({'_jointsGrp': NamingGrp.name})
+
 		self._getJointsInfo()

@@ -34,14 +34,22 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 		self._rigComponentType = 'rigSys.modules.base.ikRPsolverComponent'
 
 		kwargsDefault = {'blueprintControls': {'value': [],
-						 					   'type': 'list'}}
+						 					   'type': list},
+						 'ikSolver': {'value': 'ikRPsolver',
+						 			  'type': basestring}}
 		self._registerAttributes(kwargsDefault)
 
-	def _createRigComponent(self):
-		super(IkRPsolverComponent, self)._createRigComponent()
+	def _createComponent(self):
+		super(IkRPsolverComponent, self)._createComponent()
+
+		if self._ikSolver == 'ikRPsolver':
+			suffix = 'IKRP'
+		elif self._ikSolver == 'ikSpringSolver':
+			mel.eval('ikSpringSolver')
+			suffix = 'IKSpring'
 
 		# create joints
-		ikJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = 'Ik', parent = self._jointsGrp)
+		ikJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = suffix, parent = self._jointsGrp)
 		
 		# create controls
 		ikControls = []
@@ -55,8 +63,8 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 			ikControls.append(Control.name)
 
 		# set ik solver
-		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = '{}Ik'.format(self._part), iIndex = self._index).name
-		cmds.ikHandle(sj = ikJnts[0], ee = ikJnts[-1], sol = 'ikRPsolver', name = ikHandle)
+		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = self._part + suffix, iIndex = self._index).name
+		cmds.ikHandle(sj = ikJnts[0], ee = ikJnts[-1], sol = self._ikSolver, name = ikHandle)
 
 		# add transfrom group to control ik (pv and ik ctrl)
 		nodes = []
@@ -103,10 +111,33 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 			Control = controls.Control(ctrl)
 			Control.lockHideAttrs(['rx', 'ry', 'rz'])
 
+		# angle bias if ik spring solver
+		if self._ikSolver == 'ikSpringSolver':
+			cmds.addAttr(ikControls[-1], ln = 'angleBias', min = 0, max = 1, dv = 0.5, at = 'float', keyable = True)
+			cmds.connectAttr('{}.angleBias'.format(ikControls[-1]), '{}.springAngleBias[0].springAngleBias_FloatValue'.format(ikHandle))
+			rvs = cmds.createNode('reverse', name = naming.Naming(type = 'reverse', side = self._sSide, 
+									part = '{}IkSpringAngleBias'.format(self._part), index = self._index).name)
+			cmds.connectAttr('{}.angleBias'.format(ikControls[-1]), '{}.inputX'.format(rvs))
+			cmds.connectAttr('{}.outputX'.format(rvs), '{}.springAngleBias[1].springAngleBias_FloatValue'.format(ikHandle))
+
 		# pass info
 		self._joints += ikJnts
 		self._controls += ikControls
 		self._ikHandles = [ikHandle]
 		self._ikControls = self._controls
+
+	def _writeRigComponentInfo(self):
+		super(IkRPsolverPlusComponent, self)._writeRigComponentInfo()
+
+		# ikHandle type
+		self._addStringAttr('ikSolver', self._ikSolver)
+
+	def _getRigComponentInfo(self):
+		super(IkRPsolverPlusComponent, self)._getRigComponentInfo()
+
+		# get reverse controls
+		self._ikSolver = cmds.getAttr('{}.ikSolver'.format(self._rigComponent))
+
+
 
 

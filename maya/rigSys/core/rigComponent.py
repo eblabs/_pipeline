@@ -26,17 +26,17 @@ class RigComponent(object):
 		self._rigComponentType = 'rigSys.core.rigComponent'
 
 		kwargsDefault = {'side': {'value': 'middle', 
-								  'type' : 'basestring'},
+								  'type' : basestring},
 						 'part': {'value': '',
-						 		  'type': 'basestring'},
+						 		  'type': basestring},
 						 'index': {'value': None,
-						 		   'type': 'int'},
+						 		   'type': int},
 						 'parent': {'value': '',
-						 			'type': 'basestring'},
+						 			'type': basestring},
 						 'stacks': {'value': 3,
-						 			'type': 'int'},
+						 			'type': int},
 						 'controlsDescriptor': {'value': [],
-						 						'type': 'list'},
+						 						'type': list},
 							}
 
 		self._registerInput(kwargs)
@@ -108,7 +108,7 @@ class RigComponent(object):
 		  -- rigWorld
 		    -- nodesHide
 		    -- nodesShow
-		    -- subComponents
+		  -- subComponents
 		'''
 
 		# get name
@@ -124,7 +124,7 @@ class RigComponent(object):
 
 		# create groups
 		dicAttr = {}
-		for grp in ['rigComponent', 'controlsGrp', 'rigLocal', 'jointsGrp', 'nodesLocal',
+		for grp in ['rigComponent', 'controlsGrp', 'rigLocal', 'nodesLocal',
 					'rigWorld', 'nodesHide', 'nodesShow', 'subComponents']:
 			NamingGrp.type = grp
 			transformNode = transforms.createTransformNode(NamingGrp.name, 
@@ -138,9 +138,9 @@ class RigComponent(object):
 
 		# parent components
 		cmds.parent(self._rigComponent, self._parent)
-		cmds.parent(self._controlsGrp, self._rigLocal, self._rigWorld, self._rigComponent)
-		cmds.parent(self._jointsGrp, self._nodesLocal, self._rigLocal)
-		cmds.parent(self._nodesHide, self._nodesShow, self._subComponents, self._rigWorld)
+		cmds.parent(self._controlsGrp, self._rigLocal, self._rigWorld, self._subComponents, self._rigComponent)
+		cmds.parent(self._nodesLocal, self._rigLocal)
+		cmds.parent(self._nodesHide, self._nodesShow, self._rigWorld)
 
 		# inheritsTransform
 		attributes.setAttrs(['{}.inheritsTransform'.format(self._rigLocal),
@@ -150,21 +150,23 @@ class RigComponent(object):
 		# hide nodesHide
 		attributes.setAttrs('{}.v'.format(self._nodesHide), 0, force = True)
 
-		# input matrix, offset matrix, component type, controls, joints, rigNodes
+		# input matrix, offset matrix, component type, controls, rigNodes
 		attributes.addAttrs(self._rigComponent, ['inputMatrix', 'offsetMatrix', 'outputMatrix', 'outputInverseMatrix'], 
 							attributeType = 'matrix', lock = True)
 		
-		attributes.addAttrs(self._rigComponent, ['controlsVis', 'jointsVis', 'rigNodesVis'],
+		attributes.addAttrs(self._rigComponent, ['controlsVis', 'rigNodesVis', 'subComponents'],
 							attributeType = 'long', minValue = 0, maxValue = 1, 
 							defaultValue = [1,0,0], keyable = False, channelBox = True)
 
-		attributes.addAttrs(self._rigComponent, ['controls', 'joints', 'controlsDescriptor', 'jointsDescriptor'],
+		attributes.addAttrs(self._rigComponent, ['controls', 'controlsDescriptor'],
 							attributeType = 'string')
 
 		# connect attrs
-		attributes.connectAttrs(['controlsVis', 'jointsVis', 'rigNodesVis', 'rigNodesVis'], 
-								['{}.v'.format(self._controlsGrp), '{}.v'.format(self._jointsGrp),
-								 '{}.v'.format(self._nodesLocal), '{}.v'.format(self._nodesHide)], 
+		attributes.connectAttrs(['controlsVis', 'rigNodesVis', 'rigNodesVis', 'subComponents'], 
+								['{}.v'.format(self._controlsGrp), 
+								 '{}.v'.format(self._nodesLocal), 
+								 '{}.v'.format(self._nodesHide), 
+								 '{}.v'.format(self._subComponents)], 
 								 driver = self._rigComponent, force=True)
 
 		# connect matrix
@@ -226,7 +228,7 @@ class RigComponent(object):
 		self._index = NamingGrp.index
 
 		dicAttr = {}
-		for grp in ['controls', 'rigLocal', 'joints', 'nodesLocal',
+		for grp in ['controlsGrp', 'rigLocal', 'nodesLocal',
 					'rigWorld', 'nodesHide', 'nodesShow', 'subComponents']:
 			NamingGrp.type = grp
 			dicAttr.update('_{}'.format(grp), NamingGrp.name)
@@ -259,10 +261,7 @@ class RigComponent(object):
 			self._addObjAttr('controls', controlDic)
 
 	def _writeRigComponentType(self):
-		if not cmds.attributeQuery('rigComponentType', node = self._rigComponent, ex = True):
-			cmds.addAttr(self._rigComponent, ln = 'componentType', dt = 'string')
-		attributes.setAttrs('componentType', self._rigComponentType, 
-							node = self._rigComponent, type = 'string', force = True)
+		self._addStringAttr('rigComponentType', self._rigComponentType)
 
 	def _writeControlsInfo(self):
 		# controls
@@ -298,9 +297,13 @@ class RigComponent(object):
 
 	def _addListAsStringAttr(self, attr, listAttr):
 		listName = self.composeListToString(listAttr)
+		self._addStringAttr(attr, listName)
+		
+	def _addStringAttr(self, attr, val):
 		if not cmds.attributeQuery(attr, node = self._rigComponent, ex = True):
 			attributes.addAttrs(self._rigComponent, attr, attributeType = 'string', lock = True)
-		attributes.setAttrs(attr, listName, node = self._rigComponent, type = 'string', force = True)
+		attributes.setAttrs(attr, val, node = self._rigComponent, type = 'string', force = True)
+
 
 class Objectview(object):
     def __init__(self, kwargs):

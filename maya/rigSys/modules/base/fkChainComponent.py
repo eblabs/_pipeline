@@ -33,13 +33,13 @@ class FkChainComponent(jointComponent.JointComponent):
 		self._rigComponentType = 'rigSys.modules.base.fkChainComponent'
 
 		kwargsDefault = {'lockHide': {'value': ['sx', 'sy', 'sz'],
-						 			  'type': 'list'},
+						 			  'type': list},
 							}
 
 		self._registerAttributes(kwargsDefault)
 
-	def _createRigComponent(self):
-		super(FkChainComponent, self)._createRigComponent()
+	def _createComponent(self):
+		super(FkChainComponent, self)._createComponent()
 
 		# create joints
 		fkJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = 'Fk', parent = self._jointsGrp)

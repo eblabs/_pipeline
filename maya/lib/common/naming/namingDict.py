@@ -19,6 +19,10 @@ dNameConvension = {
 							'blueprintSurface': 'bpSurf',
 							'blueprintMesh': 'bpMesh',
 							'ikHandle': 'ikHnd',
+							'pointConstraint': 'poc',
+							'orientConstraint': 'onc',
+							'parentConstraint': 'pac',
+							'scaleConstraint': 'sac',
 
 							#deformer
 							'skinCluster': 'skin',

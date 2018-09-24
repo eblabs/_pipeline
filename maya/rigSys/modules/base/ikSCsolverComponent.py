@@ -33,15 +33,11 @@ class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):
 		super(IkSCsolverComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.modules.base.ikSCsolverComponent'
 
-		kwargsDefault = {'blueprintControls': {'value': [],
-						 					   'type': 'list'}}
-		self._registerAttributes(kwargsDefault)
-
-	def _createRigComponent(self):
-		super(IkSCsolverComponent, self)._createRigComponent()
+	def _createComponent(self):
+		super(IkSCsolverComponent, self)._createComponent()
 
 		# create joints
-		ikJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = 'Ik', parent = self._jointsGrp)
+		ikJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = 'IkSC', parent = self._jointsGrp)
 		
 		# create controls
 		ikControls = []
@@ -55,7 +51,7 @@ class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):
 			ikControls.append(Control.name)
 
 		# set ik solver
-		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = '{}Ik'.format(self._part), iIndex = self._index).name
+		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = '{}IkSC'.format(self._part), iIndex = self._index).name
 		cmds.ikHandle(sj = ikJnts[0], ee = ikJnts[-1], sol = 'ikSCsolver', name = ikHandle)
 
 		# add transfrom group to control ik
