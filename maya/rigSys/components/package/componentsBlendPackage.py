@@ -23,7 +23,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 	"""componentsBlendPackage template"""
 	def __init__(self, *args,**kwargs):
 		super(ComponentsBlendPackage, self).__init__()
-		self._rigComponentType = 'rigSys.modules.package.componentsBlendPackage'
+		self._rigComponentType = 'rigSys.components.package.componentsBlendPackage'
 
 		kwargsDefault = {'components': {'value': {}, 'type': dict},
 						 'defaultA': {'value': '', 'type': basestring},

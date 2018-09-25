@@ -19,6 +19,7 @@ import rigging.constraints as constraints
 
 # -- import component
 import rigSys.core.jointComponent as jointComponent
+import rigSys.behavior.fkChainBehavior as fkChainBehavior
 # -- import end ----
 
 class FkChainComponent(jointComponent.JointComponent):
@@ -30,7 +31,7 @@ class FkChainComponent(jointComponent.JointComponent):
 	"""
 	def __init__(self, *args,**kwargs):
 		super(FkChainComponent, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.modules.base.fkChainComponent'
+		self._rigComponentType = 'rigSys.components.base.fkChainComponent'
 
 		kwargsDefault = {'lockHide': {'value': ['sx', 'sy', 'sz'],
 						 			  'type': list},
@@ -41,28 +42,21 @@ class FkChainComponent(jointComponent.JointComponent):
 	def _createComponent(self):
 		super(FkChainComponent, self)._createComponent()
 
-		# create joints
-		fkJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = 'Fk', parent = self._jointsGrp)
-		
-		# create control
-		fkControls = []
-		ctrlParent = self._controlsGrp
-		for jnt in fkJnts:
-			NamingCtrl = naming.Naming(jnt)
-			ro = cmds.getAttr('{}.ro'.format(jnt))
-			Control = controls.create(NamingCtrl.part, side = NamingCtrl.side, index = NamingCtrl.index, 
-				stacks = self._stacks, parent = ctrlParent, posParent = jnt, rotateOrder = ro, 
-				lockHide = self._lockHide)
+		kwargs = {'side': self._side,
+				  'part': self._part,
+				  'index': self._index,
+				  'blueprintJoints': self._blueprintJoints,
+				  'stacks': self._stacks,
 
-			## connect ctrl to joint
-			constraints.matrixConnect(Control.name, matrixLocalAttr, jnt, skipTranslate = ['x', 'y', 'z'], 
-						  force = True, quatToEuler = False)
-			constraints.matrixConnect(Control.name, matrixWorldAttr, jnt, skipRotate = ['x', 'y', 'z'], 
-						  skipScale = ['x', 'y', 'z'], force = True)
+				  'controlsGrp': self._controlsGrp,
+				  'jointsGrp': self._jointsGrp,
+				  'nodesLocalGrp': self._nodesLocalGrp,
+				  'nodesHideGrp': self._nodesHideGrp,
+				  'nodesShowGrp': self._nodesShowGrp}
 
-			fkControls.append(Control.name)
-			ctrlParent = Control.ouput
+		FkChainBehavior = fkChainBehavior.FkChainBehavior(**kwargs)
+		FkChainBehavior.create()
 
 		# pass info
-		self._joints += fkJnts
-		self._controls += fkControls
+		self._joints += FkChainBehavior._joints
+		self._controls += FkChainBehavior._controls

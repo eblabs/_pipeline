@@ -21,6 +21,7 @@ import rigging.constraints as constraints
 
 # -- import component
 import rigSys.modules.base.ikRPsolverComponent as ikRPsolverComponent
+import rigSys.behavior.fkChainBehavior as fkChainBehavior
 # -- import end ----
 
 class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
@@ -34,7 +35,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 	_reverseControls = []
 	def __init__(self, *args,**kwargs):
 		super(IkRPsolverPlusComponent, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.modules.advance.ikRPsolverPlusComponent'
+		self._rigComponentType = 'rigSys.components.advance.ikRPsolverPlusComponent'
 
 		kwargsDefault = {'blueprintReverseJoints': {'value': [], 'type': list}
 						 'reverseJointsDescriptor': {'value': ['heel', 'toe', 'sideInn', 'sideOut', 'ball'],
@@ -54,7 +55,11 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 		super(IkRPsolverPlusComponent, self)._createComponent()
 
 		# create rest jnts
-		ikJnts = self.createJntsFromBpJnts(bpJointsSC[1:], type = 'jnt', suffix = 'IkSC', parent = self._joints[-1])
+		ikJnts = joints.createChainOnNodes(bpJointsSC[1:], 
+						namingDict.dNameConvension['type']['blueprintJoint'], 
+						namingDict.dNameConvension['type']['joint'], 
+						suffix = 'IkSC', 
+						parent = self._joints[-1], rotateOrder = False)
 		ikRpTipJnt = self._joints[-1]
 		ikJntsSC = [ikRpTipJnt] + ikJnts
 		ikSCHandleList = []
@@ -134,49 +139,50 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			rvsJntList = [self._toeTap, self._sideInn, self._sideOut, 
 						  self._toeRoll, self._heelRoll, self._ballTwist]
 			rvsRoot = hierarchy.connectChain(rvsJntList)
+			cmds.parent(rvsRoot, self._nodesLocal[-1])
 			cmds.parent(self._ballRoll, self._sideInn)
-			cmds.parent(rvsRoot, p)
+			
+			ControlIk = controls.Control(self._controls[-1])
+
+			kwargs = {'side': self._side,
+					  'part': self._part,
+					  'index': self._index,
+					  'blueprintJoints': rvsJntList.reverse(),
+					  'stacks': self._stacks,
+					  'jointSuffix': '',
+					  'createJoints': False,
+
+				  	  'controlsGrp': ControlIk.output}
+			
+			RvsFootRig = fkChainBehavior.FkChainBehavior(**kwargs)
+			RvsFootRig.create()
+
+			self._reverseControls += RvsFootRig._controls
+
+			ControlSideInn = controls.Control(RvsFootRig._controls[-2])
+			kwargs.update({'blueprintJoints': [self._ballRoll],
+						   'controlsGrp': ControlSideInn.output})
+
+			RvsFootRig = fkChainBehavior.FkChainBehavior(**kwargs)
+			RvsFootRig.create()
+
+			self._reverseControls += RvsFootRig._controls
 
 			# parent ik handles
 			cmds.parent(ikSCHandleList[0], self._ballRoll)
 			cmds.parent(ikSCHandleList[1], self._toeRoll)
 
-			# create controls for rvs
-			rvsControls = []
-			ControlParent = controls.Control(self._controls[-1])
-			for jnt in rvsJntList.reverse():
-				NamingJnt = naming.Naming(jnt)
-				Control = controls.create(NamingJnt.part, side = NamingJnt.side,
-										  index = NamingJnt.index, stacks = self._stacks, 
-										  parent = ControlParent.output, posParent = jnt, 
-										  lockHide = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz'])
-				constraints.matrixConnect(Control.name, matrixLocalAttr, jnt, force = True, 
-										  skipTranslate = ['x', 'y', 'z'], skipScale=['x', 'y', 'z'],
-										  quatToEuler = False)
-				ControlParent = Control
-				rvsControls.append(Control.name)
-
-			ControlParent = controls.Control(rvsControls[-2])
-			NamingJnt = naming.Naming(self._ballRoll)
-			Control = controls.create(NamingJnt.part, side = NamingJnt.side,
-									  index = NamingJnt.index, stacks = self._stacks, 
-									  parent = ControlParent.output, posParent = jnt, 
-									  lockHide = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz'])
-			constraints.matrixConnect(Control.name, matrixLocalAttr, self._ballRoll, force = True, 
-									  skipTranslate = ['x', 'y', 'z'], skipScale=['x', 'y', 'z'],
-									  quatToEuler = False)
-
-			rvsControls.append(Control.name)
-
 			# lock hide attrs
 			lockHide = [['rx', 'ry'], ['rx', 'ry'], ['rx', 'rz']]
-			for i, ctrl in enumerate([rvsControls[-3], rvsControls[-4], rvsControls[0]]):
-				Control = controls.Control(rvsControls)
-				Control.lockHideAttrs(lockHide[i])
+			controlList = [self._reverseControls[-3], 
+						   self._reverseControls[-4], 
+						   self._reverseControls[0]]
+			for ctrlInfo in zip(lockHide, controlList):
+				Control = controls.Control(ctrlInfo[1])
+				Control.lockHideAttrs(ctrlInfo[0])
 
 			# pass info
-			self._controls += rvsControls
-			self._reverseControls += rvsControls
+			self._controls += self._reverseControls
 
 		# pass info
 		self._joints += ikJnts

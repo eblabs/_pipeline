@@ -22,7 +22,7 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 	"""multiComponentsPackage template"""
 	def __init__(self, *args,**kwargs):
 		super(MultiComponentsPackage, self).__init__()
-		self._rigComponentType = 'rigSys.modules.package.multiComponentsPackage'
+		self._rigComponentType = 'rigSys.components.package.multiComponentsPackage'
 
 		self._removeAttributes(['blueprintJoints', 'jointsDescriptor'])
 

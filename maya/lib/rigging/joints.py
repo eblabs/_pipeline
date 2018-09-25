@@ -26,8 +26,11 @@ def create(name, rotateOrder=0, parent=None, posPoint=None, posOrient=None, posP
 		cmds.parent(jnt, parent)
 	return jnt
 
-def createOnNode(node, search, replace, parent=None, rotateOrder=False):
+def createOnNode(node, search, replace, suffix='', parent=None, rotateOrder=False):
 	jnt = node.replace(search, replace)
+	NamingJnt = naming.naming(jnt)
+	NamingJnt.part = NamingJnt.part + suffix
+	jnt = NamingJnt.name
 	if rotateOrder:
 		ro = cmds.getAttr('{}.ro'.format(node))
 	else:
@@ -35,10 +38,17 @@ def createOnNode(node, search, replace, parent=None, rotateOrder=False):
 	jnt = create(jnt, rotateOrder = ro, parent = parent, posParent = node)
 	return jnt
 
-def createChainOnNodes(nodes, search, replace, parent=None, rotateOrder=False):
+def createChainOnNodes(nodes, search, replace, suffix='', parent=None, rotateOrder=False):
 	jntList = []
+	if isinstance(search, basestring):
+		search = [search]
+	if isinstance(replace, basestring):
+		replace = [replace]
 	for i, n in enumerate(nodes):
-		jnt = createOnNode(n, search, replace, parent = parent, rotateOrder = rotateOrder)
+		jntNew = n
+		for name in zip(search, replace):
+			jntNew = jntNew.replace(name[0], name[1])
+		jnt = createOnNode(n, n, jntNew, suffix = suffix, parent = parent, rotateOrder = rotateOrder)
 		parent = jnt
 		jntList.append(jnt)
 	return jntList

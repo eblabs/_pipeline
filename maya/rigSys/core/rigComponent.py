@@ -104,10 +104,10 @@ class RigComponent(object):
 		  -- controlsGrp
 		  -- rigLocal	
 			-- jointsGrp
-			-- nodesLocal
+			-- nodesLocalGrp
 		  -- rigWorld
-		    -- nodesHide
-		    -- nodesShow
+		    -- nodesHideGrp
+		    -- nodesShowGrp
 		  -- subComponents
 		'''
 
@@ -124,8 +124,8 @@ class RigComponent(object):
 
 		# create groups
 		dicAttr = {}
-		for grp in ['rigComponent', 'controlsGrp', 'rigLocal', 'nodesLocal',
-					'rigWorld', 'nodesHide', 'nodesShow', 'subComponents']:
+		for grp in ['rigComponent', 'controlsGrp', 'rigLocal', 'nodesLocalGrp',
+					'rigWorld', 'nodesHideGrp', 'nodesShowGrp', 'subComponents']:
 			NamingGrp.type = grp
 			transformNode = transforms.createTransformNode(NamingGrp.name, 
 														   lockHide = ['tx', 'ty', 'tz',
@@ -139,8 +139,8 @@ class RigComponent(object):
 		# parent components
 		cmds.parent(self._rigComponent, self._parent)
 		cmds.parent(self._controlsGrp, self._rigLocal, self._rigWorld, self._subComponents, self._rigComponent)
-		cmds.parent(self._nodesLocal, self._rigLocal)
-		cmds.parent(self._nodesHide, self._nodesShow, self._rigWorld)
+		cmds.parent(self._nodesLocalGrp, self._rigLocal)
+		cmds.parent(self._nodesHideGrp, self._nodesShowGrp, self._rigWorld)
 
 		# inheritsTransform
 		attributes.setAttrs(['{}.inheritsTransform'.format(self._rigLocal),
@@ -148,7 +148,7 @@ class RigComponent(object):
 							 0, force = True)
 
 		# hide nodesHide
-		attributes.setAttrs('{}.v'.format(self._nodesHide), 0, force = True)
+		attributes.setAttrs('{}.v'.format(self._nodesHideGrp), 0, force = True)
 
 		# input matrix, offset matrix, component type, controls, rigNodes
 		attributes.addAttrs(self._rigComponent, ['inputMatrix', 'offsetMatrix', 'outputMatrix', 'outputInverseMatrix'], 
@@ -164,8 +164,8 @@ class RigComponent(object):
 		# connect attrs
 		attributes.connectAttrs(['controlsVis', 'rigNodesVis', 'rigNodesVis', 'subComponents'], 
 								['{}.v'.format(self._controlsGrp), 
-								 '{}.v'.format(self._nodesLocal), 
-								 '{}.v'.format(self._nodesHide), 
+								 '{}.v'.format(self._nodesLocalGrp), 
+								 '{}.v'.format(self._nodesHideGrp), 
 								 '{}.v'.format(self._subComponents)], 
 								 driver = self._rigComponent, force=True)
 
@@ -228,8 +228,8 @@ class RigComponent(object):
 		self._index = NamingGrp.index
 
 		dicAttr = {}
-		for grp in ['controlsGrp', 'rigLocal', 'nodesLocal',
-					'rigWorld', 'nodesHide', 'nodesShow', 'subComponents']:
+		for grp in ['controlsGrp', 'rigLocal', 'nodesLocalGrp',
+					'rigWorld', 'nodesHideGrp', 'nodesShowGrp', 'subComponents']:
 			NamingGrp.type = grp
 			dicAttr.update('_{}'.format(grp), NamingGrp.name)
 
