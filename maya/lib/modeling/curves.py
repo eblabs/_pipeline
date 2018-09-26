@@ -45,10 +45,13 @@ def createCurveLine(name, nodes):
 
 # create curve on nodes
 def createCurveOnNodes(name, nodes, degree = 3, parent = None):
-	pnts = []
-	for n in nodes:
-		pos = cmds.xform(node, q = True, t = True, ws = True)
-		pnts.append(pos)
+	if isinstance(nodes[0], basestring):
+		pnts = []
+		for n in nodes:
+			pos = cmds.xform(node, q = True, t = True, ws = True)
+			pnts.append(pos)
+	else:
+		pnts = nodes
 	crv = cmds.curve(p = pnts, d = degree, name = name)
 	crvShape = cmds.listRelatives(crv, s = True)[0]
 	crvShape = cmds.rename(crvShape, '{}Shape'.format(crv))

@@ -142,6 +142,11 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 			NamingJnt = naming.Naming(blendJnts[i])
 
 			constraintList = []
+			constraintGrp = naming.Naming(type = 'group', side = NamingJnt.side, 
+						part = '{}Constraint'.format(NamingJnt.part), index = NamingJnt.index).name
+			transforms.createTransformNode(constraintGrp, parent = self._nodesHideGrp,
+											lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
+				
 			for j, attr in enumerate(['Translate', 'Rotate', 'Scale']):
 				# constraint node
 				constraintType = ['pointConstraint', 'orientConstraint', 'scaleConstraint'][j]
@@ -150,6 +155,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 									  				   side = NamingJnt.side,
 									  				   part = '{}Blend'.format(NamingJnt.part),
 									  				   index = NamingJnt.index).name)
+
 				constraintList.append(constraint)
 
 				choiceList = []
@@ -204,6 +210,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 
 			# set orient constraint interpType
 			cmds.setAttr('{}.interpType'.format(constraintList[1]), 2)
+			cmds.parent(constraintList, constraintGrp)
 
 		# pass info
 		self._joints += blendJnts

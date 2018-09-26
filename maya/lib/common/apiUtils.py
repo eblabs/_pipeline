@@ -333,6 +333,13 @@ def setMPoint(pos, type='MPoint'):
 		MPoint = OpenMaya.MFloatPoint(pos[0], pos[1], pos[2])
 	return MPoint
 
+# distance between two points
+def distance(pointA, pointB):
+	MPointA = setMPoint(pointA)
+	MPointB = setMPoint(pointB)
+	dis = MPointA.distanceTo(MPointB)
+	return dis
+
 # convert MPointArray to list
 def convertMPointArrayToList(MPntArray):
 	pntList = []

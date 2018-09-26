@@ -34,6 +34,7 @@ dNameConvension = {
 							'deltaMesh': 'delMush',
 							'wrap': 'wrp',
 							'wire': 'wire',
+							'wireBase': 'wireBase',
 							'sculpt': 'scpt',
 							'softMode': 'softMo',
 							'jiggle': 'jiggle',

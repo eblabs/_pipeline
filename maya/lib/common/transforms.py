@@ -84,7 +84,7 @@ def setNodePos(node, posPoint=None, posOrient=None, posParent=None):
 				cmds.xform(node, ro = posOrient, ws = True)
 
 # transform snap
-def transformSnap(nodes, type = 'parent', snapType = 'oneToAll', skipTranslate = None, skipRotate = None, skipScale = None, centerPivot = True, weight=0.5):
+def transformSnap(nodes, type='parent', snapType='oneToAll', skipTranslate=None, skipRotate=None, skipScale=None, centerPivot=True, weight=0.5):
 
 	'''
 	transform snap
@@ -165,7 +165,7 @@ def transformSnap(nodes, type = 'parent', snapType = 'oneToAll', skipTranslate =
 							  skipScale = skipScale)
 
 # get node's transform info
-def getNodeTransformInfo(node, rotateOrder = None):
+def getNodeTransformInfo(node, rotateOrder=None):
 	'''
 	get node's transform info
 
@@ -182,6 +182,23 @@ def getNodeTransformInfo(node, rotateOrder = None):
 	transformInfo = apiUtils.decomposeMMatrix(MMatrix, 
 											  rotateOrder = rotateOrder)
 	return transformInfo
+
+# get node list transform info
+def getNodeListTransformInfo(nodeList, translate=True, rotate=True, scale=True):
+	transformList = []
+	for node in nodeList:
+		nodeInfo = []
+		transformInfo = getNodeTransformInfo(node)
+		if translate:
+			nodeInfo.append(transformInfo[0])
+		if rotate:
+			nodeInfo.append(transformInfo[1])
+		if scale:
+			nodeInfo.append(transformInfo[2])
+		if len(nodeInfo) == 1:
+			nodeInfo = nodeInfo[0]
+		transformList.append(nodeInfo)
+	return transformList
 
 # get node bounding box info
 def getNodesBoundingBoxInfo(nodes):
