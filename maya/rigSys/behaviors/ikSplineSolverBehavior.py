@@ -184,21 +184,20 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			attributes.addAttrsaddAttrs(drvCtrl, 'tweakerVis', attributeType='long', minValue=0, maxValue=1, defaultValue=0, keyable=False, channelBox=True)
 
 			# connect tweak controls
-			ctrlList = [[[self._ikTweakControls[:2]], self._ikControls[0]],
-						[[self._ikTweakControls[-2:]], self._ikControls[-1]]]
+			ctrlList = [[self._ikTweakControls[0], self._ikControls[0]],
+						[self._ikTweakControls[-1], self._ikControls[-1]]]
 			for ctrls in ctrlList:
 				Control = controls.Control(ctrls[1])
-				for tweak in ctrls[0]:
-					ControlTweak = controls.Control(tweak)
-					cmds.parent(ControlTweak.zero, Control.output)
-					cmds.setAttr('{}.v'.format(ControlTweak.zero), 0, lock = True)
+				ControlTweak = controls.Control(ctrls[0])
+				cmds.parent(ControlTweak.zero, Control.output)
+				cmds.setAttr('{}.v'.format(ControlTweak.zero), 0, lock = True)
 
 			# connect other tweak controls with curveinfo
-			self._ikTweakControls = self._ikTweakControls[2: len(self._ikTweakControls) - 2]
+			self._ikTweakControls = self._ikTweakControls[1: len(self._ikTweakControls) - 1]
 			for i, tweak in enumerate(self._ikTweakControls):
 				ControlTweak = controls.Control(tweak)
 				for axis in 'XYZ':
-					cmds.connectAttr('{}.controlPoints[{}].{}Value'.format(crvInfo, i+2, axis.lower()),
+					cmds.connectAttr('{}.controlPoints[{}].{}Value'.format(crvInfo, i+1, axis.lower()),
 									'{}.translate{}'.format(ControlTweak.zero, axis))
 				cmds.connectAttr('{}.tweakerVis'.format(drvCtrl), '{}.v'.format(ControlTweak.zero))
 
