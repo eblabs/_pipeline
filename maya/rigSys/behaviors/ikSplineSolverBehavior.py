@@ -15,11 +15,13 @@ import common.naming.namingDict as namingDict
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
+import common.nodes as nodes
 import rigging.joints as joints
 import baseBehavior
 
 class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 	"""IkSplineSolverBehavior template"""
+	_ikHandles = []
 	_ikTweakControls = []
 	_ikControls = []
 	def __init__(self, **kwargs):
@@ -47,13 +49,13 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 		cmds.rebuildCurve(self._curve, ch = 1, rebuildType = 0, degree = 3, s = cvNum - 1, keepRange = 0, rpo = True)
 		
 		# set up ik and match joints to the curve
-		self._ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = self._part + self._jointSuffix, iIndex = self._index).name
-		cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = 'ikSplineSolver', ccv = False, scv = False, curve = self._curve, name = self._ikHandle)
+		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = self._part + self._jointSuffix, iIndex = self._index).name
+		cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = 'ikSplineSolver', ccv = False, scv = False, curve = self._curve, name = ikHandle)
 		cmds.makeIdentity(self._joints[0], apply = True, t = 1, r = 1, s = 1)
 
 		# parent nodes
 		cmds.parent(self._curve, clsHndList, self._nodesHideGrp)
-		cmds.parent(self._ikHandle, self._nodesLocalGrp)
+		cmds.parent(ikHandle, self._nodesLocalGrp)
 
 		# controls
 		for i, clsHnd in enumerate(clsHndList):
@@ -65,17 +67,20 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			self._ikTweakControls.append(Control.name)
 
 		# twist
-		cmds.setAttr('{}.dTwistControlEnable'.format(self._ikHandle), 1)
-		cmds.setAttr('{}.dWorldUpType'.format(self._ikHandle), 4)
+		cmds.setAttr('{}.dTwistControlEnable'.format(ikHandle), 1)
+		cmds.setAttr('{}.dWorldUpType'.format(ikHandle), 4)
 
 		for i, ctrl in enumerate([self._controls[0], self._controls[-1]]):
 			Control = controls.Control(ctrl)
 			matrixLocal = transforms.getLocalMatrix([self._joints[0], self._joints[-1]][i], Control.output)
-			multMatrix = cmds.createNode('multMatrix', name = naming.Naming(type = 'multMatrix', side = self._side, 
-										 part = '{}Twist{}'.format(self._part + self._jointSuffix, ['Bot', 'Top'][i]), index = self._index).name)
+			multMatrix = nodes.create(type = 'multMatrix', side = self._side, 
+									  part = '{}Twist{}'.format(self._part + self._jointSuffix, ['Bot', 'Top'][i]), 
+									  index = self._index)
 			cmds.setAttr('{}.matrixIn[0]'.format(multMatrix), matrixLocal)
 			cmds.connectAttr(Control.matrixWorldPlug, '{}.matrixIn[1]'.format(multMatrix))
-			cmds.connectAttr('{}.matrixSum',format(multMatrix), '{}.{}'.format(self._ikHandle, ['dWorldUpMatrix', 'dWorldUpMatrixEnd'][i]))
+			cmds.connectAttr('{}.matrixSum',format(multMatrix), '{}.{}'.format(ikHandle, ['dWorldUpMatrix', 'dWorldUpMatrixEnd'][i]))
+
+		self._ikHandles.append(ikHandle)
 
 		# check if need drive controls
 		if self._blueprintControls:
@@ -88,9 +93,6 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 
 			pointsList = [pointStart] + pointsList + [pointEnd]
 
-			disStart = apiUtils.distance(pointStart, pointsList[0])
-			disEnd = apiUtils.distance(pointEnd, pointsList[-1])
-
 			self._curveDrive = naming.Naming(type = 'curve', side = self._side, part = self._part + self._jointSuffix + 'Drv', index = self._index).name
 			curves.createCurveOnNodes(self._curveDrive, pointsList, degree = 3, parent = self._nodesHideGrp)
 
@@ -98,8 +100,10 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			cmds.duplicate(self._blueprintCurve, name = self._curveControlDrive)
 			cmds.parent(self._curveControlDrive, self._nodesHideGrp)
 
-			crvInfo = naming.Naming(type = 'curveInfo', side = self._side, part = self._part + self._jointSuffix + 'CtrlDrv', index = self._index).name
-			cmds.createNode('curveInfo', name = crvInfo)
+			crvInfo = nodes.create(type = 'curveInfo', 
+								   side = self._side, 
+								   part = self._part + self._jointSuffix + 'CtrlDrv', 
+								   index = self._index)
 			curveControlDriveShape = cmds.listRelatives(self._curveControlDrive, s = True)[0]
 			cmds.connectAttr('{}.worldSpace[0]'.format(curveControlDriveShape), '{}.inputCurve'.format(crvInfo))
 
@@ -124,51 +128,28 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 
 			# blend mid control
 			ControlMid = controls.Control(self._ikControls[1])
-			parentConstraint = naming.Naming(type = 'parentConstraint', side = ControlMid.side,
-								part = '{}WtBlend'.format(ControlMid.part), index = ControlMid.index).name
-			cmds.createNode('parentConstraint', name = parentConstraint)
-			cmds.parent(parentConstraint, ControlMid.passer)
-			for i, ctrl in enumerate([self._ikControls[0], self._ikControls[-1]]):
+			cmds.addAttr(ControlMid.name, ln = 'weight', at = 'float', min = 0, max = 1, dv = 0.5, keyable = True)
+			rvsPlug = attributes.addRvsAttr(ControlMid.name, 'weight')
+			
+			inputMatrixList = []
+			for ctrl in [self._ikControls[0], self._ikControls[-1]]:
 				Control = controls.Control(ctrl)
-				
-				NamingMatrix = naming.Naming(type = 'multMatrix', side = ControlMid.side,
-							part = '{}WtBlend{}'.format(ControlMid.part, ['Top', 'Bot'][i]), 
-							index = ControlMid.index)
-				multMatrix = cmds.createNode('multMatrix', name = NamingMatrix.name)
-				NamingMatrix.type = 'decomposeMatrix'
-				decompose = cmds.createNode('decomposeMatrix', name = NamingMatrix.name)
-
+				multMatrix = nodes.create(type = 'multMatrix', 
+										  side = ControlMid.side,
+										  part = '{}WtBlend{}'.format(ControlMid.part, ['Top', 'Bot'][i]), 
+										  index = ControlMid.index)
 				# feed in matrix
 				matrixLocal = transforms.getLocalMatrix(ControlMid.name, ctrl)
 				cmds.setAttr('{}.matrixIn[0]'.format(multMatrix), matrixLocal)
 				cmds.connectAttr(Control.matrixWorldPlug, '{}.matrixIn[1]'.format(multMatrix))
-				# connect decomposeMatrix
-				cmds.connectAttr('{}.matrixSum'.format(multMatrix), '{}.inputMatrix'.format(decompose))
+				inputMatrixList.append(multMatrix)
 
-				# feed in constraint
-				for attr in ['Translate', 'Rotate']:
-					for axis in 'XYZ':
-						cmds.connectAttr('{}.output{}{}'.format(decompose, attr, axis), 
-										 '{}.target[{}].target{}{}'.format(parentConstraint, i, attr, axis))
-
-			# feed in mid control
-			for attr in ['Translate', 'Rotate']:
-				for axis in 'XYZ':
-					cmds.connectAttr('{}.constraint{}{}'.format(parentConstraint, attr, axis),
-									'{}.{}{}'.format(ControlMid.passer, attr, axis))
-			cmds.connectAttr('{}.parentInverseMatrix[0]'.format(ControlMid.passer),
-							'{}.constraintParentInverseMatrix'.format(parentConstraint))
-			cmds.setAttr('{}.interpType'.format(parentConstraint), 2)
-
-			# add weight attr
-			cmds.addAttr(ControlMid.name, ln = 'weight', at = 'float', min = 0, max = 1, dv = 0.5, keyable = True)
-			cmds.connectAttr('{}.weight'.format(ControlMid.name), '{}.target[0].targetWeight'.format(parentConstraint))
-			rvs = naming.Naming(type = 'reverse', side = ControlMid.side,
+			constraints.constraintBlend(inputMatrixList, ControlMid.passer, 
+						weightList=['{}.weight'.format(ControlMid.name), rvsPlug], scale = False)
+			
+			parentConstraint = naming.Naming(type = 'parentConstraint', side = ControlMid.side,
 								part = '{}WtBlend'.format(ControlMid.part), index = ControlMid.index).name
-			cmds.createNode('reverse', name = rvs)
-			cmds.connectAttr('{}.weight'.format(ControlMid.name), '{}.inputX'.format(rvs))
-			cmds.connectAttr('{}.outputX'.format(rvs), '{}.target[1].targetWeight'.format(parentConstraint))
-
+			
 			# wire drive curve
 			wire = naming.Naming(type = 'wire', side = self._side, 
 				part = self._part + self._jointSuffix + 'CtrlDrv', index = self._index).name
@@ -181,7 +162,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 									part = self._part + self._jointSuffix, index = self._index).name
 		
 			controls.addCtrlShape(self._ikControls, asCtrl = drvCtrl)
-			attributes.addAttrsaddAttrs(drvCtrl, 'tweakerVis', attributeType='long', minValue=0, maxValue=1, defaultValue=0, keyable=False, channelBox=True)
+			attributes.addAttrs(drvCtrl, 'tweakerVis', attributeType='long', minValue=0, maxValue=1, defaultValue=0, keyable=False, channelBox=True)
 
 			# connect tweak controls
 			ctrlList = [[self._ikTweakControls[0], self._ikControls[0]],

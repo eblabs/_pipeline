@@ -14,6 +14,7 @@ import common.naming.naming as naming
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
+import common.nodes as nodes
 import rigging.joints as joints
 import rigComponent
 # ---- import end ----
@@ -126,7 +127,7 @@ class JointComponent(rigComponent.RigComponent):
 		for i, jnt in enumerate(self._joints):
 			NamingJnt = naming.Naming(jnt)
 			NamingJnt.type = 'multMatrix'
-			multMatrixJnt = cmds.createNode('multMatrix', name = NamingJnt.name)
+			multMatrixJnt = nodes.create(name = NamingJnt.name)
 			attributes.connectAttrs(['{}.worldMatrix[0]'.format(jnt), '{}.outputInverseMatrix'.format(self._rigComponent)],
 									['matrixIn[0]', 'matrix[1]'], driven = multMatrixJnt)
 			

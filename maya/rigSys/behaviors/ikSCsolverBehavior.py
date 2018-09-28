@@ -20,6 +20,7 @@ import baseBehavior
 
 class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 	"""IkSCsolverBehavior template"""
+	_ikHandles = []
 	def __init__(self, **kwargs):
 		super(IkSCsolverBehavior, self).__init__(**kwargs)
 		self._jointSuffix = kwargs.get('jointSuffix', 'IkSC')
@@ -36,8 +37,8 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 			self._controls.append(Control.name)
 
 		# set ik solver
-		self._ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = self._part + self._jointSuffix, iIndex = self._index).name
-		cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = 'ikSCsolver', name = self._ikHandle)
+		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = self._part + self._jointSuffix, iIndex = self._index).name
+		cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = 'ikSCsolver', name = ikHandle)
 
 		# add transfrom group to control ik
 		Control = controls.Control(self._controls[-1])
@@ -49,7 +50,7 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 		self._nodesLocal = [node]
 
 		# parent ik to node
-		cmds.parent(self._ikHandle, node)
+		cmds.parent(ikHandle, node)
 
 		# connect root jnt with controller
 		constraints.matrixConnect(self._controls[0], matrixWorldAttr, self._joints[0], force = True, skipRotate = ['x', 'y', 'z'], 
@@ -58,3 +59,6 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 		# lock hide attrs
 		Control = controls.Control(self._controls[-1])
 		Control.unlockAttrs(['rx'])
+
+		# pass info
+		self._ikHandles.append(ikHandle)

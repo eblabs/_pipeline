@@ -14,6 +14,8 @@ import common.naming.naming as naming
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
+import common.nodes as nodes
+import rigging.constraints as constraints
 import rigging.joints as joints
 import rigSys.core.componentsPackage as componentsPackage
 import rigSys.core.space as space
@@ -96,26 +98,24 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		attributes.addAttrs(blendCtrl, ['modeA', 'modeB'], attributeType = 'enum', 
 							defaultValue = indexDefault, enumName = enumName[:-1])
 		cmds.addAttr(blendCtrl, ln = 'blend', at = 'float', min = 0, max = 10, keyable = True)
-		multBlend = cmds.createNode('multDoubleLinear', 
-									name = naming.Naming(type = 'multDoubleLinear',
-														 side = self._side, 
-														 part = '{}Blend'.format(self._part),
-														 index = self._index).name)
+		multBlend = nodes.create(type = 'multDoubleLinear',
+								 side = self._side, 
+								 part = '{}Blend'.format(self._part),
+								 index = self._index)
 		cmds.connectAttr('{}.blend'.format(blendCtrl), '{}.input1'.format(multBlend))
 		cmds.setAttr('{}.input2'.format(multBlend), 0.1)
-		rvsBlend = cmds.createNode('reverse',
-									name = naming.Naming(type = 'reverse',
-														 side = self._side, 
-														 part = '{}Blend'.format(self._part),
-														 index = self._index).name)
+		rvsBlend = nodes.create(type = 'reverse',
+								side = self._side, 
+								part = '{}Blend'.format(self._part),
+								index = self._index)
 		cmds.connectAttr('{}.output'.format(multBlend), '{}.inputX'.format(rvsBlend))
 
 		# control vis
 
-		condBlend = cmds.createNode('condition', name = naming.Naming(type = 'condition',
-														 side = self._side, 
-														 part = '{}Blend'.format(self._part),
-														 index = self._index).name)
+		condBlend = nodes.create(type = 'condition',
+								 side = self._side, 
+								 part = '{}Blend'.format(self._part),
+								 index = self._index)
 		cmds.connectAttr('{}.output'.format(multBlend), '{}.firstTerm'.format(condBlend))
 		cmds.setAttr('{}.secondTerm'.format(condBlend), 0.5, lock = True)
 		cmds.setAttr('{}.operation'.format(condBlend), 4)
@@ -124,15 +124,19 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 
 		for i, component in enumermate(subComponentNodes):
 			NamingNode = naming.Naming(component)
-			NamingNode.type = 'condition'
-			NamingNode.part = '{}BlendCtrlVis'.format(NamingNode.part)
-			condCtrlVis = cmds.createNode('condition', name = NamingNode.name)
+			condCtrlVis = nodes.create(type = 'condition',
+									   side = NamingNode.side,
+									   part = '{}BlendCtrlVis'.format(NamingNode.part),
+									   index = NamingNode.index)
 			cmds.connectAttr('{}.outColorR'.format(condBlend), '{}.firstTerm'.format(condCtrlVis))
 			cmds.setAttr('{}.secondTerm'.format(condCtrlVis), indexList[i], lock = True)
 			cmds.setAttr('{}.colorIfTrueR'.format(condCtrlVis), 1, lock = True)
 			cmds.setAttr('{}.colorIfFalseR'.format(condCtrlVis), 0, lock = True)
 			NamingNode.type = 'multDoubleLinear'
-			multVis = cmds.createNode('multDoubleLinear', name = NamingNode.name)
+			multVis = nodes.create(type = 'multDoubleLinear',
+								   side = NamingNode.side,
+								   part = '{}BlendCtrlVis'.format(NamingNode.part),
+								   index = NamingNode.index)
 			cmds.connectAttr('{}.outColorR'.format(condCtrlVis), '{}.input1'.format(multVis))
 			cmds.connectAttr('{}.controlsVis'.format(self._rigComponent), '{}.input2'.format(multVis))
 			cmds.connectAttr('{}.output'.format(multVis), '{}.controlsVis'.format(component))
@@ -141,76 +145,43 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		for i in range(len(blendJnts)):
 			NamingJnt = naming.Naming(blendJnts[i])
 
-			constraintList = []
-			constraintGrp = naming.Naming(type = 'group', side = NamingJnt.side, 
-						part = '{}Constraint'.format(NamingJnt.part), index = NamingJnt.index).name
-			transforms.createTransformNode(constraintGrp, parent = self._nodesHideGrp,
-											lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
-				
-			for j, attr in enumerate(['Translate', 'Rotate', 'Scale']):
-				# constraint node
-				constraintType = ['pointConstraint', 'orientConstraint', 'scaleConstraint'][j]
-				constraint = cmds.createNode(constraintType, 
-								  name = naming.Naming(type = constraintType,
-									  				   side = NamingJnt.side,
-									  				   part = '{}Blend'.format(NamingJnt.part),
-									  				   index = NamingJnt.index).name)
-
-				constraintList.append(constraint)
-
+			attrType = ['Translate', 'Rotate', 'Scale']
+			
+			for j, attr in enumerate(attrType):
 				choiceList = []
-				for m, mode in enumerate('AB'):
-					# choice node
-					choice = cmds.createNode('choice', 
-									  name = naming.Naming(type = 'choice',
-									  					   side = NamingJnt.side,
-									  					   part = '{}Mode{}{}'.format(NamingJnt.part, mode, attr),
-									  					   index = NamingJnt.index).name)
-					choiceList.append(choice)
+				inputMatrixList = []
+				for m, mode in enumerate(['A', 'B']):
+					choice = nodes.create(type = 'choice',
+									  	  side = NamingJnt.side,
+									  	  part = '{}Mode{}{}'.format(NamingJnt.part, mode, attr),
+									  	  index = NamingJnt.index)
 
-					# decomposeMatrix node
-					decomposeMatrix = cmds.createNode('decomposeMatrix', 
-									  name = naming.Naming(type = 'decomposeMatrix',
-									  					   side = NamingJnt.side,
-									  					   part = '{}Mode{}{}'.format(NamingJnt.part, mode, attr),
-									  					   index = NamingJnt.index).name)
-					cmds.connectAttr('{}.output'.format(choice), '{}.inputMatrix'.format(decomposeMatrix))
-
-					# connect decompose matrix to constraint
-					for axis in 'XYZ':
-						cmds.connectAttr('{}.output{}{}'.format(decomposeMatrix, attr, axis), 
-							'{}.target[{}].target{}{}'.format(constraint, m, attr, axis))
-
-					# connect weight
-					blendOutput = ['{}.outputX'.format(rvsBlend), '{}.output'.format(multBlend)][m]
-					cmds.connectAttr(blendOutput,
-						'{}.target[{}].targetWeight'.format(constraint, m))
-
-					# conenct selector
 					cmds.connectAttr('{}.mode{}'.format(blendCtrl, mode), '{}.selector'.format(choice))
 
-				# feed each component joint matrix into choice node
+					choiceList.append(choice)
+					inputMatrixList.append('{}.output'.format(choice))
+
+				# feed all components matrix
 				for n in range(len(indexList)):
 					componentJnt = componentsJnts[n][i]
 					NamingComposeMatrix = naming.NamingJnt(componentJnt)
-					NamingComposeMatrix.type = 'composeMatrix'
-					NamingComposeMatrix.part = '{}Blend{}'.format(NamingComposeMatrix.part, attr)
-					composeMatrix = NamingComposeMatrix.name
-					cmds.createNode('composeMatrix', name = composeMatrix)
+					composeMatrix = nodes.create(type = 'composeMatrix',
+												 side = NamingComposeMatrix.side,
+												 part = '{}Blend{}'.format(NamingComposeMatrix.part, attr),
+												 index = NamingComposeMatrix.index)
 					for axis in 'XYZ':
 						cmds.connectAttr('{}.{}{}'.format(componentJnt, attr, axis), 
 							'{}.input{}{}'.format(composeMatrix, attr, axis))
 					cmds.connectAttr('{}.outputMatrix'.format(composeMatrix),
 									'{}.input[{}]' %(choiceList[j], indexList[n]))
 
-				# connect constraint node to blend joint
-				for axis in 'XYZ':
-					cmds.connectAttr('{}.constraint{}{}'.format(constraint, attr, axis), 
-							'{}.{}{}'.format(blendJnts[i], attr, axis))
+				translate = (attr == attrType[0])
+				rotate = (attr == attrType[1])
+				scale = (attr == attrType[2])
 
-			# set orient constraint interpType
-			cmds.setAttr('{}.interpType'.format(constraintList[1]), 2)
-			cmds.parent(constraintList, constraintGrp)
+				constraints.constraintBlend(inputMatrixList, blendJnts[i], 
+						weightList = ['{}.outputX'.format(rvsBlend), '{}.output'.format(multBlend)], 
+						translate = translate, rotate = rotate, scale = scale):
 
 		# pass info
 		self._joints += blendJnts

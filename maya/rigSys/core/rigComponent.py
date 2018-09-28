@@ -14,6 +14,7 @@ import common.naming.naming as naming
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
+import common.nodes as nodes
 import rigging.joints as joints
 # ---- import end ----
 
@@ -171,10 +172,10 @@ class RigComponent(object):
 
 		# connect matrix
 		NamingGrp.type = 'multMatrix'
-		multMatrixInput = cmds.createNode('multMatrix', name = NamingGrp.name)
+		multMatrixInput = nodes.create(name = NamingGrp.name)
 
 		NamingGrp.type = 'inverseMatrix'
-		inverseMatrixInput = cmds.createNode('inverseMatrix', name = NamingGrp.name)
+		inverseMatrixInput = nodes.create(name = NamingGrp.name)
 
 		attributes.connectAttrs(['offsetMatrix', 'inputMatrix'], ['matrixIn[0]', 'matrixIn[1]'],
 								driver = self._rigComponent, driven = multMatrixInput, force = True)
@@ -216,6 +217,8 @@ class RigComponent(object):
                 self._addObjAttr('_' + key, valDic['value'])
 
     def _removeAttributes(self, kwargs):
+    	if isinstance(kwargs, basestring):
+    		kwargs = [kwargs]
     	for key in kwargs:
     		self._kwargs.pop(key, None)
             	

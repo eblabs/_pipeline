@@ -15,11 +15,13 @@ import common.naming.namingDict as namingDict
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
+import common.nodes as nodes
 import rigging.joints as joints
 import baseBehavior
 
 class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 	"""IkRPsolverBehavior template"""
+	_ikHandles = []
 	def __init__(self, **kwargs):
 		super(IkRPsolverBehavior, self).__init__(**kwargs)
 		self._ikSolver = kwargs.get('ikSolver', 'ikRPsolver')
@@ -42,8 +44,8 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 			self._controls.append(Control.name)
 
 		# set ik solver
-		self._ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = self._part + self._jointSuffix, iIndex = self._index).name
-		cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = self._ikSolver, name = self._ikHandle)
+		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = self._part + self._jointSuffix, iIndex = self._index).name
+		cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = self._ikSolver, name = ikHandle)
 
 		# add transfrom group to control ik (pv and ik ctrl)
 		for ctrl in ikControls[1:]:
@@ -55,10 +57,10 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 			self._nodesLocal.append(node)
 
 		# parent ik to node
-		cmds.parent(self._ikHandle, self._nodesLocal[-1])
+		cmds.parent(ikHandle, self._nodesLocal[-1])
 
 		# pole vector constraint
-		cmds.poleVectorConstraint(self._nodesLocal[0], self._ikHandle)
+		cmds.poleVectorConstraint(self._nodesLocal[0], ikHandle)
 
 		# pole vector line
 		crvLine = naming.Naming(type = 'crvLine', side = self._side, part = self._part, index = self._index).name
@@ -82,7 +84,7 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 
 		# connect twist attr
 		cmds.addAttr(self._controls[-1], ln = 'twist', at = 'float', dv = 0, keyable = True)
-		cmds.connectAttr('{}.twist'.format(self._controls[-1]), '{}.twist'.format(self._ikHandle))
+		cmds.connectAttr('{}.twist'.format(self._controls[-1]), '{}.twist'.format(ikHandle))
 
 		# lock hide attrs
 		for ctrl in self._controls[:-1]:
@@ -92,9 +94,12 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		# angle bias if ik spring solver
 		if self._ikSolver == 'ikSpringSolver':
 			cmds.addAttr(self._controls[-1], ln = 'angleBias', min = 0, max = 1, dv = 0.5, at = 'float', keyable = True)
-			cmds.connectAttr('{}.angleBias'.format(self._controls[-1]), '{}.springAngleBias[0].springAngleBias_FloatValue'.format(self._ikHandle))
-			rvs = cmds.createNode('reverse', name = naming.Naming(type = 'reverse', side = self._sSide, 
-									part = '{}AngleBias'.format(self._part + self._jointSuffix), index = self._index).name)
+			cmds.connectAttr('{}.angleBias'.format(self._controls[-1]), '{}.springAngleBias[0].springAngleBias_FloatValue'.format(ikHandle))
+			rvs = nodes.create(type = 'reverse', side = self._sSide, 
+							   part = '{}AngleBias'.format(self._part + self._jointSuffix), 
+							   index = self._index)
 			cmds.connectAttr('{}.angleBias'.format(self._controls[-1]), '{}.inputX'.format(rvs))
-			cmds.connectAttr('{}.outputX'.format(rvs), '{}.springAngleBias[1].springAngleBias_FloatValue'.format(self._ikHandle))
+			cmds.connectAttr('{}.outputX'.format(rvs), '{}.springAngleBias[1].springAngleBias_FloatValue'.format(ikHandle))
 
+		# pass info
+		self._ikHandles.append(ikHandle)

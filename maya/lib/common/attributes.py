@@ -9,7 +9,8 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-
+import naming.naming as naming
+import nodes
 # ---- import end ----
 
 # add attr
@@ -214,6 +215,83 @@ def attrInChannelBox(node, attr):
 	attr = '{}.{}'.format(node, attr)
 	return cmds.getAttr(attr, keyable = True) or cmds.getAttr(attr, cb = True)
 
+def listAttrsInChannelBox(node):
+	attrsAll = cmds.listAttr(node, w = True, r = True)
+	attrsKeyable = cmds.listAttr(node, keyable = True)
+	attrsNonKeyable = cmds.listAttr(node, cb = True)
+
+	attrsSum = attrsKeyable + attrsNonKeyable
+	attrsIndex = []
+
+	for attr in attrsSum:
+		index = attrsAll.index(attr)
+		attrsIndex.append(index)
+
+	attrsIndex.sort()
+
+	attrs = []
+	for index in attrsIndex:
+		attrs.append(attrsAll[index])
+
+	return attrs
+
+def copyConnectAttrs(driver, driven, attrs=[]):
+	attrsDriver = listAttrsInChannelBox(driver)
+	attrsDriven = listAttrsInChannelBox(driven)
+
+	if not attrs:
+		attrs = attrsDriven
+
+	if attrs == attrsDriver:
+		return
+
+	for attr in attrs:
+		if attr in attrsDriven and attr not in attrsDriver:
+			# in case the attr is hidden in driver
+			if not cmds.attributeQuery(attr, node = driver, ex = True):
+				kwargs = {'ln': attr}
+				attrType = cmds.getAttr(driven + '.' + attr, type = True)
+				dv = cmds.addAttr(driven + '.' + attr, q = True, dv = True)
+				keyable = cmds.getAttr(driven + '.' + attr, keyable = True)
+
+				kwargs.update({'at': attrType, 'dv': dv, 'keyable': keyable})
+				
+				lock = cmds.getAttr(driven + '.' + attr, lock = True)
+
+				if attrType != 'enum':
+					maxVal = cmds.addAttr(driven + '.' + attr, q = True, max = True)
+					minVal = cmds.addAttr(driven + '.' + attr, q = True, min = True)
+					kwargs.update({'max': maxVal, 'min': minVal})
+				else:
+					enumName = cmds.attributeQuery(attr, node = driven, le = True)[0]
+					kwargs.update({'enumName': enumName})
+
+				cmds.addAttr(driver, **kwargs)
+				cmds.setAttr(driver + '.' + attr, channelBox = True, lock = lock)
+				__connectSingleAttr(attr, attr, driver = driver, driven = driven)
+
+				cmds.setAttr(driven + '.' + attr, keyable = False, channelBox = False)
+			elif attr in attrsDriver:
+				try:
+					__connectSingleAttr(attr, attr, driver = driver, driven = driven)
+				except:
+					pass
+
+# add reverse node
+def addRvsAttr(node, attr, addAttr=False):
+	NamingNode = naming.Naming(node)
+	rvsNode = nodes.create(type = 'reverse', side = NamingNode.side,
+				part = '{}{}{}Rvs'.format(NamingNode.part, attr[0].upper(), attr[1:]), 
+				index = NamingNode.index)
+	cmds.connectAttr('{}.{}'.format(node, attr), '{}.inputX'.format(rvsNode))
+	outputPlug = '{}.outputX'.format(rvsNode)
+	if addAttr:
+		cmds.addAttr(node, ln = '{}Rvs'.format(attr), at = 'float', 
+					 min = 0, max = 1, keyable = False)
+		cmds.connectAttr(outputPlug, '{}.{}Rvs'.format(node, attr))
+		outputPlug = '{}.{}Rvs'.format(node, attr)
+	return outputPlug
+
 # sub function
 # check if attr exists
 def __attrExistsCheck(attr, node=None):
@@ -251,11 +329,11 @@ def __connectSingleAttr(driverAttr, drivenAttr, driver=None, driven=None, force=
 		cmds.connectAttr(driver, driven)
 	else:
 		if force:
-			if lock:
+			if connections[0] != driver:
 				cmds.setAttr(driven, lock = False)
-			cmds.connectAttr(driver, driven, f = True)
-			if lock:
-				cmds.setAttr(driven, lock = True)
+				cmds.connectAttr(driver, driven, f = True)						
+				if lock:
+					cmds.setAttr(driven, lock = True)
 		else:
 			if connections:
 				logger.warn('{} already has connection from {}, skipped'.format(driven, connections[0]))

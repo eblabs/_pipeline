@@ -20,6 +20,7 @@ import math
 # -- import lib
 import common.apiUtils as apiUtils
 import common.files.files as files
+import common.nodes as nodes
 import meshes
 import surfaces
 import curves
@@ -61,7 +62,7 @@ def createGeo(geoInfo, name=None, vis=True):
 	if not name:
 		name = meshInfo['name']
 	if not cmds.objExists(name):
-		cmds.createNode('transform', name = name)
+		nodes.create(name = name)
 	else:
 		logger.warn('{} already exists, skipped'.format(name))
 		return

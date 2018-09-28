@@ -33,6 +33,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 
 	"""
 	_reverseControls = []
+	_reverseJoints = []
 	def __init__(self, *args,**kwargs):
 		super(IkRPsolverPlusComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.advance.ikRPsolverPlusComponent'
@@ -158,6 +159,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			RvsFootRig.create()
 
 			self._reverseControls += RvsFootRig._controls
+			self._reverseJoints += RvsFootRig._joints
 
 			ControlSideInn = controls.Control(RvsFootRig._controls[-2])
 			kwargs.update({'blueprintJoints': [self._ballRoll],
@@ -167,6 +169,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			RvsFootRig.create()
 
 			self._reverseControls += RvsFootRig._controls
+			self._reverseJoints += RvsFootRig._joints
 
 			# parent ik handles
 			cmds.parent(ikSCHandleList[0], self._ballRoll)
