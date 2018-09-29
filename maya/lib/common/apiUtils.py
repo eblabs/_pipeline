@@ -54,14 +54,14 @@ def composeMMatrix(translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], rotateOrder
 	MScale = createMDoubleArray(scale)
 
 	# set MMatrix
-	MMatrix.setTranslation(MVector, OpenMaya.MSpace.kWorld)
-	MMatrix.setRotation(MRotate.asDoublePtr(), 
-						rotateOrderList[rotateOrder], 
-						OpenMaya.MSpace.kWorld)
-	MMatrix.setScale(MScale.asDoublePtr(), OpenMaya.MSpace.kWorld)
+	MTransformationMatrix.setTranslation(MVector, OpenMaya.MSpace.kWorld)
+	MTransformationMatrix.setRotation(MRotate.asDoublePtr(), 
+									  rotateOrderList[rotateOrder], 
+									  OpenMaya.MSpace.kWorld)
+	MTransformationMatrix.setScale(MScale.asDoublePtr(), OpenMaya.MSpace.kWorld)
 	
 	# get MMatrix and return
-	return MMatrix.asMatrix()
+	return MTransformationMatrix.asMatrix()
 
 # get MMatrix from node
 def getMMatrixFromNode(node, space='world'):
@@ -112,13 +112,13 @@ def decomposeMMatrix(MMatrix, space = 'world', rotateOrder = 0):
 	MScalePtr = MScale.asDoublePtr()
 	MTransformationMatrix.getScale(MScalePtr, MSpace)
 
-	translate = [MDoubleArrayTranslate(0), 
-				 MDoubleArrayTranslate(1), 
-				 MDoubleArrayTranslate(2)]
+	translate = [MTranslate(0), 
+				 MTranslate(1), 
+				 MTranslate(2)]
 	rotate = convertMQuaternionToEluer(MQuaternionV2, rotateOrder = rotateOrder)
-	scaleX = OpenMaya.MScriptUtil.getDoubleArrayItem(MDoubleArrayScalePtr, 0)
-	scaleY = OpenMaya.MScriptUtil.getDoubleArrayItem(MDoubleArrayScalePtr, 1)
-	scaleZ = OpenMaya.MScriptUtil.getDoubleArrayItem(MDoubleArrayScalePtr, 2)
+	scaleX = OpenMaya.MScriptUtil.getDoubleArrayItem(MScalePtr, 0)
+	scaleY = OpenMaya.MScriptUtil.getDoubleArrayItem(MScalePtr, 1)
+	scaleZ = OpenMaya.MScriptUtil.getDoubleArrayItem(MScalePtr, 2)
 	scale = [scaleX, scaleY, scaleZ]
 
 	return [translate, rotate, scale]
@@ -393,7 +393,7 @@ def __convertDegreeToRadian(degree):
 def __convertRotationToRadians(rotate):
 	radians = []
 	for rotEach in rotate:
-		radianEach = __convertDegreeToRadians(rotEach)
+		radianEach = __convertDegreeToRadian(rotEach)
 		radians.append(radianEach)
 	return radians
 

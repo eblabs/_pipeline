@@ -164,10 +164,9 @@ def unlockAttrs(node, attrs, keyable=True, channelBox=True):
 	for attr in attrs:
 		if cmds.attributeQuery(attr, node = node, ex = True):
 			# check if attr exists, skip if not
-			cmds.setAttr('{}.{}'.format(node, attr), 
-						 lock = False,
-						 keyable = keyable)
+			cmds.setAttr('{}.{}'.format(node, attr), lock = False)
 			cmds.setAttr('{}.{}'.format(node, attr), channelBox = channelBox)
+			cmds.setAttr('{}.{}'.format(node, attr), keyable = keyable)
 
 # connect attrs
 def connectAttrs(driverAttrs, drivenAttrs, driver=None, driven=None, force=True):
@@ -302,9 +301,10 @@ def __attrExistsCheck(attr, node=None):
 		node = attr.split('.')[0]
 		attr = attr.split('.')[1]
 
-	if cmds.attributeQuery(attr, node = node, ex = True):
+	try:
+		cmds.getAttr('{}.{}'.format(node, attr))
 		return '{}.{}'.format(node, attr)
-	else:
+	except:
 		logger.warn('{} does not have attr {}'.format(node, attr))
 		return None
 
@@ -327,13 +327,14 @@ def __connectSingleAttr(driverAttr, drivenAttr, driver=None, driven=None, force=
 
 	if not connections and not lock:
 		cmds.connectAttr(driver, driven)
+		logger.warn('connect {} to {}'.format(driver, driven))
 	else:
 		if force:
-			if connections[0] != driver:
-				cmds.setAttr(driven, lock = False)
-				cmds.connectAttr(driver, driven, f = True)						
-				if lock:
-					cmds.setAttr(driven, lock = True)
+			cmds.setAttr(driven, lock = False)
+			if not connections or connections[0] != driver:
+				cmds.connectAttr(driver, driven, f = True)				
+			if lock:
+				cmds.setAttr(driven, lock = True)
 		else:
 			if connections:
 				logger.warn('{} already has connection from {}, skipped'.format(driven, connections[0]))

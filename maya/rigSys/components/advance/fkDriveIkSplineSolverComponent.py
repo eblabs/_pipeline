@@ -5,7 +5,6 @@ logging.basicConfig(level=debugLevel)
 logger = logging.getLogger(__name__)
 logger.setLevel(debugLevel)
 
-
 # -- import maya lib
 import maya.cmds as cmds
 
@@ -16,7 +15,7 @@ import common.attributes as attributes
 import common.apiUtils as apiUtils
 import common.hierarchy as hierarchy
 import common.nodes as nodes
-import rigging.control.controls as controls
+import rigging.controls.controls as controls
 import rigging.constraints as constraints
 # ---- import end ----
 

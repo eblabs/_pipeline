@@ -13,21 +13,25 @@ import os
 
 # -- import maya lib
 import maya.cmds as cmds
-
+import maya.OpenMaya as OpenMaya
 # -- import lib
 import common.naming.naming as naming
+reload(naming)
 import common.transforms as transforms
+reload(transforms)
 import common.files.files as files
 import common.apiUtils as apiUtils
+import common.attributes as attributes
+reload(attributes)
 import common.naming.namingDict as namingDict
 import modeling.curves as curves
 import modeling.geometries as geometries
 # ---- import end ----
 
 # ---- global variable
-path_ctrlShapeDic = 'C:/_pipeline/maya/lib/rigging/control/controlShapes.json'
-path_ctrlColorDic = 'C:/_pipeline/maya/lib/rigging/control/controlColors.json'
-path_sideColorDic = 'C:/_pipeline/maya/lib/rigging/control/sideColors.json'
+path_ctrlShapeDic = 'C:/_pipeline/maya/lib/rigging/controls/controlShapes.json'
+path_ctrlColorDic = 'C:/_pipeline/maya/lib/rigging/controls/controlColors.json'
+path_sideColorDic = 'C:/_pipeline/maya/lib/rigging/controls/sideColors.json'
 
 class Control(object):
 	"""
@@ -528,6 +532,9 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 	lockHide(list): lock and hide control's attributes, default is []
 
 	'''
+	if 'v' not in lockHide:
+		lockHide.append('v')
+		
 	CtrlName = naming.Naming(type = 'control', side = side, part = part,
 							 index = index) # get control's name
 
@@ -636,11 +643,11 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 
 	# connect matrix
 	# matrix world and inverse
-	createLocalMatrix(output, zero, attrNode = ctrl, 
-					  nodeMatrix = 'worldMatrix[0]', 
-					  parentMatrix = 'parentInverseMatrix[0]', 
-					  attr = 'matrixWorld',
-					  inverseAttr = 'matrixWorldInverse', inverse=True)
+	transforms.createLocalMatrix(output, zero, attrNode = ctrl, 
+								  nodeMatrix = 'worldMatrix[0]', 
+								  parentMatrix = 'parentInverseMatrix[0]', 
+								  attr = 'matrixWorld',
+								  inverseAttr = 'matrixWorldInverse', inverse=True)
 
 	# matrix local and inverse
 	transforms.createLocalMatrix(output, zero, attrNode = ctrl,
@@ -650,7 +657,7 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 	return Control(ctrl)
 
 # add ctrl shape
-def addCtrlShape(ctrls, shape='cube', size=1, color=None, asCtrl=None, overrideType=0, colorOverride=False):
+def addCtrlShape(ctrls, shape='cube', size=1, color=None, asCtrl=None, colorOverride=False):
 	'''
 	add shape node to ctrls
 
@@ -665,7 +672,7 @@ def addCtrlShape(ctrls, shape='cube', size=1, color=None, asCtrl=None, overrideT
 							  1 template
 							  2 reference
 	'''
-	if isinstance(ctrl, basestring):
+	if isinstance(ctrls, basestring):
 		ctrls = [ctrls]
 	for c in ctrls:
 		if not asCtrl:
@@ -686,26 +693,15 @@ def addCtrlShape(ctrls, shape='cube', size=1, color=None, asCtrl=None, overrideT
 			else:
 				colorCtrl = color
 			# add ctrlshape
-			ctrlShape, nodeTemp = __createCtrlShape(NamingCtrl.name, 
-									shape = shape, color = colorCtrl, 
-									size = size, overrideType = overrideType,
-									colorOverride = colorOverride)
+			ctrlShape, ctrlName = __addCtrlShapeToTransform(c, 
+									  shape = shape, color = colorCtrl, 
+									  size = size, colorOverride = colorOverride)
+	
 			# assign shape
-			cmds.parent(ctrlShape, c, shape = True, addObject = True)
-			cmds.delete(nodeTemp)
 			cmds.reorder(ctrlShape, f = True)
 
 		else:
-			if cmds.objExists(asCtrl):
-				# assign shape
-				cmds.parent(asCtrl, c, shape = True, addObject = True)
-			else:
-				# create shape
-				ctrlShape, nodeTemp = __createCtrlShape(asCtrl, shape = 'line',
-														vis = False)
-				# assign shape
-				cmds.parent(ctrlShape, c, shape = True, addObject = True)
-				cmds.delete(nodeTemp)
+			ctrlShape, ctrlName = __addCtrlShapeAsCtrl(c, asCtrl)
 
 # transform ctrl shape
 def transformCtrlShape(ctrlShapes, translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], pivot='transform'):
@@ -720,7 +716,7 @@ def transformCtrlShape(ctrlShapes, translate=[0,0,0], rotate=[0,0,0], scale=[1,1
 	scale(float/list): scale shape node
 	pivot(string): transform/shape, define where is the pivot
 	'''
-	if isinstance(ctrlShapes, string):
+	if isinstance(ctrlShapes, basestring):
 		ctrlShapes = [ctrlShapes]
 	if not isinstance(translate, list):
 		translate = [translate, translate, translate]
@@ -886,11 +882,11 @@ def loadCtrlShapeInfo(path):
 	logger.info('load control shapes info from {}, took {} seconds'.format(path, endTime - startTime))
 
 # append shape info to preset
-def appendPreset(curves):
+def appendPreset(curveList):
 
 	shapeInfoDic = files.readJsonFile(path_ctrlShapeDic)
 
-	for c in curves:
+	for c in curveList:
 		crvShapeInfo = curves.__getCurveInfo(c)
 		shapeInfoDic.update({c:crvShapeInfo})
 
@@ -898,7 +894,7 @@ def appendPreset(curves):
 
 # sub function
 # create ctrl shape
-def __addCtrlShapeToTransform(ctrl, shape='cube', color=None, size=1, overrideType=0, vis=True, colorOverride=False):
+def __addCtrlShapeToTransform(ctrl, shape='cube', color=None, size=1, colorOverride=False):
 	
 	if isinstance(shape, basestring):
 		ctrlShapeDic = files.readJsonFile(path_ctrlShapeDic)
@@ -906,8 +902,12 @@ def __addCtrlShapeToTransform(ctrl, shape='cube', color=None, size=1, overrideTy
 	else:
 		ctrlShapeInfo = shape
 
+	ctrlShapeInfo = curves.__convertCurveInfo(ctrlShapeInfo)
+
 	# get exists shapes
 	shapeExist = cmds.listRelatives(ctrl, s = True)
+	if not shapeExist:
+		shapeExist = []
 
 	# create curve shape
 	ctrl = curves.__createCurve(ctrlShapeInfo, ctrl)
@@ -923,15 +923,6 @@ def __addCtrlShapeToTransform(ctrl, shape='cube', color=None, size=1, overrideTy
 
 	# set override
 	cmds.setAttr('{}.overrideEnabled'.format(ctrlShape), 1)
-	# type
-	if isinstance(overrideType, basestring):
-		if overrideType == 'normal':
-			overrideType = 0
-		elif overrideType == 'template':
-			overrideType = 1
-		else:
-			overrideType = 2
-	cmds.setAttr('{}.overrideType'.format(ctrlShape), overrideType)
 
 	# color
 	if 'color' in ctrlShapeInfo and not colorOverride:
@@ -946,10 +937,32 @@ def __addCtrlShapeToTransform(ctrl, shape='cube', color=None, size=1, overrideTy
 	# size
 	transformCtrlShape(ctrlShape, scale = size)
 
-	# vis
-	attributes.setAttrs('v', vis, node = ctrlShape, force = True)
+	return ctrlShape, ctrl
+
+def __addCtrlShapeAsCtrl(ctrl, ctrlShape):
+	if cmds.objExists(ctrlShape):
+		# assign shape
+		cmds.parent(ctrlShape, c, shape = True, addObject = True)
+	else:
+		ctrlShapeDic = files.readJsonFile(path_ctrlShapeDic)
+		ctrlShapeInfo = ctrlShapeDic['line']
+
+		ctrlShapeInfo = curves.__convertCurveInfo(ctrlShapeInfo)
+
+		# create curve shape
+		nodeTemp = transforms.createTransformNode('TEMP_CTRL')
+		ctrlTemp = curves.__createCurve(ctrlShapeInfo, nodeTemp)
+		shapeNode = cmds.listRelatives(nodeTemp, s = True)[0]
+		cmds.rename(shapeNode, ctrlShape)
+		# vis
+		attributes.setAttrs('v', 0, node = ctrlShape, force = True)
+		# assign shape
+		cmds.parent(ctrlShape, c, shape = True, addObject = True)
+		cmds.delete(nodeTemp)
 
 	return ctrlShape, ctrl
+
+
 
 def __mirrorSingleCtrlShape(ctrlSource, ctrlTarget, mirrorAxis):
 	if cmds.objExists(ctrlSource) and cmds.objExists(ctrlTarget):

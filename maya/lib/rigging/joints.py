@@ -5,7 +5,6 @@ logging.basicConfig(level=debugLevel)
 logger = logging.getLogger(__name__)
 logger.setLevel(debugLevel)
 
-
 # -- import maya lib
 import maya.cmds as cmds
 

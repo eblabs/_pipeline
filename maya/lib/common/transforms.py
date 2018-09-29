@@ -12,10 +12,11 @@ import maya.cmds as cmds
 import naming.naming as naming
 import attributes
 import apiUtils
+import nodes
 # ---- import end ----
 
 # create transform node
-def createTransformNode(name, lockHide=[], parent=None, rotateOrder=0,vis=True, posPoint=None, posOrient=None, posParent=None, inheritsTransform=True):	
+def createTransformNode(name, lockHide=[], parent=None, rotateOrder=0, vis=True, posPoint=None, posOrient=None, posParent=None, inheritsTransform=True):	
 	'''
 	create transform node
 
@@ -246,31 +247,32 @@ def createLocalMatrix(node, parent, attrNode=None, nodeMatrix='worldMatrix[0]', 
 		attrNode = node
 	NamingNode = naming.Naming(attrNode)
 	NamingNode.type = 'multMatrix'
-	NamingNode.part = NamingNode.part + matrixAttr[0].upper() + matrixAttr[1:]
+	NamingNode.part = NamingNode.part + attr[0].upper() + attr[1:]
 
-	multMatrix = createNode('multMatrix', name = NamingNode.name)
+	multMatrix = nodes.create(name = NamingNode.name)
 	attributes.connectAttrs(['{}.{}'.format(node, nodeMatrix),
 							 '{}.{}'.format(parent, parentMatrix)],
 							 ['matrixIn[0]', 'matrixIn[1]'], 
 							 driven = multMatrix, force = True)
 
-	if not cmds.attributeQuery(attr, node = node, ex = True):
-		cmds.addAttr(node, ln = attr, at = 'matrix')
+	if not cmds.attributeQuery(attr, node = attrNode, ex = True):
+		cmds.addAttr(attrNode, ln = attr, at = 'matrix')
 
 	driverAttrs = ['{}.matrixSum'.format(multMatrix)]
-	drivenAttrs = ['{}.{}'.format(node, attr)]
+	drivenAttrs = ['{}.{}'.format(attrNode, attr)]
 
 	if inverse:
+		inverseAttr = attr + 'Inverse'
 		NamingNode.type = 'inverseMatrix'
-		inverseMatrix = createNode('inverseMatrix', name = NamingNode.name)
+		inverseMatrix = nodes.create(name = NamingNode.name)
 		cmds.connectAttr('{}.matrixSum'.format(multMatrix),
 						 '{}.inputMatrix'.format(inverseMatrix))
 
-		if not cmds.attributeQuery(inverseMatrix, node = node, ex = True):
-			cmds.addAttr(node, ln = inverseMatrix, at = 'matrix')
+		if not cmds.attributeQuery(inverseAttr, node = attrNode, ex = True):
+			cmds.addAttr(attrNode, ln = inverseAttr, at = 'matrix')
 
 		driverAttrs.append('{}.outputMatrix'.format(inverseMatrix))
-		drivenAttrs.append('{}.{}'.format(node, inverseMatrix))
+		drivenAttrs.append('{}.{}'.format(attrNode, inverseAttr))
 
 	attributes.connectAttrs(driverAttrs, drivenAttrs, force = True)
 
@@ -311,6 +313,13 @@ def __transformSnapSingle(transformInfoDriver, driven, type = 'parent', skipTran
 	elif type == scale:
 		skipTranslate = ['x', 'y', 'z']
 		skipRotate = ['x', 'y', 'z']
+
+	if not skipTranslate:
+		skipTranslate = []
+	if not skipRotate:
+		skipRotate = []
+	if not skipScale:
+		skipScale = []
 
 	# get match transform info
 	for i, axis in enumerate(['x', 'y', 'z']):

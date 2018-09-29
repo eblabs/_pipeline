@@ -88,11 +88,11 @@ def __getSurfaceInfo(surface, type='python'):
 # load nurbs surface info
 def __convertSurfaceInfo(surfaceInfo):
 	# convert everything to MObj
-	controlVertices = apiUtils.convertListToMPointArray(surfaceInfo['controlVertices'])
-	uKnotSequences = apiUtils.convertListToMArray(surfaceInfo['uKnotSequences'])
-	vKnotSequences = apiUtils.convertListToMArray(surfaceInfo['vKnotSequences'])
-	uvCount = apiUtils.convertListToMArray(surfaceInfo['uvCount'], type = 'MIntArray')
-	uvIds = apiUtils.convertListToMArray(surfaceInfo['uvIds'], type = 'MIntArray')
+	surfaceInfo['controlVertices'] = apiUtils.convertListToMPointArray(surfaceInfo['controlVertices'])
+	surfaceInfo['uKnotSequences'] = apiUtils.convertListToMArray(surfaceInfo['uKnotSequences'])
+	surfaceInfo['vKnotSequences'] = apiUtils.convertListToMArray(surfaceInfo['vKnotSequences'])
+	surfaceInfo['uvCount'] = apiUtils.convertListToMArray(surfaceInfo['uvCount'], type = 'MIntArray')
+	surfaceInfo['uvIds'] = apiUtils.convertListToMArray(surfaceInfo['uvIds'], type = 'MIntArray')
 
 	return surfaceInfo
 

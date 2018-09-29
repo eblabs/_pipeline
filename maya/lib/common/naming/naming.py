@@ -40,9 +40,6 @@ class Naming(object):
 			longName = longDic[value]
 
 		else:
-			# value is not in the dictionary, return None
-			logger.warn('{} is not in the dictionary'.format(value))
-
 			shortName = None
 			longName = None
 
@@ -78,6 +75,8 @@ class Naming(object):
 			self.__part = part
 			self.__index = index
 			self.__suffix = suffix
+
+			self.__composeName()
 
 	def __str__(self):
 		# return the class name
@@ -156,7 +155,7 @@ class Naming(object):
 
 	@part.setter
 	def part(self, key):
-		if sKey:
+		if key:
 			self.__part = key
 		else:
 			self.__part = None
@@ -247,6 +246,7 @@ class Naming(object):
 			logger.error('The name is invalid')
 
 	def __composeName(self):
+		self.__name = ''
 		if self.__type:
 			# check if the name has type
 			if self.__side and self.__part:

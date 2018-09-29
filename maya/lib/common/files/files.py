@@ -8,6 +8,9 @@ logger.setLevel(debugLevel)
 # -- import cPickle
 import cPickle
 
+# -- import json
+import json
+
 # -- import maya lib
 
 # -- import lib

@@ -5,7 +5,6 @@ logging.basicConfig(level=debugLevel)
 logger = logging.getLogger(__name__)
 logger.setLevel(debugLevel)
 
-
 # -- import maya lib
 import maya.cmds as cmds
 import maya.mel as mel
@@ -16,7 +15,12 @@ import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
 import rigging.joints as joints
+import rigging.controls.controls as controls
+# ---- import end ----
+
+# ---- import components ----
 import baseBehavior
+# ---- import end ----
 
 class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 	"""IkSCsolverBehavior template"""

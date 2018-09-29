@@ -103,11 +103,11 @@ def __getCurveInfo(curve, type='python'):
 	MFnCurve.getCVs(controlVertices, OpenMaya.MSpace.kObject)
 
 	knots = OpenMaya.MDoubleArray()
-	MFnSurface.getKnots(knots)
+	MFnCurve.getKnots(knots)
 
-	degree = MFnSurface.degree()
+	degree = MFnCurve.degree()
 
-	form = MFnSurface.form()
+	form = MFnCurve.form()
 	
 	if type != 'MObj':
 		controlVertices = apiUtils.convertMPointArrayToList(controlVertices)
@@ -125,8 +125,8 @@ def __getCurveInfo(curve, type='python'):
 # load nurbs curve info
 def __convertCurveInfo(curveInfo):
 	# convert everything to MObj
-	controlVertices = apiUtils.convertListToMPointArray(curveInfo['controlVertices'])
-	knots = apiUtils.convertListToMArray(curveInfo['knots'])
+	curveInfo['controlVertices'] = apiUtils.convertListToMPointArray(curveInfo['controlVertices'])
+	curveInfo['knots'] = apiUtils.convertListToMArray(curveInfo['knots'])
 
 	return curveInfo
 
