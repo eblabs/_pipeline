@@ -20,8 +20,8 @@ import rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
-import rigSys.modules.base.ikRPsolverComponent as ikRPsolverComponent
-import rigSys.behavior.fkChainBehavior as fkChainBehavior
+import components.base.ikRPsolverComponent as ikRPsolverComponent
+import behaviors.fkChainBehavior as fkChainBehavior
 # -- import end ----
 
 class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
@@ -38,7 +38,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 		super(IkRPsolverPlusComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.advance.ikRPsolverPlusComponent'
 
-		kwargsDefault = {'blueprintReverseJoints': {'value': [], 'type': list}
+		kwargsDefault = {'blueprintReverseJoints': {'value': [], 'type': list},
 						 'reverseJointsDescriptor': {'value': ['heel', 'toe', 'sideInn', 'sideOut', 'ball'],
 						 							 'type': list}}
 		self._registerAttributes(kwargsDefault)
@@ -201,7 +201,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 		super(IkRPsolverPlusComponent, self)._getRigComponentInfo()
 
 		# get reverse controls
-		self._reverseControls = self.getListFromStringAttr('{}.reverseControls'.format(self._rigComponent))
+		self._reverseControls = self._getStringAttrAsList('reverseControls')
 
 
 

@@ -17,8 +17,11 @@ import common.apiUtils as apiUtils
 import common.nodes as nodes
 import rigging.constraints as constraints
 import rigging.joints as joints
-import rigSys.core.componentsPackage as componentsPackage
-import rigSys.core.space as space
+# ---- import end ----
+
+# -- import component
+import core.componentsPackage as componentsPackage
+import core.space as space
 # ---- import end ----
 
 class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
@@ -181,7 +184,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 
 				constraints.constraintBlend(inputMatrixList, blendJnts[i], 
 						weightList = ['{}.outputX'.format(rvsBlend), '{}.output'.format(multBlend)], 
-						translate = translate, rotate = rotate, scale = scale):
+						translate = translate, rotate = rotate, scale = scale)
 
 		# pass info
 		self._joints += blendJnts

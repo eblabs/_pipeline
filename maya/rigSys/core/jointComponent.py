@@ -16,6 +16,9 @@ import common.attributes as attributes
 import common.apiUtils as apiUtils
 import common.nodes as nodes
 import rigging.joints as joints
+# ---- import end ----
+
+# -- import component
 import rigComponent
 # ---- import end ----
 
@@ -100,14 +103,13 @@ class JointComponent(rigComponent.RigComponent):
 		self._writeJointsInfo()
 
 	def _getJointsInfo(self):
-		jointsName = cmds.getAttr('{}.joints'.format(self._rigComponent))
-		if jointsName:
-			jointList = jointsName.split(',')
+		jointList = self._getStringAttrAsList('joints')
+		if jointList:
 
 			jointsDic = {'list': jointList,
 						 'count': len(jointList)}
 
-			self._jointsDescriptor = self.getListFromStringAttr('{}.jointsDescriptor'.format(self._rigComponent))
+			self._jointsDescriptor = self._getStringAttrAsList('jointsDescriptor')
 
 			for i, joint in enumerate(jointList):
 				jointsDicUpdate = {'joint{:03d}'.format(i) : {'name': jnt,

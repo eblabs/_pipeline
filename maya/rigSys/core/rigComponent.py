@@ -29,15 +29,15 @@ class RigComponent(object):
 		kwargsDefault = {'side': {'value': 'middle', 
 								  'type' : basestring},
 						 'part': {'value': '',
-						 		  'type': basestring},
+								  'type': basestring},
 						 'index': {'value': None,
-						 		   'type': int},
+								   'type': int},
 						 'parent': {'value': '',
-						 			'type': basestring},
+									'type': basestring},
 						 'stacks': {'value': 3,
-						 			'type': int},
+									'type': int},
 						 'controlsDescriptor': {'value': [],
-						 						'type': list},
+												'type': list},
 							}
 
 		self._registerInput(kwargs)
@@ -66,21 +66,6 @@ class RigComponent(object):
 	def offsetMatrixPlug(self):
 		return self._offsetMatrixPlug
 
-	@ staticmethod
-	def composeListToString(valList):
-		valString = ''
-		for val in valList:
-			valString += '{},'.format(val)
-		if valString:
-			valString = valString[:-1]
-		return valString
-
-	@ staticmethod
-	def getListFromStringAttr(attr):
-		attrString = cmds.getAttr(attr)
-		attrList = attrString.split(',')
-		return attrList
-
 	def create(self):
 		self._createComponent()
 		self._writeRigComponentInfo()
@@ -107,8 +92,8 @@ class RigComponent(object):
 			-- jointsGrp
 			-- nodesLocalGrp
 		  -- rigWorld
-		    -- nodesHideGrp
-		    -- nodesShowGrp
+			-- nodesHideGrp
+			-- nodesShowGrp
 		  -- subComponents
 		'''
 
@@ -206,22 +191,22 @@ class RigComponent(object):
 
 	def _registerInput(self, kwargs):
 		for key, val in kwargs.iteritems():
-            self._kwargs.update({key: {'value': val}})
-            self._addObjAttr('_' + key, val)
+			self._kwargs.update({key: {'value': val}})
+			self._addObjAttr('_' + key, val)
 
 	def _registerAttributes(self, kwargs):
 		for key, valDic in kwargs.iteritems():
 			self._kwargs[key]['type'] = valDic['type']
-            if key not in self._kwargs:
-                self._kwargs[key]['value'] = valDic['value']
-                self._addObjAttr('_' + key, valDic['value'])
+			if key not in self._kwargs:
+				self._kwargs[key]['value'] = valDic['value']
+				self._addObjAttr('_' + key, valDic['value'])
 
-    def _removeAttributes(self, kwargs):
-    	if isinstance(kwargs, basestring):
-    		kwargs = [kwargs]
-    	for key in kwargs:
-    		self._kwargs.pop(key, None)
-            	
+	def _removeAttributes(self, kwargs):
+		if isinstance(kwargs, basestring):
+			kwargs = [kwargs]
+		for key in kwargs:
+			self._kwargs.pop(key, None)
+				
 	def _getRigComponentInfo(self):
 		# get groups
 		NamingGrp = naming.Naming(self._rigComponent)
@@ -238,7 +223,7 @@ class RigComponent(object):
 
 		self._addAttributeFromDict(dicAttr)
 
-		self._rigComponentType = cmds.getAttr('{}.rigComponentType'.format(self._rigComponent))
+		self._rigComponentType = self._getStringAttr('_rigComponentType')
 
 		self._inputMatrixPlug = '{}.inputMatrix'.format(self._rigComponent)
 		self._offsetMatrixPlug = '{}.offsetMatrix'.format(self._rigComponent)
@@ -246,20 +231,19 @@ class RigComponent(object):
 		self._getControlsInfo()
 
 	def _getControlsInfo(self):
-		controlsName = cmds.getAttr('{}.controls'.format(self._rigComponent))
-		if controlsName:
-			controlList = controlsName.split(',')
+		controlList = self._getStringAttrAsList('controls')
+		if controlList:
 			controlObjList = []
 			controlDic = {'list': controlList,
 						  'count': len(controlList)}
 
-			self._controlsDescriptor = self.getListFromStringAttr('{}.controlsDescriptor'.format(self._rigComponent))
+			self._controlsDescriptor = self._getStringAttrAsList('controlsDescriptor')
 
 			for i, control in enumerate(controlList):
 				ControlObj = controls.Control(control)
 				controlObjList.append(ControlObj)
 				if self._controlsDescriptor:
-					controlDic.append(self._controlsDescriptor[i]: ControlObj)
+					controlDic.update({self._controlsDescriptor[i]: ControlObj})
 			self._addAttributeFromList('controls', controlObjList)
 			self._addObjAttr('controls', controlDic)
 
@@ -298,17 +282,35 @@ class RigComponent(object):
 				attrParent = getattr(attrParent, a)
 		setattr(attrParent, attrSplit[-1], objectview(attrDic))
 
-	def _addListAsStringAttr(self, attr, listAttr):
-		listName = self.composeListToString(listAttr)
-		self._addStringAttr(attr, listName)
+	def _addListAsStringAttr(self, attr, valList):
+		valString = ''
+		for val in valList:
+			valString += '{},'.format(val)
+		if valString:
+			valString = valString[:-1]
+		self._addStringAttr(attr, valString)
+
+	def _getStringAttrAsList(self, attr):
+		attrList = None
+		if cmds.attributeQuery(attr, node = self._rigComponent, ex = True):
+			val = cmds.getAttr('{}.{}'.format(self._rigComponent, attr))
+			if val:
+				attrList = val.split(',')
+		return attrList
 		
 	def _addStringAttr(self, attr, val):
 		if not cmds.attributeQuery(attr, node = self._rigComponent, ex = True):
 			attributes.addAttrs(self._rigComponent, attr, attributeType = 'string', lock = True)
 		attributes.setAttrs(attr, val, node = self._rigComponent, type = 'string', force = True)
 
+	def _getStringAttr(self, attr):
+		if cmds.attributeQuery(attr, node = self._rigComponent, ex = True):
+			val = cmds.getAttr('{}.{}'.format(self._rigComponent, attr))
+		else:
+			val = None
+		return val
 
 class Objectview(object):
-    def __init__(self, kwargs):
-        self.__dict__ = kwargs
+	def __init__(self, kwargs):
+		self.__dict__ = kwargs
 

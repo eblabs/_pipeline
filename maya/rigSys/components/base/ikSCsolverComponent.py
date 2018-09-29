@@ -19,8 +19,8 @@ import rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
-import rigSys.core.ikSolverComponent as ikSolverComponent
-import rigSys.behaviors.ikSCsolverBehavior as ikSCsolverBehavior
+import core.ikSolverComponent as ikSolverComponent
+import behaviors.ikSCsolverBehavior as ikSCsolverBehavior
 # -- import end ----
 
 class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):

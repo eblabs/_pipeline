@@ -18,8 +18,8 @@ import rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
-import rigSys.core.jointComponent as jointComponent
-import rigSys.behavior.fkChainBehavior as fkChainBehavior
+import core.jointComponent as jointComponent
+import behaviors.fkChainBehavior as fkChainBehavior
 # -- import end ----
 
 class FkChainComponent(jointComponent.JointComponent):

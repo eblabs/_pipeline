@@ -15,7 +15,10 @@ import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
 import rigging.joints as joints
-import rigSys.core.componentsPackage as componentsPackage
+# ---- import end ----
+
+# -- import component
+import core.componentsPackage as componentsPackage
 # ---- import end ----
 
 class MultiComponentsPackage(componentsPackage.ComponentsPackage):

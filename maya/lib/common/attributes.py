@@ -44,22 +44,22 @@ def addAttrs(node, attrs, attributeType='float', minValue=None, maxValue=None, d
 			# update parameters
 			attrDic = {'longName': attr}
 			if attributeType != 'string':
-				attrDic.update{'attributeType': attributeType}
+				attrDic.update({'attributeType': attributeType})
 				if attributeType != 'matrix':
-					attrDic.update('keyable': keyable)
+					attrDic.update({'keyable': keyable})
 					if not channelBox:
 						attrDic['keyable'] = False
 					if defaultValue[i] != None:
-						attrDic.update('defaultValue': defaultValue[i])
+						attrDic.update({'defaultValue': defaultValue[i]})
 					if attributeType not in ['bool', 'enum']:
 						if minValue != None:
-							attrDic.update('minValue': minValue)
+							attrDic.update({'minValue': minValue})
 						if maxValue != None:
-							attrDic.update('maxValue': maxValue)
+							attrDic.update({'maxValue': maxValue})
 					elif attributeType == 'enum':
-						attrDic.update('enumName': enumName)
+						attrDic.update({'enumName': enumName})
 			else:
-				attrDic.update('dataType': attributeType)
+				attrDic.update({'dataType': attributeType})
 			# add attr to node	
 			cmds.addAttr(node, **attrDic)
 			# lock
@@ -101,13 +101,13 @@ def setAttrs(attrs, value, node=None, type=None, force=True):
 					else:
 						v = value
 					if type == 'string':
-						setAttrDic.update{'type': 'string'}
+						setAttrDic.update({'type': 'string'})
 				else:
 					if isinstance(value[0], list):
 						v = value[i]
 					else:
 						v = value
-					setAttrDic.update{'type': 'matrix'}
+					setAttrDic.update({'type': 'matrix'})
 
 				lock = cmds.getAttr(attrCompose, lock = True)
 				if not lock or force:

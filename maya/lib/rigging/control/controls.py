@@ -114,39 +114,6 @@ class Control(object):
 	def index(self):
 		return self.__index
 
-	@side.setter
-	def side(self, key):
-		shortName, longName = naming.Naming.getKeyFullNameFromDict(key, 
-							  namingDict.dNameConvension['side'], 
-							  namingDict.dNameConvensionInverse['side'])
-		self.__side = shortName
-		self.__updateControlName()
-
-	@part.setter
-	def part(self, key):
-		self.__part = key
-		self.__updateControlName()
-
-	@index.setter
-	def index(self, num):
-		if isinstance(num, int) and num >= 0:
-			self.__index = num
-		else:
-			self.__index = None
-		self.__updateControlName()
-
-	@stacks.setter
-	def stacks(self, num):
-		if isinstance(num, int) and num > 0:
-			stacks = num
-		else:
-			stacks = 1
-		self.__updateStacks(stacks)
-
-	@sub.setter
-	def sub(self, key):
-		self.__updateSub(key)
-
 	@property
 	def zero(self):
 		return self.__zero
@@ -230,6 +197,39 @@ class Control(object):
 	@property
 	def matrixWorldInverseAttr(self):
 		return 'matrixWorldInverse'
+
+	@side.setter
+	def side(self, key):
+		shortName, longName = naming.Naming.getKeyFullNameFromDict(key, 
+							  namingDict.dNameConvension['side'], 
+							  namingDict.dNameConvensionInverse['side'])
+		self.__side = shortName
+		self.__updateControlName()
+
+	@part.setter
+	def part(self, key):
+		self.__part = key
+		self.__updateControlName()
+
+	@index.setter
+	def index(self, num):
+		if isinstance(num, int) and num >= 0:
+			self.__index = num
+		else:
+			self.__index = None
+		self.__updateControlName()
+
+	@stacks.setter
+	def stacks(self, num):
+		if isinstance(num, int) and num > 0:
+			stacks = num
+		else:
+			stacks = 1
+		self.__updateStacks(stacks)
+
+	@sub.setter
+	def sub(self, key):
+		self.__updateSub(key)
 
 	def __getControlInfo(self, ctrl):
 		# get controller's information

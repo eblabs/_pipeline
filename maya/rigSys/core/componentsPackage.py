@@ -15,6 +15,9 @@ import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
 import rigging.joints as joints
+# ---- import end ----
+
+# -- import component
 import jointComponent
 # ---- import end ----
 
@@ -38,17 +41,18 @@ class ComponentsPackage(jointComponent.JointComponent):
 		self._getSubComponentNodesInfo()
 
 	def _writeSubComponentNodesInfo(self):
-		self._addStringAttr('subComponentNodes', self._subComponentNodes)
+		self._addListAsStringAttr('subComponentNodes', self._subComponentNodes)
 		self._getSubComponentNodesInfo()
 
 	def _getSubComponentNodesInfo(self):
-		self._subComponentNodes = cmds.getAttr('{}.subComponentNodes'.format(self._rigComponent))
+		self._subComponentNodes = self._getStringAttrAsList('subComponentNodes')
 		subComponentDic = {'list': self._subComponentNodes}
-		for node in subComponentNodes:
-			componentType = cmds.getAttr('{}.rigComponentType'.format(node))
-			componentFunc = componentType.split('.')[-1]
-			componentFunc = componentFunc[0].upper() + componentFunc[1:]
-			componentImport = __import__(componentType)
-			Limb = getattr(componentImport, componentFunc)(node)
-			subComponentDic.update({node: Limb})
+		if self._subComponentNodes:
+			for node in subComponentNodes:
+				componentType = cmds.getAttr('{}.rigComponentType'.format(node))
+				componentFunc = componentType.split('.')[-1]
+				componentFunc = componentFunc[0].upper() + componentFunc[1:]
+				componentImport = __import__(componentType)
+				Limb = getattr(componentImport, componentFunc)(node)
+				subComponentDic.update({node: Limb})
 		self._addObjAttr('subComponentNodes', subComponentDic)

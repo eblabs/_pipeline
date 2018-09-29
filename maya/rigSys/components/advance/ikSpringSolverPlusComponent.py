@@ -21,7 +21,7 @@ import rigging.constraints as constraints
 
 # -- import component
 import ikRPsolverPlusComponent as ikRPsolverPlusComponent
-import rigSys.behaviors.ikRPsolverBehavior as ikRPsolverBehavior
+import behaviors.ikRPsolverBehavior as ikRPsolverBehavior
 # -- import end ----
 
 class IkSpringSolverPlusComponent(ikRPsolverPlusComponent.IkRPsolverPlusComponent):

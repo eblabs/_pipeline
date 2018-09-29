@@ -19,8 +19,8 @@ import rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
-import rigSys.core.ikSolverComponent as ikSolverComponent
-import rigSys.behaviors.ikSplineSolverBehavior as ikSplineSolverBehavior
+import core.ikSolverComponent as ikSolverComponent
+import behaviors.ikSplineSolverBehavior as ikSplineSolverBehavior
 # -- import end ----
 
 class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
@@ -63,6 +63,7 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 		self._ikHandles = [IkSplineSolverBehavior._ikHandle]
 		self._ikControls = IkSplineSolverBehavior._ikControls
 		self._ikTweakControls = IkSplineSolverBehavior._ikTweakControls
+		self._curve = IkSplineSolverBehavior._curve
 
 	def _writeRigComponentInfo(self):
 		super(IkSplineSolverComponent, self)._writeRigComponentInfo()
@@ -70,9 +71,14 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 		# ik controls
 		self._addListAsStringAttr('ikTweakControls', self._ikTweakControls)
 
+		# curve
+		self._addStringAttr('ikCurve', self._curve)
+
 	def _getRigComponentInfo(self):
 		super(IkSplineSolverComponent, self)._getRigComponentInfo()
 
 		# get ik controls
-		self._ikTweakControls = self.getListFromStringAttr('{}.ikTweakControls'.format(self._rigComponent))
-		
+		self._ikTweakControls = self._getStringAttrAsList('ikTweakControls')
+
+		# get curve
+		self._curve = self._getStringAttr('ikCurve')

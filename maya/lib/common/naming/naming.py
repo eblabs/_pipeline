@@ -154,12 +154,12 @@ class Naming(object):
 								namingDict.dNameConvensionInverse['resolution'])
 		self.__res = shortName
 
-	@sPart.setter
-	def sPart(self, sKey):
+	@part.setter
+	def part(self, key):
 		if sKey:
-			self.__sPart = sKey
+			self.__part = key
 		else:
-			self.__sPart = None
+			self.__part = None
 
 	@index.setter
 	def index(self, num):

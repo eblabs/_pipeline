@@ -28,7 +28,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 		super(IkSplineSolverBehavior, self).__init__(**kwargs)
 		self._blueprintCurve = kwargs.get('blueprintCurve', '')
 		self._jointSuffix = kwargs.get('jointSuffix', 'IkSpline')
-		self._blueprintControls = kwargs.get('blueprintControls': [])
+		self._blueprintControls = kwargs.get('blueprintControls', [])
 		# the blueprint controls should be 3, top, mid, bot
 	def create(self):
 		super(IkSplineSolverBehavior, self).create()

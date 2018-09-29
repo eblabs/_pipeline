@@ -71,7 +71,7 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 											   side = NamingOffset.side,
 											   part = NamingOffset.part,
 											   index = NamingOffset.index,
-											   suffix = name = len(decomposeMatrixList) + 1)
+											   suffix = len(decomposeMatrixList) + 1)
 
 				cmds.connectAttr('{}.matrixSum'.format(multMatrixOffset), '{}.inputMatrix'.format(decomposeMatrix))
 
@@ -129,7 +129,7 @@ def constraintBlend(inputMatrixList, driven, weightList=[], translate=True, rota
 
 	attrs = []
 	constraints = []
-	if i, attr in enumerate([translate, rotate, scale]):
+	for i, attr in enumerate([translate, rotate, scale]):
 		if attr:
 			con = nodes.create(type = constraintType[i],
 									   side = NamingNode.side,

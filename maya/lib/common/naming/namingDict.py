@@ -13,7 +13,7 @@ dNameConvension = {
 
 							#rigging
 							'joint': 'jnt',
-							'bind', 'bind',
+							'bind': 'bind',
 							'blueprintJoint': 'bpJnt',
 							'blueprintCurve': 'bpCrv',
 							'blueprintSurface': 'bpSurf',
@@ -28,7 +28,7 @@ dNameConvension = {
 							'skinCluster': 'skin',
 							'blendshape': 'bs',
 							'cluster': 'cls',
-							'clusterHandle': 'clsHnd'
+							'clusterHandle': 'clsHnd',
 							'lattice': 'lat',
 							'latticeBase': 'latBase',
 							'deltaMesh': 'delMush',

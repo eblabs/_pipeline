@@ -19,8 +19,8 @@ import rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
-import rigSys.core.ikSolverComponent as ikSolverComponent
-import rigSys.behaviors.ikRPsolverBehavior as ikRPsolverBehavior
+import core.ikSolverComponent as ikSolverComponent
+import behaviors.ikRPsolverBehavior as ikRPsolverBehavior
 # -- import end ----
 
 class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
@@ -77,7 +77,7 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 		super(IkRPsolverPlusComponent, self)._getRigComponentInfo()
 
 		# get reverse controls
-		self._ikSolver = cmds.getAttr('{}.ikSolver'.format(self._rigComponent))
+		self._ikSolver = self._getStringAttr('ikSolver')
 
 
 

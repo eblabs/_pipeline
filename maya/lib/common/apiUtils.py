@@ -359,7 +359,7 @@ def convertListToMPointArray(array, type='MPointArray'):
 	if type == 'MPointArray':
 		MArray = OpenMaya.MPointArray()
 
-	elif type = 'MFloatPointArray':
+	elif type == 'MFloatPointArray':
 		MArray = OpenMaya.MFloatPointArray()
 
 	pntType = type.replace('Array', '')

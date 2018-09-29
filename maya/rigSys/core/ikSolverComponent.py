@@ -15,7 +15,10 @@ import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
 import rigging.joints as joints
-import rigSys.core.jointComponent as jointComponent
+# ---- import end ----
+
+# -- import component
+import jointComponent as jointComponent
 # ---- import end ----
 
 class IkSolverComponent(jointComponent.JointComponent):
@@ -38,9 +41,9 @@ class IkSolverComponent(jointComponent.JointComponent):
 		super(IkSolverComponent, self)._getRigComponentInfo()
 
 		# get ik controls
-		self._ikControls = self.getListFromStringAttr('{}.ikControls'.format(self._rigComponent))
+		self._ikControls = self._getStringAttrAsList('ikControls')
 
 		# get ik handles
-		self._ikHandles = self.getListFromStringAttr('{}.ikHandles'.format(self._rigComponent))
+		self._ikHandles = self._getStringAttrAsList('ikHandles')
 		
 
