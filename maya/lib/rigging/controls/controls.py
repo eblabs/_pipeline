@@ -16,13 +16,10 @@ import maya.cmds as cmds
 import maya.OpenMaya as OpenMaya
 # -- import lib
 import common.naming.naming as naming
-reload(naming)
 import common.transforms as transforms
-reload(transforms)
 import common.files.files as files
 import common.apiUtils as apiUtils
 import common.attributes as attributes
-reload(attributes)
 import common.naming.namingDict as namingDict
 import modeling.curves as curves
 import modeling.geometries as geometries

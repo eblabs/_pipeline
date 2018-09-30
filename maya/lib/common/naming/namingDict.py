@@ -99,10 +99,10 @@ dNameConvension = {
 							'rigLocal': 'rigLocal',
 							'controlsGrp': 'controlsGrp',
 							'jointsGrp': 'jointsGrp',
-							'nodesLocal': 'nodesLocal',
+							'nodesLocalGrp': 'nodesLocalGrp',
 							'rigWorld': 'rigWorld',
-							'nodesHide': 'nodesHide',
-							'nodesShow': 'nodesShow',
+							'nodesHideGrp': 'nodesHideGrp',
+							'nodesShowGrp': 'nodesShowGrp',
 							'subComponents': 'subComponents',
 						},
 

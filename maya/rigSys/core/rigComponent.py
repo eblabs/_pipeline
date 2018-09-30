@@ -14,7 +14,11 @@ import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
 import common.nodes as nodes
+import common.hierarchy as hierarchy
+reload(hierarchy)
 import rigging.joints as joints
+import rigging.constraints as constraints
+reload(constraints)
 # ---- import end ----
 
 class RigComponent(object):
@@ -122,10 +126,10 @@ class RigComponent(object):
 		self._addAttributeFromDict(dicAttr)
 
 		# parent components
-		cmds.parent(self._rigComponent, self._parent)
-		cmds.parent(self._controlsGrp, self._rigLocal, self._rigWorld, self._subComponents, self._rigComponent)
-		cmds.parent(self._nodesLocalGrp, self._rigLocal)
-		cmds.parent(self._nodesHideGrp, self._nodesShowGrp, self._rigWorld)
+		hierarchy.parent(self._rigComponent, self._parent)
+		hierarchy.parent([self._controlsGrp, self._rigLocal, self._rigWorld, self._subComponents], self._rigComponent)
+		hierarchy.parent(self._nodesLocalGrp, self._rigLocal)
+		hierarchy.parent([self._nodesHideGrp, self._nodesShowGrp], self._rigWorld)
 
 		# inheritsTransform
 		attributes.setAttrs(['{}.inheritsTransform'.format(self._rigLocal),
@@ -171,7 +175,7 @@ class RigComponent(object):
 								['{}.inputMatrix'.format(inverseMatrixInput), '{}.outputInverseMatrix'.format(self._rigComponent)],
 								force = True)
 
-		constraints.matrixConnect('{}.outputMatrix'.format(self._rigComponent), [self._controlsGrp, self._rigLocal], force = True)
+		constraints.matrixConnect(self._rigComponent, 'outputMatrix', [self._controlsGrp, self._rigLocal], force = True)
 
 		attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'],
 								['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'],
@@ -195,10 +199,12 @@ class RigComponent(object):
 
 	def _registerAttributes(self, kwargs):
 		for key, valDic in kwargs.iteritems():
-			self._kwargs[key]['type'] = valDic['type']
 			if key not in self._kwargs:
-				self._kwargs[key]['value'] = valDic['value']
+				self._kwargs.update({key: valDic})
 				self._addObjAttr('_' + key, valDic['value'])
+			else:
+				self._kwargs[key]['type'] = valDic['type']
+
 
 	def _removeAttributes(self, kwargs):
 		if isinstance(kwargs, basestring):
@@ -255,7 +261,7 @@ class RigComponent(object):
 		self._getControlsInfo()
 
 		# discriptor
-		self._addListAsStringAttr(self._rigComponent, 'controlsDescriptor', self._controlsDescriptor)
+		self._addListAsStringAttr('controlsDescriptor', self._controlsDescriptor)
 
 			
 	def _addAttributeFromList(self, attr, valList):
@@ -279,7 +285,9 @@ class RigComponent(object):
 		if len(attrSplit) > 1:
 			for a in attrSplit[:-1]:
 				attrParent = getattr(attrParent, a)
-		setattr(attrParent, attrSplit[-1], objectview(attrDic))
+		if isinstance(attrDic, dict):
+			attrDic = Objectview(attrDic)
+		setattr(attrParent, attrSplit[-1], attrDic)
 
 	def _addListAsStringAttr(self, attr, valList):
 		valString = ''

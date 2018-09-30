@@ -327,7 +327,6 @@ def __connectSingleAttr(driverAttr, drivenAttr, driver=None, driven=None, force=
 
 	if not connections and not lock:
 		cmds.connectAttr(driver, driven)
-		logger.warn('connect {} to {}'.format(driver, driven))
 	else:
 		if force:
 			cmds.setAttr(driven, lock = False)

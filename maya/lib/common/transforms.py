@@ -136,21 +136,18 @@ def transformSnap(nodes, type='parent', snapType='oneToAll', skipTranslate=None,
 		drivers = nodes[:-1] # fathers
 		driven = nodes[-1] # child
 
-		# get driver objects blend matrix
-		matrixList = []
-
-		for d in drivers:
-			matrix = cmds.getAttr('{}.worldMatrix[0]'.format(d))
-			matrixList.append(d)
-
-		MMatrixBlend = apiUtils.blendMatrix(matrixList, 
-										   weight=weight, 
-										   returnType='MMatrix')
-
-		# get transformInfo from MMatrixBlend
+		# get driver objects blend node
+		blendNode = cmds.group(empty = True, name = 'TEMP_BLEND')
 		ro = cmds.getAttr('{}.rotateOrder'.format(driven))
-		transformInfoBlend = apiUtils.decomposeMMatrix(MMatrixBlend,
-													   rotateOrder = ro)
+		cmds.setAttr('{}.ro'.format(blendNode), ro)
+
+		cmds.delete(cmds.pointConstraint(drivers, blendNode, mo = False))
+		cmds.delete(cmds.orientConstraint(drivers, blendNode, mo = False))
+		cmds.delete(cmds.scaleConstraint(drivers, blendNode, mo = False))
+
+		# get transformInfo
+		transformInfoBlend = getNodeTransformInfo(blendNode, 
+												  rotateOrder = ro)
 
 		# find average position if center pivot
 		if centerPivot:

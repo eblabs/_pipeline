@@ -45,8 +45,15 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 	if offset:
 		offsetList = cmds.getAttr('{}.worldMatrix[0]'.format(offset))
 		MMatrixOffset = apiUtils.convertListToMMatrix(offsetList)
+
+	if not skipTranslate:
+		skipTranslate = []
+	if not skipRotate:
+		skipRotate = []
+	if not skipScale:
+		skipScale = []
 		
-	for d in driven:
+	for d in drivens:
 		decomposeMatrix = NamingDecompose.name
 
 		if offset:
@@ -86,7 +93,7 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 		
 		decomposeRot = decomposeMatrix
 
-		if not skipRoate or len(skipRotate) < 3:
+		if not skipRotate or len(skipRotate) < 3:
 			if quatToEuler:
 				NamingRot = naming.Naming(decomposeMatrix)
 				NamingRot.type = 'quatToEuler'

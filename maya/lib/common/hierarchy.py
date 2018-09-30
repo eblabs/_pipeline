@@ -23,8 +23,11 @@ def connectChain(nodeList, reverse = False):
 
 	return nodeList[-1]
 
-def parent(node, parent):
+def parent(nodes, parent):
+	if isinstance(nodes, basestring):
+		nodes = [nodes]
 	if parent and cmds.objExists(parent):
-		p = cmds.listRelatives(node, p = True)[0]
-		if p != parent:
-			cmds.parent(node, parent)
+		for n in nodes:
+			p = cmds.listRelatives(n, p = True)
+			if not p or p[0] != parent:
+				cmds.parent(n, parent)
