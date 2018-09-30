@@ -565,6 +565,7 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 		stack = transforms.createTransformNode(NamingGrp.name, 
 										       parent = stackParent,
 										       posParent = stackParent)
+		stackParent = stack
 
 	# control transform node
 	NamingGrp.type = 'ctrl'
@@ -587,7 +588,7 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 	NamingGrp.type = 'output'
 
 	output = transforms.createTransformNode(NamingGrp.name, parent = ctrl,
-											posParent = ctrl, vis = False,
+											posParent = ctrl, vis = True,
 											lockHide = ['tx', 'ty', 'tz',
 														'rx', 'ry', 'rz',
 														'sx', 'sy', 'sz',

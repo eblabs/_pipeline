@@ -32,11 +32,11 @@ class FkChainComponent(jointComponent.JointComponent):
 		super(FkChainComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.base.fkChainComponent'
 
-		kwargsDefault = {'lockHide': {'value': ['sx', 'sy', 'sz'],
-						 			  'type': list},
-							}
-
-		self._registerAttributes(kwargsDefault)
+	def _registerDefaultKwargs(self):
+		super(FkChainComponent, self)._registerDefaultKwargs()
+		kwargs = {'lockHide': {'value': ['sx', 'sy', 'sz'],
+						 	   'type': list}}
+		self._kwargs.update(kwargs)
 
 	def _createComponent(self):
 		super(FkChainComponent, self)._createComponent()

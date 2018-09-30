@@ -35,6 +35,8 @@ class IkSpringSolverPlusComponent(ikRPsolverPlusComponent.IkRPsolverPlusComponen
 		super(IkSpringSolverPlusComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.advance.ikSpringSolverPlusComponent'
 
+	def _registerDefaultKwargs(self):
+		super(IkSpringSolverPlusComponent, self)._registerDefaultKwargs()
 		self._removeAttributes('ikSolver')
 
 	def _createComponent(self):

@@ -37,10 +37,13 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 		super(IkRPsolverPlusComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.advance.ikRPsolverPlusComponent'
 
-		kwargsDefault = {'blueprintReverseJoints': {'value': [], 'type': list},
-						 'reverseJointsDescriptor': {'value': ['heel', 'toe', 'sideInn', 'sideOut', 'ball'],
-						 							 'type': list}}
-		self._registerAttributes(kwargsDefault)
+	def _registerDefaultKwargs(self):
+		super(IkRPsolverPlusComponent, self)._registerDefaultKwargs()
+		kwargs = {'blueprintReverseJoints': {'value': [], 'type': list},
+				  'reverseJointsDescriptor': {'value': ['heel', 'toe', 'sideInn', 'sideOut', 'ball'],
+						 					  'type': list}}
+		self._kwargs.update(kwargs)
+		self._removeAttributes('ikSolver')
 
 	def _createComponent(self):
 		if len(self._blueprintJoints) == 4:

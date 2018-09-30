@@ -27,18 +27,20 @@ import core.space as space
 class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 	"""componentsBlendPackage template"""
 	def __init__(self, *args,**kwargs):
-		super(ComponentsBlendPackage, self).__init__()
+		super(ComponentsBlendPackage, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.package.componentsBlendPackage'
 
-		kwargsDefault = {'components': {'value': {}, 'type': dict},
-						 'defaultA': {'value': '', 'type': basestring},
-						 'defaultB': {'value': '', 'type': basestring} }
+	def _registerDefaultKwargs(self):
+		super(ComponentsBlendPackage, self)._registerDefaultKwargs()
+		kwargs = {'components': {'value': {}, 'type': dict},
+				  'defaultA': {'value': '', 'type': basestring},
+				  'defaultB': {'value': '', 'type': basestring} }
 		## components example
 			#{Key name: 
 			#  { 'componentType': module path,
 			#	 'kwargs': kwargs,}
 			#}
-		self._registerAttributes(kwargsDefault)
+		self._kwargs.update(kwargs)
 
 	def _createComponent(self):		
 		super(ComponentsBlendPackage, self)._createComponent()

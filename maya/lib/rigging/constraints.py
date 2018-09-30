@@ -36,6 +36,7 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 	# get name
 	NamingDecompose = naming.Naming(driver)
 	NamingDecompose.type = 'decomposeMatrix'
+	NamingDecompose.part = NamingDecompose.part + attr[0].upper() + attr[1:]
 	NamingOffset = naming.Naming(driver)
 	NamingOffset.part = '{}Offset'.format(NamingOffset.part)
 

@@ -25,7 +25,7 @@ class IkSolverComponent(jointComponent.JointComponent):
 	_ikControls = []
 	_ikHandles = []
 	def __init__(self, *args,**kwargs):
-		super(IkSolverComponent, self).__init__()
+		super(IkSolverComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.core.ikSolverComponent'
 
 	def _writeRigComponentInfo(self):

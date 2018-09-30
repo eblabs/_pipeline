@@ -27,7 +27,7 @@ def create(name, rotateOrder=0, parent=None, posPoint=None, posOrient=None, posP
 
 def createOnNode(node, search, replace, suffix='', parent=None, rotateOrder=False):
 	jnt = node.replace(search, replace)
-	NamingJnt = naming.naming(jnt)
+	NamingJnt = naming.Naming(jnt)
 	NamingJnt.part = NamingJnt.part + suffix
 	jnt = NamingJnt.name
 	if rotateOrder:

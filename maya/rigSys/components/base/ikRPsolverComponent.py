@@ -33,11 +33,13 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 		super(IkRPsolverComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.base.ikRPsolverComponent'
 
-		kwargsDefault = {'blueprintControls': {'value': [],
-						 					   'type': list},
-						 'ikSolver': {'value': 'ikRPsolver',
-						 			  'type': basestring}}
-		self._registerAttributes(kwargsDefault)
+	def _registerDefaultKwargs(self):
+		super(IkRPsolverComponent, self)._registerDefaultKwargs()
+		kwargs = {'blueprintControls': {'value': [],
+						 				'type': list},
+				  'ikSolver': {'value': 'ikRPsolver',
+						 	   'type': basestring}}
+		self._kwargs.update(kwargs)
 
 	def _createComponent(self):
 		super(IkRPsolverComponent, self)._createComponent()

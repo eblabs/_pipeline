@@ -33,9 +33,11 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 		super(IkSplineSolverComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.base.ikSplineSolverComponent'
 
-		kwargsDefault = {'blueprintCurve': {'value': '', 'type': basestring},
-						 'blueprintControls': {'value': [], 'type': list}}
-		self._registerAttributes(kwargsDefault)
+	def _registerDefaultKwargs(self):
+		super(IkSplineSolverComponent, self)._registerDefaultKwargs()
+		kwargs = {'blueprintCurve': {'value': '', 'type': basestring},
+				  'blueprintControls': {'value': [], 'type': list}}
+		self._kwargs.update(kwargs)
 
 	def _createComponent(self):
 		super(IkSplineSolverComponent, self)._createComponent()

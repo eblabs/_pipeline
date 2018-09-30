@@ -25,45 +25,17 @@ class JointComponent(rigComponent.RigComponent):
 	"""jointComponent template"""
 	_joints = []
 	def __init__(self, *args,**kwargs):
-		super(JointComponent, self).__init__()
+		super(JointComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.core.jointComponent'
 
-		kwargsDefault = {'blueprintJoints': {'value': [],
-						 					 'type': list},
-						 'jointsDescriptor': {'value': [],
-						 					  'type': list},
+	def _registerDefaultKwargs(self):
+		super(JointComponent, self)._registerDefaultKwargs()
+		kwargs = {'blueprintJoints': {'value': [],
+						 			  'type': list},
+				  'jointsDescriptor': {'value': [],
+						 			   'type': list},
 							}
-
-		self._registerAttributes(kwargsDefault)
-
-	@ staticmethod
-	def createJntsFromBpJnts(bpJnts, type='jnt', search='', replace='', suffix='', parent=None):
-		jntList = []
-		# create jnts
-		for j in bpJnts:
-			NamingJnt = naming.Naming(j)
-			NamingJnt.type = type
-			NamingJnt.part = NamingJnt.part.replace(search, replace) + suffix
-			joints.createOnNode(j, j, NamingJnt.name)
-			jntList.append(NamingJnt.name)
-
-		# parent jnts
-		for i, j in enumerate(bpJnts):
-			jntParent = cmds.listRelatives(j, p = True)
-			if jntParent:
-				NamingJnt = naming.Nameing(jntParent)
-				NamingJnt.type = type
-				NamingJnt.part = NamingJnt.part.replace(search, replace) + suffix
-				if NamingJnt.name in jntList:
-					jntParent = NamingJnt.name
-				else:
-					jntParent = parent
-			else:
-				jntParent = parent
-			if jntParent and cmds.objExists(jntParent):
-				cmds.parent(jntList[i], jntParent)
-
-		return jntList
+		self._kwargs.update(kwargs)
 
 	def _createComponent(self):
 		super(JointComponent, self)._createComponent()
@@ -108,19 +80,18 @@ class JointComponent(rigComponent.RigComponent):
 			jointsDic = {'list': jointList,
 						 'count': len(jointList)}
 
+			self._addObjAttr('joints', jointsDic)
+
 			self._jointsDescriptor = self._getStringAttrAsList('jointsDescriptor')
 
 			for i, joint in enumerate(jointList):
-				jointsDicUpdate = {'joint{:03d}'.format(i) : {'name': jnt,
-															  'matrixPlug': '{}.joint{:03d}Matrix'.format(self._rigComponent, i)}}
-				jointsDic.update(jointsDicUpdate)
+				jointsInfoDic = {'name': joint,
+								 'matrixPlug': '{}.joint{:03d}Matrix'.format(self._rigComponent, i)}
+
+				self._addObjAttr('joints.joint{:03d}'.format(i), jointsInfoDic)
 
 				if self._jointsDescriptor:
-					jointsDicUpdate = {self._jointsDescriptor[i] : {'name': jnt,
-															  'matrixPlug': '{}.joint{:03d}Matrix'.format(self._rigComponent, i)}}
-					jointsDic.update(jointsDicUpdate)
-
-			self._addObjAttr('joints', jointsDic)
+					self._addObjAttr('joints.{}'.format(self._jointsDescriptor[i]), jointsInfoDic)
 
 	def _writeJointsInfo(self):
 		self._addListAsStringAttr('joints', self._joints)
@@ -130,16 +101,16 @@ class JointComponent(rigComponent.RigComponent):
 			NamingJnt.type = 'multMatrix'
 			multMatrixJnt = nodes.create(name = NamingJnt.name)
 			attributes.connectAttrs(['{}.worldMatrix[0]'.format(jnt), '{}.outputInverseMatrix'.format(self._rigComponent)],
-									['matrixIn[0]', 'matrix[1]'], driven = multMatrixJnt)
+									['matrixIn[0]', 'matrixIn[1]'], driven = multMatrixJnt)
 			
 			cmds.addAttr(self._rigComponent, ln = 'joint{:03d}Matrix'.format(i), at = 'matrix')
 
 			cmds.connectAttr('{}.matrixSum'.format(multMatrixJnt), '{}.joint{:03d}Matrix'.format(self._rigComponent, i))
 
-		self._getJointsInfo()
-
 		# discriptor
-		self._addListAsStringAttr(self._rigComponent, 'jointsDescriptor', self._jointsDescriptor)
+		self._addListAsStringAttr('jointsDescriptor', self._jointsDescriptor)
+
+		self._getJointsInfo()
 
 	def _getRigComponentInfo(self):
 		super(JointComponent, self)._getRigComponentInfo()

@@ -76,7 +76,7 @@ def getMMatrixFromNode(node, space='world'):
 	if space == 'world':
 		matrixList = cmds.getAttr('{}.worldMatrix[0]'.format(node))
 	elif space == 'local':
-		matrixList = cmds.getAttr('{}.matrix[0]'.format(node))
+		matrixList = cmds.getAttr('{}.matrix'.format(node))
 	MMatrix = OpenMaya.MMatrix()
 	OpenMaya.MScriptUtil.createMatrixFromList(matrixList, MMatrix)
 	return MMatrix
@@ -105,8 +105,8 @@ def decomposeMMatrix(MMatrix, space = 'world', rotateOrder = 0):
 	## there is a maya api bug, getRotation seems not working, 
 	## have to get a quaternion then convert to euler
 	MQuaternion = MTransformationMatrix.rotation()
-	MQuaternionV2 = OpenMaya2.MQuaternion(MQuaternion.x, MQuaternion.y, 
-										  MQuaternion.z, MQuaternion.w)
+	MRotation = MQuaternion.asEulerRotation()
+	MRotation.reorderIt(rotateOrder)
 
 	MScale = createMDoubleArray([1,1,1])
 	MScalePtr = MScale.asDoublePtr()
@@ -115,7 +115,7 @@ def decomposeMMatrix(MMatrix, space = 'world', rotateOrder = 0):
 	translate = [MTranslate(0), 
 				 MTranslate(1), 
 				 MTranslate(2)]
-	rotate = convertMQuaternionToEluer(MQuaternionV2, rotateOrder = rotateOrder)
+	rotate = [math.degrees(MRotation.x), math.degrees(MRotation.y), math.degrees(MRotation.z)]
 	scaleX = OpenMaya.MScriptUtil.getDoubleArrayItem(MScalePtr, 0)
 	scaleY = OpenMaya.MScriptUtil.getDoubleArrayItem(MScalePtr, 1)
 	scaleZ = OpenMaya.MScriptUtil.getDoubleArrayItem(MScalePtr, 2)
@@ -124,32 +124,18 @@ def decomposeMMatrix(MMatrix, space = 'world', rotateOrder = 0):
 	return [translate, rotate, scale]
 
 # convert MMatrix to list
-def convertMMatrixToList(MMatrix, type='MMatrix'):
-	'''
-	MMatrix(MMatrix/MMatrixV2)
-	type(string): MMatrix/MMatrixV2
-	'''
+def convertMMatrixToList(MMatrix):
 	matrix = []
 	for i in range(4):
 		for j in range(4):
-			if type == 'MMatrix':
-				matrix.append(MMatrix(i, j))
-			else:
-				matrix.append(MMatrix.getElement(i, j))
+			matrix.append(MMatrix(i, j))
 	return matrix
 
 # convert list to MMatrix
-def convertListToMMatrix(matrix, type='MMatrix'):
-	'''
-	type(string): MMatrix/MMatrixV2
-	'''
-	if type == 'MMatrix':
-		MMatrix = OpenMaya.MMatrix()
-		OpenMaya.MScriptUtil.createMatrixFromList(matrix, MMatrix)
-		return MMatrix
-	else:
-		MMatrixV2 = OpenMaya2.MMatrix(matrix)
-		return MMatrixV2
+def convertListToMMatrix(matrix):
+	MMatrix = OpenMaya.MMatrix()
+	OpenMaya.MScriptUtil.createMatrixFromList(matrix, MMatrix)
+	return MMatrix
 
 # array
 # create MDoubleArray
@@ -157,18 +143,6 @@ def createMDoubleArray(list):
 	MDoubleArray = OpenMaya.MScriptUtil()
 	MDoubleArray.createFromList(list,3)
 	return MDoubleArray
-
-# rotation
-# convert MQuaternion to Eluer
-def convertMQuaternionToEluer(MQuaternionV2, rotateOrder=0):
-	MQuatOrig = OpenMaya2.MQuaternion()
-	MQuatSlerp = __MQuaternionSlerp(MQuatOrig, MQuaternionV2, 1)
-	MEluer = MQuatSlerp.asEulerRotation()
-	# reset rotate order
-	MEluer.reorderIt(rotateOrder)
-	# return eluer list
-	return [math.degrees(MEluer.x), math.degrees(MEluer.y),
-			math.degrees(MEluer.z)]
 
 # OpenMaya object
 # MObj
@@ -268,28 +242,5 @@ def __convertRotationToRadians(rotate):
 		radianEach = __convertDegreeToRadian(rotEach)
 		radians.append(radianEach)
 	return radians
-
-# get MQuaternion from matrix in OpenMaya2
-def __getMQuaternionFromMatrixV2(matrix):
-	'''
-	matrix(list): node's matrix
-	''' 
-	MMatrix = OpenMaya2.MMatrix(matrix)
-	MTransform = OpenMaya2.MTransformationMatrix(MMatrix)
-
-	return MTransform.roatation(asQuaternion = True)
-
-# MQuaternion slerp
-def __MQuaternionSlerp(MQuatA, MQuatB, weight = 0.5):
-	'''
-	Returns the quaternion at a given interpolation value along the shortest 
-	path between two quaternions
-
-	MQuatA weight = 1 - weight
-	MQuatB weight = weight
-	'''
-	MQuatSlerp = OpenMaya2.MQuaternion.slerp(MQuatA, MQuatB, 1 - weight, 0)
-	return MQuatSlerp
-
 
 

@@ -9,16 +9,16 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
+import common.files.files as files
 import common.naming.naming as naming
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
 import common.nodes as nodes
 import common.hierarchy as hierarchy
-reload(hierarchy)
 import rigging.joints as joints
 import rigging.constraints as constraints
-reload(constraints)
+import rigging.controls.controls as controls
 # ---- import end ----
 
 class RigComponent(object):
@@ -26,25 +26,9 @@ class RigComponent(object):
 	_kwargs = {}
 	_controls = []
 	def __init__(self, *args,**kwargs):
-		super(RigComponent, self).__init__()
 		self._rigComponentType = 'rigSys.core.rigComponent'
 
-		kwargsDefault = {'side': {'value': 'middle', 
-								  'type' : basestring},
-						 'part': {'value': '',
-								  'type': basestring},
-						 'index': {'value': None,
-								   'type': int},
-						 'parent': {'value': '',
-									'type': basestring},
-						 'stacks': {'value': 3,
-									'type': int},
-						 'controlsDescriptor': {'value': [],
-												'type': list},
-							}
-
-		self._registerInput(kwargs)
-		self._registerAttributes(kwargsDefault)
+		self._registerAttrs(kwargs)
 
 		if args:
 			self._rigComponent = args[0]
@@ -84,6 +68,25 @@ class RigComponent(object):
 
 		attributes.connectAttrs(inputPlug, self._inputMatrixPlug, force = True)
 		attributes.setAttrs(self._offsetMatrixPlug, offsetMatrixList, type = 'matrix', force = True)
+
+	def _registerAttrs(self, kwargs):
+		self._registerDefaultKwargs()
+		self._registerAttributes()
+		self._registerInput(kwargs)
+
+	def _registerDefaultKwargs(self):
+		kwargs = {'side': {'value': 'middle', 
+						   'type' : basestring},
+				  'part': {'value': '',
+						   'type': basestring},
+				  'index': {'value': None,
+						    'type': int},
+				  'parent': {'value': '',
+							 'type': basestring},
+				  'stacks': {'value': 3,
+							 'type': int},
+							}
+		self._kwargs.update(kwargs)
 
 	def _createComponent(self):
 		'''
@@ -147,9 +150,6 @@ class RigComponent(object):
 							attributeType = 'long', minValue = 0, maxValue = 1, 
 							defaultValue = [1,0,0], keyable = False, channelBox = True)
 
-		attributes.addAttrs(self._rigComponent, ['controls', 'controlsDescriptor'],
-							attributeType = 'string')
-
 		# connect attrs
 		attributes.connectAttrs(['controlsVis', 'rigNodesVis', 'rigNodesVis', 'subComponents'], 
 								['{}.v'.format(self._controlsGrp), 
@@ -194,17 +194,12 @@ class RigComponent(object):
 
 	def _registerInput(self, kwargs):
 		for key, val in kwargs.iteritems():
-			self._kwargs.update({key: {'value': val}})
-			self._addObjAttr('_' + key, val)
+			if key in self._kwargs:
+				self.__setattr__('_' + key, val)
 
-	def _registerAttributes(self, kwargs):
-		for key, valDic in kwargs.iteritems():
-			if key not in self._kwargs:
-				self._kwargs.update({key: valDic})
-				self._addObjAttr('_' + key, valDic['value'])
-			else:
-				self._kwargs[key]['type'] = valDic['type']
-
+	def _registerAttributes(self):
+		for key, valDic in self._kwargs.iteritems():
+			self._addAttributeFromDict({'_' + key: valDic['value']})
 
 	def _removeAttributes(self, kwargs):
 		if isinstance(kwargs, basestring):
@@ -242,14 +237,9 @@ class RigComponent(object):
 			controlDic = {'list': controlList,
 						  'count': len(controlList)}
 
-			self._controlsDescriptor = self._getStringAttrAsList('controlsDescriptor')
-
 			for i, control in enumerate(controlList):
 				ControlObj = controls.Control(control)
-				controlObjList.append(ControlObj)
-				if self._controlsDescriptor:
-					controlDic.update({self._controlsDescriptor[i]: ControlObj})
-			self._addAttributeFromList('controls', controlObjList)
+				controlDic.update({control: ControlObj})
 			self._addObjAttr('controls', controlDic)
 
 	def _writeRigComponentType(self):
@@ -259,11 +249,7 @@ class RigComponent(object):
 		# controls
 		self._addListAsStringAttr('controls', self._controls)
 		self._getControlsInfo()
-
-		# discriptor
-		self._addListAsStringAttr('controlsDescriptor', self._controlsDescriptor)
-
-			
+		
 	def _addAttributeFromList(self, attr, valList):
 		if valList:
 			attrDic = self._generateAttrDict(attr, valList)
@@ -285,9 +271,7 @@ class RigComponent(object):
 		if len(attrSplit) > 1:
 			for a in attrSplit[:-1]:
 				attrParent = getattr(attrParent, a)
-		if isinstance(attrDic, dict):
-			attrDic = Objectview(attrDic)
-		setattr(attrParent, attrSplit[-1], attrDic)
+		setattr(attrParent, attrSplit[-1], Objectview(attrDic))
 
 	def _addListAsStringAttr(self, attr, valList):
 		valString = ''

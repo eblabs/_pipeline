@@ -149,6 +149,8 @@ def transformSnap(nodes, type='parent', snapType='oneToAll', skipTranslate=None,
 		transformInfoBlend = getNodeTransformInfo(blendNode, 
 												  rotateOrder = ro)
 
+		cmds.delete(blendNode)
+
 		# find average position if center pivot
 		if centerPivot:
 			centerPivot, pntMax, pntMin = getNodesBoundingBoxInfo(drivers)
@@ -285,9 +287,6 @@ def getLocalMatrix(node, parent, nodeMatrix='worldMatrix[0]', parentMatrix='worl
 
 	if returnType == 'list':
 		outputMatrix = apiUtils.convertMMatrixToList(outputMatrix)
-	elif returnType == 'MMatrixV2':
-		outputMatrix = apiUtils.convertMMatrixToList(outputMatrix)
-		outputMatrix = apiUtils.convertListToMMatrix(outputMatrix, type = 'MMatrixV2')
 
 	return outputMatrix
 

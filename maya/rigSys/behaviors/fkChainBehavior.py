@@ -16,6 +16,7 @@ import common.attributes as attributes
 import common.apiUtils as apiUtils
 import rigging.joints as joints
 import rigging.controls.controls as controls
+import rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
@@ -41,10 +42,10 @@ class FkChainBehavior(baseBehavior.BaseBehavior):
 				stacks = self._stacks, parent = ctrlParent, posParent = jnt, lockHide = self._lockHide)
 
 			## connect ctrl to joint
-			constraints.matrixConnect(Control.name, matrixLocalAttr, jnt, skipTranslate = ['x', 'y', 'z'], 
+			constraints.matrixConnect(Control.name, Control.matrixLocalAttr, jnt, skipTranslate = ['x', 'y', 'z'], 
 						  force = True, quatToEuler = False)
-			constraints.matrixConnect(Control.name, matrixWorldAttr, jnt, skipRotate = ['x', 'y', 'z'], 
+			constraints.matrixConnect(Control.name, Control.matrixWorldAttr, jnt, skipRotate = ['x', 'y', 'z'], 
 						  skipScale = ['x', 'y', 'z'], force = True)
 
 			self._controls.append(Control.name)
-			ctrlParent = Control.ouput
+			ctrlParent = Control.output

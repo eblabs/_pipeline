@@ -24,19 +24,19 @@ import core.componentsPackage as componentsPackage
 class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 	"""multiComponentsPackage template"""
 	def __init__(self, *args,**kwargs):
-		super(MultiComponentsPackage, self).__init__()
+		super(MultiComponentsPackage, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.package.multiComponentsPackage'
 
-		self._removeAttributes(['blueprintJoints', 'jointsDescriptor'])
-
-		kwargsDefault = {'components': {'value': {}, 'type': dict}}
-
+	def _registerDefaultKwargs(self):
+		super(MultiComponentsPackage, self)._registerDefaultKwargs()
+		kwargs = {'components': {'value': {}, 'type': dict}}
 		## components example
 			#{Key name: 
 			#  { 'componentType': module path,
 			#	 'kwargs': kwargs,}
 			#}
-		self._registerAttributes(kwargsDefault)
+		self._kwargs.update(kwargs)
+		self._removeAttributes(['blueprintJoints', 'jointsDescriptor'])
 
 	def _createComponent(self):
 		super(MultiComponentsPackage, self)._createComponent()
