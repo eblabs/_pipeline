@@ -22,10 +22,10 @@ import jointComponent
 
 class ComponentsPackage(jointComponent.JointComponent):
 	"""componentsPackage template"""
-	_subComponentNodes = []
 	def __init__(self, *args,**kwargs):
 		super(ComponentsPackage, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.core.componentsPackage'
+		self._subComponentNodes = []
 
 	def _writeRigComponentInfo(self):
 		super(ComponentsPackage, self)._writeRigComponentInfo()

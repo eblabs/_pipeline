@@ -26,7 +26,7 @@ import common.attributes as attributes
 
 # create curve line
 def createCurveLine(name, nodes):
-	CrvName = naming.oName(sName)
+	CrvName = naming.Naming(name)
 	crv = cmds.curve(d = 1, p = [[0,0,0],[0,0,0]], name = name)
 	crvShape = cmds.listRelatives(crv, s = True)[0]
 	crvShape = cmds.rename(crvShape, '{}Shape'.format(crv))
@@ -73,9 +73,11 @@ def clusterCurve(crv, relatives = False):
 	cvNum = getCurveCvNum(crv)
 	clsHndList = []
 	for i in range(cvNum):
-		clsNodes = cmds.cluster('{}.cv[{}]'.format(crv, i), name = naming.Naming(type = 'cluster', side = CrvName.side, part = CrvName.part, index = CrvName.index, suffix = i + 1).name, rel = relatives)
-		clsHnd = cmds.rename(clsNodes[1], naming.Naming(type = 'clusterHandle', side = CrvName.side, part = CrvName.part, index = i+1).name)
-		cmds.rename(lCls[1], sClsHnd)
+		NamingCls = naming.Naming(type = 'cluster', side = CrvName.side, part = CrvName.part, index = CrvName.index, suffix = i + 1)
+		clsNodes = cmds.cluster('{}.cv[{}]'.format(crv, i), rel = relatives)
+		cmds.rename(clsNodes[0], NamingCls.name)
+		NamingCls.type = 'clusterHandle'
+		clsHnd = cmds.rename(clsNodes[1], NamingCls.name)
 		cmds.setAttr('{}.v'.format(clsHnd), 0)
 		clsHndList.append(clsHnd)
 	return clsHndList

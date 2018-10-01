@@ -20,6 +20,7 @@ import rigging.constraints as constraints
 # -- import component
 import core.ikSolverComponent as ikSolverComponent
 import behaviors.ikSplineSolverBehavior as ikSplineSolverBehavior
+reload(ikSplineSolverBehavior)
 # -- import end ----
 
 class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
@@ -57,11 +58,12 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 				  'nodesShowGrp': self._nodesShowGrp}
 
 		IkSplineSolverBehavior = ikSplineSolverBehavior.IkSplineSolverBehavior(**kwargs)
+		IkSplineSolverBehavior.create()
 
 		# pass info
 		self._joints += IkSplineSolverBehavior._joints
 		self._controls += IkSplineSolverBehavior._controls
-		self._ikHandles = [IkSplineSolverBehavior._ikHandle]
+		self._ikHandles = IkSplineSolverBehavior._ikHandles
 		self._ikControls = IkSplineSolverBehavior._ikControls
 		self._ikTweakControls = IkSplineSolverBehavior._ikTweakControls
 		self._curve = IkSplineSolverBehavior._curve

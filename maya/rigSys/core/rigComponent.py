@@ -23,10 +23,11 @@ import rigging.controls.controls as controls
 
 class RigComponent(object):
 	"""rigComponent template"""
-	_kwargs = {}
-	_controls = []
+
 	def __init__(self, *args,**kwargs):
 		self._rigComponentType = 'rigSys.core.rigComponent'
+		self._kwargs = {}
+		self._controls = []
 
 		self._registerAttrs(kwargs)
 
@@ -238,8 +239,11 @@ class RigComponent(object):
 						  'count': len(controlList)}
 
 			for i, control in enumerate(controlList):
-				ControlObj = controls.Control(control)
-				controlDic.update({control: ControlObj})
+				if cmds.objectType(control) == 'transform':
+					ControlObj = controls.Control(control)
+					controlDic.update({control: ControlObj})
+				else:
+					controlDic.update({control: control})
 			self._addObjAttr('controls', controlDic)
 
 	def _writeRigComponentType(self):

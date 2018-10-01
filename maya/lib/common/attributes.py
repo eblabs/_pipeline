@@ -330,8 +330,10 @@ def __connectSingleAttr(driverAttr, drivenAttr, driver=None, driven=None, force=
 	else:
 		if force:
 			cmds.setAttr(driven, lock = False)
-			if not connections or connections[0] != driver:
-				cmds.connectAttr(driver, driven, f = True)				
+			try:
+				cmds.connectAttr(driver, driven, f = True)
+			except:
+				pass		
 			if lock:
 				cmds.setAttr(driven, lock = True)
 		else:

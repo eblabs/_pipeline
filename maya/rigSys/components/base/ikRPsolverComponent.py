@@ -64,18 +64,18 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 		# pass info
 		self._joints += IkRPsolverBehavior._joints
 		self._controls += IkRPsolverBehavior._controls
-		self._ikHandles = [IkRPsolverBehavior._ikHandle]
+		self._ikHandles = IkRPsolverBehavior._ikHandles
 		self._ikControls = IkRPsolverBehavior._controls
 		self._nodesLocal = IkRPsolverBehavior._nodesLocal
 
 	def _writeRigComponentInfo(self):
-		super(IkRPsolverPlusComponent, self)._writeRigComponentInfo()
+		super(IkRPsolverComponent, self)._writeRigComponentInfo()
 
 		# ikHandle type
 		self._addStringAttr('ikSolver', self._ikSolver)
 
 	def _getRigComponentInfo(self):
-		super(IkRPsolverPlusComponent, self)._getRigComponentInfo()
+		super(IkRPsolverComponent, self)._getRigComponentInfo()
 
 		# get reverse controls
 		self._ikSolver = self._getStringAttr('ikSolver')

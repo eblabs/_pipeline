@@ -54,6 +54,6 @@ class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):
 		# pass info
 		self._joints += IkSCsolverBehavior._joints
 		self._controls += IkSCsolverBehavior._controls
-		self._ikHandles = [IkSCsolverBehavior._ikHandle]
+		self._ikHandles = IkSCsolverBehavior._ikHandles
 		self._ikControls = IkSCsolverBehavior._controls
 		self._nodesLocal = IkSCsolverBehavior._nodesLocal

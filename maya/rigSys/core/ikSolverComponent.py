@@ -22,11 +22,11 @@ import jointComponent as jointComponent
 
 class IkSolverComponent(jointComponent.JointComponent):
 	"""ikSolverComponent template"""
-	_ikControls = []
-	_ikHandles = []
 	def __init__(self, *args,**kwargs):
 		super(IkSolverComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.core.ikSolverComponent'
+		self._ikControls = []
+		self._ikHandles = []
 
 	def _writeRigComponentInfo(self):
 		super(IkSolverComponent, self)._writeRigComponentInfo()

@@ -599,6 +599,7 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 
 	# sub transform node
 	if sub:
+		NamingGrp.type = 'control'
 		NamingGrp.part = '{}Sub'.format(NamingGrp.part)
 
 		sub = transforms.createTransformNode(NamingGrp.name, parent = ctrl,
@@ -940,7 +941,7 @@ def __addCtrlShapeToTransform(ctrl, shape='cube', color=None, size=1, colorOverr
 def __addCtrlShapeAsCtrl(ctrl, ctrlShape):
 	if cmds.objExists(ctrlShape):
 		# assign shape
-		cmds.parent(ctrlShape, c, shape = True, addObject = True)
+		cmds.parent(ctrlShape, ctrl, shape = True, addObject = True)
 	else:
 		ctrlShapeDic = files.readJsonFile(path_ctrlShapeDic)
 		ctrlShapeInfo = ctrlShapeDic['line']
@@ -955,7 +956,7 @@ def __addCtrlShapeAsCtrl(ctrl, ctrlShape):
 		# vis
 		attributes.setAttrs('v', 0, node = ctrlShape, force = True)
 		# assign shape
-		cmds.parent(ctrlShape, c, shape = True, addObject = True)
+		cmds.parent(ctrlShape, ctrl, shape = True, addObject = True)
 		cmds.delete(nodeTemp)
 
 	return ctrlShape, ctrl

@@ -17,6 +17,8 @@ import common.apiUtils as apiUtils
 import common.nodes as nodes
 import rigging.joints as joints
 import rigging.controls.controls as controls
+import rigging.constraints as constraints
+import modeling.curves as curves
 # ---- import end ----
 
 # ---- import components ----
@@ -25,9 +27,9 @@ import baseBehavior
 
 class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 	"""IkRPsolverBehavior template"""
-	_ikHandles = []
 	def __init__(self, **kwargs):
 		super(IkRPsolverBehavior, self).__init__(**kwargs)
+		self._ikHandles = []
 		self._ikSolver = kwargs.get('ikSolver', 'ikRPsolver')
 		self._blueprintControls = kwargs.get('blueprintControls', '')
 		if self._ikSolver == 'ikRPsolver':
@@ -52,12 +54,12 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = self._ikSolver, name = ikHandle)
 
 		# add transfrom group to control ik (pv and ik ctrl)
-		for ctrl in ikControls[1:]:
+		for ctrl in self._controls[1:]:
 			Control = controls.Control(ctrl)
-			NamingNode = naming.Naming(type = 'null', side = Control.side, part = Control.part, index = Control.index).name
+			NamingNode = naming.Naming(type = 'null', side = Control.side, part = Control.part, index = Control.index)
 			node = transforms.createTransformNode(NamingNode.name, parent = self._nodesLocalGrp, posParent = ctrl,
 												  lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
-			constraints.matrixConnect(Control.name, matrixWorldAttr, node, force = True, quatToEuler = False)
+			constraints.matrixConnect(Control.name, Control.matrixWorldAttr, node, force = True, quatToEuler = False)
 			self._nodesLocal.append(node)
 
 		# parent ik to node
@@ -76,14 +78,15 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		constraints.matrixConnect(ControlPv.name, ControlPv.matrixWorldAttr, clsHndList[0], skipTranslate=None, 
 								  skipRotate=['x', 'y', 'z'], skipScale=['x', 'y', 'z'])
 
-		multMatrixPv = naming.Naming(type = 'multMatrix', side = self._side, part = '{}PvCrvLine'.format(self._part + self._jointSuffix), index = self._index).name
+		multMatrixPv = nodes.create(type = 'multMatrix', side = self._side, part = '{}PvCrvLine'.format(self._part + self._jointSuffix), index = self._index)
 		attributes.connectAttrs(['{}.matrix'.format(self._joints[1]), '{}.matrix'.format(self._joints[0])],
 								['matrixIn[0]', 'matrixIn[1]'], driven = multMatrixPv)
 		constraints.matrixConnect(multMatrixPv, 'matrixSum', clsHndList[1], skipTranslate=None, 
 								  skipRotate=['x', 'y', 'z'], skipScale=['x', 'y', 'z'])
 
 		# connect root jnt with controller
-		constraints.matrixConnect(self._controls[0], matrixWorldAttr, self._joints[0], force = True, skipRotate = ['x', 'y', 'z'], 
+		ControlRoot = controls.Control(self._controls[0])
+		constraints.matrixConnect(ControlRoot.name, ControlRoot.matrixWorldAttr, self._joints[0], force = True, skipRotate = ['x', 'y', 'z'], 
 						  		  skipScale = ['x', 'y', 'z'])
 
 		# connect twist attr
@@ -99,7 +102,7 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		if self._ikSolver == 'ikSpringSolver':
 			cmds.addAttr(self._controls[-1], ln = 'angleBias', min = 0, max = 1, dv = 0.5, at = 'float', keyable = True)
 			cmds.connectAttr('{}.angleBias'.format(self._controls[-1]), '{}.springAngleBias[0].springAngleBias_FloatValue'.format(ikHandle))
-			rvs = nodes.create(type = 'reverse', side = self._sSide, 
+			rvs = nodes.create(type = 'reverse', side = self._side, 
 							   part = '{}AngleBias'.format(self._part + self._jointSuffix), 
 							   index = self._index)
 			cmds.connectAttr('{}.angleBias'.format(self._controls[-1]), '{}.inputX'.format(rvs))

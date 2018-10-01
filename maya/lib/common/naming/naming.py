@@ -274,3 +274,4 @@ class Naming(object):
 		else:
 			# the name is invalid, should at least has type
 			logger.error('The name is invalid, should at least has type')
+			raise RuntimeError()

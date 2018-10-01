@@ -31,11 +31,11 @@ class FkDriveIkSplineSolverComponent(ikSplineSolverComponent.IkSplineSolverCompo
 	mainly used for spine rig
 
 	"""
-	_fkControls = []
-	_fkReverseControls = []
 	def __init__(self, *args,**kwargs):
 		super(FkDriveIkSplineSolverComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.advance.fkDriveIkSplineSolverComponent'
+		self._fkControls = []
+		self._fkReverseControls = []
 
 	def _registerDefaultKwargs(self):
 		super(FkDriveIkSplineSolverComponent, self)._registerDefaultKwargs()

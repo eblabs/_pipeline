@@ -31,11 +31,12 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 	mainly used for arm and leg
 
 	"""
-	_reverseControls = []
-	_reverseJoints = []
+	
 	def __init__(self, *args,**kwargs):
 		super(IkRPsolverPlusComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.advance.ikRPsolverPlusComponent'
+		self._reverseControls = []
+		self._reverseJoints = []
 
 	def _registerDefaultKwargs(self):
 		super(IkRPsolverPlusComponent, self)._registerDefaultKwargs()

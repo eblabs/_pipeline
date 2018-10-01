@@ -16,6 +16,7 @@ import common.attributes as attributes
 import common.apiUtils as apiUtils
 import rigging.joints as joints
 import rigging.controls.controls as controls
+import rigging.constraints as constraints
 # ---- import end ----
 
 # ---- import components ----
@@ -24,9 +25,9 @@ import baseBehavior
 
 class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 	"""IkSCsolverBehavior template"""
-	_ikHandles = []
 	def __init__(self, **kwargs):
 		super(IkSCsolverBehavior, self).__init__(**kwargs)
+		self._ikHandles = []
 		self._jointSuffix = kwargs.get('jointSuffix', 'IkSC')
 
 	def create(self):
@@ -46,10 +47,10 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 
 		# add transfrom group to control ik
 		Control = controls.Control(self._controls[-1])
-		NamingNode = naming.Naming(type = 'null', side = Control.side, part = Control.part, index = Control.index).name
+		NamingNode = naming.Naming(type = 'null', side = Control.side, part = Control.part, index = Control.index)
 		node = transforms.createTransformNode(NamingNode.name, parent = self._nodesLocalGrp, posParent = self._controls[-1],
 												lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
-		constraints.matrixConnect(Control.name, matrixWorldAttr, node, force = True, quatToEuler = False)
+		constraints.matrixConnect(Control.name, Control.matrixWorldAttr, node, force = True, quatToEuler = False)
 
 		self._nodesLocal = [node]
 
@@ -57,7 +58,8 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 		cmds.parent(ikHandle, node)
 
 		# connect root jnt with controller
-		constraints.matrixConnect(self._controls[0], matrixWorldAttr, self._joints[0], force = True, skipRotate = ['x', 'y', 'z'], 
+		ControlRoot = controls.Control(self._controls[0])
+		constraints.matrixConnect(ControlRoot.name, ControlRoot.matrixWorldAttr, self._joints[0], force = True, skipRotate = ['x', 'y', 'z'], 
 						  		  skipScale = ['x', 'y', 'z'])
 
 		# lock hide attrs

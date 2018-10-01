@@ -22,4 +22,7 @@ def create(type=None, side=None, part=None, index=None, suffix=None, name = None
 		NamingNode = naming.Naming(name)
 	if not cmds.objExists(NamingNode.name):
 		node = cmds.createNode(NamingNode.typeLongName, name = NamingNode.name)
+	else:
+		node = NamingNode.name
+		logger.warn('{} already exists, skipped'.format(node))
 	return node

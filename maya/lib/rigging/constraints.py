@@ -17,7 +17,7 @@ import common.hierarchy as hierarchy
 # ---- import end ----
 
 # matrix connect
-def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, skipRotate=None, skipScale=None, force=True, quatToEuler=True):
+def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, skipRotate=None, skipScale=None, force=True, quatToEuler=False):
 	'''
 	matrix connect
 
@@ -126,7 +126,7 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 										driven = d, force=True)
 
 # constraint blend
-def constraintBlend(inputMatrixList, driven, weightList=[], translate=True, rotate=True, scale=True, parent=None):
+def constraintBlend(inputMatrixList, driven, weightList=[], translate=True, rotate=True, scale=True, parent=None, parentInverseMatrix=None):
 	NamingNode = naming.Naming(driven)
 	constraintType = ['pointConstraint', 'orientConstraint', 'scaleConstraint']
 	attrType = ['Translate', 'Rotate', 'Scale']
@@ -172,7 +172,9 @@ def constraintBlend(inputMatrixList, driven, weightList=[], translate=True, rota
 				cmds.setAttr('{}.target[{}].targetWeight'.format(con, i), weightList[j])
 
 	for i, con in enumerate(constraints):
-		attr = attrs[j]
+		if parentInverseMatrix:
+			cmds.connectAttr(parentInverseMatrix, '{}.constraintParentInverseMatrix'.format(con))
+		attr = attrs[i]
 		for axis in 'XYZ':
 			cmds.connectAttr('{}.constraint{}{}'.format(con, attr, axis), 
 							'{}.{}{}'.format(driven, attr.lower(), axis))

@@ -10,6 +10,7 @@ dNameConvension = {
 							'mesh': 'mesh',
 							'surface': 'surf',
 							'curve': 'crv',
+							'curveLine': 'crvLine',
 
 							#rigging
 							'joint': 'jnt',

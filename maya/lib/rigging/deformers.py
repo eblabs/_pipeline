@@ -16,9 +16,9 @@ import common.apiUtils
 
 # wire deformer
 def createWireDeformer(node, wire, name, dropoffDistance = 200):
-	cmds.wire(node, wire = wire, name = name, dropoffDistance = dropoffDistance)
+	cmds.wire(node, wire = wire, name = name, dropoffDistance = [(0, dropoffDistance)])
 	baseWire = cmds.listConnections('{}.baseWire[0]'.format(name), s = True, d = False, p = False)[0]
-	NamingWire = naming.naming(wire)
+	NamingWire = naming.Naming(wire)
 	NamingWire.type = 'wireBase'
 	baseWire = cmds.rename(baseWire, NamingWire.name)
 	return [name, baseWire]

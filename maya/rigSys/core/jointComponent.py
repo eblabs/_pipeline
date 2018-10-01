@@ -23,10 +23,10 @@ import rigComponent
 
 class JointComponent(rigComponent.RigComponent):
 	"""jointComponent template"""
-	_joints = []
 	def __init__(self, *args,**kwargs):
 		super(JointComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.core.jointComponent'
+		self._joints = []
 
 	def _registerDefaultKwargs(self):
 		super(JointComponent, self)._registerDefaultKwargs()
@@ -99,6 +99,7 @@ class JointComponent(rigComponent.RigComponent):
 		for i, jnt in enumerate(self._joints):
 			NamingJnt = naming.Naming(jnt)
 			NamingJnt.type = 'multMatrix'
+			NamingJnt.part = '{}Output'.format(NamingJnt.part)
 			multMatrixJnt = nodes.create(name = NamingJnt.name)
 			attributes.connectAttrs(['{}.worldMatrix[0]'.format(jnt), '{}.outputInverseMatrix'.format(self._rigComponent)],
 									['matrixIn[0]', 'matrixIn[1]'], driven = multMatrixJnt)
