@@ -33,9 +33,12 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 		self._ikHandles = []
 		self._ikTweakControls = []
 		self._ikControls = []
+		self._fkRotControls = []
 		self._blueprintCurve = kwargs.get('blueprintCurve', '')
 		self._jointSuffix = kwargs.get('jointSuffix', 'IkSpline')
 		self._blueprintControls = kwargs.get('blueprintControls', [])
+		self._topFk = kwargs.get('topFk', '')
+		self._botFk = kwargs.get('bottomFk', '')
 		# the blueprint controls should be 3, top, mid, bot
 	def create(self):
 		super(IkSplineSolverBehavior, self).create()
@@ -193,3 +196,47 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 
 			self._ikControls.append(drvCtrl)
 			self._controls = self._ikControls + self._ikTweakControls
+
+			# fk rot control
+			jointsFk = []
+			for i, jnt in enumerate([self._joints[0], self._joints[-1]]):
+				fkRot = [self._botFk, self._topFk][i]
+				if fkRot:
+					bpCtrl = [self._blueprintControls[0], self._blueprintControls[-1]]
+					NamingNode = naming.Naming(bpCtrl)
+					NamingNode.part += 'FkRot'
+					jointRotFk = joints.createOnNode(jnt, jnt, NamingNode.name, parent = jnt)
+					Control = controls.create(NamingNode.part, side = NamingNode.side, index = NamingNode.index, 
+						stacks = self._stacks, parent = self._controlsGrp, posParent = jnt, lockHide = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz'])
+					constraints.matrixConnect(Control.name, Control.matrixLocalAttr, jointRotFk, skipTranslate = ['x', 'y', 'z'], skipScale = ['x', 'y', 'z'])
+					if i == 0:
+						matrixNode = jnt
+						matrixAttr = 'matrix'
+					else:
+						NamingNode.part += 'CtrlDrv'
+						NamingNode.type = 'multMatrix'
+						multMatrix = nodes.create(NamingNode.name)
+						numJnts = len(self._joints)
+						for j in range(numJnts)：
+							cmds.connectAttr('{}.matrix'.format(self._joints[numJnts - 1 - j]), '{}.matrixIn[{}]'.format(multMatrix, j))
+						matrixNode = multMatrix
+						matrixAttr = 'matrixSum'
+					constraints.matrixConnect(matrixNode, matrixAttr, Control.zero, skipScale = ['x', 'y', 'z'])
+					
+					if not cmds.attributeQuery('fkRotControlVis', node = drvCtrl, ex = True):
+						attributes.addAttrs(drvCtrl, 'fkRotControlVis', attributeType='long', 
+							minValue=0, maxValue=1, defaultValue=0, keyable=False, channelBox=True)
+					cmds.connectAttr('{}.fkRotControlVis'.format(drvCtrl), '{}.v'.format(Control.zero))
+
+					# pass info
+					self._controls.append(Control.name)
+					self._fkRotControls.append(Control.name)
+					jointsFk.append(jnt)
+
+			if self._botFk:
+				self._joints[0] = jointsFk[0]
+			if self._topFk:
+				self._joints[-1] = jointsFk[-1]
+
+				
+

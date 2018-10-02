@@ -37,7 +37,9 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 	def _registerDefaultKwargs(self):
 		super(IkSplineSolverComponent, self)._registerDefaultKwargs()
 		kwargs = {'blueprintCurve': {'value': '', 'type': basestring},
-				  'blueprintControls': {'value': [], 'type': list}}
+				  'blueprintControls': {'value': [], 'type': list},
+				  'topFk': {'value': False, 'type': bool},
+				  'bottomFk': {'value': False, 'type': bool}}
 		self._kwargs.update(kwargs)
 
 	def _createComponent(self):
@@ -50,6 +52,8 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 				  'stacks': self._stacks,
 				  'blueprintCurve': self._blueprintCurve,
 				  'blueprintControls': self._blueprintControls,
+				  'topFk': self._topFk,
+				  'bottomFk': self._bottomFk,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,
@@ -66,6 +70,7 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 		self._ikHandles = IkSplineSolverBehavior._ikHandles
 		self._ikControls = IkSplineSolverBehavior._ikControls
 		self._ikTweakControls = IkSplineSolverBehavior._ikTweakControls
+		self._fkRotControls = IkSplineSolverBehavior._fkRotControls
 		self._curve = IkSplineSolverBehavior._curve
 
 	def _writeRigComponentInfo(self):
@@ -73,6 +78,9 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 
 		# ik controls
 		self._addListAsStringAttr('ikTweakControls', self._ikTweakControls)
+
+		# fk controls
+		self._addListAsStringAttr('fkRotControls', self._fkRotControls)
 
 		# curve
 		self._addStringAttr('ikCurve', self._curve)
@@ -82,6 +90,9 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 
 		# get ik controls
 		self._ikTweakControls = self._getStringAttrAsList('ikTweakControls')
+
+		# get fk rot controls
+		self._fkRotControls = self._getStringAttrAsList('fkRotControls')
 
 		# get curve
 		self._curve = self._getStringAttr('ikCurve')

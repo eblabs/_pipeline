@@ -54,6 +54,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		blendCtrl = naming.Naming(type = 'control', side = self._side, 
 									part = '{}Blend'.format(self._part), index = self._index).name
 		subComponentNodes = []
+
 		for key in self._components.keys():
 			componentType = self._components[key]['componentType']
 			componentFunc = componentType.split('.')[-1]

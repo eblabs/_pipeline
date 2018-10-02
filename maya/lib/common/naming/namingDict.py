@@ -16,6 +16,7 @@ dNameConvension = {
 							'joint': 'jnt',
 							'bind': 'bind',
 							'blueprintJoint': 'bpJnt',
+							'reverseJoint': 'rvsJnt',
 							'blueprintCurve': 'bpCrv',
 							'blueprintSurface': 'bpSurf',
 							'blueprintMesh': 'bpMesh',

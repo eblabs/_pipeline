@@ -46,6 +46,7 @@ class FkChainComponent(jointComponent.JointComponent):
 				  'index': self._index,
 				  'blueprintJoints': self._blueprintJoints,
 				  'stacks': self._stacks,
+				  'lockHide': self._lockHide
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,

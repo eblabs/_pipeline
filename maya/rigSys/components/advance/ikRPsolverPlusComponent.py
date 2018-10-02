@@ -10,12 +10,14 @@ import maya.cmds as cmds
 
 # -- import lib
 import common.naming.naming as naming
+import common.naming.namingDict as namingDict
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
 import common.hierarchy as hierarchy
 import rigging.controls.controls as controls
 import rigging.constraints as constraints
+import rigging.joints as joints
 # ---- import end ----
 
 # -- import component
@@ -44,16 +46,16 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 				  'reverseJointsDescriptor': {'value': ['heel', 'toe', 'sideInn', 'sideOut', 'ball'],
 						 					  'type': list}}
 		self._kwargs.update(kwargs)
-		self._removeAttributes('ikSolver')
+		self._kwargsRemove.append('ikSolver')
 
 	def _createComponent(self):
 		if len(self._blueprintJoints) == 4:
 			bpJointsSC = self._blueprintJoints[-2:]
-			self._blueprintJoints = self._blueprintJoints[:-2]
+			self._blueprintJoints = self._blueprintJoints[:-1]
 			descriptor = ['Tip']
 		else:
 			bpJointsSC = self._blueprintJoints[-3:]
-			self._blueprintJoints = self._blueprintJoints[:-3]
+			self._blueprintJoints = self._blueprintJoints[:-2]
 			descriptor = ['Roll', 'Tip']
 
 		super(IkRPsolverPlusComponent, self)._createComponent()
@@ -69,7 +71,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 		ikSCHandleList = []
 
 		for i, jnt in enumerate(ikJntsSC[:-1]):
-			ikSCHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = '{}{}IkSC'.format(self._part, descriptor[i]), iIndex = self._index).name
+			ikSCHandle = naming.Naming(type = 'ikHandle', side = self._side, part = '{}{}IkSC'.format(self._part, descriptor[i]), index = self._index).name
 			cmds.ikHandle(sj = jnt, ee = ikJntsSC[i+1], sol = 'ikSCsolver', name = ikSCHandle)
 			ikSCHandleList.append(ikSCHandle)
 
@@ -127,8 +129,6 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			aimList = [[self._ballTwist, self._toeRoll],
 					   [self._heelRoll, self._toeRoll],
 					   [self._toeRoll, self._heelRoll],
-					   [self._sideInn, self._sideOut],
-					   [self._sideOut, self._sideInn],
 					   [self._toeTap, ikJntsSC[-1]],
 					   [self._ballRoll, ikJntsSC[0]]]
 
@@ -136,6 +136,15 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 				cmds.delete(cmds.aimConstraint(jntList[1], jntList[0], aimVector = aimVec, 
 												upVector = [0,1,0], worldUpType = 'objectrotation', 
 												worldUpObject = ikJntsSC[1]))
+				cmds.makeIdentity(jntList[0], apply = True, t = 1, r = 1, s = 1)
+
+			aimList = [[self._sideInn, self._sideOut],
+					   [self._sideOut, self._sideInn]]
+
+			for jntList in aimList:
+				cmds.delete(cmds.aimConstraint(jntList[1], jntList[0], aimVector = aimVec, 
+												upVector = [0,1,0], worldUpType = 'objectrotation', 
+												worldUpObject = self._ballTwist))
 				cmds.makeIdentity(jntList[0], apply = True, t = 1, r = 1, s = 1)
 
 			# parent joints
@@ -148,13 +157,16 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			
 			ControlIk = controls.Control(self._controls[-1])
 
+			rvsJntList.reverse()
+
 			kwargs = {'side': self._side,
 					  'part': self._part,
 					  'index': self._index,
-					  'blueprintJoints': rvsJntList.reverse(),
+					  'blueprintJoints': rvsJntList,
 					  'stacks': self._stacks,
 					  'jointSuffix': '',
 					  'createJoints': False,
+					  'lockHide': ['tx', 'ty', 'tz', 'sx', 'sy', 'sz'],
 
 				  	  'controlsGrp': ControlIk.output}
 			
@@ -175,8 +187,8 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			self._reverseJoints += RvsFootRig._joints
 
 			# parent ik handles
-			cmds.parent(ikSCHandleList[0], self._ballRoll)
-			cmds.parent(ikSCHandleList[1], self._toeRoll)
+			cmds.parent(ikSCHandleList[0], self._ikHandles[0], self._ballRoll)
+			cmds.parent(ikSCHandleList[1], self._toeTap)
 
 			# lock hide attrs
 			lockHide = [['rx', 'ry'], ['rx', 'ry'], ['rx', 'rz']]

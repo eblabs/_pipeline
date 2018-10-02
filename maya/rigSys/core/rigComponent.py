@@ -27,6 +27,7 @@ class RigComponent(object):
 	def __init__(self, *args,**kwargs):
 		self._rigComponentType = 'rigSys.core.rigComponent'
 		self._kwargs = {}
+		self._kwargsRemove = []
 		self._controls = []
 
 		self._registerAttrs(kwargs)
@@ -74,6 +75,7 @@ class RigComponent(object):
 		self._registerDefaultKwargs()
 		self._registerAttributes()
 		self._registerInput(kwargs)
+		self._removeAttributes()
 
 	def _registerDefaultKwargs(self):
 		kwargs = {'side': {'value': 'middle', 
@@ -202,10 +204,8 @@ class RigComponent(object):
 		for key, valDic in self._kwargs.iteritems():
 			self._addAttributeFromDict({'_' + key: valDic['value']})
 
-	def _removeAttributes(self, kwargs):
-		if isinstance(kwargs, basestring):
-			kwargs = [kwargs]
-		for key in kwargs:
+	def _removeAttributes(self):
+		for key in self._kwargsRemove:
 			self._kwargs.pop(key, None)
 				
 	def _getRigComponentInfo(self):
