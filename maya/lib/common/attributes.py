@@ -264,9 +264,9 @@ def copyConnectAttrs(driver, driven, attrs=[]):
 				else:
 					enumName = cmds.attributeQuery(attr, node = driven, le = True)[0]
 					kwargs.update({'enumName': enumName})
-
 				cmds.addAttr(driver, **kwargs)
 				cmds.setAttr(driver + '.' + attr, channelBox = True, lock = lock)
+				cmds.setAttr(driver + '.' + attr, keyable = keyable)
 				__connectSingleAttr(attr, attr, driver = driver, driven = driven)
 
 				cmds.setAttr(driven + '.' + attr, keyable = False, channelBox = False)

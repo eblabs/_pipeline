@@ -10,7 +10,6 @@ import maya.cmds as cmds
 
 # -- import lib
 import namingDict # all the name read from this file
-
 # ---- import end ----
 
 class Naming(object):

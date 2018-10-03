@@ -67,6 +67,7 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 		self._ikHandles = IkRPsolverBehavior._ikHandles
 		self._ikControls = IkRPsolverBehavior._controls
 		self._nodesLocal = IkRPsolverBehavior._nodesLocal
+		self._crvLine = IkRPsolverBehavior._crvLine
 
 	def _writeRigComponentInfo(self):
 		super(IkRPsolverComponent, self)._writeRigComponentInfo()

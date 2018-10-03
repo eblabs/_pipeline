@@ -20,7 +20,6 @@ import rigging.constraints as constraints
 # -- import component
 import core.ikSolverComponent as ikSolverComponent
 import behaviors.ikSplineSolverBehavior as ikSplineSolverBehavior
-reload(ikSplineSolverBehavior)
 # -- import end ----
 
 class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):

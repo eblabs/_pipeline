@@ -186,7 +186,7 @@ def matrixAimConstraint(inputMatrix, drivens, parent=None, worldUpType='objectro
 	elif worldUpType == 'objectUp':
 		worldUpType = 1
 
-	if isinstance(drivens):
+	if isinstance(drivens, basestring):
 		drivens = [drivens]
 
 	for driven in drivens:
@@ -201,14 +201,14 @@ def matrixAimConstraint(inputMatrix, drivens, parent=None, worldUpType='objectro
 		cmds.connectAttr(inputMatrix, '{}.inputMatrix'.format(decomposeMatrix))
 
 		for i, axis in enumerate('XYZ'):
-			cmds.setAttr('{}.aimVector{}'.format(aimConstraint), aimVector[i])
-			cmds.setAttr('{}.upVector{}'.format(aimConstraint), upVector[i])
+			cmds.setAttr('{}.aimVector{}'.format(aimConstraint, axis), aimVector[i])
+			cmds.setAttr('{}.upVector{}'.format(aimConstraint, axis), upVector[i])
 			cmds.connectAttr('{}.translate{}'.format(driven, axis), '{}.constraintTranslate{}'.format(aimConstraint, axis))
 			cmds.connectAttr('{}.outputTranslate{}'.format(decomposeMatrix, axis), '{}.target[0].targetTranslate{}'.format(aimConstraint, axis))
 
 		cmds.connectAttr('{}.parentInverseMatrix[0]'.format(driven), '{}.constraintParentInverseMatrix'.format(aimConstraint))
 		cmds.connectAttr(worldUpMatrix, '{}.worldUpMatrix'.format(aimConstraint))
-		cmds.connectAttr('{}.worldUpType'.format(aimConstraint), worldUpType)
+		cmds.setAttr('{}.worldUpType'.format(aimConstraint), worldUpType)
 
 		for axis in 'XYZ':
 			cmds.connectAttr('{}.constraintRotate{}'.format(aimConstraint, axis), '{}.rotate{}'.format(driven, axis))

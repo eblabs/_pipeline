@@ -25,6 +25,7 @@ dNameConvension = {
 							'orientConstraint': 'onc',
 							'parentConstraint': 'pac',
 							'scaleConstraint': 'sac',
+							'aimConstraint': 'amc',
 
 							#deformer
 							'skinCluster': 'skin',
