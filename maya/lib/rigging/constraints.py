@@ -167,9 +167,9 @@ def constraintBlend(inputMatrixList, driven, weightList=[], translate=True, rota
 				cmds.connectAttr('{}.output{}{}'.format(decomposeMatrix, attr, axis), 
 							'{}.target[{}].target{}{}'.format(con, i, attr, axis))
 			if isinstance(weightList[j], basestring):
-				cmds.connectAttr(weightList[j], '{}.target[{}].targetWeight'.format(con, i))
+				cmds.connectAttr(weightList[i], '{}.target[{}].targetWeight'.format(con, i))
 			else:
-				cmds.setAttr('{}.target[{}].targetWeight'.format(con, i), weightList[j])
+				cmds.setAttr('{}.target[{}].targetWeight'.format(con, i), weightList[i])
 
 	for i, con in enumerate(constraints):
 		if parentInverseMatrix:

@@ -36,26 +36,19 @@ class IkSpringSolverPlusComponent(ikRPsolverPlusComponent.IkRPsolverPlusComponen
 		super(IkSpringSolverPlusComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.advance.ikSpringSolverPlusComponent'
 
-	def _registerDefaultKwargs(self):
-		super(IkSpringSolverPlusComponent, self)._registerDefaultKwargs()
-		kwargs = {'blueprintSpringPVControl': {'value': '', 'type': basestring}}
-		self._kwargs.update(kwargs)
 	def _createComponent(self):
 		bpJntsSpring = self._blueprintJoints[:4]
 
 		super(IkSpringSolverPlusComponent, self)._createComponent()
 
 		# create ik spring solver chain
-		bpCtrls = [self._blueprintControls[0],
-				   self._blueprintSpringPVControl,
-				   self._blueprintControls[-1]]
 
 		kwargs = {'side': self._side,
 				  'part': self._part,
 				  'index': self._index,
 				  'blueprintJoints': bpJntsSpring,
 				  'stacks': self._stacks,
-				  'blueprintControls': bpCtrls,
+				  'blueprintControl': self._blueprintControl,
 				  'ikSolver': 'ikSpringSolver',
 
 				  'controlsGrp': self._controlsGrp,
@@ -94,12 +87,10 @@ class IkSpringSolverPlusComponent(ikRPsolverPlusComponent.IkRPsolverPlusComponen
 								  part = ControlRp.part + 'IkSpringDrive',
 								  index = ControlRp.index)
 		matrixLocal = transforms.getLocalMatrix(ControlRp.name, 
-									IkSpringSolverBehavior._joints[1])
+									IkSpringSolverBehavior._joints[0])
 		cmds.setAttr('{}.matrixIn[0]'.format(multMatrix), matrixLocal, type = 'matrix')
-		cmds.connectAttr('{}.matrix'.format(IkSpringSolverBehavior._joints[1]), 
-						'{}.matrixIn[1]'.format(multMatrix))
 		cmds.connectAttr('{}.matrix'.format(IkSpringSolverBehavior._joints[0]), 
-						'{}.matrixIn[2]'.format(multMatrix))
+						'{}.matrixIn[1]'.format(multMatrix))
 		constraints.matrixConnect(multMatrix, 'matrixSum', ControlRp.zero, 
 					skipRotate = ['x', 'y', 'z'], skipScale = ['x', 'y', 'z'], force=True)
 

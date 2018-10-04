@@ -200,6 +200,19 @@ def getNodeListTransformInfo(nodeList, translate=True, rotate=True, scale=True):
 		transformList.append(nodeInfo)
 	return transformList
 
+# get closest node from given point
+def getClosestNode(nodeList, point):
+	if isinstance(point, basestring):
+		point = cmds.xform(point, q = True, t = True, ws = True)
+	distanceList = []
+	for node in nodeList:
+		nodePos = cmds.xform(node, q = True, t = True, ws = True)
+		dis = apiUtils.distance(point, nodePos)
+		distanceList.append(dis)
+	disMin = min(distanceList)
+	indexMin = distanceList.index(disMin)
+	return nodeList[indexMin]
+
 # get node bounding box info
 def getNodesBoundingBoxInfo(nodes):
 	

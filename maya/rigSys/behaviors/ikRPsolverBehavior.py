@@ -31,7 +31,8 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		super(IkRPsolverBehavior, self).__init__(**kwargs)
 		self._ikHandles = []
 		self._ikSolver = kwargs.get('ikSolver', 'ikRPsolver')
-		self._blueprintControls = kwargs.get('blueprintControls', '')
+		self._blueprintControl = kwargs.get('blueprintControl', '')
+		self._poleVectorDistance = kwargs.get('poleVectorDistance', 1)
 		if self._ikSolver == 'ikRPsolver':
 			self._jointSuffix = kwargs.get('jointSuffix', 'IkRP')
 		elif self._ikSolver == 'ikSpringSolver':
@@ -42,12 +43,10 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		super(IkRPsolverBehavior, self).create()
 
 		# controls
-		for bpCtrl in self._blueprintControls:
+		for i, bpCtrl in enumerate([self._blueprintJoints[0], self._blueprintJoints[1], self._blueprintControl]):
 			NamingCtrl = naming.Naming(bpCtrl)
-			print bpCtrl
-			print NamingCtrl.part + self._jointSuffix
-			print 'XXXXXX'
-			Control = controls.create(NamingCtrl.part + self._jointSuffix, side = NamingCtrl.side, 
+			partSuffix = ['Pos', 'Pv', ''][i]
+			Control = controls.create(NamingCtrl.part + partSuffix + self._jointSuffix, side = NamingCtrl.side, 
 				index = NamingCtrl.index, stacks = self._stacks, parent = self._controlsGrp, 
 				posParent = bpCtrl, lockHide = ['sx', 'sy', 'sz'])
 			self._controls.append(Control.name)
@@ -55,6 +54,27 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		# set ik solver
 		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, part = self._part + self._jointSuffix, index = self._index).name
 		cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = self._ikSolver, name = ikHandle)
+
+		# check if flip for spring solver, seems like a maya bug
+		if self._ikSolver == 'ikSpringSolver':
+			cmds.refresh() # refresh maya to get correct joint value
+			rx = cmds.getAttr('{}.rx'.format(self._joints[0]))
+			if rx > 90 or rx < -90:
+				# normally is 180 or -180
+				for axis in 'XYZ':
+					pos = cmds.getAttr('{}.poleVector{}'.format(ikHandle, axis))
+					cmds.setAttr('{}.poleVector{}'.format(ikHandle, axis), -pos)
+
+		# set pos for pv
+		pvVec = []
+		for axis in 'XYZ':
+			pos = cmds.getAttr('{}.poleVector{}'.format(ikHandle, axis))
+			pvVec.append(pos)
+		posRoot = cmds.xform(self._joints[0], q = True, t = True, ws = True)
+		posPv = apiUtils.getPointFromVector(posRoot, pvVec, distance = 3 * self._poleVectorDistance)
+
+		ControlPv = controls.Control(self._controls[1])
+		transforms.setNodePos(ControlPv.zero, posParent = [posPv, [0,0,0]])
 
 		# add transfrom group to control ik (pv and ik ctrl)
 		for ctrl in self._controls[1:]:
@@ -78,7 +98,6 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		cmds.parent(crvLine, clsHndList, self._controlsGrp)
 
 		# connect pole vector line
-		ControlPv = controls.Control(self._controls[1])
 		constraints.matrixConnect(ControlPv.name, ControlPv.matrixWorldAttr, clsHndList[0], skipTranslate=None, 
 								  skipRotate=['x', 'y', 'z'], skipScale=['x', 'y', 'z'])
 

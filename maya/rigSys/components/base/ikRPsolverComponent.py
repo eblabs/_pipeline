@@ -35,8 +35,8 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 
 	def _registerDefaultKwargs(self):
 		super(IkRPsolverComponent, self)._registerDefaultKwargs()
-		kwargs = {'blueprintControls': {'value': [],
-						 				'type': list},
+		kwargs = {'blueprintControl': {'value': '',
+						 				'type': basestring},
 				  'ikSolver': {'value': 'ikRPsolver',
 						 	   'type': basestring}}
 		self._kwargs.update(kwargs)
@@ -49,7 +49,7 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 				  'index': self._index,
 				  'blueprintJoints': self._blueprintJoints,
 				  'stacks': self._stacks,
-				  'blueprintControls': self._blueprintControls,
+				  'blueprintControl': self._blueprintControl,
 				  'ikSolver': self._ikSolver,
 
 				  'controlsGrp': self._controlsGrp,

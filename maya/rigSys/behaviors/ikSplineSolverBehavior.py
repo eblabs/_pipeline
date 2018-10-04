@@ -73,7 +73,11 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			Control = controls.create(self._part + self._jointSuffix + 'Tweak', side = NamingCtrl.side, index = NamingCtrl.index, 
 				stacks = self._stacks, parent = self._controlsGrp, lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'])
 			cmds.delete(cmds.pointConstraint(clsHnd, Control.zero, mo = False))
-			constraints.matrixConnect(Control.name, Control.matrixWorldAttr, clsHnd, offset = Control.output, skipRotate = ['x', 'y', 'z'], skipScale = ['x', 'y', 'z'])
+			NamingCtrl.type = 'null'
+			nullCls = transforms.createTransformNode(NamingCtrl.name, lockHide = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], 
+						parent = self._nodesHideGrp, vis = False, posParent = Control.name)
+			constraints.matrixConnect(Control.name, Control.matrixWorldAttr, nullCls, skipRotate = ['x', 'y', 'z'], skipScale = ['x', 'y', 'z'])
+			cmds.parent(clsHnd, nullCls)
 			self._controls.append(Control.name)
 			self._ikTweakControls.append(Control.name)
 
@@ -182,7 +186,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			for ctrls in ctrlList:
 				Control = controls.Control(ctrls[1])
 				ControlTweak = controls.Control(ctrls[0])
-				constraints.matrixConnect(Control.name, Control.matrixWorldAttr, ControlTweak.passer, offset = Control.output, skipScale = ['x', 'y', 'z'])
+				constraints.matrixConnect(Control.name, Control.matrixWorldAttr, ControlTweak.zero, offset = Control.output, skipScale = ['x', 'y', 'z'])
 				cmds.setAttr('{}.v'.format(ControlTweak.zero), 0, lock = True)
 
 			# connect other tweak controls with curveinfo
@@ -201,8 +205,8 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			jointsFk = []
 			for i, jnt in enumerate([self._joints[0], self._joints[-1]]):
 				fkRot = [self._botFk, self._topFk][i]
-				if fkRot:
-					bpCtrl = [self._blueprintControls[0], self._blueprintControls[-1]]
+				bpCtrl = [self._blueprintControls[0], self._blueprintControls[-1]][i]
+				if fkRot:		
 					NamingNode = naming.Naming(bpCtrl)
 					NamingNode.part += 'FkRot'
 					jointRotFk = joints.createOnNode(jnt, jnt, NamingNode.name, parent = jnt)
@@ -215,9 +219,9 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 					else:
 						NamingNode.part += 'CtrlDrv'
 						NamingNode.type = 'multMatrix'
-						multMatrix = nodes.create(NamingNode.name)
+						multMatrix = nodes.create(name = NamingNode.name)
 						numJnts = len(self._joints)
-						for j in range(numJnts)：
+						for j in range(numJnts):
 							cmds.connectAttr('{}.matrix'.format(self._joints[numJnts - 1 - j]), '{}.matrixIn[{}]'.format(multMatrix, j))
 						matrixNode = multMatrix
 						matrixAttr = 'matrixSum'

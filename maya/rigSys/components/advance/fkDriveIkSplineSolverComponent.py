@@ -17,6 +17,9 @@ import common.hierarchy as hierarchy
 import common.nodes as nodes
 import rigging.controls.controls as controls
 import rigging.constraints as constraints
+import rigging.joints as joints
+reload(joints)
+reload(transforms)
 # ---- import end ----
 
 # -- import component
@@ -39,62 +42,77 @@ class FkDriveIkSplineSolverComponent(ikSplineSolverComponent.IkSplineSolverCompo
 
 	def _registerDefaultKwargs(self):
 		super(FkDriveIkSplineSolverComponent, self)._registerDefaultKwargs()
-		kwargs = {'blueprintFkControls': {'value': [], 'type': list},
+		kwargs = {'fkControlsNumber': {'value': 3, 'type': list},
 				  'reverseFk': {'value': False, 'type': bool}}
 		self._kwargs.update(kwargs)
 
 	def _createComponent(self):
 		super(FkDriveIkSplineSolverComponent, self)._createComponent()
 
-		if self._blueprintFkControls:
+		bpFkCtrls = joints.createJointsAlongCurve(self._curve, self._fkControlsNumber, 
+				suffix = 'FkDrv', startNode = self._blueprintControls[0], endNode = self._blueprintControls[-1])
 
-			ikVisCtrl = self._ikControls[-1]
+		# orient bpFkCtrls
+		# get aim vectors
+		tx = cmds.getAttr('{}.tx'.format(self._joints[1]))
+		if tx > 0:
+			aimVec = [1, 0, 0]
+		else:
+			aimVec = [-1, 0, 0]
+		for i, bpCtrl in enumerate(bpFkCtrls[:-1]):
+			upJnt = transforms.getClosestNode(self._joints, bpCtrl)
+			cmds.delete(cmds.aimConstraint(bpFkCtrls[i+1], bpCtrl, aimVector = aimVec, upVector = [0,1,0], 
+							worldUpObject = upJnt, worldUpType = 'objectrotation', mo = False))
+		cmds.delete(cmds.orientConstraint(bpFkCtrls[-2], bpFkCtrls[-1], mo = False))
 
-			blueprintControls = [self._blueprintFkControls]
+		ikVisCtrl = self._ikControls[-1]
 
-			if self._reverseFk:
-				blueprintControlsRvs = self._blueprintFkControls
-				blueprintControlsRvs.reverse()
-				blueprintControls.append(blueprintControlsRvs)
+		blueprintControls = [bpFkCtrls]
 
-			for i, bpCtrlList in enumerate(blueprintControls):
-				fkControllist = [self._fkControls, self._fkReverseControls][i]
+		if self._reverseFk:
+			blueprintControlsRvs = bpFkCtrls[:]
+			blueprintControlsRvs.reverse()
+			blueprintControls.append(blueprintControlsRvs)
 
-				visAttr = ['fkControlsVis', 'fkReverseVis'][i]
-				attributes.addAttrs(ikVisCtrl, visAttr, attributeType='long', 
-					minValue=0, maxValue=1, defaultValue=0, keyable=False, channelBox=True)
+		for i, bpCtrlList in enumerate(blueprintControls):
+			fkControllist = [self._fkControls, self._fkReverseControls][i]
 
-				ctrlParent = self._controlsGrp
-				partSuffix = ['', 'Rvs'][i]
-				ControlIk = controls.Control([self._ikControls[-2], self._ikControls[0]][i])
-				for bpCtrl in bpCtrlList:
-					NamingNode = naming.Naming(bpCtrl)
-					ControlFk = controls.create(NamingNode.part + partSuffix,
-												NamingNode.side,
-												NamingNode.index,
-												stacks = self._stacks, 
-												parent = ctrlParent, 
-												posParent = bpCtrl,
-												lockHide=['sx', 'sy', 'sz'])
-					cmds.connectAttr('{}.{}'.format(ikVisCtrl, visAttr), '{}.v'.format(ControlFk.zero))
-					ctrlParent = ControlFk.output
-					fkControllist.append(ControlFk.name)
-				
-				controls.addCtrlShape(fkControllist, asCtrl = ikVisCtrl)
+			visAttr = ['fkControlsVis', 'fkReverseVis'][i]
+			attributes.addAttrs(ikVisCtrl, visAttr, attributeType='long', 
+				minValue=0, maxValue=1, defaultValue=0, keyable=False, channelBox=True)
 
-				multMatrix = nodes.create(type = 'multMatrix', side = ControlIk.side,
-										  part = '{}FkDriver'.format(ControlIk.part),
-										  index = ControlIk.index)
-				cmds.connectAttr('{}.worldMatrix[0]'.format(ctrlParent), 
-								 '{}.matrixIn[0]'.format(multMatrix))
-				cmds.connectAttr('{}.worldInverseMatrix[0]'.format(self._controlsGrp), 
-								 '{}.matrixIn[1]'.format(multMatrix))
+			ctrlParent = self._controlsGrp
+			partSuffix = ['', 'Rvs'][i]
+			ControlIk = controls.Control([self._ikControls[-2], self._ikControls[0]][i])
+			for j, bpCtrl in enumerate(bpCtrlList):
+				NamingNode = naming.Naming(bpCtrl)
+				ControlFk = controls.create(NamingNode.part + partSuffix,
+											NamingNode.side, j + 1,
+											stacks = self._stacks, 
+											parent = ctrlParent, 
+											posParent = bpCtrl,
+											lockHide=['sx', 'sy', 'sz'])
+				cmds.connectAttr('{}.{}'.format(ikVisCtrl, visAttr), '{}.v'.format(ControlFk.zero))
+				ctrlParent = ControlFk.output
+				fkControllist.append(ControlFk.name)
+			
+			controls.addCtrlShape(fkControllist, asCtrl = ikVisCtrl)
 
-				constraints.matrixConnect(multMatrix, 'matrixSum', ControlIk.passer, offset = True, 
-									skipScale = ['x', 'y', 'z'], force = True, quatToEuler = False)
+			multMatrix = nodes.create(type = 'multMatrix', side = ControlIk.side,
+									  part = '{}FkDriver'.format(ControlIk.part),
+									  index = ControlIk.index)
+			cmds.connectAttr('{}.worldMatrix[0]'.format(ctrlParent), 
+							 '{}.matrixIn[0]'.format(multMatrix))
+			cmds.connectAttr('{}.worldInverseMatrix[0]'.format(self._controlsGrp), 
+							 '{}.matrixIn[1]'.format(multMatrix))
 
-			# pass info
-			self._controls += (self._fkControls + self._fkReverseControls)
+			constraints.matrixConnect(multMatrix, 'matrixSum', ControlIk.zero, offset = ctrlParent, 
+								skipScale = ['x', 'y', 'z'], force = True, quatToEuler = False)
+
+		cmds.delete(blueprintControls[0])
+
+		# pass info
+		self._controls += (self._fkControls + self._fkReverseControls)
 
 	def _writeRigComponentInfo(self):
 		super(FkDriveIkSplineSolverComponent, self)._writeRigComponentInfo()

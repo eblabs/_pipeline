@@ -13,6 +13,7 @@ import common.naming.naming as naming
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
+import modeling.curves as curves
 # ---- import end ----
 
 def create(name, rotateOrder=0, parent=None, posPoint=None, posOrient=None, posParent=None):
@@ -58,3 +59,32 @@ def getJointOrient(jnt):
 		orient = cmds.getAttr('{}.jointOrient{}'.format(jnt, axis))
 		jointOrient.append(orient)
 	return jointOrient
+
+def createJointsAlongCurve(curve, num, suffix=None, parent = None, startNode=None, endNode=None):
+	NamingNode = naming.Naming(curve)
+	NamingNode.part += suffix
+	NamingNode.type = 'joint'
+	paramList = curves.getCurveParamRange(curve)
+	for i, node in enumerate([startNode, endNode]):
+		if node:
+			param, pos = curves.getClosestPointOnCurve(curve, node)
+			paramList[i] = param
+	startParam = min(paramList)
+	endParam = max(paramList)
+
+	jntList = []
+	if num > 1:
+		paramEach = float(endParam - startParam) / float(num - 1)
+		for i in range(num):
+			param = paramEach * i + startParam
+			NamingNode.suffix = i + 1
+			posJnt = curves.getPointAtParam(curve, param)
+			jnt = create(NamingNode.name, parent = parent, posPoint = posJnt)
+			jntList.append(jnt)
+	else:
+		NamingNode.suffix = 1
+		posJnt = curves.getPointAtParam(curve, startParam)
+		jnt = create(NamingNode.name, parent = parent, posPoint = posJnt)
+		jntList.append(jnt)
+
+	return jntList

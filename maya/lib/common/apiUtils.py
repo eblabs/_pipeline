@@ -186,6 +186,14 @@ def distance(pointA, pointB):
 	dis = MPointA.distanceTo(MPointB)
 	return dis
 
+# get point from vector
+def getPointFromVector(point, vector, distance=1):
+	MPointOrig = setMPoint(point)
+	MPointVec = setMPoint([vector[0] * distance, vector[1] * distance, vector[2] * distance])
+	MVector = OpenMaya.MVector(MPointVec)
+	MPointTarget = MPointOrig + MVector
+	return [MPointTarget.x, MPointTarget.y, MPointTarget.z]
+
 # convert MPointArray to list
 def convertMPointArrayToList(MPntArray):
 	pntList = []

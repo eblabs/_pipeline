@@ -82,6 +82,50 @@ def clusterCurve(crv, relatives = False):
 		clsHndList.append(clsHnd)
 	return clsHndList
 
+# get closest point on curve
+def getClosestPointOnCurve(curve, pos, space='world'):
+	if space == 'world':
+		MSpace = OpenMaya.MSpace.kWorld
+	else:
+		MSpace = OpenMaya.MSpace.kObject
+	if isinstance(pos, basestring):
+		pos = cmds.xform(pos, q = True, t = True, ws = True)
+	MPoint = apiUtils.setMPoint(pos)
+	MFnCurve = __setMFnNurbsCurve(curve)
+	paramUtill = OpenMaya.MScriptUtil()
+	paramPtr = paramUtill.asDoublePtr()
+
+	if not MFnCurve.isPointOnCurve(MPoint):
+		# given pos is not on curve
+		# find closest point
+		MPoint = MFnCurve.closestPoint(MPoint, paramPtr, 0.001, MSpace)
+	MFnCurve.getParamAtPoint(MPoint, paramPtr, 0.001, MSpace)
+
+	param = paramUtill.getDouble(paramPtr)
+	pos = [MPoint.x, MPoint.y, MPoint.z]
+	return param, pos
+
+# get point at curve's param
+def getPointAtParam(curve, param, space='object'):
+	if space == 'world':
+		MSpace = OpenMaya.MSpace.kWorld
+	else:
+		MSpace = OpenMaya.MSpace.kObject
+	MFnCurve = __setMFnNurbsCurve(curve)
+	MPoint = OpenMaya.MPoint()
+	if not MFnCurve.isParamOnCurve(param):
+		logger.warn('given param {} is not on curve {}, skipped'.format(param, curve))
+		return None
+	else:
+		MFnCurve.getPointAtParam(param, MPoint, MSpace)
+		return [MPoint.x, MPoint.y, MPoint.z] 
+
+# get curve param range
+def getCurveParamRange(curve):
+	shapeNode = cmds.listRelatives(curve, s = True)[0]
+	minMax = cmds.getAttr('{}.minMaxValue'.format(shapeNode))[0]
+	return [minMax[0], minMax[1]]
+
 # sub functions
 # get nurbs curve info
 def __getCurveInfo(curve, type='python'):
