@@ -62,6 +62,8 @@ def addAttrs(node, attrs, attributeType='float', minValue=None, maxValue=None, d
 				attrDic.update({'dataType': attributeType})
 			# add attr to node	
 			cmds.addAttr(node, **attrDic)
+			if attributeType in ['string', 'matrix'] and defaultValue:
+				cmds.setAttr('{}.{}'.format(node, attr), defaultValue, type = attributeType)
 			# lock
 			cmds.setAttr('{}.{}'.format(node, attr), lock = lock)
 			# channelBox

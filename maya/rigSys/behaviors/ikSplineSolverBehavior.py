@@ -209,6 +209,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 				if fkRot:		
 					NamingNode = naming.Naming(bpCtrl)
 					NamingNode.part += 'FkRot'
+					NamingNode.type = 'joint'
 					jointRotFk = joints.createOnNode(jnt, jnt, NamingNode.name, parent = jnt)
 					Control = controls.create(NamingNode.part, side = NamingNode.side, index = NamingNode.index, 
 						stacks = self._stacks, parent = self._controlsGrp, posParent = jnt, lockHide = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz'])

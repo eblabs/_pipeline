@@ -10,6 +10,7 @@ import maya.cmds as cmds
 
 # -- import lib
 import common.naming.naming as naming
+import common.naming.namingDict as namingDict
 import common.transforms as transforms
 import common.attributes as attributes
 import common.apiUtils as apiUtils
@@ -27,6 +28,7 @@ class JointComponent(rigComponent.RigComponent):
 		super(JointComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.core.jointComponent'
 		self._joints = []
+		self._binds = []
 
 	def _registerDefaultKwargs(self):
 		super(JointComponent, self)._registerDefaultKwargs()
@@ -34,8 +36,17 @@ class JointComponent(rigComponent.RigComponent):
 						 			  'type': list},
 				  'jointsDescriptor': {'value': [],
 						 			   'type': list},
+				  'bind': {'value': False,
+				  		   'type': bool},
+				  'bindParent': {'value': '',
+				  				 'type': basestring}
 							}
 		self._kwargs.update(kwargs)
+
+	def create(self):
+		self._createComponent()
+		self._buildBindJoints()
+		self._writeRigComponentInfo()
 
 	def _createComponent(self):
 		super(JointComponent, self)._createComponent()
@@ -68,6 +79,18 @@ class JointComponent(rigComponent.RigComponent):
 								[ '{}.v'.format(self._jointsGrp)], 
 								 driver = self._rigComponent, force=True)
 
+	def _buildBindJoints(self):
+		if self._bind:
+			self._binds = joints.createChainOnNodes(self._blueprintJoints, 
+						namingDict.dNameConvension['type']['blueprintJoint'], 
+						namingDict.dNameConvension['type']['bindJoint'],
+						parent = self._bindParent, rotateOrder = False)
+
+			# tag bind joints
+			for jnts in zip(self._binds, self._joints):
+				attributes.addAttrsaddAttrs(jnts[0], 'joint', attributeType = 'string', 
+													defaultValue = jnts[1], lock = True)
+
 	def _writeRigComponentInfo(self):
 		super(JointComponent, self)._writeRigComponentInfo()
 
@@ -93,8 +116,13 @@ class JointComponent(rigComponent.RigComponent):
 				if self._jointsDescriptor:
 					self._addObjAttr('joints.{}'.format(self._jointsDescriptor[i]), jointsInfoDic)
 
+		bindList = self._getStringAttrAsList('binds')
+		if bindList:
+			self._addAttributeFromDict({'binds': bindList})
+
 	def _writeJointsInfo(self):
 		self._addListAsStringAttr('joints', self._joints)
+		self._addListAsStringAttr('binds', self._binds)
 
 		for i, jnt in enumerate(self._joints):
 			NamingJnt = naming.Naming(jnt)
