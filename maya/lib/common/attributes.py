@@ -296,6 +296,21 @@ def addRvsAttr(node, attr, addAttr=False):
 		outputPlug = '{}.{}Rvs'.format(node, attr)
 	return outputPlug
 
+# show and hide history in channelbox
+def showHideHistory(nodes=[], exception=[], listAll=True, vis=0):
+	visOrig = 1 - vis
+	if not nodes:
+		nodes = cmds.ls(persistentNodes = True)
+	for n in nodes:
+		historyVis = visOrig
+		for t in exception:
+			if n.statrswith(t):
+				nodes.remove(n)
+				historyVis += 1
+				break
+		historyVis = abs(historyVis - 1)*2
+		cmds.setAttr('{}.isHistoricallyInteresting'.format(n), historyVis)
+
 # sub function
 # check if attr exists
 def __attrExistsCheck(attr, node=None):
