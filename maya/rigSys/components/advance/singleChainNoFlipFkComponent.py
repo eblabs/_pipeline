@@ -23,6 +23,7 @@ import rigging.joints as joints
 
 # -- import component
 import components.base.ikSCsolverComponent as ikSCsolverComponent
+reload(ikSCsolverComponent)
 # -- import end ----
 
 class SingleChainNoFlipFkComponent(ikSCsolverComponent.IkSCsolverComponent):
@@ -49,8 +50,12 @@ class SingleChainNoFlipFkComponent(ikSCsolverComponent.IkSCsolverComponent):
 		ControlRoot = controls.Control(self._controls[0])
 		ControlTarget = controls.Control(self._controls[-1])
 		constraints.matrixConnect(ControlFk.name, ControlFk.matrixWorldAttr, ControlRoot.zero, skipScale = ['x', 'y', 'z'])
+		if self._ikSolver == 'ikSCsolver':
+			skipRotate = ['x', 'y', 'z']
+		elif self._ikSolver == 'aimConstraint':
+			skipRotate = []
 		constraints.matrixConnect(ControlFk.name, ControlFk.matrixWorldAttr, ControlTarget.zero, 
-									offset = ControlFk.output, skipRotate = ['x', 'y', 'z'], skipScale = ['x', 'y', 'z'])
+									offset = ControlFk.output, skipRotate = skipRotate, skipScale = ['x', 'y', 'z'])
 
 		cmds.addAttr(ControlFk.name, ln = 'twist', at = 'float', dv = 0, keyable = True)
 		cmds.connectAttr('{}.twist'.format(ControlFk.name), '{}.rx'.format(ControlTarget.name))

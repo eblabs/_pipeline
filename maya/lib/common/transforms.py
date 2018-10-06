@@ -321,6 +321,27 @@ def getWorldTransformOnParent(translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], 
 
 	return outputInfo
 
+# extract twist
+def extractTwist(node, nodeMatrix = 'worldMatrix[0]', attr='twistExctration', attrNode=None):
+	if not attrNode:
+		attrNode = node
+
+	NamingNode = naming.Naming(node)
+	decomposeMatrix = nodes.create(type = 'decomposeMatrix', side = NamingNode.side,
+						part = '{}TwistExctration'.format(NamingNode.part), index = NamingNode.index)
+	quatToEuler = nodes.create(type = 'quatToEuler', side = NamingNode.side,
+						part = '{}TwistExctration'.format(NamingNode.part), index = NamingNode.index)
+	
+	cmds.connectAttr('{}.{}'.format(node, nodeMatrix), '{}.inputMatrix'.format(decomposeMatrix))
+	cmds.connectAttr('{}.outputQuatX'.format(decomposeMatrix), '{}.inputQuatX'.format(quatToEuler))
+	cmds.connectAttr('{}.outputQuatW'.format(decomposeMatrix), '{}.inputQuatW'.format(quatToEuler))
+	
+	if not cmds.attributeQuery(attr, node = attrNode, ex = True):
+		cmds.addAttr(attrNode, ln = attr, at = 'float', keyable = False)
+
+	attributes.connectAttrs('{}.outputRotateX'.format(quatToEuler), '{}.{}'.format(attrNode, attr), force = True)
+
+
 # ---- sub function
 # single transform snap 
 def __transformSnapSingle(transformInfoDriver, driven, type = 'parent', skipTranslate = None, skipRotate = None, skipScale = None,):

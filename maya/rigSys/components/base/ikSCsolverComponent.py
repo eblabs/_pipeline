@@ -20,6 +20,7 @@ import rigging.constraints as constraints
 # -- import component
 import core.ikSolverComponent as ikSolverComponent
 import behaviors.ikSCsolverBehavior as ikSCsolverBehavior
+reload(ikSCsolverBehavior)
 # -- import end ----
 
 class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):
@@ -33,6 +34,12 @@ class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):
 		super(IkSCsolverComponent, self).__init__(*args,**kwargs)
 		self._rigComponentType = 'rigSys.components.base.ikSCsolverComponent'
 
+	def _registerDefaultKwargs(self):
+		super(IkSCsolverComponent, self)._registerDefaultKwargs()
+		kwargs = {'ikSolver': {'value': 'ikSCsolver',
+						 	   'type': basestring}}
+		self._kwargs.update(kwargs)
+
 	def _createComponent(self):
 		super(IkSCsolverComponent, self)._createComponent()
 
@@ -41,6 +48,7 @@ class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):
 				  'index': self._index,
 				  'blueprintJoints': self._blueprintJoints,
 				  'stacks': self._stacks,
+				  'ikSolver': self._ikSolver,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,
