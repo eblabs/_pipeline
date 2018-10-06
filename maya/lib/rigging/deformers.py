@@ -9,9 +9,9 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.attributes
-import common.apiUtils
+import lib.common.naming.naming as naming
+import lib.common.attributes
+import lib.common.apiUtils
 # ---- import end ----
 
 # wire deformer

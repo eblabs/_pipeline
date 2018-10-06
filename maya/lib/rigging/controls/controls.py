@@ -15,14 +15,14 @@ import os
 import maya.cmds as cmds
 import maya.OpenMaya as OpenMaya
 # -- import lib
-import common.naming.naming as naming
-import common.transforms as transforms
-import common.files.files as files
-import common.apiUtils as apiUtils
-import common.attributes as attributes
-import common.naming.namingDict as namingDict
-import modeling.curves as curves
-import modeling.geometries as geometries
+import lib.common.naming.naming as naming
+import lib.common.transforms as transforms
+import lib.common.files.files as files
+import lib.common.apiUtils as apiUtils
+import lib.common.attributes as attributes
+import lib.common.naming.namingDict as namingDict
+import lib.modeling.curves as curves
+import lib.modeling.geometries as geometries
 # ---- import end ----
 
 # ---- global variable

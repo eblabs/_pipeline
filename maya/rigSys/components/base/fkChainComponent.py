@@ -9,16 +9,16 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.transforms as transforms
-import common.attributes as attributes
-import rigging.controls.controls as controls
-import rigging.constraints as constraints
+import lib.common.naming.naming as naming
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.rigging.controls.controls as controls
+import lib.rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
-import core.jointComponent as jointComponent
-import behaviors.fkChainBehavior as fkChainBehavior
+import rigSys.core.jointComponent as jointComponent
+import rigSys.behaviors.fkChainBehavior as fkChainBehavior
 # -- import end ----
 
 class FkChainComponent(jointComponent.JointComponent):
@@ -46,7 +46,7 @@ class FkChainComponent(jointComponent.JointComponent):
 				  'index': self._index,
 				  'blueprintJoints': self._blueprintJoints,
 				  'stacks': self._stacks,
-				  'lockHide': self._lockHide
+				  'lockHide': self._lockHide,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,

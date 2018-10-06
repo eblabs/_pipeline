@@ -9,20 +9,20 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.naming.namingDict as namingDict
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import common.hierarchy as hierarchy
-import rigging.controls.controls as controls
-import rigging.constraints as constraints
-import rigging.joints as joints
+import lib.common.naming.naming as naming
+import lib.common.naming.namingDict as namingDict
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.common.hierarchy as hierarchy
+import lib.rigging.controls.controls as controls
+import lib.rigging.constraints as constraints
+import lib.rigging.joints as joints
 # ---- import end ----
 
 # -- import component
-import components.base.ikRPsolverComponent as ikRPsolverComponent
-import behaviors.fkChainBehavior as fkChainBehavior
+import rigSys.components.base.ikRPsolverComponent as ikRPsolverComponent
+import rigSys.behaviors.fkChainBehavior as fkChainBehavior
 # -- import end ----
 
 class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):

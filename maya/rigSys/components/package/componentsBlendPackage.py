@@ -9,19 +9,22 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import common.nodes as nodes
-import rigging.constraints as constraints
-import rigging.joints as joints
-import rigging.controls.controls as controls
+import lib.common.naming.naming as naming
+import lib.common.naming.namingDict as namingDict
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.common.nodes as nodes
+import lib.common.packages as packages
+import lib.rigging.constraints as constraints
+import lib.rigging.joints as joints
+import lib.rigging.controls.controls as controls
 # ---- import end ----
 
 # -- import component
-import core.componentsPackage as componentsPackage
-import core.space as space
+import rigSys.core.componentsPackage as componentsPackage
+import rigSys.core.space as space
+reload(componentsPackage)
 # ---- import end ----
 
 class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
@@ -47,8 +50,12 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		# set sub components visible
 		cmds.setAttr('{}.subComponents'.format(self._rigComponent), 1)
 		# create joints
-		blendJnts = self.createJntsFromBpJnts(self._blueprintJoints, type = 'jnt', suffix = 'Blend', parent = self._jointsGrp)
-		
+		self._joints = joints.createChainOnNodes(self._blueprintJoints, 
+						namingDict.dNameConvension['type']['blueprintJoint'], 
+						namingDict.dNameConvension['type']['joint'], 
+						suffix = 'Blend', 
+						parent = self._jointsGrp)
+
 		# create rig components
 		componentsJnts = []
 		blendCtrl = naming.Naming(type = 'control', side = self._side, 
@@ -66,7 +73,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 						  'side': self._side,
 						  'index': self._index})
 
-			componentImport = __import__(componentType)
+			componentImport = packages.importModule(componentType)
 			Limb = getattr(componentImport, componentFunc)(**kwargs)
 			Limb.create()
 
@@ -126,9 +133,9 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		cmds.setAttr('{}.secondTerm'.format(condBlend), 0.5, lock = True)
 		cmds.setAttr('{}.operation'.format(condBlend), 4)
 		cmds.connectAttr('{}.modeA'.format(blendCtrl), '{}.colorIfTrueR'.format(condBlend))
-		cmds.connectAttr('{}.modeB'.format(blendCtrl), '{}.colorIfTrueB'.format(condBlend))
+		cmds.connectAttr('{}.modeB'.format(blendCtrl), '{}.colorIfFalseR'.format(condBlend))
 
-		for i, component in enumermate(subComponentNodes):
+		for i, component in enumerate(subComponentNodes):
 			NamingNode = naming.Naming(component)
 			condCtrlVis = nodes.create(type = 'condition',
 									   side = NamingNode.side,
@@ -148,8 +155,8 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 			cmds.connectAttr('{}.output'.format(multVis), '{}.controlsVis'.format(component))
 		
 		# blend constraints
-		for i in range(len(blendJnts)):
-			NamingJnt = naming.Naming(blendJnts[i])
+		for i in range(len(self._joints)):
+			NamingJnt = naming.Naming(self._joints[i])
 
 			attrType = ['Translate', 'Rotate', 'Scale']
 			
@@ -170,27 +177,28 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 				# feed all components matrix
 				for n in range(len(indexList)):
 					componentJnt = componentsJnts[n][i]
-					NamingComposeMatrix = naming.NamingJnt(componentJnt)
+					NamingComposeMatrix = naming.Naming(componentJnt)
 					composeMatrix = nodes.create(type = 'composeMatrix',
 												 side = NamingComposeMatrix.side,
 												 part = '{}Blend{}'.format(NamingComposeMatrix.part, attr),
 												 index = NamingComposeMatrix.index)
 					for axis in 'XYZ':
-						cmds.connectAttr('{}.{}{}'.format(componentJnt, attr, axis), 
+						cmds.connectAttr('{}.{}{}'.format(componentJnt, attr.lower(), axis), 
 							'{}.input{}{}'.format(composeMatrix, attr, axis))
 					cmds.connectAttr('{}.outputMatrix'.format(composeMatrix),
-									'{}.input[{}]' %(choiceList[j], indexList[n]))
+									'{}.input[{}]'.format(choiceList[0], indexList[n]))
+					cmds.connectAttr('{}.outputMatrix'.format(composeMatrix),
+									'{}.input[{}]'.format(choiceList[1], indexList[n]))
 
 				translate = (attr == attrType[0])
 				rotate = (attr == attrType[1])
 				scale = (attr == attrType[2])
 
-				constraints.constraintBlend(inputMatrixList, blendJnts[i], 
+				constraints.constraintBlend(inputMatrixList, self._joints[i], 
 						weightList = ['{}.outputX'.format(rvsBlend), '{}.output'.format(multBlend)], 
 						translate = translate, rotate = rotate, scale = scale)
 
 		# pass info
-		self._joints += blendJnts
-		self._controls += [blendCtrl]
+		self._controls.append(blendCtrl)
 		self._subComponentNodes = subComponentNodes
 

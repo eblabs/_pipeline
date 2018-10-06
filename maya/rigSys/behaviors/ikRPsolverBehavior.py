@@ -9,16 +9,16 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 import maya.mel as mel
 # -- import lib
-import common.naming.naming as naming
-import common.naming.namingDict as namingDict
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import common.nodes as nodes
-import rigging.joints as joints
-import rigging.controls.controls as controls
-import rigging.constraints as constraints
-import modeling.curves as curves
+import lib.common.naming.naming as naming
+import lib.common.naming.namingDict as namingDict
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.common.nodes as nodes
+import lib.rigging.joints as joints
+import lib.rigging.controls.controls as controls
+import lib.rigging.constraints as constraints
+import lib.modeling.curves as curves
 # ---- import end ----
 
 # ---- import components ----
@@ -70,7 +70,7 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		for axis in 'XYZ':
 			pos = cmds.getAttr('{}.poleVector{}'.format(ikHandle, axis))
 			pvVec.append(pos)
-		posRoot = cmds.xform(self._joints[0], q = True, t = True, ws = True)
+		posRoot = cmds.xform(self._joints[1], q = True, t = True, ws = True)
 		posPv = apiUtils.getPointFromVector(posRoot, pvVec, distance = 3 * self._poleVectorDistance)
 
 		ControlPv = controls.Control(self._controls[1])

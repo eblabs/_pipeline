@@ -9,13 +9,14 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.naming.namingDict as namingDict
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import common.nodes as nodes
-import rigging.joints as joints
+import lib.common.naming.naming as naming
+import lib.common.naming.namingDict as namingDict
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.common.nodes as nodes
+import lib.common.hierarchy as hierarchy
+import lib.rigging.joints as joints
 # ---- import end ----
 
 # -- import component
@@ -29,6 +30,7 @@ class JointComponent(rigComponent.RigComponent):
 		self._rigComponentType = 'rigSys.core.jointComponent'
 		self._joints = []
 		self._binds = []
+		self._xtrans = []
 
 	def _registerDefaultKwargs(self):
 		super(JointComponent, self)._registerDefaultKwargs()
@@ -39,14 +41,31 @@ class JointComponent(rigComponent.RigComponent):
 				  'bind': {'value': False,
 				  		   'type': bool},
 				  'bindParent': {'value': '',
-				  				 'type': basestring}
+				  				 'type': basestring},
+				  'xtran': {'value': False,
+				  			'type': bool},
+				  'xtranParent': {'value': '',
+				  				  'type': basestring}
 							}
 		self._kwargs.update(kwargs)
 
 	def create(self):
 		self._createComponent()
 		self._buildBindJoints()
+		self._buildXtrans()
 		self._writeRigComponentInfo()
+
+	def connect(self):
+		super(JointComponent, self).connect()
+		self._connectBindJoints()
+
+	def _connectBindJoints(self):
+		if self._binds:
+			hierarchy.parent(self._binds[0], self._bindParent)
+
+	def _connectXtrans(self):
+		if self._xtrans:
+			hierarchy.parent(self._xtrans[0], self._xtranParent)
 
 	def _createComponent(self):
 		super(JointComponent, self)._createComponent()
@@ -84,17 +103,31 @@ class JointComponent(rigComponent.RigComponent):
 			self._binds = joints.createChainOnNodes(self._blueprintJoints, 
 						namingDict.dNameConvension['type']['blueprintJoint'], 
 						namingDict.dNameConvension['type']['bindJoint'],
-						parent = self._bindParent, rotateOrder = False)
+						rotateOrder = False)
 
 			# tag bind joints
 			for jnts in zip(self._binds, self._joints):
 				attributes.addAttrsaddAttrs(jnts[0], 'joint', attributeType = 'string', 
 													defaultValue = jnts[1], lock = True)
 
+	def _buildXtrans(self):
+		if self._xtran:
+			self._xtrans = transforms.createChainOnNodes(self._blueprintJoints, 
+							namingDict.dNameConvension['type']['blueprintJoint'],
+							namingDict.dNameConvension['type']['xtran'],
+							rotateOrder=False, 
+							lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
+
+			# tag xtrans
+			for xtr in zip(self._xtrans, self._joints):
+				attributes.addAttrsaddAttrs(xtr[0], 'joint', attributeType = 'string', 
+													defaultValue = xtr[1], lock = True)
+
 	def _writeRigComponentInfo(self):
 		super(JointComponent, self)._writeRigComponentInfo()
 
 		self._writeJointsInfo()
+		self._writeXtransInfo()
 
 	def _getJointsInfo(self):
 		jointList = self._getStringAttrAsList('joints')
@@ -120,6 +153,11 @@ class JointComponent(rigComponent.RigComponent):
 		if bindList:
 			self._addAttributeFromDict({'binds': bindList})
 
+	def _getXtransInfo(self):
+		xtransList = self._getStringAttrAsList('xtrans')
+		if xtransList:
+			self._addAttributeFromDict({'xtrans': xtransList})
+
 	def _writeJointsInfo(self):
 		self._addListAsStringAttr('joints', self._joints)
 		self._addListAsStringAttr('binds', self._binds)
@@ -141,6 +179,10 @@ class JointComponent(rigComponent.RigComponent):
 
 		self._getJointsInfo()
 
+	def _writeXtransInfo(self):
+		self._addListAsStringAttr('xtrans', self._xtrans)
+		self._getXtransInfo()
+
 	def _getRigComponentInfo(self):
 		super(JointComponent, self)._getRigComponentInfo()
 		
@@ -149,3 +191,4 @@ class JointComponent(rigComponent.RigComponent):
 		self._addAttributeFromDict({'_jointsGrp': NamingGrp.name})
 
 		self._getJointsInfo()
+		self._getXtransInfo()

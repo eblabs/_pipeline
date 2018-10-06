@@ -9,17 +9,17 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import rigging.controls.controls as controls
-import rigging.constraints as constraints
+import lib.common.naming.naming as naming
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.rigging.controls.controls as controls
+import lib.rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
-import core.ikSolverComponent as ikSolverComponent
-import behaviors.ikSplineSolverBehavior as ikSplineSolverBehavior
+import rigSys.core.ikSolverComponent as ikSolverComponent
+import rigSys.behaviors.ikSplineSolverBehavior as ikSplineSolverBehavior
 # -- import end ----
 
 class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):

@@ -9,16 +9,17 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import rigging.joints as joints
-import rigging.controls.controls as controls
+import lib.common.naming.naming as naming
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.common.packages as packages
+import lib.rigging.joints as joints
+import lib.rigging.controls.controls as controls
 # ---- import end ----
 
 # -- import component
-import core.componentsPackage as componentsPackage
+import rigSys.core.componentsPackage as componentsPackage
 # ---- import end ----
 
 class MultiComponentsPackage(componentsPackage.ComponentsPackage):
@@ -36,7 +37,7 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 			#	 'kwargs': kwargs,}
 			#}
 		self._kwargs.update(kwargs)
-		self._removeAttributes(['blueprintJoints', 'jointsDescriptor'])
+		self._kwargsRemove += ['blueprintJoints', 'jointsDescriptor']
 
 	def _createComponent(self):
 		super(MultiComponentsPackage, self)._createComponent()
@@ -56,9 +57,13 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 			kwargs.update({'parent': self._subComponents,
 						  'part': key[0].upper() + key[1:],
 						  'side': self._side,
-						  'index': self._index})
+						  'index': self._index,
+						  'bind': self._bind,
+						  'bindParent': self._bindParent,
+						  'xtran': self._xtran,
+						  'xtranParent': self._xtranParent})
 
-			componentImport = __import__(componentType)
+			componentImport = packages.importModule(componentType)
 			Limb = getattr(componentImport, componentFunc)(**kwargs)
 			Limb.create()
 

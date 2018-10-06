@@ -5,6 +5,7 @@ dNameConvension = {
 							'null': 'null',
 							'locator': 'loc',
 							'follicle': 'fol',
+							'xtran': 'xtr',
 							
 							#geometry
 							'mesh': 'mesh',

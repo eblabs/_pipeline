@@ -9,11 +9,11 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import common.nodes as nodes
-import common.hierarchy as hierarchy
+import lib.common.naming.naming as naming
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.common.nodes as nodes
+import lib.common.hierarchy as hierarchy
 # ---- import end ----
 
 # matrix connect

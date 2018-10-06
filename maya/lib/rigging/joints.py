@@ -9,24 +9,25 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import modeling.curves as curves
+import lib.common.naming.naming as naming
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.modeling.curves as curves
 # ---- import end ----
 
-def create(name, rotateOrder=0, parent=None, posPoint=None, posOrient=None, posParent=None):
+def create(name, rotateOrder=0, parent=None, posPoint=None, posOrient=None, posParent=None, scaleCompensate=True):
 	cmds.select(clear = True)
 	jnt = cmds.joint(name = name)
 	cmds.setAttr('{}.ro'.format(jnt), rotateOrder)
 	transforms.setNodePos(jnt, posPoint = posPoint, posOrient = posOrient, posParent = posParent)
 	cmds.makeIdentity(jnt, apply = True, t = 1, r = 1, s = 1)
+	cmds.setAttr('{}.segmentScaleCompensate'.format(jnt), scaleCompensate)
 	if parent and cmds.objExists(parent):
 		cmds.parent(jnt, parent)
 	return jnt
 
-def createOnNode(node, search, replace, suffix='', parent=None, rotateOrder=False):
+def createOnNode(node, search, replace, suffix='', parent=None, rotateOrder=False, scaleCompensate=True):
 	jnt = node.replace(search, replace)
 	NamingJnt = naming.Naming(jnt)
 	NamingJnt.part = NamingJnt.part + suffix
@@ -35,10 +36,10 @@ def createOnNode(node, search, replace, suffix='', parent=None, rotateOrder=Fals
 		ro = cmds.getAttr('{}.ro'.format(node))
 	else:
 		ro = 0
-	jnt = create(jnt, rotateOrder = ro, parent = parent, posParent = node)
+	jnt = create(jnt, rotateOrder = ro, parent = parent, posParent = node, scaleCompensate = scaleCompensate)
 	return jnt
 
-def createChainOnNodes(nodes, search, replace, suffix='', parent=None, rotateOrder=False):
+def createChainOnNodes(nodes, search, replace, suffix='', parent=None, rotateOrder=False, scaleCompensate=True):
 	jntList = []
 	if isinstance(search, basestring):
 		search = [search]
@@ -48,7 +49,8 @@ def createChainOnNodes(nodes, search, replace, suffix='', parent=None, rotateOrd
 		jntNew = n
 		for name in zip(search, replace):
 			jntNew = jntNew.replace(name[0], name[1])
-		jnt = createOnNode(n, n, jntNew, suffix = suffix, parent = parent, rotateOrder = rotateOrder)
+		jnt = createOnNode(n, n, jntNew, suffix = suffix, parent = parent, 
+							rotateOrder = rotateOrder, scaleCompensate = scaleCompensate)
 		parent = jnt
 		jntList.append(jnt)
 	return jntList
@@ -60,7 +62,7 @@ def getJointOrient(jnt):
 		jointOrient.append(orient)
 	return jointOrient
 
-def createJointsAlongCurve(curve, num, suffix=None, parent = None, startNode=None, endNode=None):
+def createJointsAlongCurve(curve, num, suffix=None, parent = None, startNode=None, endNode=None, scaleCompensate=True):
 	NamingNode = naming.Naming(curve)
 	NamingNode.part += suffix
 	NamingNode.type = 'joint'
@@ -79,12 +81,12 @@ def createJointsAlongCurve(curve, num, suffix=None, parent = None, startNode=Non
 			param = paramEach * i + startParam
 			NamingNode.suffix = i + 1
 			posJnt = curves.getPointAtParam(curve, param)
-			jnt = create(NamingNode.name, parent = parent, posPoint = posJnt)
+			jnt = create(NamingNode.name, parent = parent, posPoint = posJnt, scaleCompensate = scaleCompensate)
 			jntList.append(jnt)
 	else:
 		NamingNode.suffix = 1
 		posJnt = curves.getPointAtParam(curve, startParam)
-		jnt = create(NamingNode.name, parent = parent, posPoint = posJnt)
+		jnt = create(NamingNode.name, parent = parent, posPoint = posJnt, scaleCompensate = scaleCompensate)
 		jntList.append(jnt)
 
 	return jntList

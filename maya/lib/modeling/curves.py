@@ -13,15 +13,14 @@ import time
 
 # -- import maya lib
 import maya.cmds as cmds
-import maya.mel as mel
 import maya.OpenMaya as OpenMaya
 import math
 
 # -- import lib
-import common.naming.naming as naming
-import common.apiUtils as apiUtils
-import common.files.files as files
-import common.attributes as attributes
+import lib.common.naming.naming as naming
+import lib.common.apiUtils as apiUtils
+import lib.common.files.files as files
+import lib.common.attributes as attributes
 # ---- import end ----
 
 # create curve line

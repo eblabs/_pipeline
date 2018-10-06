@@ -10,12 +10,12 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.naming.namingDict as namingDict
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import rigging.joints as joints
+import lib.common.naming.naming as naming
+import lib.common.naming.namingDict as namingDict
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.rigging.joints as joints
 
 class BaseBehavior(object):
 	"""BaseBehavior template"""

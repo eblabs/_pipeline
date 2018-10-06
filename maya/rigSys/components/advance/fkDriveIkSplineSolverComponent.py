@@ -9,21 +9,19 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.naming.naming as naming
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import common.hierarchy as hierarchy
-import common.nodes as nodes
-import rigging.controls.controls as controls
-import rigging.constraints as constraints
-import rigging.joints as joints
-reload(joints)
-reload(transforms)
+import lib.common.naming.naming as naming
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.common.hierarchy as hierarchy
+import lib.common.nodes as nodes
+import lib.rigging.controls.controls as controls
+import lib.rigging.constraints as constraints
+import lib.rigging.joints as joints
 # ---- import end ----
 
 # -- import component
-import components.base.ikSplineSolverComponent as ikSplineSolverComponent
+import rigSys.components.base.ikSplineSolverComponent as ikSplineSolverComponent
 # -- import end ----
 
 class FkDriveIkSplineSolverComponent(ikSplineSolverComponent.IkSplineSolverComponent):

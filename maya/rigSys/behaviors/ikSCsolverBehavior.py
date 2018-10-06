@@ -7,17 +7,16 @@ logger.setLevel(debugLevel)
 
 # -- import maya lib
 import maya.cmds as cmds
-import maya.mel as mel
 # -- import lib
-import common.naming.naming as naming
-import common.naming.namingDict as namingDict
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import common.nodes as nodes
-import rigging.joints as joints
-import rigging.controls.controls as controls
-import rigging.constraints as constraints
+import lib.common.naming.naming as naming
+import lib.common.naming.namingDict as namingDict
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.common.nodes as nodes
+import lib.rigging.joints as joints
+import lib.rigging.controls.controls as controls
+import lib.rigging.constraints as constraints
 # ---- import end ----
 
 # ---- import components ----

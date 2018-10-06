@@ -60,6 +60,25 @@ def createTransformNode(name, lockHide=[], parent=None, rotateOrder=0, vis=True,
 
 	return name
 
+# create transform nodes chain on nodes
+def createChainOnNodes(nodes, search, replace, suffix='', parent=None, rotateOrder=False, lockHide=[]):
+	nodesList = []
+	if isinstance(search, basestring):
+		search = [search]
+	if isinstance(replace, basestring):
+		replace = [replace]
+	for i, n in enumerate(nodes):
+		nodeNew = n
+		for name in zip(search, replace):
+			nodeNew = nodeNew.replace(name[0], name[1])
+		NamingNode = naming.Naming(nodeNew)
+		NamingNode.part += suffix
+		nodeNew = createTransformNode(NamingNode.name, lockHide = lockHide, 
+					parent = parent, rotateOrder = rotateOrder, posParent = node)
+		parent = nodeNew
+		nodesList.append(nodeNew)
+	return nodesList
+
 # set position
 def setNodePos(node, posPoint=None, posOrient=None, posParent=None):
 	# check if need match both translation and rotation

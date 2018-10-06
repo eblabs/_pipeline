@@ -13,14 +13,13 @@ import time
 
 # -- import maya lib
 import maya.cmds as cmds
-import maya.mel as mel
 import maya.OpenMaya as OpenMaya
 import math
 
 # -- import lib
-import common.apiUtils as apiUtils
-import common.files.files as files
-import common.nodes as nodes
+import lib.common.apiUtils as apiUtils
+import lib.common.files.files as files
+import lib.common.nodes as nodes
 import meshes
 import surfaces
 import curves

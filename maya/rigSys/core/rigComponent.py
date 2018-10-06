@@ -9,16 +9,16 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import common.files.files as files
-import common.naming.naming as naming
-import common.transforms as transforms
-import common.attributes as attributes
-import common.apiUtils as apiUtils
-import common.nodes as nodes
-import common.hierarchy as hierarchy
-import rigging.joints as joints
-import rigging.constraints as constraints
-import rigging.controls.controls as controls
+import lib.common.files.files as files
+import lib.common.naming.naming as naming
+import lib.common.transforms as transforms
+import lib.common.attributes as attributes
+import lib.common.apiUtils as apiUtils
+import lib.common.nodes as nodes
+import lib.common.hierarchy as hierarchy
+import lib.rigging.joints as joints
+import lib.rigging.constraints as constraints
+import lib.rigging.controls.controls as controls
 # ---- import end ----
 
 class RigComponent(object):
@@ -59,8 +59,8 @@ class RigComponent(object):
 		self._createComponent()
 		self._writeRigComponentInfo()
 
-	def connect(self, inputPlug):
-		inputMatrixList = cmds.getAttr(inputPlug)
+	def connect(self):
+		inputMatrixList = cmds.getAttr(self._connect)
 		componentMatrixList = cmds.getAttr('{}.worldMatrix[0]'.format(self._rigComponent))
 
 		MMatrixComponent = apiUtils.convertListToMMatrix(componentMatrixList)
@@ -68,7 +68,7 @@ class RigComponent(object):
 
 		offsetMatrixList = apiUtils.convertMMatrixToList(MMatrixComponent * MMatrixInput.inverse())
 
-		attributes.connectAttrs(inputPlug, self._inputMatrixPlug, force = True)
+		attributes.connectAttrs(self._connect, self._inputMatrixPlug, force = True)
 		attributes.setAttrs(self._offsetMatrixPlug, offsetMatrixList, type = 'matrix', force = True)
 
 	def _registerAttrs(self, kwargs):
@@ -88,6 +88,8 @@ class RigComponent(object):
 							 'type': basestring},
 				  'stacks': {'value': 3,
 							 'type': int},
+				  'connect': {'value': '',
+				  			  'type': basestring}
 							}
 		self._kwargs.update(kwargs)
 
@@ -220,7 +222,7 @@ class RigComponent(object):
 		for grp in ['controlsGrp', 'rigLocal', 'nodesLocalGrp',
 					'rigWorld', 'nodesHideGrp', 'nodesShowGrp', 'subComponents']:
 			NamingGrp.type = grp
-			dicAttr.update('_{}'.format(grp), NamingGrp.name)
+			dicAttr.update({'_{}'.format(grp): NamingGrp.name})
 
 		self._addAttributeFromDict(dicAttr)
 
