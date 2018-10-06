@@ -35,7 +35,7 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 
 		# create controls
 		for i, bpCtrl in enumerate([self._joints[0], self._joints[-1]]):
-			NamingCtrl = naming.Naming(bpCtrl)
+			NamingCtrl = naming.Naming(self._joints[0])
 			Control = controls.create(NamingCtrl.part + ['Root', 'Aim'][i], side = NamingCtrl.side, 
 				index = NamingCtrl.index, stacks = self._stacks, parent = self._controlsGrp, posPoint = bpCtrl, 
 				posOrient = self._joints[0], lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'])

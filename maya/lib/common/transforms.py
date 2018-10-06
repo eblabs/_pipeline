@@ -303,6 +303,24 @@ def getLocalMatrix(node, parent, nodeMatrix='worldMatrix[0]', parentMatrix='worl
 
 	return outputMatrix
 
+# get pos world transform base on local transform and parent node
+def getWorldTransformOnParent(translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], parent=None, parentMatrix='worldMatrix[0]', returnType='transformInfo'):
+	MMatrixLocal = apiUtils.composeMMatrix(translate = translate, 
+						rotate = rotate, scale = scale)
+	matrixParent = cmds.getAttr('{}.{}'.format(parent, parentMatrix))
+	MMatrixParent = apiUtils.convertListToMMatrix(matrixParent)
+
+	MMatrixOutput = MMatrixLocal * MMatrixParent
+
+	if returnType == 'transformInfo':
+		outputInfo = apiUtils.decomposeMMatrix(MMatrixOutput)
+	elif returnType == 'list':
+		outputInfo = apiUtils.convertMMatrixToList(MMatrixOutput)
+	else:
+		outputInfo = MMatrixOutput
+
+	return outputInfo
+
 # ---- sub function
 # single transform snap 
 def __transformSnapSingle(transformInfoDriver, driven, type = 'parent', skipTranslate = None, skipRotate = None, skipScale = None,):

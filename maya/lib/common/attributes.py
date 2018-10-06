@@ -62,8 +62,8 @@ def addAttrs(node, attrs, attributeType='float', minValue=None, maxValue=None, d
 				attrDic.update({'dataType': attributeType})
 			# add attr to node	
 			cmds.addAttr(node, **attrDic)
-			if attributeType in ['string', 'matrix'] and defaultValue:
-				cmds.setAttr('{}.{}'.format(node, attr), defaultValue, type = attributeType)
+			if attributeType in ['string', 'matrix'] and defaultValue[i]:
+				cmds.setAttr('{}.{}'.format(node, attr), defaultValue[i], type = attributeType)
 			# lock
 			cmds.setAttr('{}.{}'.format(node, attr), lock = lock)
 			# channelBox
@@ -262,7 +262,10 @@ def copyConnectAttrs(driver, driven, attrs=[]):
 				if attrType != 'enum':
 					maxVal = cmds.addAttr(driven + '.' + attr, q = True, max = True)
 					minVal = cmds.addAttr(driven + '.' + attr, q = True, min = True)
-					kwargs.update({'max': maxVal, 'min': minVal})
+					if maxVal:
+						kwargs.update({'max': maxVal})
+					if minVal:
+						kwargs.update({'min': minVal})
 				else:
 					enumName = cmds.attributeQuery(attr, node = driven, le = True)[0]
 					kwargs.update({'enumName': enumName})

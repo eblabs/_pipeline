@@ -38,6 +38,7 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 	NamingDecompose.type = 'decomposeMatrix'
 	NamingDecompose.part = NamingDecompose.part + attr[0].upper() + attr[1:]
 	NamingOffset = naming.Naming(driver)
+	NamingOffset.type = 'multMatrix'
 	NamingOffset.part = '{}Offset'.format(NamingOffset.part)
 
 	if isinstance(drivens, basestring):
@@ -180,7 +181,7 @@ def constraintBlend(inputMatrixList, driven, weightList=[], translate=True, rota
 							'{}.{}{}'.format(driven, attr.lower(), axis))
 
 # matrix aim constraint
-def matrixAimConstraint(inputMatrix, drivens, parent=None, worldUpType='objectrotation', worldUpMatrix=None, aimVector=[1,0,0], upVector=[0,1,0]):
+def matrixAimConstraint(inputMatrix, drivens, parent=None, worldUpType='objectrotation', worldUpMatrix=None, aimVector=[1,0,0], upVector=[0,1,0], local=False):
 	if worldUpType == 'objectrotation':
 		worldUpType = 2
 	elif worldUpType == 'objectUp':
@@ -193,6 +194,8 @@ def matrixAimConstraint(inputMatrix, drivens, parent=None, worldUpType='objectro
 		NamingNode = naming.Naming(driven)
 		NamingNode.type = 'aimConstraint'
 		aimConstraint = nodes.create(name = NamingNode.name)
+		if not parent:
+			parent = driven
 		hierarchy.parent(aimConstraint, parent)
 
 		NamingNode.type = 'decomposeMatrix'
@@ -206,7 +209,12 @@ def matrixAimConstraint(inputMatrix, drivens, parent=None, worldUpType='objectro
 			cmds.connectAttr('{}.translate{}'.format(driven, axis), '{}.constraintTranslate{}'.format(aimConstraint, axis))
 			cmds.connectAttr('{}.outputTranslate{}'.format(decomposeMatrix, axis), '{}.target[0].targetTranslate{}'.format(aimConstraint, axis))
 
-		cmds.connectAttr('{}.parentInverseMatrix[0]'.format(driven), '{}.constraintParentInverseMatrix'.format(aimConstraint))
+		if cmds.objectType(driven) == 'joint':
+			for axis in 'XYZ':
+				cmds.connectAttr('{}.jointOrient{}'.format(driven, axis), '{}.constraintJointOrient{}'.format(aimConstraint, axis))
+
+		if not local:
+			cmds.connectAttr('{}.parentInverseMatrix[0]'.format(driven), '{}.constraintParentInverseMatrix'.format(aimConstraint))
 		cmds.connectAttr(worldUpMatrix, '{}.worldUpMatrix'.format(aimConstraint))
 		cmds.setAttr('{}.worldUpType'.format(aimConstraint), worldUpType)
 
