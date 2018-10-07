@@ -37,6 +37,7 @@ class BaseBehavior(object):
 		self._nodesHideGrp = kwargs.get('nodesHideGrp', '')
 		self._nodesShowGrp = kwargs.get('nodesShowGrp', '')
 
+		self._joints = []
 		self._controls = []
 		self._nodesLocal = []
 		self._nodesHide = []
@@ -45,7 +46,7 @@ class BaseBehavior(object):
 	def create(self):
 		# create joints
 		if self._createJoints:
-			self._joints = joints.createChainOnNodes(self._blueprintJoints, 
+			self._joints = joints.createOnHierarchy(self._blueprintJoints, 
 						namingDict.dNameConvension['type']['blueprintJoint'], 
 						namingDict.dNameConvension['type']['joint'], 
 						suffix = self._jointSuffix, 

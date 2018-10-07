@@ -39,7 +39,7 @@ def createOnNode(node, search, replace, suffix='', parent=None, rotateOrder=Fals
 	jnt = create(jnt, rotateOrder = ro, parent = parent, posParent = node, scaleCompensate = scaleCompensate)
 	return jnt
 
-def createChainOnNodes(nodes, search, replace, suffix='', parent=None, rotateOrder=False, scaleCompensate=True):
+def createOnHierarchy(nodes, search, replace, suffix='', parent=None, rotateOrder=False, scaleCompensate=True):
 	jntList = []
 	if isinstance(search, basestring):
 		search = [search]
@@ -51,8 +51,16 @@ def createChainOnNodes(nodes, search, replace, suffix='', parent=None, rotateOrd
 			jntNew = jntNew.replace(name[0], name[1])
 		jnt = createOnNode(n, n, jntNew, suffix = suffix, parent = parent, 
 							rotateOrder = rotateOrder, scaleCompensate = scaleCompensate)
-		parent = jnt
 		jntList.append(jnt)
+		
+	# connect
+	for jnts in zip(jntList, nodes):
+		parentNode = cmds.listRelatives(jnts[1], p = True)
+		if parentNode and parentNode[0] in nodes:
+			index = nodes.index(parentNode[0])
+			parent = jntList[index]
+			cmds.parent(jnts[0], parent)
+
 	return jntList
 
 def getJointOrient(jnt):
@@ -90,3 +98,18 @@ def createJointsAlongCurve(curve, num, suffix=None, parent = None, startNode=Non
 		jntList.append(jnt)
 
 	return jntList
+
+# tag joints
+def tagJoints(jnts):
+	sideKey = {'m': 0,
+			   'l': 1,
+			   'r': 2}
+	for j in jnts:
+		NamingJnt = naming.Naming(j)
+		cmds.setAttr('{}.side'.format(j), sideKey[NamingJnt.side])
+		cmds.setAttr('{}.type'.format(j), 18)
+		tagPart = ''
+		for part in [NamingJnt.part, NamingJnt.index, NamingJnt.suffix]:
+			if part:
+				tagPart += '{}_'.format(part) 
+		cmds.setAttr('{}.otherType'.format(j), tagPart[:-1], type = 'string')

@@ -31,8 +31,7 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 	"""
 	def __init__(self, *args,**kwargs):
 		super(IkRPsolverComponent, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.components.base.ikRPsolverComponent'
-
+		
 	def _registerDefaultKwargs(self):
 		super(IkRPsolverComponent, self)._registerDefaultKwargs()
 		kwargs = {'blueprintControl': {'value': '',
@@ -40,6 +39,14 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 				  'ikSolver': {'value': 'ikRPsolver',
 						 	   'type': basestring}}
 		self._kwargs.update(kwargs)
+
+	def _setVariables(self):
+		super(IkRPsolverComponent, self)._setVariables()
+		self._rigComponentType = 'rigSys.components.base.ikRPsolverComponent'
+		if self._ikSolver == 'ikRPsolver':
+			self._suffix = 'IkRP'
+		elif self._ikSolver == 'ikSpringSolver':
+			self._suffix = 'IkSpring'
 
 	def _createComponent(self):
 		super(IkRPsolverComponent, self)._createComponent()

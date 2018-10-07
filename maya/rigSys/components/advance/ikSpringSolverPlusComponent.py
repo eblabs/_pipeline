@@ -34,6 +34,9 @@ class IkSpringSolverPlusComponent(ikRPsolverPlusComponent.IkRPsolverPlusComponen
 	"""
 	def __init__(self, *args,**kwargs):
 		super(IkSpringSolverPlusComponent, self).__init__(*args,**kwargs)
+		
+	def _setVariables(self):
+		super(IkSpringSolverPlusComponent, self)._setVariables()
 		self._rigComponentType = 'rigSys.components.advance.ikSpringSolverPlusComponent'
 
 	def _createComponent(self):

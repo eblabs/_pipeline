@@ -25,10 +25,6 @@ class RigComponent(object):
 	"""rigComponent template"""
 
 	def __init__(self, *args,**kwargs):
-		self._rigComponentType = 'rigSys.core.rigComponent'
-		self._kwargs = {}
-		self._kwargsRemove = []
-		self._controls = []
 
 		self._registerAttrs(kwargs)
 
@@ -76,6 +72,7 @@ class RigComponent(object):
 		self._registerAttributes()
 		self._registerInput(kwargs)
 		self._removeAttributes()
+		self._setVariables()
 
 	def _registerDefaultKwargs(self):
 		kwargs = {'side': {'value': 'middle', 
@@ -92,6 +89,13 @@ class RigComponent(object):
 				  			  'type': basestring}
 							}
 		self._kwargs.update(kwargs)
+
+	def _setVariables(self):
+		self._rigComponentType = 'rigSys.core.rigComponent'
+		self._kwargs = {}
+		self._kwargsRemove = []
+		self._controls = []
+		self._suffix = ''
 
 	def _createComponent(self):
 		'''

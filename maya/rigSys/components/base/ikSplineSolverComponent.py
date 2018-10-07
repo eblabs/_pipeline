@@ -31,8 +31,7 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 	"""
 	def __init__(self, *args,**kwargs):
 		super(IkSplineSolverComponent, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.components.base.ikSplineSolverComponent'
-
+		
 	def _registerDefaultKwargs(self):
 		super(IkSplineSolverComponent, self)._registerDefaultKwargs()
 		kwargs = {'blueprintCurve': {'value': '', 'type': basestring},
@@ -40,6 +39,11 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 				  'topFk': {'value': False, 'type': bool},
 				  'bottomFk': {'value': False, 'type': bool}}
 		self._kwargs.update(kwargs)
+
+	def _setVariables(self):
+		super(IkSplineSolverComponent, self)._setVariables()
+		self._suffix = 'IkSpline'
+		self._rigComponentType = 'rigSys.components.base.ikSplineSolverComponent'
 
 	def _createComponent(self):
 		super(IkSplineSolverComponent, self)._createComponent()
@@ -53,6 +57,7 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 				  'blueprintControls': self._blueprintControls,
 				  'topFk': self._topFk,
 				  'bottomFk': self._bottomFk,
+				  'jointSuffix': self._suffix,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,

@@ -114,22 +114,6 @@ dNameConvension = {
 							'left': 'l',
 							'right': 'r',
 							'middle': 'm',
-							'up': 'u',
-							'down': 'd',
-							'front': 'f',
-							'back': 'b',
-							'leftFront': 'lf',
-							'leftBack': 'lb',
-							'leftUp': 'lu',
-							'leftDown': 'ld',
-							'rightFront': 'rf',
-							'rightBack': 'rb',
-							'rightUp': 'ru',
-							'rightDown': 'rd',
-							'middleFront': 'mf',
-							'middleBack': 'mb',
-							'middleUp': 'mu',
-							'middleDown': 'md'
 						},
 
 				'resolution': {

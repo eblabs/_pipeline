@@ -28,6 +28,11 @@ class ComponentsPackage(jointComponent.JointComponent):
 		self._rigComponentType = 'rigSys.core.componentsPackage'
 		self._subComponentNodes = []
 
+	def _setVariables(self):
+		super(ComponentsPackage, self)._setVariables()
+		self._rigComponentType = 'rigSys.core.componentsPackage'
+		self._subComponentNodes = []
+
 	def _writeRigComponentInfo(self):
 		super(ComponentsPackage, self)._writeRigComponentInfo()
 

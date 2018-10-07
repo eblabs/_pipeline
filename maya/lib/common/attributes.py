@@ -311,6 +311,27 @@ def showHideHistory(nodes=[], exception=[], listAll=True, vis=0):
 		historyVis = abs(historyVis - 1)*2
 		cmds.setAttr('{}.isHistoricallyInteresting'.format(n), historyVis)
 
+# weight blend attribute
+def weightBlendAttr(node, attr, driverAttrs=[], weightList=[]):
+	attrNum = len(driverAttrs)
+
+	if not weightList:
+		weightList = [float(1)/float(attrNum)] * attrNum
+
+	NamingNode = naming.Naming(node)
+	NamingNode.part = '{}{}{}Blend'.format(NamingNode.part, attr[0].upper(), attr[1:])
+	plusAttr = nodes.create(type = 'plusMinusAverage', side = NamingNode.side,
+							part = NamingNode.part, index = NamingNode.index)
+	connectAttrs('output1D', attr, driver = plusAttr, driven = node)
+
+	for i in range(attrNum):
+		mult = nodes.create(type = 'multDoubleLinear', side = NamingNode.side,
+							part = NamingNode.part, index = NamingNode.index,
+							suffix = i+1)
+		cmds.connectAttr(driverAttrs[i], '{}.input1'.format(mult))
+		cmds.setAttr('{}.input2'.format(mult), weightList[i], lock = True)
+		cmds.connectAttr('{}.output'.format(mult), '{}.input1D[{}]'.format(plusAttr, i))
+
 # sub function
 # check if attr exists
 def __attrExistsCheck(attr, node=None):

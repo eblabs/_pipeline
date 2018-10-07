@@ -36,9 +36,6 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 	
 	def __init__(self, *args,**kwargs):
 		super(IkRPsolverPlusComponent, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.components.advance.ikRPsolverPlusComponent'
-		self._reverseControls = []
-		self._reverseJoints = []
 
 	def _registerDefaultKwargs(self):
 		super(IkRPsolverPlusComponent, self)._registerDefaultKwargs()
@@ -47,6 +44,12 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 						 					  'type': list}}
 		self._kwargs.update(kwargs)
 		self._kwargsRemove.append('ikSolver')
+
+	def _setVariables(self):
+		super(IkRPsolverPlusComponent, self)._setVariables()
+		self._rigComponentType = 'rigSys.components.advance.ikRPsolverPlusComponent'
+		self._reverseControls = []
+		self._reverseJoints = []
 
 	def _createComponent(self):
 		if len(self._blueprintJoints) == 4:
@@ -61,10 +64,10 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 		super(IkRPsolverPlusComponent, self)._createComponent()
 
 		# create rest jnts
-		ikJnts = joints.createChainOnNodes(bpJointsSC[1:], 
+		ikJnts = joints.createOnHierarchy(bpJointsSC[1:], 
 						namingDict.dNameConvension['type']['blueprintJoint'], 
 						namingDict.dNameConvension['type']['joint'], 
-						suffix = 'IkSC', 
+						suffix = self._suffix, 
 						parent = self._joints[-1], rotateOrder = False)
 		ikRpTipJnt = self._joints[-1]
 		ikJntsSC = [ikRpTipJnt] + ikJnts

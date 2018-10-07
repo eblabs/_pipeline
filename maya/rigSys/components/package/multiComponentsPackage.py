@@ -26,8 +26,7 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 	"""multiComponentsPackage template"""
 	def __init__(self, *args,**kwargs):
 		super(MultiComponentsPackage, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.components.package.multiComponentsPackage'
-
+		
 	def _registerDefaultKwargs(self):
 		super(MultiComponentsPackage, self)._registerDefaultKwargs()
 		kwargs = {'components': {'value': {}, 'type': dict}}
@@ -38,6 +37,10 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 			#}
 		self._kwargs.update(kwargs)
 		self._kwargsRemove += ['blueprintJoints', 'jointsDescriptor']
+
+	def _setVariables(self):
+		super(MultiComponentsPackage, self)._setVariables()
+		self._rigComponentType = 'rigSys.components.package.multiComponentsPackage'
 
 	def _createComponent(self):
 		super(MultiComponentsPackage, self)._createComponent()

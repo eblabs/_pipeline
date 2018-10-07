@@ -31,13 +31,20 @@ class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):
 	"""
 	def __init__(self, *args,**kwargs):
 		super(IkSCsolverComponent, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.components.base.ikSCsolverComponent'
-
+		
 	def _registerDefaultKwargs(self):
 		super(IkSCsolverComponent, self)._registerDefaultKwargs()
 		kwargs = {'ikSolver': {'value': 'ikSCsolver',
 						 	   'type': basestring}}
 		self._kwargs.update(kwargs)
+
+	def _setVariables(self):
+		super(IkSCsolverComponent, self)._setVariables()
+		self._rigComponentType = 'rigSys.components.base.ikSCsolverComponent'
+		if self._ikSolver == 'ikSCsolver':
+			self._suffix = 'IkSC'
+		elif self._ikSolver == 'aimConstraint':
+			self._suffix = 'AimSC'
 
 	def _createComponent(self):
 		super(IkSCsolverComponent, self)._createComponent()
@@ -48,6 +55,7 @@ class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):
 				  'blueprintJoints': self._blueprintJoints,
 				  'stacks': self._stacks,
 				  'ikSolver': self._ikSolver,
+				  'jointSuffix': self._suffix,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,

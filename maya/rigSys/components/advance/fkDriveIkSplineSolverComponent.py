@@ -34,15 +34,18 @@ class FkDriveIkSplineSolverComponent(ikSplineSolverComponent.IkSplineSolverCompo
 	"""
 	def __init__(self, *args,**kwargs):
 		super(FkDriveIkSplineSolverComponent, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.components.advance.fkDriveIkSplineSolverComponent'
-		self._fkControls = []
-		self._fkReverseControls = []
 
 	def _registerDefaultKwargs(self):
 		super(FkDriveIkSplineSolverComponent, self)._registerDefaultKwargs()
 		kwargs = {'fkControlsNumber': {'value': 3, 'type': list},
 				  'reverseFk': {'value': False, 'type': bool}}
 		self._kwargs.update(kwargs)
+
+	def _setVariables(self):
+		super(FkDriveIkSplineSolverComponent, self)._setVariables()
+		self._rigComponentType = 'rigSys.components.advance.fkDriveIkSplineSolverComponent'
+		self._fkControls = []
+		self._fkReverseControls = []
 
 	def _createComponent(self):
 		super(FkDriveIkSplineSolverComponent, self)._createComponent()

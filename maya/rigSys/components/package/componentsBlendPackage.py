@@ -31,8 +31,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 	"""componentsBlendPackage template"""
 	def __init__(self, *args,**kwargs):
 		super(ComponentsBlendPackage, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.components.package.componentsBlendPackage'
-
+		
 	def _registerDefaultKwargs(self):
 		super(ComponentsBlendPackage, self)._registerDefaultKwargs()
 		kwargs = {'components': {'value': {}, 'type': dict},
@@ -45,15 +44,20 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 			#}
 		self._kwargs.update(kwargs)
 
+	def _setVariables(self):
+		super(ComponentsBlendPackage, self)._setVariables()
+		self._suffix = 'Blend'
+		self._rigComponentType = 'rigSys.components.package.componentsBlendPackage'
+
 	def _createComponent(self):		
 		super(ComponentsBlendPackage, self)._createComponent()
 		# set sub components visible
 		cmds.setAttr('{}.subComponents'.format(self._rigComponent), 1)
 		# create joints
-		self._joints = joints.createChainOnNodes(self._blueprintJoints, 
+		self._joints = joints.createOnHierarchy(self._blueprintJoints, 
 						namingDict.dNameConvension['type']['blueprintJoint'], 
 						namingDict.dNameConvension['type']['joint'], 
-						suffix = 'Blend', 
+						suffix = self._suffix, 
 						parent = self._jointsGrp)
 
 		# create rig components

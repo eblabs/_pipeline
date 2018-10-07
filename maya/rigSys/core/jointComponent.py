@@ -27,10 +27,6 @@ class JointComponent(rigComponent.RigComponent):
 	"""jointComponent template"""
 	def __init__(self, *args,**kwargs):
 		super(JointComponent, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.core.jointComponent'
-		self._joints = []
-		self._binds = []
-		self._xtrans = []
 
 	def _registerDefaultKwargs(self):
 		super(JointComponent, self)._registerDefaultKwargs()
@@ -48,6 +44,13 @@ class JointComponent(rigComponent.RigComponent):
 				  				  'type': basestring}
 							}
 		self._kwargs.update(kwargs)
+
+	def _setVariables(self):
+		super(JointComponent, self)._setVariables()
+		self._rigComponentType = 'rigSys.core.jointComponent'
+		self._joints = []
+		self._binds = []
+		self._xtrans = []
 
 	def create(self):
 		self._createComponent()
@@ -99,22 +102,25 @@ class JointComponent(rigComponent.RigComponent):
 								 driver = self._rigComponent, force=True)
 
 	def _buildBindJoints(self):
-		if self._bind:
-			self._binds = joints.createChainOnNodes(self._blueprintJoints, 
-						namingDict.dNameConvension['type']['blueprintJoint'], 
-						namingDict.dNameConvension['type']['bindJoint'],
-						rotateOrder = False)
+		if self._bind and self._joints:
+			self._binds = joints.createOnHierarchy(self._joints,
+							[namingDict.dNameConvension['type']['joint'], self._suffix],
+							[namingDict.dNameConvension['type']['bindJoint'], ''],
+							scaleCompensate = True)			
 
-			# tag bind joints
+			# tag bind joints with drive joint
 			for jnts in zip(self._binds, self._joints):
 				attributes.addAttrsaddAttrs(jnts[0], 'joint', attributeType = 'string', 
 													defaultValue = jnts[1], lock = True)
 
+			# set bind joints tag
+			joints.tagJoints(self._binds)
+
 	def _buildXtrans(self):
-		if self._xtran:
-			self._xtrans = transforms.createChainOnNodes(self._blueprintJoints, 
-							namingDict.dNameConvension['type']['blueprintJoint'],
-							namingDict.dNameConvension['type']['xtran'],
+		if self._xtran and self._joints:
+			self._xtrans = transforms.createOnHierarchy(self._blueprintJoints, 
+							[namingDict.dNameConvension['type']['joint'], self._suffix],
+							[namingDict.dNameConvension['type']['bindJoint'], ''],
 							rotateOrder=False, 
 							lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
 

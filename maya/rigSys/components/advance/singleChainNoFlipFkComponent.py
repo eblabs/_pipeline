@@ -35,8 +35,12 @@ class SingleChainNoFlipFkComponent(ikSCsolverComponent.IkSCsolverComponent):
 	
 	def __init__(self, *args,**kwargs):
 		super(SingleChainNoFlipFkComponent, self).__init__(*args,**kwargs)
+		
+	def _setVariables(self):
+		super(SingleChainNoFlipFkComponent, self)._setVariables()
 		self._rigComponentType = 'rigSys.components.advance.singleChainNoFlipFkComponent'
-
+		self._suffix = 'NoFlip'
+		
 	def _createComponent(self):
 		super(SingleChainNoFlipFkComponent, self)._createComponent()
 

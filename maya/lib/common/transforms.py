@@ -61,7 +61,7 @@ def createTransformNode(name, lockHide=[], parent=None, rotateOrder=0, vis=True,
 	return name
 
 # create transform nodes chain on nodes
-def createChainOnNodes(nodes, search, replace, suffix='', parent=None, rotateOrder=False, lockHide=[]):
+def createOnHierarchy(nodes, search, replace, suffix='', parent=None, rotateOrder=False, lockHide=[]):
 	nodesList = []
 	if isinstance(search, basestring):
 		search = [search]
@@ -73,10 +73,19 @@ def createChainOnNodes(nodes, search, replace, suffix='', parent=None, rotateOrd
 			nodeNew = nodeNew.replace(name[0], name[1])
 		NamingNode = naming.Naming(nodeNew)
 		NamingNode.part += suffix
-		nodeNew = createTransformNode(NamingNode.name, lockHide = lockHide, 
-					parent = parent, rotateOrder = rotateOrder, posParent = node)
-		parent = nodeNew
+		nodeNew = createTransformNode(NamingNode.name, parent = parent, 
+			rotateOrder = rotateOrder, posParent = node)
 		nodesList.append(nodeNew)
+
+	# connect
+	for trans in zip(nodesList, nodes):
+		parentNode = cmds.listRelatives(trans[1], p = True)
+		if parentNode and parentNode[0] in nodes:
+			index = nodes.index(parentNode[0])
+			parent = nodesList[index]
+			cmds.parent(trans[0], parent)
+		attributes.lockHideAttrs(trans[0], lockHide)
+		
 	return nodesList
 
 # set position

@@ -30,13 +30,17 @@ class FkChainComponent(jointComponent.JointComponent):
 	"""
 	def __init__(self, *args,**kwargs):
 		super(FkChainComponent, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.components.base.fkChainComponent'
-
+		
 	def _registerDefaultKwargs(self):
 		super(FkChainComponent, self)._registerDefaultKwargs()
 		kwargs = {'lockHide': {'value': ['sx', 'sy', 'sz'],
 						 	   'type': list}}
 		self._kwargs.update(kwargs)
+
+	def _setVariables(self):
+		super(FkChainComponent, self)._setVariables()
+		self._rigComponentType = 'rigSys.components.base.fkChainComponent'
+		self._suffix = 'FkChain'
 
 	def _createComponent(self):
 		super(FkChainComponent, self)._createComponent()
@@ -47,6 +51,7 @@ class FkChainComponent(jointComponent.JointComponent):
 				  'blueprintJoints': self._blueprintJoints,
 				  'stacks': self._stacks,
 				  'lockHide': self._lockHide,
+				  'jointSuffix': self._suffix,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,
