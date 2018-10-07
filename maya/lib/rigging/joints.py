@@ -99,6 +99,25 @@ def createJointsAlongCurve(curve, num, suffix=None, parent = None, startNode=Non
 
 	return jntList
 
+def createInBetweenJoints(startJoint, endJoint, num, overrideName=None, chain=True, parent=None, type='joint'):
+	NamingNode = naming.Naming(startJoint)
+	if not overrideName:
+		overrideName = NamingNode.part
+	NamingNode.type = type
+
+	dis = cmds.getAttr('{}.tx'.format(endJoint))
+	disDiv = float(dis)/float(num - 1)
+	
+	jntList = []
+	for i in range(num):
+		NamingNode.part = '{}{:03d}'.format(overrideName, i+1)
+		transformInfo = transforms.getWorldTransformOnParent(translate = [disDiv*i,0,0], parent = startJoint)
+		jnt = create(NamingNode.name, parent = parent, posParent = transformInfo)
+		if chain:
+			parent = jnt
+		jntList.append(jnt)
+	return jntList
+
 # tag joints
 def tagJoints(jnts):
 	sideKey = {'m': 0,

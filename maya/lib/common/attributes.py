@@ -312,36 +312,83 @@ def showHideHistory(nodes=[], exception=[], listAll=True, vis=0):
 		cmds.setAttr('{}.isHistoricallyInteresting'.format(n), historyVis)
 
 # weight blend attribute
-def weightBlendAttr(node, attr, driverAttrs=[], weightList=[]):
+def weightBlendAttr(drivenNodes, attr, driverAttrs=[], weightList=[], attrType='single', attrRemap=['XYZ','XYZ']):
+	if isinstance(drivenNodes, basestring):
+		drivenNodes = [drivenNodes]
+
 	attrNum = len(driverAttrs)
 
 	if not weightList:
 		weightList = [float(1)/float(attrNum)] * attrNum
 
-	NamingNode = naming.Naming(node)
+	NamingNode = naming.Naming(drivenNodes[0])
 	NamingNode.part = '{}{}{}Blend'.format(NamingNode.part, attr[0].upper(), attr[1:])
 	plusAttr = nodes.create(type = 'plusMinusAverage', side = NamingNode.side,
 							part = NamingNode.part, index = NamingNode.index)
-	connectAttrs('output1D', attr, driver = plusAttr, driven = node)
+	
+	if attrType == 'single':
+		attrIn = 'output1D'
+		attrOut = attr
+		nodeTypeIn = 'multDoubleLinear'
+
+	elif attrType == 'double':
+		attrIn = ['output2Dx', 'output2Dy']
+		attrOut = [attr + attrRemap[1][0], attr + attrRemap[1][1]]
+		nodeTypeIn = 'multiplyDivide'
+
+	elif attrType == 'triple':
+		attrIn = ['output3Dx', 'output3Dy', 'output3Dz']
+		attrOut = [attr + attrRemap[1][0],
+				   attr + attrRemap[1][1],
+				   attr + attrRemap[1][2]]
+		nodeTypeIn = 'multiplyDivide'
+
+	for node in drivenNodes:
+		connectAttrs(attrIn, attrOut, driver = plusAttr, driven = node)
 
 	for i in range(attrNum):
-		mult = nodes.create(type = 'multDoubleLinear', side = NamingNode.side,
-							part = NamingNode.part, index = NamingNode.index,
-							suffix = i+1)
-		cmds.connectAttr(driverAttrs[i], '{}.input1'.format(mult))
-		cmds.setAttr('{}.input2'.format(mult), weightList[i], lock = True)
-		cmds.connectAttr('{}.output'.format(mult), '{}.input1D[{}]'.format(plusAttr, i))
+		if weightList[i] != 0:
+			mult = nodes.create(type = nodeTypeIn, side = NamingNode.side,
+								part = NamingNode.part, index = NamingNode.index,
+								suffix = i+1)
+			if attrType == 'single':
+				cmds.connectAttr(driverAttrs[i], '{}.input1'.format(mult))
+				cmds.setAttr('{}.input2'.format(mult), weightList[i], lock = True)
+				cmds.connectAttr('{}.output'.format(mult), '{}.input1D[{}]'.format(plusAttr, i))
+			
+			elif attrType == 'double':
+				connectAttrs([driverAttrs[i] + attrRemap[0][0],
+							  driverAttrs[i] + attrRemap[0][1]] , 
+							  ['{}.input1X'.format(mult),
+							  '{}.input1Y'.format(mult)])
+				setAttrs(['input2X', 'input2Y'], weightList[i], node = mult)
+				connectAttrs(['outputX', 'outputY'], 
+							 ['{}.input2D[0].input2Dx'.format(plusAttr), 
+							  '{}.input2D[1].input2Dx'.format(plusAttr)],
+							 driver = mult)
+
+			elif attrType == 'triple':
+				connectAttrs([driverAttrs[i] + attrRemap[0][0],
+							  driverAttrs[i] + attrRemap[0][1],
+							  driverAttrs[i] + attrRemap[0][2],] , 
+							  ['{}.input1X'.format(mult),
+							  '{}.input1Y'.format(mult),
+							  '{}.input1Z'.format(mult)])
+				setAttrs(['input2X', 'input2Y', 'input2Z'], weightList[i], node = mult)
+				connectAttrs(['outputX', 'outputY', 'outputZ'], 
+							 ['{}.input3D[0].input3Dx'.format(plusAttr), 
+							  '{}.input3D[1].input3Dy'.format(plusAttr), 
+							  '{}.input3D[2].input3Dz'.format(plusAttr)],
+							 driver = mult)
+	return plusAttr
+
 
 # sub function
 # check if attr exists
 def __attrExistsCheck(attr, node=None):
-	if node:
-		if '.' in attr:
-			attr = attr.split('.')[1]
-	else:
+	if not node:
 		node = attr.split('.')[0]
-		attr = attr.split('.')[1]
-
+		attr = attr.replace(node + '.', '')
 	try:
 		cmds.getAttr('{}.{}'.format(node, attr))
 		return '{}.{}'.format(node, attr)

@@ -16,6 +16,9 @@ import lib.common.attributes as attributes
 import lib.common.apiUtils as apiUtils
 import lib.common.nodes as nodes
 import lib.rigging.joints as joints
+reload(joints)
+reload(transforms)
+reload(attributes)
 import lib.rigging.controls.controls as controls
 import lib.rigging.constraints as constraints
 # ---- import end ----
@@ -30,7 +33,6 @@ class TwistBehavior(baseBehavior.BaseBehavior):
 	def __init__(self, **kwargs):
 		super(TwistBehavior, self).__init__(**kwargs)
 		self._jointsNumber = kwargs.get('jointsNumber', 5)
-		self._twistName = kwargs.get('twistName', '')
 		self._jointSuffix = kwargs.get('jointSuffix', 'Twist')
 
 	def create(self):
@@ -38,79 +40,71 @@ class TwistBehavior(baseBehavior.BaseBehavior):
 		if self._jointsNumber < 3:
 			self._jointsNumber = 3
 
-		NamingNode = naming.Naming(self._blueprintJoints[0])
-		if not self._twistName:
-			self._twistName = NamingNode.part
-		self._twistName += self._jointSuffix
-
-		dis = cmds.getAttr('{}.tx'.format(self._blueprintJoints[-1]))
-		weightDiv = float(1)/float(self._jointsNumber - 1)
-		disDiv = dis * weightDiv
-
-		CtrlObjList = []
+		self._twistName = self._part + self._jointSuffix
 
 		# create joints
-		for i in range(self._jointsNumber):
-			NamingJnt = naming.Naming(type = 'joint', side = NamingNode.side,
-								part = '{}{:03d}'.format(self._twistName, i+1),
-								index = NamingNode.index)
-			transformInfo = transforms.getWorldTransformOnParent(translate = [disDiv*i,0,0], parent = self._blueprintJoints[0])
-			jnt = joints.create(NamingJnt.name, parent = self._jointsGrp, posParent = transformInfo)
-			self._joints.append(jnt)
-
-			Control = controls.create(NamingJnt.part, side = NamingJnt.side, index = NamingJnt.index,
-								stacks = self._stacks, parent = self._controlsGrp, posParent = jnt, 
-								lockHide = ['tx', 'ty', 'tz', 'ry', 'rz', 'sx', 'sy', 'sz'])
-
-			Control.lockHideAttrs('ro')
-
-			self._controls.append(Control.name)
-			CtrlObjList.append(Control)
-
-			## connect ctrl to joint
-			constraints.matrixConnect(Control.name, Control.matrixLocalAttr, jnt, skipTranslate = ['x', 'y', 'z'], 
-						  skipScale = ['x', 'y', 'z'], force = True, quatToEuler = False)
-			constraints.matrixConnect(Control.name, Control.matrixWorldAttr, jnt, skipRotate = ['x', 'y', 'z'], 
-						  skipScale = ['x', 'y', 'z'], force = True)
+		self._joints = joints.createInBetweenJoints(self._blueprintJoints[0], 
+						self._blueprintJoints[-1], self._jointsNumber, 
+						overrideName = self._twistName, parent = self._jointsGrp)
 
 		# create start end controls
-		ControlStart = controls.create(self._twistName + 'Start', side = NamingNode.side, index = NamingNode.index,
-								stacks = self._stacks, parent = self._controlsGrp, posParent = self._blueprintJoints[0], 
-								lockHide = ['tx', 'ty', 'tz', 'ry', 'rz', 'sx', 'sy', 'sz'])
-		ControlStart.lockHideAttrs('ro')
+		ControlList = []
+		multMatrixList = []
+		for i, jnt in enumerate([self._blueprintJoints[0], self._blueprintJoints[-1]]):
+			ctrlPos = ['Start', 'End'][i]			
+			Control = controls.create(self._twistName + ctrlPos, side = self._side, index = self._index,
+									stacks = self._stacks, parent = self._controlsGrp, posParent = jnt, 
+									lockHide = ['sx', 'sy', 'sz'])
+			multMatrix = nodes.create(type = 'multMatrix', side = self._side, 
+									part = '{}TwistTrans'.format(Control.part), index = self._index)
+			pos = cmds.xform(Control.zero, q = True, t = True, ws = True)
+			MMatrix = apiUtils.composeMMatrix(translate = pos)
+			matrixList = apiUtils.convertMMatrixToList(MMatrix)
+			cmds.connectAttr(Control.matrixLocalPlug, '{}.matrixIn[0]'.format(multMatrix))
+			cmds.setAttr('{}.matrixIn[1]'.format(multMatrix), matrixList, type = 'matrix')
+			multMatrixList.append(multMatrix)
 
-		ControlEnd = controls.create(self._twistName + 'End', side = NamingNode.side, index = NamingNode.index,
-								stacks = self._stacks, parent = self._controlsGrp, posParent = self._blueprintJoints[-1], 
-								lockHide = ['tx', 'ty', 'tz', 'ry', 'rz', 'sx', 'sy', 'sz'])
-		ControlEnd.lockHideAttrs('ro')
+			#Control.lockHideAttrs('ro')
+			ControlList.append(Control)
+			self._controls.append(Control.name)
+
+		# connect start control with root joint
+		constraints.matrixConnect(ControlList[0].name, ControlList[0].matrixLocalAttr, self._joints[0], 
+						skipTranslate = ['x', 'y', 'z'], skipScale = ['x', 'y', 'z'], 
+						force = True, quatToEuler = False)
+		constraints.matrixConnect(multMatrixList[0], 'matrixSum', self._joints[0], 
+						skipRotate = ['x', 'y', 'z'], skipScale = ['x', 'y', 'z'], force = True)
+
+		# get decompose node for reuse
+
+		decomposeTranslateStart = cmds.listConnections('{}.tx'.format(self._joints[0]), s = True, 
+														d = False, p = False)[0]
+		decomposeRotStart = cmds.listConnections('{}.rx'.format(self._joints[0]), s = True, 
+													d = False, p = False, scn = True)[0]
 
 		# extract twist
-		transforms.extractTwist(ControlStart.name, nodeMatrix = ControlStart.matrixLocalAttr, attr='twistExctration')
-		transforms.extractTwist(ControlEnd.name, nodeMatrix = ControlEnd.matrixLocalAttr, attr='twistExctration')
 
-		# decompose translate
-		decomposeStart = nodes.create(type = 'decomposeMatrix', side = NamingNode.side, 
-							part = '{}Translate'.format(ControlStart.part), index = NamingNode.index)
-		decomposeEnd = nodes.create(type = 'decomposeMatrix', side = NamingNode.side, 
-							part = '{}Translate'.format(ControlEnd.part), index = NamingNode.index)
+		transforms.extractTwist(ControlList[0].name, nodeMatrix = ControlList[0].matrixLocalAttr, 
+								attr='twistExctration', quatOverride = decomposeRotStart)
 
-		attributes.connectAttrs([ControlStart.matrixWorldPlug, ControlEnd.matrixWorldPlug],
-								['{}.inputMatrix'.format(decomposeStart),
-								 '{}.inputMatrix'.format(decomposeEnd)])
+		transforms.extractTwist(ControlList[1].name, nodeMatrix = ControlList[1].matrixLocalAttr, attr='twistExctration')
 
+		# decompose translate end
+		decomposeTranslateEnd = nodes.create(type = 'decomposeMatrix', side = self._side, 
+								part = '{}Translate'.format(ControlList[1].part), index = self._index)
 
-		for i, Ctrl in enumerate(CtrlObjList):			
-			weightEnd = weightDiv*i
-			weightStart = 1 - weightEnd
-			attributes.weightBlendAttr(Ctrl.passer, 'rx', 
-					driverAttrs = ['{}.twistExctration'.format(ControlStart.name),
-								   '{}.twistExctration'.format(ControlEnd.name)], 
-					weightList = [weightStart, weightEnd])
-			for axis in 'XYZ':
-				attributes.weightBlendAttr(Ctrl.zero, 'translate{}'.format(axis), 
-					driverAttrs = ['{}.outputTranslate{}'.format(decomposeStart, axis),
-								   '{}.outputTranslate{}'.format(decomposeEnd, axis)], 
-					weightList = [weightStart, weightEnd])
+		attributes.connectAttrs('{}.matrixSum'.format(multMatrixList[1]),
+								'{}.inputMatrix'.format(decomposeTranslateEnd))
 
-		self._controls.insert(0, ControlStart.name)
-		self._controls.insert(1, ControlEnd.name)
+		# weight blend translate and twist, skip first and last joint
+		weight = 1.0/float(self._jointsNumber-1)
+
+		attributes.weightBlendAttr(self._joints[1:], 'translate', 
+								   ['{}.outputTranslate'.format(decomposeTranslateStart),
+								    '{}.outputTranslate'.format(decomposeTranslateEnd)],
+								   weightList = [-1*weight, weight], attrType = 'triple')
+
+		attributes.weightBlendAttr(self._joints[1:], 'rx', 
+								   ['{}.twistExctration'.format(self._controls[0]),
+								    '{}.twistExctration'.format(self._controls[1])],
+								   weightList = [-1*weight, weight], attrType = 'single')

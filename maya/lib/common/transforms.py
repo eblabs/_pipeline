@@ -350,17 +350,20 @@ def getWorldTransformOnParent(translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], 
 	return outputInfo
 
 # extract twist
-def extractTwist(node, nodeMatrix = 'worldMatrix[0]', attr='twistExctration', attrNode=None):
+def extractTwist(node, nodeMatrix = 'worldMatrix[0]', attr='twistExctration', attrNode=None, quatOverride=None):
 	if not attrNode:
 		attrNode = node
 
 	NamingNode = naming.Naming(node)
-	decomposeMatrix = nodes.create(type = 'decomposeMatrix', side = NamingNode.side,
-						part = '{}TwistExctration'.format(NamingNode.part), index = NamingNode.index)
+	if not quatOverride:
+		decomposeMatrix = nodes.create(type = 'decomposeMatrix', side = NamingNode.side,
+							part = '{}TwistExctration'.format(NamingNode.part), index = NamingNode.index)
+		cmds.connectAttr('{}.{}'.format(node, nodeMatrix), '{}.inputMatrix'.format(decomposeMatrix))
+	else:
+		decomposeMatrix = quatOverride
 	quatToEuler = nodes.create(type = 'quatToEuler', side = NamingNode.side,
 						part = '{}TwistExctration'.format(NamingNode.part), index = NamingNode.index)
 	
-	cmds.connectAttr('{}.{}'.format(node, nodeMatrix), '{}.inputMatrix'.format(decomposeMatrix))
 	cmds.connectAttr('{}.outputQuatX'.format(decomposeMatrix), '{}.inputQuatX'.format(quatToEuler))
 	cmds.connectAttr('{}.outputQuatW'.format(decomposeMatrix), '{}.inputQuatW'.format(quatToEuler))
 	
