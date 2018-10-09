@@ -11,10 +11,8 @@ import maya.cmds as cmds
 # -- import lib
 import lib.common.naming.naming as naming
 import lib.common.naming.namingDict as namingDict
-import lib.common.transforms as transforms
 import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
-import lib.common.nodes as nodes
+import lib.common.nodeUtils as nodeUtils
 import lib.common.packages as packages
 import lib.rigging.constraints as constraints
 import lib.rigging.joints as joints
@@ -96,8 +94,8 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		indexCustom = 100
 		enumName = ''
 		for key in self._components.keys():
-			if key in space.spaceDic:
-				indexKey = space.spaceDic[key]
+			if key in space.spaceDict:
+				indexKey = space.spaceDict[key]
 			else:
 				indexKey = indexCustom
 				indexCustom += 1
@@ -115,13 +113,13 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		attributes.addAttrs(blendCtrl, ['modeA', 'modeB'], attributeType = 'enum', 
 							defaultValue = indexDefault, enumName = enumName[:-1])
 		cmds.addAttr(blendCtrl, ln = 'blend', at = 'float', min = 0, max = 10, keyable = True)
-		multBlend = nodes.create(type = 'multDoubleLinear',
+		multBlend = nodeUtils.create(type = 'multDoubleLinear',
 								 side = self._side, 
 								 part = '{}Blend'.format(self._part),
 								 index = self._index)
 		cmds.connectAttr('{}.blend'.format(blendCtrl), '{}.input1'.format(multBlend))
 		cmds.setAttr('{}.input2'.format(multBlend), 0.1)
-		rvsBlend = nodes.create(type = 'reverse',
+		rvsBlend = nodeUtils.create(type = 'reverse',
 								side = self._side, 
 								part = '{}Blend'.format(self._part),
 								index = self._index)
@@ -129,7 +127,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 
 		# control vis
 
-		condBlend = nodes.create(type = 'condition',
+		condBlend = nodeUtils.create(type = 'condition',
 								 side = self._side, 
 								 part = '{}Blend'.format(self._part),
 								 index = self._index)
@@ -141,7 +139,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 
 		for i, component in enumerate(subComponentNodes):
 			NamingNode = naming.Naming(component)
-			condCtrlVis = nodes.create(type = 'condition',
+			condCtrlVis = nodeUtils.create(type = 'condition',
 									   side = NamingNode.side,
 									   part = '{}BlendCtrlVis'.format(NamingNode.part),
 									   index = NamingNode.index)
@@ -150,7 +148,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 			cmds.setAttr('{}.colorIfTrueR'.format(condCtrlVis), 1, lock = True)
 			cmds.setAttr('{}.colorIfFalseR'.format(condCtrlVis), 0, lock = True)
 			NamingNode.type = 'multDoubleLinear'
-			multVis = nodes.create(type = 'multDoubleLinear',
+			multVis = nodeUtils.create(type = 'multDoubleLinear',
 								   side = NamingNode.side,
 								   part = '{}BlendCtrlVis'.format(NamingNode.part),
 								   index = NamingNode.index)
@@ -168,7 +166,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 				choiceList = []
 				inputMatrixList = []
 				for m, mode in enumerate(['A', 'B']):
-					choice = nodes.create(type = 'choice',
+					choice = nodeUtils.create(type = 'choice',
 									  	  side = NamingJnt.side,
 									  	  part = '{}Mode{}{}'.format(NamingJnt.part, mode, attr),
 									  	  index = NamingJnt.index)
@@ -182,7 +180,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 				for n in range(len(indexList)):
 					componentJnt = componentsJnts[n][i]
 					NamingComposeMatrix = naming.Naming(componentJnt)
-					composeMatrix = nodes.create(type = 'composeMatrix',
+					composeMatrix = nodeUtils.create(type = 'composeMatrix',
 												 side = NamingComposeMatrix.side,
 												 part = '{}Blend{}'.format(NamingComposeMatrix.part, attr),
 												 index = NamingComposeMatrix.index)

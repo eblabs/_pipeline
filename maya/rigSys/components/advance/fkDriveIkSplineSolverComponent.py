@@ -12,9 +12,7 @@ import maya.cmds as cmds
 import lib.common.naming.naming as naming
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
-import lib.common.hierarchy as hierarchy
-import lib.common.nodes as nodes
+import lib.common.nodeUtils as nodeUtils
 import lib.rigging.controls.controls as controls
 import lib.rigging.constraints as constraints
 import lib.rigging.joints as joints
@@ -92,14 +90,15 @@ class FkDriveIkSplineSolverComponent(ikSplineSolverComponent.IkSplineSolverCompo
 											stacks = self._stacks, 
 											parent = ctrlParent, 
 											posParent = bpCtrl,
-											lockHide=['sx', 'sy', 'sz'])
+											lockHide=['sx', 'sy', 'sz'],
+											shape = 'circle')
 				cmds.connectAttr('{}.{}'.format(ikVisCtrl, visAttr), '{}.v'.format(ControlFk.zero))
 				ctrlParent = ControlFk.output
 				fkControllist.append(ControlFk.name)
 			
 			controls.addCtrlShape(fkControllist, asCtrl = ikVisCtrl)
 
-			multMatrix = nodes.create(type = 'multMatrix', side = ControlIk.side,
+			multMatrix = nodeUtils.create(type = 'multMatrix', side = ControlIk.side,
 									  part = '{}FkDriver'.format(ControlIk.part),
 									  index = ControlIk.index)
 			cmds.connectAttr('{}.worldMatrix[0]'.format(ctrlParent), 

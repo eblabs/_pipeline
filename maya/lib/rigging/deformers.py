@@ -10,8 +10,6 @@ import maya.cmds as cmds
 
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.attributes
-import lib.common.apiUtils
 # ---- import end ----
 
 # wire deformer

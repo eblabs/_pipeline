@@ -10,10 +10,6 @@ import maya.cmds as cmds
 
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.naming.namingDict as namingDict
-import lib.common.transforms as transforms
-import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
 import lib.rigging.joints as joints
 import lib.rigging.controls.controls as controls
 import lib.rigging.constraints as constraints
@@ -29,6 +25,7 @@ class FkChainBehavior(baseBehavior.BaseBehavior):
 		super(FkChainBehavior, self).__init__(**kwargs)
 		self._lockHide = kwargs.get('lockHide', ['sx', 'sy', 'sz'])
 		self._jointSuffix = kwargs.get('jointSuffix', 'Fk')
+		self._controlShape = kwargs.get('controlShape', 'circle')
 
 	def create(self):
 		super(FkChainBehavior, self).create()
@@ -39,7 +36,8 @@ class FkChainBehavior(baseBehavior.BaseBehavior):
 		for jnt in self._joints:
 			NamingCtrl = naming.Naming(jnt)
 			Control = controls.create(NamingCtrl.part, side = NamingCtrl.side, index = NamingCtrl.index, 
-				stacks = self._stacks, parent = ctrlParent, posParent = jnt, lockHide = self._lockHide)
+				stacks = self._stacks, parent = ctrlParent, posParent = jnt, lockHide = self._lockHide,
+				shape = self._controlShape)
 
 			## connect ctrl to joint
 			constraints.matrixConnect(Control.name, Control.matrixLocalAttr, jnt, skipTranslate = ['x', 'y', 'z'], 

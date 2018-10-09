@@ -12,7 +12,7 @@ import maya.cmds as cmds
 import naming.naming as naming
 import attributes
 import apiUtils
-import nodes
+import nodeUtils
 # ---- import end ----
 
 # create transform node
@@ -212,9 +212,9 @@ def getNodeTransformInfo(node, rotateOrder=None):
 	return transformInfo
 
 # get node list transform info
-def getNodeListTransformInfo(nodeList, translate=True, rotate=True, scale=True):
+def getNodeListTransformInfo(nodes, translate=True, rotate=True, scale=True):
 	transformList = []
-	for node in nodeList:
+	for node in nodes:
 		nodeInfo = []
 		transformInfo = getNodeTransformInfo(node)
 		if translate:
@@ -229,17 +229,17 @@ def getNodeListTransformInfo(nodeList, translate=True, rotate=True, scale=True):
 	return transformList
 
 # get closest node from given point
-def getClosestNode(nodeList, point):
+def getClosestNode(nodes, point):
 	if isinstance(point, basestring):
 		point = cmds.xform(point, q = True, t = True, ws = True)
 	distanceList = []
-	for node in nodeList:
+	for node in nodes:
 		nodePos = cmds.xform(node, q = True, t = True, ws = True)
 		dis = apiUtils.distance(point, nodePos)
 		distanceList.append(dis)
 	disMin = min(distanceList)
 	indexMin = distanceList.index(disMin)
-	return nodeList[indexMin]
+	return nodes[indexMin]
 
 # get node bounding box info
 def getNodesBoundingBoxInfo(nodes):
@@ -289,7 +289,7 @@ def createLocalMatrix(node, parent, attrNode=None, nodeMatrix='worldMatrix[0]', 
 	NamingNode.type = 'multMatrix'
 	NamingNode.part = NamingNode.part + attr[0].upper() + attr[1:]
 
-	multMatrix = nodes.create(name = NamingNode.name)
+	multMatrix = nodeUtils.create(name = NamingNode.name)
 	attributes.connectAttrs(['{}.{}'.format(node, nodeMatrix),
 							 '{}.{}'.format(parent, parentMatrix)],
 							 ['matrixIn[0]', 'matrixIn[1]'], 
@@ -304,7 +304,7 @@ def createLocalMatrix(node, parent, attrNode=None, nodeMatrix='worldMatrix[0]', 
 	if inverse:
 		inverseAttr = attr + 'Inverse'
 		NamingNode.type = 'inverseMatrix'
-		inverseMatrix = nodes.create(name = NamingNode.name)
+		inverseMatrix = nodeUtils.create(name = NamingNode.name)
 		cmds.connectAttr('{}.matrixSum'.format(multMatrix),
 						 '{}.inputMatrix'.format(inverseMatrix))
 
@@ -350,18 +350,18 @@ def getWorldTransformOnParent(translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], 
 	return outputInfo
 
 # extract twist
-def extractTwist(node, nodeMatrix = 'worldMatrix[0]', attr='twistExctration', attrNode=None, quatOverride=None):
+def extractTwist(node, nodeMatrix = 'worldMatrix[0]', attr='twist', reverseAttr = 'nonFlip', attrNode=None, quatOverride=None):
 	if not attrNode:
 		attrNode = node
 
 	NamingNode = naming.Naming(node)
 	if not quatOverride:
-		decomposeMatrix = nodes.create(type = 'decomposeMatrix', side = NamingNode.side,
+		decomposeMatrix = nodeUtils.create(type = 'decomposeMatrix', side = NamingNode.side,
 							part = '{}TwistExctration'.format(NamingNode.part), index = NamingNode.index)
 		cmds.connectAttr('{}.{}'.format(node, nodeMatrix), '{}.inputMatrix'.format(decomposeMatrix))
 	else:
 		decomposeMatrix = quatOverride
-	quatToEuler = nodes.create(type = 'quatToEuler', side = NamingNode.side,
+	quatToEuler = nodeUtils.create(type = 'quatToEuler', side = NamingNode.side,
 						part = '{}TwistExctration'.format(NamingNode.part), index = NamingNode.index)
 	
 	cmds.connectAttr('{}.outputQuatX'.format(decomposeMatrix), '{}.inputQuatX'.format(quatToEuler))
@@ -371,7 +371,7 @@ def extractTwist(node, nodeMatrix = 'worldMatrix[0]', attr='twistExctration', at
 		cmds.addAttr(attrNode, ln = attr, at = 'float', keyable = False)
 
 	attributes.connectAttrs('{}.outputRotateX'.format(quatToEuler), '{}.{}'.format(attrNode, attr), force = True)
-
+	attributes.addWeightAttr(node, attr, weight = -1, addAttr = True, attrName = reverseAttr)
 
 # ---- sub function
 # single transform snap 

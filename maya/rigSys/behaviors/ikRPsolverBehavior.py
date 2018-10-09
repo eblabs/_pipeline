@@ -10,11 +10,10 @@ import maya.cmds as cmds
 import maya.mel as mel
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.naming.namingDict as namingDict
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
 import lib.common.apiUtils as apiUtils
-import lib.common.nodes as nodes
+import lib.common.nodeUtils as nodeUtils
 import lib.rigging.joints as joints
 import lib.rigging.controls.controls as controls
 import lib.rigging.constraints as constraints
@@ -38,6 +37,7 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		elif self._ikSolver == 'ikSpringSolver':
 			self._jointSuffix = kwargs.get('jointSuffix', 'IkSpring')
 			mel.eval('ikSpringSolver')
+		self._controlShapes = kwargs.get('controlShapes', ['sphere', 'diamond', 'cube'])
 
 	def create(self):
 		super(IkRPsolverBehavior, self).create()
@@ -48,7 +48,7 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 			partSuffix = ['Pos', 'Pv', ''][i]
 			Control = controls.create(NamingCtrl.part + partSuffix + self._jointSuffix, side = NamingCtrl.side, 
 				index = NamingCtrl.index, stacks = self._stacks, parent = self._controlsGrp, 
-				posParent = bpCtrl, lockHide = ['sx', 'sy', 'sz'])
+				posParent = bpCtrl, lockHide = ['sx', 'sy', 'sz'], shape = self._controlShapes[i])
 			self._controls.append(Control.name)
 
 		# set ik solver
@@ -101,7 +101,7 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		constraints.matrixConnect(ControlPv.name, ControlPv.matrixWorldAttr, clsHndList[0], skipTranslate=None, 
 								  skipRotate=['x', 'y', 'z'], skipScale=['x', 'y', 'z'])
 
-		multMatrixPv = nodes.create(type = 'multMatrix', side = self._side, part = '{}PvCrvLine'.format(self._part + self._jointSuffix), index = self._index)
+		multMatrixPv = nodeUtils.create(type = 'multMatrix', side = self._side, part = '{}PvCrvLine'.format(self._part + self._jointSuffix), index = self._index)
 		attributes.connectAttrs(['{}.matrix'.format(self._joints[1]), '{}.matrix'.format(self._joints[0])],
 								['matrixIn[0]', 'matrixIn[1]'], driven = multMatrixPv)
 		constraints.matrixConnect(multMatrixPv, 'matrixSum', clsHndList[1], skipTranslate=None, 
@@ -125,7 +125,7 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		if self._ikSolver == 'ikSpringSolver':
 			cmds.addAttr(self._controls[-1], ln = 'angleBias', min = 0, max = 1, dv = 0.5, at = 'float', keyable = True)
 			cmds.connectAttr('{}.angleBias'.format(self._controls[-1]), '{}.springAngleBias[0].springAngleBias_FloatValue'.format(ikHandle))
-			rvs = nodes.create(type = 'reverse', side = self._side, 
+			rvs = nodeUtils.create(type = 'reverse', side = self._side, 
 							   part = '{}AngleBias'.format(self._part + self._jointSuffix), 
 							   index = self._index)
 			cmds.connectAttr('{}.angleBias'.format(self._controls[-1]), '{}.inputX'.format(rvs))

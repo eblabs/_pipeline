@@ -14,40 +14,40 @@ import lib.rigging.controls.controls as controls
 
 # -- import component
 import rigSys.core.jointComponent as jointComponent
-import rigSys.behaviors.fkChainBehavior as fkChainBehavior
+import rigSys.behaviors.twistBehavior as twistBehavior
 # -- import end ----
 
-class FkChainComponent(jointComponent.JointComponent):
+class TwistComponent(jointComponent.JointComponent):
 	"""
-	FkChainComponent
+	twistComponent
 
-	create base fk chain rig component
+	create base twist rig component
 
 	"""
 	def __init__(self, *args,**kwargs):
-		super(FkChainComponent, self).__init__(*args,**kwargs)
+		super(TwistComponent, self).__init__(*args,**kwargs)
 		
 	def _registerDefaultKwargs(self):
-		super(FkChainComponent, self)._registerDefaultKwargs()
-		kwargs = {'lockHide': {'value': ['sx', 'sy', 'sz'],
-						 	   'type': list}}
+		super(TwistComponent, self)._registerDefaultKwargs()
+		kwargs = {'jointsNumber': {'value': 5,
+						 	   	   'type': int}}
 		self._kwargs.update(kwargs)
 
 	def _setVariables(self):
-		super(FkChainComponent, self)._setVariables()
-		self._rigComponentType = 'rigSys.components.base.fkChainComponent'
-		self._suffix = 'FkChain'
+		super(TwistComponent, self)._setVariables()
+		self._rigComponentType = 'rigSys.components.base.twistComponent'
+		self._suffix = 'Twist'
 
 	def _createComponent(self):
-		super(FkChainComponent, self)._createComponent()
+		super(TwistComponent, self)._createComponent()
 
 		kwargs = {'side': self._side,
 				  'part': self._part,
 				  'index': self._index,
 				  'blueprintJoints': self._blueprintJoints,
 				  'stacks': self._stacks,
-				  'lockHide': self._lockHide,
 				  'jointSuffix': self._suffix,
+				  'jointsNumber': self._jointsNumber,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,
@@ -55,9 +55,9 @@ class FkChainComponent(jointComponent.JointComponent):
 				  'nodesHideGrp': self._nodesHideGrp,
 				  'nodesShowGrp': self._nodesShowGrp}
 
-		FkChainBehavior = fkChainBehavior.FkChainBehavior(**kwargs)
-		FkChainBehavior.create()
+		TwistBehavior = twistBehavior.TwistBehavior(**kwargs)
+		TwistBehavior.create()
 
 		# pass info
-		self._joints += FkChainBehavior._joints
-		self._controls += FkChainBehavior._controls
+		self._joints += TwistBehavior._joints
+		self._controls += TwistBehavior._controls

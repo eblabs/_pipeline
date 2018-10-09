@@ -12,7 +12,7 @@ import maya.cmds as cmds
 import lib.common.naming.naming as naming
 import lib.common.attributes as attributes
 import lib.common.apiUtils as apiUtils
-import lib.common.nodes as nodes
+import lib.common.nodeUtils as nodeUtils
 import lib.common.hierarchy as hierarchy
 # ---- import end ----
 
@@ -66,7 +66,7 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 				matrixLocal = apiUtils.convertMMatrixToList(MMatrixDriven * MMatrixOffset.inverse())
 				
 				multMatrixOffsetList = cmds.ls('{}_*'.format(NamingOffset.name))
-				multMatrixOffset = nodes.create(type = 'multMatrix', 
+				multMatrixOffset = nodeUtils.create(type = 'multMatrix', 
 												side = NamingOffset.side,
 												part = NamingOffset.part,
 												index = NamingOffset.index,
@@ -76,7 +76,7 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 				cmds.connectAttr('{}.{}'.format(driver, attr), '{}.matrixIn[1]'.format(multMatrixOffset))
 
 				decomposeMatrixList = cmds.ls('{}_*'.format(NamingOffset.name))
-				decomposeMatrix = nodes.create(type = 'decomposeMatrix', 
+				decomposeMatrix = nodeUtils.create(type = 'decomposeMatrix', 
 											   side = NamingOffset.side,
 											   part = NamingOffset.part,
 											   index = NamingOffset.index,
@@ -86,11 +86,11 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 
 			else:
 				if not cmds.objExists(decomposeMatrix):
-					decomposeMatrix = nodes.create(name = decomposeMatrix)
+					decomposeMatrix = nodeUtils.create(name = decomposeMatrix)
 					cmds.connectAttr('{}.{}'.format(driver, attr), '{}.inputMatrix'.format(decomposeMatrix))
 		else:
 			if not cmds.objExists(decomposeMatrix):
-				decomposeMatrix = nodes.create(name = decomposeMatrix)
+				decomposeMatrix = nodeUtils.create(name = decomposeMatrix)
 				cmds.connectAttr('{}.{}'.format(driver, attr), '{}.inputMatrix'.format(decomposeMatrix))
 		
 		decomposeRot = decomposeMatrix
@@ -102,7 +102,7 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 				decomposeRot = NamingRot.name
 
 				if not cmds.objExists(decomposeRot):
-					decomposeRot = nodes.create(name = decomposeRot)
+					decomposeRot = nodeUtils.create(name = decomposeRot)
 					cmds.connectAttr('{}.outputQuat'.format(decomposeMatrix), 
 									 '{}.inputQuat'.format(decomposeRot))
 					cmds.connectAttr('{}.ro'.format(d), '{}.inputRotateOrder'.format(decomposeRot))
@@ -140,7 +140,7 @@ def constraintBlend(inputMatrixList, driven, weightList=[], translate=True, rota
 	constraints = []
 	for i, attr in enumerate([translate, rotate, scale]):
 		if attr:
-			con = nodes.create(type = constraintType[i],
+			con = nodeUtils.create(type = constraintType[i],
 									   side = NamingNode.side,
 									   part = NamingNode.part,
 									   index = NamingNode.index)
@@ -156,7 +156,7 @@ def constraintBlend(inputMatrixList, driven, weightList=[], translate=True, rota
 	for i, inputPlug in enumerate(inputMatrixList):
 		inputNode = inputPlug.split('.')[0]
 		NamingInput = naming.Naming(inputNode)
-		decomposeMatrix = nodes.create(type = 'decomposeMatrix', 
+		decomposeMatrix = nodeUtils.create(type = 'decomposeMatrix', 
 									   side = NamingInput.side,
 									   part = NamingInput.part,
 									   index = NamingInput.index)
@@ -193,14 +193,14 @@ def matrixAimConstraint(inputMatrix, drivens, parent=None, worldUpType='objectro
 	for driven in drivens:
 		NamingNode = naming.Naming(driven)
 		NamingNode.type = 'aimConstraint'
-		aimConstraint = nodes.create(name = NamingNode.name)
+		aimConstraint = nodeUtils.create(name = NamingNode.name)
 		if not parent:
 			parent = driven
 		hierarchy.parent(aimConstraint, parent)
 
 		NamingNode.type = 'decomposeMatrix'
 		NamingNode.part = NamingNode.part + 'Aim'
-		decomposeMatrix = nodes.create(name = NamingNode.name)
+		decomposeMatrix = nodeUtils.create(name = NamingNode.name)
 		cmds.connectAttr(inputMatrix, '{}.inputMatrix'.format(decomposeMatrix))
 
 		for i, axis in enumerate('XYZ'):

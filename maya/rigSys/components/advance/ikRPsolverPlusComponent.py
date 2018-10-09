@@ -11,12 +11,8 @@ import maya.cmds as cmds
 # -- import lib
 import lib.common.naming.naming as naming
 import lib.common.naming.namingDict as namingDict
-import lib.common.transforms as transforms
-import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
 import lib.common.hierarchy as hierarchy
 import lib.rigging.controls.controls as controls
-import lib.rigging.constraints as constraints
 import lib.rigging.joints as joints
 # ---- import end ----
 
@@ -110,7 +106,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			rvsAttrList = ['ballTwist', 'heelRoll', 'toeRoll', 'sideInn', 'sideOut',
 						   'toeTap', 'ballRoll']
 
-			dicAttr = {}
+			attrDict = {}
 			for i in range(7):
 				jnt = joints.createOnNode(rvsBpJntList[i], 
 										  rvsBpJntList[i],
@@ -118,9 +114,9 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 										  				side = self._side,
 										  				part = rvsJntPartList[i],
 										  				index = self._index).name)
-				dicAttr.update({'_{}'.format(rvsAttrList[i]): jnt})
+				attrDict.update({'_{}'.format(rvsAttrList[i]): jnt})
 
-			self._addAttributeFromDict(dicAttr)
+			self._addAttributeFromDict(attrDict)
 
 			# orient joints
 			txJnt = cmds.getAttr('{}.tx'.format(ikJntsSC[1]))
@@ -170,6 +166,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 					  'jointSuffix': '',
 					  'createJoints': False,
 					  'lockHide': ['tx', 'ty', 'tz', 'sx', 'sy', 'sz'],
+					  'controlShape': 'rotate',
 
 				  	  'controlsGrp': ControlIk.output}
 			

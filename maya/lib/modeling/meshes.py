@@ -5,20 +5,12 @@ logging.basicConfig(level=debugLevel)
 logger = logging.getLogger(__name__)
 logger.setLevel(debugLevel)
 
-# -- import os
-import os
-
-# -- import time
-import time
-
 # -- import maya lib
 import maya.cmds as cmds
 import maya.OpenMaya as OpenMaya
-import math
 
 # -- import lib
 import lib.common.apiUtils as apiUtils
-import lib.common.files.files as files
 # ---- import end ----
 
 # sub function

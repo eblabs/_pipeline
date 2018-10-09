@@ -12,9 +12,7 @@ import maya.cmds as cmds
 import lib.common.naming.naming as naming
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
-import lib.common.hierarchy as hierarchy
-import lib.common.nodes as nodes
+import lib.common.nodeUtils as nodeUtils
 import lib.rigging.controls.controls as controls
 import lib.rigging.constraints as constraints
 # ---- import end ----
@@ -86,7 +84,7 @@ class IkSpringSolverPlusComponent(ikRPsolverPlusComponent.IkRPsolverPlusComponen
 
 		# control ik pv
 		ControlRp = controls.Control(self._controls[1])
-		multMatrix = nodes.create(type = 'multMatrix', side = ControlRp.side,
+		multMatrix = nodeUtils.create(type = 'multMatrix', side = ControlRp.side,
 								  part = ControlRp.part + 'IkSpringDrive',
 								  index = ControlRp.index)
 		matrixLocal = transforms.getLocalMatrix(ControlRp.name, 
@@ -122,12 +120,12 @@ class IkSpringSolverPlusComponent(ikRPsolverPlusComponent.IkRPsolverPlusComponen
 				aimVec = [-1, 0, 0]
 
 			NamingNode.type = 'multMatrix'
-			multMatrixInput = nodes.create(name = NamingNode.name)
+			multMatrixInput = nodeUtils.create(name = NamingNode.name)
 			cmds.connectAttr('{}.worldMatrix[0]'.format(IkSpringSolverBehavior._joints[-2]), '{}.matrixIn[0]'.format(multMatrixInput))
 			cmds.connectAttr('{}.worldInverseMatrix[0]'.format(self._jointsGrp), '{}.matrixIn[1]'.format(multMatrixInput))
 
 			NamingNode.part = NamingNode.part + 'Pos'
-			multMatrixPos = nodes.create(name = NamingNode.name)
+			multMatrixPos = nodeUtils.create(name = NamingNode.name)
 			cmds.connectAttr('{}.worldMatrix[0]'.format(IkSpringSolverBehavior._joints[-1]), '{}.matrixIn[0]'.format(multMatrixPos))
 			cmds.connectAttr('{}.worldInverseMatrix[0]'.format(self._jointsGrp), '{}.matrixIn[1]'.format(multMatrixPos))
 

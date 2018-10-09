@@ -13,8 +13,7 @@ import lib.common.naming.naming as naming
 import lib.common.naming.namingDict as namingDict
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
-import lib.common.nodes as nodes
+import lib.common.nodeUtils as nodeUtils
 import lib.common.hierarchy as hierarchy
 import lib.rigging.joints as joints
 # ---- import end ----
@@ -41,7 +40,9 @@ class JointComponent(rigComponent.RigComponent):
 				  'xtran': {'value': False,
 				  			'type': bool},
 				  'xtranParent': {'value': '',
-				  				  'type': basestring}
+				  				  'type': basestring}，
+				  'twsitExtract': {'value': False,
+				  				   'type': bool}
 							}
 		self._kwargs.update(kwargs)
 
@@ -54,6 +55,7 @@ class JointComponent(rigComponent.RigComponent):
 
 	def create(self):
 		self._createComponent()
+		self._twistExtract()
 		self._buildBindJoints()
 		self._buildXtrans()
 		self._writeRigComponentInfo()
@@ -61,6 +63,11 @@ class JointComponent(rigComponent.RigComponent):
 	def connect(self):
 		super(JointComponent, self).connect()
 		self._connectBindJoints()
+
+	def _twistExtract(self):
+		if self._twistExtract:
+			for j in self._joints:
+				transforms.extractTwist(j, nodeMatrix = 'matrix', attr = 'twistExctration')
 
 	def _connectBindJoints(self):
 		if self._binds:
@@ -139,21 +146,21 @@ class JointComponent(rigComponent.RigComponent):
 		jointList = self._getStringAttrAsList('joints')
 		if jointList:
 
-			jointsDic = {'list': jointList,
+			jointsDict = {'list': jointList,
 						 'count': len(jointList)}
 
-			self._addObjAttr('joints', jointsDic)
+			self._addObjAttr('joints', jointsDict)
 
 			self._jointsDescriptor = self._getStringAttrAsList('jointsDescriptor')
 
 			for i, joint in enumerate(jointList):
-				jointsInfoDic = {'name': joint,
+				jointsInfoDict = {'name': joint,
 								 'matrixPlug': '{}.joint{:03d}Matrix'.format(self._rigComponent, i)}
 
-				self._addObjAttr('joints.joint{:03d}'.format(i), jointsInfoDic)
+				self._addObjAttr('joints.joint{:03d}'.format(i), jointsInfoDict)
 
 				if self._jointsDescriptor:
-					self._addObjAttr('joints.{}'.format(self._jointsDescriptor[i]), jointsInfoDic)
+					self._addObjAttr('joints.{}'.format(self._jointsDescriptor[i]), jointsInfoDict)
 
 		bindList = self._getStringAttrAsList('binds')
 		if bindList:
@@ -172,7 +179,7 @@ class JointComponent(rigComponent.RigComponent):
 			NamingJnt = naming.Naming(jnt)
 			NamingJnt.type = 'multMatrix'
 			NamingJnt.part = '{}Output'.format(NamingJnt.part)
-			multMatrixJnt = nodes.create(name = NamingJnt.name)
+			multMatrixJnt = nodeUtils.create(name = NamingJnt.name)
 			attributes.connectAttrs(['{}.worldMatrix[0]'.format(jnt), '{}.outputInverseMatrix'.format(self._rigComponent)],
 									['matrixIn[0]', 'matrixIn[1]'], driven = multMatrixJnt)
 			

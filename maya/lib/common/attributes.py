@@ -10,7 +10,7 @@ import maya.cmds as cmds
 
 # -- import lib
 import naming.naming as naming
-import nodes
+import nodeUtils
 # ---- import end ----
 
 # add attr
@@ -42,26 +42,26 @@ def addAttrs(node, attrs, attributeType='float', minValue=None, maxValue=None, d
 		if not cmds.attributeQuery(attr, node = node, ex = True):
 			# skip if the attr already exists
 			# update parameters
-			attrDic = {'longName': attr}
+			attrDict = {'longName': attr}
 			if attributeType != 'string':
-				attrDic.update({'attributeType': attributeType})
+				attrDict.update({'attributeType': attributeType})
 				if attributeType != 'matrix':
-					attrDic.update({'keyable': keyable})
+					attrDict.update({'keyable': keyable})
 					if not channelBox:
-						attrDic['keyable'] = False
+						attrDict['keyable'] = False
 					if defaultValue[i] != None:
-						attrDic.update({'defaultValue': defaultValue[i]})
+						attrDict.update({'defaultValue': defaultValue[i]})
 					if attributeType not in ['bool', 'enum']:
 						if minValue != None:
-							attrDic.update({'minValue': minValue})
+							attrDict.update({'minValue': minValue})
 						if maxValue != None:
-							attrDic.update({'maxValue': maxValue})
+							attrDict.update({'maxValue': maxValue})
 					elif attributeType == 'enum':
-						attrDic.update({'enumName': enumName})
+						attrDict.update({'enumName': enumName})
 			else:
-				attrDic.update({'dataType': attributeType})
+				attrDict.update({'dataType': attributeType})
 			# add attr to node	
-			cmds.addAttr(node, **attrDic)
+			cmds.addAttr(node, **attrDict)
 			if attributeType in ['string', 'matrix'] and defaultValue[i]:
 				cmds.setAttr('{}.{}'.format(node, attr), defaultValue[i], type = attributeType)
 			# lock
@@ -96,25 +96,25 @@ def setAttrs(attrs, value, node=None, type=None, force=True):
 									   skipConversionNodes = True)
 			if not connections:
 				# check if type not matrix
-				setAttrDic = {}
+				setAttrDict = {}
 				if type != 'matrix':
 					if isinstance(value, list):
 						v = value[i]
 					else:
 						v = value
 					if type == 'string':
-						setAttrDic.update({'type': 'string'})
+						setAttrDict.update({'type': 'string'})
 				else:
 					if isinstance(value[0], list):
 						v = value[i]
 					else:
 						v = value
-					setAttrDic.update({'type': 'matrix'})
+					setAttrDict.update({'type': 'matrix'})
 
 				lock = cmds.getAttr(attrCompose, lock = True)
 				if not lock or force:
 					cmds.setAttr(attrCompose, lock = False)
-					cmds.setAttr(attrCompose, v, **setAttrDic)
+					cmds.setAttr(attrCompose, v, **setAttrDict)
 					if lock:
 						lock = cmds.setAttr(attrCompose, lock = True)
 				else:
@@ -284,16 +284,35 @@ def copyConnectAttrs(driver, driven, attrs=[]):
 # add reverse node
 def addRvsAttr(node, attr, addAttr=False):
 	NamingNode = naming.Naming(node)
-	rvsNode = nodes.create(type = 'reverse', side = NamingNode.side,
+	rvsNode = nodeUtils.create(type = 'reverse', side = NamingNode.side,
 				part = '{}{}{}Rvs'.format(NamingNode.part, attr[0].upper(), attr[1:]), 
 				index = NamingNode.index)
 	cmds.connectAttr('{}.{}'.format(node, attr), '{}.inputX'.format(rvsNode))
 	outputPlug = '{}.outputX'.format(rvsNode)
 	if addAttr:
-		cmds.addAttr(node, ln = '{}Rvs'.format(attr), at = 'float', 
-					 min = 0, max = 1, keyable = False)
-		cmds.connectAttr(outputPlug, '{}.{}Rvs'.format(node, attr))
+		if not attributeQuery(attr, node = node, ex = True):
+			cmds.addAttr(node, ln = '{}Rvs'.format(attr), at = 'float', 
+						 min = 0, max = 1, keyable = False)
+		cmds.connectAttr(outputPlug, '{}.{}Rvs'.format(node, attr), f = True)
 		outputPlug = '{}.{}Rvs'.format(node, attr)
+	return outputPlug
+
+# add weight attr
+def addWeightAttr(node, attr, weight = -1, addAttr=False, attrName=None):
+	NamingNode = naming.Naming(node)
+	multNode = nodeUtils.create(type = 'multDoubleLinear', side = NamingNode.side,
+				part = '{}{}{}Weight'.format(NamingNode.part, attr[0].upper(), attr[1:]), 
+				index = NamingNode.index)
+	cmds.connectAttr('{}.{}'.format(node, attr), '{}.input1'.format(multNode))
+	cmds.setAttr('{}.input2'.format(multNode), weight, lock = True)
+	outputPlug = '{}.output'.format(multNode)
+	if addAttr:
+		if not attrName:
+			attrName = '{}Weight'.format(attr)
+		if not cmds.attributeQuery(attrName, node = node, ex = True):
+			cmds.addAttr(node, ln = attrName, at = 'float', keyable = False)
+		cmds.connectAttr(outputPlug, '{}.{}'.format(node, attrName), f = True)
+		outputPlug = '{}.{}'.format(node, attrName)
 	return outputPlug
 
 # show and hide history in channelbox
@@ -312,18 +331,18 @@ def showHideHistory(nodes=[], exception=[], listAll=True, vis=0):
 		cmds.setAttr('{}.isHistoricallyInteresting'.format(n), historyVis)
 
 # weight blend attribute
-def weightBlendAttr(drivenNodes, attr, driverAttrs=[], weightList=[], attrType='single', attrRemap=['XYZ','XYZ']):
-	if isinstance(drivenNodes, basestring):
-		drivenNodes = [drivenNodes]
+def weightBlendAttr(nodes, attr, driverAttrs=[], weightList=[], attrType='single', attrRemap=['XYZ','XYZ']):
+	if isinstance(nodes, basestring):
+		nodes = [nodes]
 
 	attrNum = len(driverAttrs)
 
 	if not weightList:
 		weightList = [float(1)/float(attrNum)] * attrNum
 
-	NamingNode = naming.Naming(drivenNodes[0])
+	NamingNode = naming.Naming(nodes[0])
 	NamingNode.part = '{}{}{}Blend'.format(NamingNode.part, attr[0].upper(), attr[1:])
-	plusAttr = nodes.create(type = 'plusMinusAverage', side = NamingNode.side,
+	plusAttr = nodeUtils.create(type = 'plusMinusAverage', side = NamingNode.side,
 							part = NamingNode.part, index = NamingNode.index)
 	
 	if attrType == 'single':
@@ -343,12 +362,12 @@ def weightBlendAttr(drivenNodes, attr, driverAttrs=[], weightList=[], attrType='
 				   attr + attrRemap[1][2]]
 		nodeTypeIn = 'multiplyDivide'
 
-	for node in drivenNodes:
+	for node in nodes:
 		connectAttrs(attrIn, attrOut, driver = plusAttr, driven = node)
 
 	for i in range(attrNum):
 		if weightList[i] != 0:
-			mult = nodes.create(type = nodeTypeIn, side = NamingNode.side,
+			mult = nodeUtils.create(type = nodeTypeIn, side = NamingNode.side,
 								part = NamingNode.part, index = NamingNode.index,
 								suffix = i+1)
 			if attrType == 'single':

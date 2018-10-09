@@ -22,13 +22,12 @@ import lib.common.apiUtils as apiUtils
 import lib.common.attributes as attributes
 import lib.common.naming.namingDict as namingDict
 import lib.modeling.curves as curves
-import lib.modeling.geometries as geometries
 # ---- import end ----
 
 # ---- global variable
-path_ctrlShapeDic = 'C:/_pipeline/maya/lib/rigging/controls/controlShapes.json'
-path_ctrlColorDic = 'C:/_pipeline/maya/lib/rigging/controls/controlColors.json'
-path_sideColorDic = 'C:/_pipeline/maya/lib/rigging/controls/sideColors.json'
+path_ctrlShapeDict = 'C:/_pipeline/maya/lib/rigging/controls/controlShapes.json'
+path_ctrlColorDict = 'C:/_pipeline/maya/lib/rigging/controls/controlColors.json'
+path_sideColorDict = 'C:/_pipeline/maya/lib/rigging/controls/sideColors.json'
 
 class Control(object):
 	"""
@@ -682,13 +681,13 @@ def addCtrlShape(ctrls, shape='cube', size=1, color=None, asCtrl=None, colorOver
 				cmds.delete(NamingCtrl.name)
 			# set color if color is None, base on side
 			if not color and isinstance(shape, basestring) and not colorOverride:
-				sideColorsDic = files.readJsonFile(path_sideColorDic)
+				sideColorsDict = files.readJsonFile(path_sideColorDict)
 				if 'left' in NamingCtrl.sideLongName:
-					colorCtrl = sideColorsDic['left']
+					colorCtrl = sideColorsDict['left']
 				elif 'right' in NamingCtrl.sideLongName:
-					colorCtrl = sideColorsDic['right']
+					colorCtrl = sideColorsDict['right']
 				else:
-					colorCtrl = sideColorsDic['middle']
+					colorCtrl = sideColorsDict['middle']
 			else:
 				colorCtrl = color
 			# add ctrlshape
@@ -769,8 +768,8 @@ def setCtrlShapeColor(ctrlShapes, color):
 	if isinstance(ctrlShapes, basestring):
 		ctrlShapes = [ctrlShapes]
 	if isinstance(color, basestring):
-		ctrlColorDic = files.readJsonFile(path_ctrlColorDic)
-		color = ctrlColorDic[color]
+		ctrlColorDict = files.readJsonFile(path_ctrlColorDict)
+		color = ctrlColorDict[color]
 	for c in ctrlShapes:
 		if cmds.objectType(c) == 'transform':
 			c = cmds.listRelatives(c, s = True)[0]
@@ -847,18 +846,18 @@ def mirrorCtrlShape(ctrls, sub = False, posToNeg=True, leftRight=True, upDown=Fa
 def saveCtrlShapeInfo(ctrls, path):
 	startTime = time.time()
 
-	ctrlShapeInfoDic = {}
+	ctrlShapeInfoDict = {}
 	for c in ctrls:
 		if cmds.objExists(c):
 			ctrlInfo = __getCurveInfo(c)
-			ctrlShapeInfoDic.update({c:ctrlInfo})
+			ctrlShapeInfoDict.update({c:ctrlInfo})
 		else:
 			logger.warn('{} does not exist, skipped'.format(c))
 
 	fileFormat = files.readJsonFile(files.path_fileFormat)
 	path = os.path.join(path, 'controlShapes.{}'.format(fileFormat['control']))
 
-	files.writeJsonFile(path, ctrlShapeInfoDic)
+	files.writeJsonFile(path, ctrlShapeInfoDict)
 
 	endTime = time.time()
 
@@ -868,12 +867,12 @@ def saveCtrlShapeInfo(ctrls, path):
 def loadCtrlShapeInfo(path):
 	startTime = time.time()
 
-	ctrlShapeInfoDic = files.readJsonFile(path)
+	ctrlShapeInfoDict = files.readJsonFile(path)
 
-	for ctrl in ctrlShapeInfoDic:
+	for ctrl in ctrlShapeInfoDict:
 		if cmds.objExists(ctrl):
-			addCtrlShape(ctrl, shape = ctrlShapeInfoDic[ctrl],
-						 overrideType = ctrlShapeInfoDic[ctrl]['overrideType'])
+			addCtrlShape(ctrl, shape = ctrlShapeInfoDict[ctrl],
+						 overrideType = ctrlShapeInfoDict[ctrl]['overrideType'])
 		else:
 			logger.warn('{} does not exist, skipped'.format(ctrl))
 
@@ -883,21 +882,21 @@ def loadCtrlShapeInfo(path):
 # append shape info to preset
 def appendPreset(curveList):
 
-	shapeInfoDic = files.readJsonFile(path_ctrlShapeDic)
+	shapeInfoDict = files.readJsonFile(path_ctrlShapeDict)
 
 	for c in curveList:
 		crvShapeInfo = curves.__getCurveInfo(c)
-		shapeInfoDic.update({c:crvShapeInfo})
+		shapeInfoDict.update({c:crvShapeInfo})
 
-	files.writeJsonFile(path_ctrlShapeDic, shapeInfoDic)
+	files.writeJsonFile(path_ctrlShapeDict, shapeInfoDict)
 
 # sub function
 # create ctrl shape
 def __addCtrlShapeToTransform(ctrl, shape='cube', color=None, size=1, colorOverride=False):
 	
 	if isinstance(shape, basestring):
-		ctrlShapeDic = files.readJsonFile(path_ctrlShapeDic)
-		ctrlShapeInfo = ctrlShapeDic[shape]
+		ctrlShapeDict = files.readJsonFile(path_ctrlShapeDict)
+		ctrlShapeInfo = ctrlShapeDict[shape]
 	else:
 		ctrlShapeInfo = shape
 
@@ -927,8 +926,8 @@ def __addCtrlShapeToTransform(ctrl, shape='cube', color=None, size=1, colorOverr
 	if 'color' in ctrlShapeInfo and not colorOverride:
 		color = ctrlShapeInfo['color']
 	elif isinstance(color, basestring):
-		ctrlColorDic = files.readJsonFile(path_ctrlColorDic)
-		color = ctrlColorDic[color]
+		ctrlColorDict = files.readJsonFile(path_ctrlColorDict)
+		color = ctrlColorDict[color]
 
 	if color:
 		cmds.setAttr('{}.overrideColor'.format(ctrlShape), color)
@@ -943,8 +942,8 @@ def __addCtrlShapeAsCtrl(ctrl, ctrlShape):
 		# assign shape
 		cmds.parent(ctrlShape, ctrl, shape = True, addObject = True)
 	else:
-		ctrlShapeDic = files.readJsonFile(path_ctrlShapeDic)
-		ctrlShapeInfo = ctrlShapeDic['line']
+		ctrlShapeDict = files.readJsonFile(path_ctrlShapeDict)
+		ctrlShapeInfo = ctrlShapeDict['line']
 
 		ctrlShapeInfo = curves.__convertCurveInfo(ctrlShapeInfo)
 

@@ -11,8 +11,6 @@ import maya.cmds as cmds
 # -- import lib
 import lib.common.naming.naming as naming
 import lib.common.transforms as transforms
-import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
 import lib.modeling.curves as curves
 # ---- import end ----
 

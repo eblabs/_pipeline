@@ -9,11 +9,8 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.naming.namingDict as namingDict
 import lib.common.transforms as transforms
-import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
-import lib.common.nodes as nodes
+import lib.common.nodeUtils as nodeUtils
 import lib.rigging.joints as joints
 import lib.rigging.controls.controls as controls
 import lib.rigging.constraints as constraints
@@ -33,6 +30,7 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 			self._jointSuffix = kwargs.get('jointSuffix', 'IkSC')
 		elif self._ikSolver == 'aimConstraint':
 			self._jointSuffix = kwargs.get('jointSuffix', 'AimSC')
+		self._controlShapes = kwargs.get('controlShapes', ['sphere', 'handle'])
 
 	def create(self):
 		super(IkSCsolverBehavior, self).create()
@@ -42,7 +40,8 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 			NamingCtrl = naming.Naming(self._joints[0])
 			Control = controls.create(NamingCtrl.part + ['Root', 'Target'][i], side = NamingCtrl.side, 
 				index = NamingCtrl.index, stacks = self._stacks, parent = self._controlsGrp, posPoint = bpCtrl, 
-				posOrient = self._joints[0], lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'])
+				posOrient = self._joints[0], lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'], 
+				shape = self._controlShapes[i])
 			self._controls.append(Control.name)
 
 		# connect root jnt with controller
@@ -78,9 +77,9 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 		elif self._ikSolver == 'aimConstraint':
 
 			# create object rotation up matrix
-			multMatrixTwist = nodes.create(type = 'multMatrix', side = NamingCtrl.side,
+			multMatrixTwist = nodeUtils.create(type = 'multMatrix', side = NamingCtrl.side,
 							part = '{}Twist'.format(NamingCtrl.part), index = NamingCtrl.index)
-			composeMatrixTwist = nodes.create(type = 'composeMatrix', side = NamingCtrl.side,
+			composeMatrixTwist = nodeUtils.create(type = 'composeMatrix', side = NamingCtrl.side,
 								part = '{}Twist'.format(NamingCtrl.part), index = NamingCtrl.index)
 			matrixUp = cmds.getAttr(ControlRoot.matrixWorldPlug)
 			

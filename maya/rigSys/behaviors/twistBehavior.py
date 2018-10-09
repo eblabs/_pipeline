@@ -10,22 +10,17 @@ import maya.cmds as cmds
 
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.naming.namingDict as namingDict
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
 import lib.common.apiUtils as apiUtils
-import lib.common.nodes as nodes
+import lib.common.nodeUtils as nodeUtils
 import lib.rigging.joints as joints
-reload(joints)
-reload(transforms)
-reload(attributes)
 import lib.rigging.controls.controls as controls
 import lib.rigging.constraints as constraints
 # ---- import end ----
 
 # -- import component
 import baseBehavior
-reload(baseBehavior)
 # ---- import end ----
 
 class TwistBehavior(baseBehavior.BaseBehavior):
@@ -34,6 +29,7 @@ class TwistBehavior(baseBehavior.BaseBehavior):
 		super(TwistBehavior, self).__init__(**kwargs)
 		self._jointsNumber = kwargs.get('jointsNumber', 5)
 		self._jointSuffix = kwargs.get('jointSuffix', 'Twist')
+		self._controlShape = kwargs.get('controlShape', 'rotate')
 
 	def create(self):
 		# get twist info
@@ -54,14 +50,18 @@ class TwistBehavior(baseBehavior.BaseBehavior):
 			ctrlPos = ['Start', 'End'][i]			
 			Control = controls.create(self._twistName + ctrlPos, side = self._side, index = self._index,
 									stacks = self._stacks, parent = self._controlsGrp, posParent = jnt, 
-									lockHide = ['sx', 'sy', 'sz'])
-			multMatrix = nodes.create(type = 'multMatrix', side = self._side, 
+									lockHide = ['sx', 'sy', 'sz'], shape = self._controlShape)
+			multMatrix = nodeUtils.create(type = 'multMatrix', side = self._side, 
 									part = '{}TwistTrans'.format(Control.part), index = self._index)
 			pos = cmds.xform(Control.zero, q = True, t = True, ws = True)
 			MMatrix = apiUtils.composeMMatrix(translate = pos)
 			matrixList = apiUtils.convertMMatrixToList(MMatrix)
 			cmds.connectAttr(Control.matrixLocalPlug, '{}.matrixIn[0]'.format(multMatrix))
 			cmds.setAttr('{}.matrixIn[1]'.format(multMatrix), matrixList, type = 'matrix')
+			
+			cmds.addAttr(Control.name, ln = 'twistDriver', at = 'float', keyable = False)
+			cmds.connectAttr('{}.twistDriver'.format(Control.name), '{}.rx'.format(Control.stacks[0]))
+
 			multMatrixList.append(multMatrix)
 
 			#Control.lockHideAttrs('ro')
@@ -90,7 +90,7 @@ class TwistBehavior(baseBehavior.BaseBehavior):
 		transforms.extractTwist(ControlList[1].name, nodeMatrix = ControlList[1].matrixLocalAttr, attr='twistExctration')
 
 		# decompose translate end
-		decomposeTranslateEnd = nodes.create(type = 'decomposeMatrix', side = self._side, 
+		decomposeTranslateEnd = nodeUtils.create(type = 'decomposeMatrix', side = self._side, 
 								part = '{}Translate'.format(ControlList[1].part), index = self._index)
 
 		attributes.connectAttrs('{}.matrixSum'.format(multMatrixList[1]),

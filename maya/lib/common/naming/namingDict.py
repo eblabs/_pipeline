@@ -98,6 +98,16 @@ dNameConvension = {
 							'choice': 'choice',
 							'angleBetween': 'angleBtw',
 
+							# master node
+							'master': 'master',
+							'deformationRig': 'deformationRig',
+							'animationRig': 'animationRig',
+							'geometry': 'geometry',
+							'skeleton': 'skeleton',
+							'rigNodes': 'rigNodes',
+							'control': 'control',
+							'components': 'components',
+
 							# rig component
 							'rigComponent': 'rigComponent',
 							'rigLocal': 'rigLocal',

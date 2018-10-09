@@ -10,12 +10,7 @@ import maya.cmds as cmds
 
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.naming.namingDict as namingDict
-import lib.common.transforms as transforms
 import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
-import lib.common.hierarchy as hierarchy
-import lib.common.nodes as nodes
 import lib.rigging.controls.controls as controls
 import lib.rigging.constraints as constraints
 import lib.rigging.joints as joints
@@ -47,7 +42,7 @@ class SingleChainNoFlipFkComponent(ikSCsolverComponent.IkSCsolverComponent):
 		NamingCtrl = naming.Naming(self._joints[0])
 		ControlFk = controls.create(NamingCtrl.part + 'Fk', side = NamingCtrl.side, 
 				index = NamingCtrl.index, stacks = self._stacks, parent = self._controlsGrp,
-				posParent = self._joints[0], lockHide = ['sx', 'sy', 'sz'])
+				posParent = self._joints[0], lockHide = ['sx', 'sy', 'sz'], shape = 'rotate')
 
 		# connect root and base control
 		ControlRoot = controls.Control(self._controls[0])

@@ -10,9 +10,7 @@ import maya.cmds as cmds
 
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.transforms as transforms
 import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
 import lib.common.packages as packages
 import lib.rigging.joints as joints
 import lib.rigging.controls.controls as controls

@@ -9,13 +9,11 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
-import lib.common.files.files as files
 import lib.common.naming.naming as naming
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
 import lib.common.apiUtils as apiUtils
-import lib.common.nodes as nodes
-import lib.common.hierarchy as hierarchy
+import lib.common.nodeUtils as nodeUtils
 import lib.rigging.joints as joints
 import lib.rigging.constraints as constraints
 import lib.rigging.controls.controls as controls
@@ -124,7 +122,7 @@ class RigComponent(object):
 		self._index = NamingGrp.index
 
 		# create groups
-		dicAttr = {}
+		attrDict = {}
 		for grp in ['rigComponent', 'controlsGrp', 'rigLocal', 'nodesLocalGrp',
 					'rigWorld', 'nodesHideGrp', 'nodesShowGrp', 'subComponents']:
 			NamingGrp.type = grp
@@ -133,15 +131,15 @@ class RigComponent(object):
 																	  'rx', 'ry', 'rz',
 																	  'sx', 'sy', 'sz',
 																	  'v'])
-			dicAttr.update({'_{}'.format(grp): transformNode})
+			attrDict.update({'_{}'.format(grp): transformNode})
 
-		self._addAttributeFromDict(dicAttr)
+		self._addAttributeFromDict(attrDict)
 
 		# parent components
-		hierarchy.parent(self._rigComponent, self._parent)
-		hierarchy.parent([self._controlsGrp, self._rigLocal, self._rigWorld, self._subComponents], self._rigComponent)
-		hierarchy.parent(self._nodesLocalGrp, self._rigLocal)
-		hierarchy.parent([self._nodesHideGrp, self._nodesShowGrp], self._rigWorld)
+		cmds.parent(self._rigComponent, self._parent)
+		cmds.parent([self._controlsGrp, self._rigLocal, self._rigWorld, self._subComponents], self._rigComponent)
+		cmds.parent(self._nodesLocalGrp, self._rigLocal)
+		cmds.parent([self._nodesHideGrp, self._nodesShowGrp], self._rigWorld)
 
 		# inheritsTransform
 		attributes.setAttrs(['{}.inheritsTransform'.format(self._rigLocal),
@@ -169,10 +167,10 @@ class RigComponent(object):
 
 		# connect matrix
 		NamingGrp.type = 'multMatrix'
-		multMatrixInput = nodes.create(name = NamingGrp.name)
+		multMatrixInput = nodeUtils.create(name = NamingGrp.name)
 
 		NamingGrp.type = 'inverseMatrix'
-		inverseMatrixInput = nodes.create(name = NamingGrp.name)
+		inverseMatrixInput = nodeUtils.create(name = NamingGrp.name)
 
 		attributes.connectAttrs(['offsetMatrix', 'inputMatrix'], ['matrixIn[0]', 'matrixIn[1]'],
 								driver = self._rigComponent, driven = multMatrixInput, force = True)
@@ -207,8 +205,8 @@ class RigComponent(object):
 				self.__setattr__('_' + key, val)
 
 	def _registerAttributes(self):
-		for key, valDic in self._kwargs.iteritems():
-			self._addAttributeFromDict({'_' + key: valDic['value']})
+		for key, valDict in self._kwargs.iteritems():
+			self._addAttributeFromDict({'_' + key: valDict['value']})
 
 	def _removeAttributes(self):
 		for key in self._kwargsRemove:
@@ -222,13 +220,13 @@ class RigComponent(object):
 		self._part = NamingGrp.part
 		self._index = NamingGrp.index
 
-		dicAttr = {}
+		attrDict = {}
 		for grp in ['controlsGrp', 'rigLocal', 'nodesLocalGrp',
 					'rigWorld', 'nodesHideGrp', 'nodesShowGrp', 'subComponents']:
 			NamingGrp.type = grp
-			dicAttr.update({'_{}'.format(grp): NamingGrp.name})
+			attrDict.update({'_{}'.format(grp): NamingGrp.name})
 
-		self._addAttributeFromDict(dicAttr)
+		self._addAttributeFromDict(attrDict)
 
 		self._rigComponentType = self._getStringAttr('_rigComponentType')
 
@@ -241,16 +239,16 @@ class RigComponent(object):
 		controlList = self._getStringAttrAsList('controls')
 		if controlList:
 			controlObjList = []
-			controlDic = {'list': controlList,
+			controlDict = {'list': controlList,
 						  'count': len(controlList)}
 
 			for i, control in enumerate(controlList):
 				if cmds.objectType(control) == 'transform':
 					ControlObj = controls.Control(control)
-					controlDic.update({control: ControlObj})
+					controlDict.update({control: ControlObj})
 				else:
-					controlDic.update({control: control})
-			self._addObjAttr('controls', controlDic)
+					controlDict.update({control: control})
+			self._addObjAttr('controls', controlDict)
 
 	def _writeRigComponentType(self):
 		self._addStringAttr('rigComponentType', self._rigComponentType)
@@ -262,26 +260,26 @@ class RigComponent(object):
 		
 	def _addAttributeFromList(self, attr, valList):
 		if valList:
-			attrDic = self._generateAttrDict(attr, valList)
-			self._addAttributeFromDict(attrDic)
+			attrDict = self._generateAttrDict(attr, valList)
+			self._addAttributeFromDict(attrDict)
 
-	def _addAttributeFromDict(self, dic):
-		for key, value in dic.items():
+	def _addAttributeFromDict(self, attrDict):
+		for key, value in attrDict.items():
 			setattr(self, key, value)
 
 	def _generateAttrDict(self, attr, valList):
-		attrDic = {}
+		attrDict = {}
 		for i, val in enumerate(valList):
-			attrDic.update({'%s%03d' %(attr, i): val})
-		return attrDic
+			attrDict.update({'%s%03d' %(attr, i): val})
+		return attrDict
 
-	def _addObjAttr(self, attr, attrDic):
+	def _addObjAttr(self, attr, attrDict):
 		attrSplit = attr.split('.')
 		attrParent = self
 		if len(attrSplit) > 1:
 			for a in attrSplit[:-1]:
 				attrParent = getattr(attrParent, a)
-		setattr(attrParent, attrSplit[-1], Objectview(attrDic))
+		setattr(attrParent, attrSplit[-1], Objectview(attrDict))
 
 	def _addListAsStringAttr(self, attr, valList):
 		valString = ''

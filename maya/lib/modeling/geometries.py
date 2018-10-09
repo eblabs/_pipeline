@@ -13,13 +13,10 @@ import time
 
 # -- import maya lib
 import maya.cmds as cmds
-import maya.OpenMaya as OpenMaya
-import math
 
 # -- import lib
-import lib.common.apiUtils as apiUtils
 import lib.common.files.files as files
-import lib.common.nodes as nodes
+import lib.common.nodeUtils as nodeUtils
 import meshes
 import surfaces
 import curves
@@ -61,7 +58,7 @@ def createGeo(geoInfo, name=None, vis=True):
 	if not name:
 		name = meshInfo['name']
 	if not cmds.objExists(name):
-		nodes.create(name = name)
+		cmds.group(empty = True, name = name)
 	else:
 		logger.warn('{} already exists, skipped'.format(name))
 		return

@@ -18,25 +18,25 @@ class Naming(object):
 	type_side_(resolution)_part_(index)_(suffix)
 	"""
 	@staticmethod
-	def getKeyFullNameFromDict(value, shortDic, longDic):
+	def getKeyFullNameFromDict(value, shortDict, longDict):
 		'''
 		this function will return the short and long name of the given key
 		base on the naming dictionary
 
 		parameters:
 		value(string): given name for the name (type/side/res)
-		shortDic(dictionary): dictionary for short names (longName: short)
-		longDic(dictionary): dictionary for long names (shotName: long)
+		shortDict(dictionary): dictionary for short names (longName: short)
+		longDict(dictionary): dictionary for long names (shotName: long)
 		'''
-		if value in shortDic:
+		if value in shortDict:
 			# value is the long name, find short name
 			longName = value
-			shortName = shortDic[value]
+			shortName = shortDict[value]
 
-		elif value in longDic:
+		elif value in longDict:
 			# value is the short name, find long name
 			shortName = value
-			longName = longDic[value]
+			longName = longDict[value]
 
 		else:
 			shortName = None

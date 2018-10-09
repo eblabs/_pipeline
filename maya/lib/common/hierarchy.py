@@ -10,8 +10,6 @@ import maya.cmds as cmds
 
 # -- import lib
 import naming.naming as naming
-import attributes
-import apiUtils
 # ---- import end ----
 
 def connectChain(nodeList, reverse = False):

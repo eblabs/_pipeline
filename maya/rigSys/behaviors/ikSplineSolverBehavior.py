@@ -9,11 +9,9 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.naming.namingDict as namingDict
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
-import lib.common.nodes as nodes
+import lib.common.nodeUtils as nodeUtils
 import lib.rigging.joints as joints
 import lib.rigging.controls.controls as controls
 import lib.rigging.constraints as constraints
@@ -39,6 +37,10 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 		self._topFk = kwargs.get('topFk', '')
 		self._botFk = kwargs.get('bottomFk', '')
 		# the blueprint controls should be 3, top, mid, bot
+		self._tweakerShape = kwargs.get('tweakerShape', 'handle')
+		self._ikShape = kwargs.get('ikShape', 'cube')
+		self._fkShape = kwargs.get('fkShape', 'hemisphere')
+
 	def create(self):
 		super(IkSplineSolverBehavior, self).create()
 
@@ -70,7 +72,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 		for i, clsHnd in enumerate(clsHndList):
 			NamingCtrl = naming.Naming(clsHnd)
 			Control = controls.create(self._part + self._jointSuffix + 'Tweak', side = NamingCtrl.side, index = NamingCtrl.index, 
-				stacks = self._stacks, parent = self._controlsGrp, lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'])
+				stacks = self._stacks, parent = self._controlsGrp, lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'], shape = self._tweakerShape)
 			cmds.delete(cmds.pointConstraint(clsHnd, Control.zero, mo = False))
 			NamingCtrl.type = 'null'
 			nullCls = transforms.createTransformNode(NamingCtrl.name, lockHide = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], 
@@ -84,7 +86,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 		for i, ctrl in enumerate([self._controls[0], self._controls[-1]]):
 			Control = controls.Control(ctrl)
 			matrixLocal = transforms.getLocalMatrix([self._joints[0], self._joints[-1]][i], Control.output)
-			multMatrix = nodes.create(type = 'multMatrix', side = self._side, 
+			multMatrix = nodeUtils.create(type = 'multMatrix', side = self._side, 
 									  part = '{}Twist{}'.format(self._part + self._jointSuffix, ['Bot', 'Top'][i]), 
 									  index = self._index)
 			cmds.setAttr('{}.matrixIn[0]'.format(multMatrix), matrixLocal, type = 'matrix')
@@ -114,7 +116,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			cmds.duplicate(self._blueprintCurve, name = self._curveControlDrive)
 			cmds.parent(self._curveControlDrive, self._nodesHideGrp)
 
-			crvInfo = nodes.create(type = 'curveInfo', 
+			crvInfo = nodeUtils.create(type = 'curveInfo', 
 								   side = self._side, 
 								   part = self._part + self._jointSuffix + 'CtrlDrv', 
 								   index = self._index)
@@ -125,7 +127,8 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			for bpCtrl in self._blueprintControls:
 				NamingCtrl = naming.Naming(bpCtrl)
 				Control = controls.create(NamingCtrl.part + self._jointSuffix, side = NamingCtrl.side, index = NamingCtrl.index, 
-					stacks = self._stacks, parent = self._controlsGrp, posParent = bpCtrl, lockHide = ['sx', 'sy', 'sz'])
+					stacks = self._stacks, parent = self._controlsGrp, posParent = bpCtrl, lockHide = ['sx', 'sy', 'sz'],
+					shape = self._ikShape)
 				
 				NamingNode = naming.Naming(type = 'null', side = Control.side, part = Control.part, index = Control.index)
 				node = transforms.createTransformNode(NamingNode.name, parent = self._nodesLocalGrp, posParent = Control.output,
@@ -149,7 +152,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			inputMatrixList = []
 			for i, ctrl in enumerate([self._ikControls[0], self._ikControls[-1]]):
 				Control = controls.Control(ctrl)
-				multMatrix = nodes.create(type = 'multMatrix', 
+				multMatrix = nodeUtils.create(type = 'multMatrix', 
 										  side = ControlMid.side,
 										  part = '{}WtBlend{}'.format(ControlMid.part, ['Bot', 'Top'][i]), 
 										  index = ControlMid.index)
@@ -211,7 +214,8 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 					NamingNode.type = 'joint'
 					jointRotFk = joints.createOnNode(jnt, jnt, NamingNode.name, parent = jnt)
 					Control = controls.create(NamingNode.part, side = NamingNode.side, index = NamingNode.index, 
-						stacks = self._stacks, parent = self._controlsGrp, posParent = jnt, lockHide = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz'])
+						stacks = self._stacks, parent = self._controlsGrp, posParent = jnt, lockHide = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz'],
+						shape = self._fkShape)
 					constraints.matrixConnect(Control.name, Control.matrixLocalAttr, jointRotFk, skipTranslate = ['x', 'y', 'z'], skipScale = ['x', 'y', 'z'])
 					if i == 0:
 						matrixNode = jnt
@@ -219,7 +223,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 					else:
 						NamingNode.part += 'CtrlDrv'
 						NamingNode.type = 'multMatrix'
-						multMatrix = nodes.create(name = NamingNode.name)
+						multMatrix = nodeUtils.create(name = NamingNode.name)
 						numJnts = len(self._joints)
 						for j in range(numJnts):
 							cmds.connectAttr('{}.matrix'.format(self._joints[numJnts - 1 - j]), '{}.matrixIn[{}]'.format(multMatrix, j))

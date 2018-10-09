@@ -10,11 +10,7 @@ import maya.cmds as cmds
 
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.transforms as transforms
-import lib.common.attributes as attributes
-import lib.common.apiUtils as apiUtils
 import lib.common.packages as packages
-import lib.rigging.joints as joints
 # ---- import end ----
 
 # -- import component
@@ -51,7 +47,7 @@ class ComponentsPackage(jointComponent.JointComponent):
 
 	def _getSubComponentNodesInfo(self):
 		self._subComponentNodes = self._getStringAttrAsList('subComponentNodes')
-		subComponentDic = {'list': self._subComponentNodes}
+		subComponentDict = {'list': self._subComponentNodes}
 		if self._subComponentNodes:
 			for node in self._subComponentNodes:
 				componentType = cmds.getAttr('{}.rigComponentType'.format(node))
@@ -59,5 +55,5 @@ class ComponentsPackage(jointComponent.JointComponent):
 				componentFunc = componentFunc[0].upper() + componentFunc[1:]
 				componentImport = packages.importModule(componentType)
 				Limb = getattr(componentImport, componentFunc)(node)
-				subComponentDic.update({node: Limb})
-		self._addObjAttr('subComponentNodes', subComponentDic)
+				subComponentDict.update({node: Limb})
+		self._addObjAttr('subComponentNodes', subComponentDict)
