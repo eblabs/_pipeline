@@ -196,6 +196,9 @@ class RigComponent(object):
 		# rig component type
 		self._writeRigComponentType()
 
+		# parent holder matrix
+		cmds.addAttr(self._rigComponent, ln = 'parentHolderMatrix', at = 'matrix', lock = True)
+
 		# controls
 		self._writeControlsInfo()
 
@@ -232,6 +235,8 @@ class RigComponent(object):
 
 		self._inputMatrixPlug = '{}.inputMatrix'.format(self._rigComponent)
 		self._offsetMatrixPlug = '{}.offsetMatrix'.format(self._rigComponent)
+
+		self._addObjAttr('parentHolder', {'matrixPlug': '{}.parentHolderMatrix'.format(self._rigComponent)})
 
 		self._getControlsInfo()
 
