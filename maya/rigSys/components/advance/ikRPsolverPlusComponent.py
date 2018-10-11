@@ -10,7 +10,6 @@ import maya.cmds as cmds
 
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.naming.namingDict as namingDict
 import lib.common.hierarchy as hierarchy
 import lib.rigging.controls.controls as controls
 import lib.rigging.joints as joints
@@ -60,10 +59,10 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 		super(IkRPsolverPlusComponent, self)._createComponent()
 
 		# create rest jnts
+		bpJntType = naming.getName('blueprintJoint', 'type', returnType = 'shortName')
+		jntType = naming.getName('joint', 'type', returnType = 'shortName')
 		ikJnts = joints.createOnHierarchy(bpJointsSC[1:], 
-						namingDict.dNameConvension['type']['blueprintJoint'], 
-						namingDict.dNameConvension['type']['joint'], 
-						suffix = self._suffix, 
+						bpJntType, jntType, suffix = self._suffix, 
 						parent = self._joints[-1], rotateOrder = False)
 		ikRpTipJnt = self._joints[-1]
 		ikJntsSC = [ikRpTipJnt] + ikJnts

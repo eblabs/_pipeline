@@ -20,7 +20,6 @@ import lib.common.transforms as transforms
 import lib.common.files.files as files
 import lib.common.apiUtils as apiUtils
 import lib.common.attributes as attributes
-import lib.common.naming.namingDict as namingDict
 import lib.modeling.curves as curves
 # ---- import end ----
 
@@ -104,7 +103,7 @@ class Control(object):
 
 	@property
 	def sideLongName(self):
-		return namingDict.dNameConvensionInverse['side'][self.__side]
+		return naming.getName(self.__side, 'side', returnType = 'longName')
 
 	@property
 	def part(self):
@@ -200,10 +199,7 @@ class Control(object):
 
 	@side.setter
 	def side(self, key):
-		shortName, longName = naming.Naming.getKeyFullNameFromDict(key, 
-							  namingDict.dNameConvension['side'], 
-							  namingDict.dNameConvensionInverse['side'])
-		self.__side = shortName
+		self.__side = naming.getName(key, 'side', returnType = 'shortName')
 		self.__updateControlName()
 
 	@part.setter
@@ -776,14 +772,10 @@ def setCtrlShapeColor(ctrlShapes, color):
 		cmds.setAttr('{}.colorOverride'.format(c), color)
 
 # mirror ctrl shape
-def mirrorCtrlShape(ctrls, sub = False, posToNeg=True, leftRight=True, upDown=False, frontBack = False):
+def mirrorCtrlShape(ctrls, sub = False, posToNeg=True):
 
-	left = naming.namingDict['side']['left']
-	right = naming.namingDict['side']['right']
-	up = naming.namingDict['side']['up']
-	down = naming.namingDict['side']['down']
-	front = naming.namingDict['side']['front']
-	back = naming.namingDict['side']['back']
+	left = naming.getName('left', 'side', shortName = True)
+	right = naming.getName('right', 'side', shortName = True)
 
 	if isinstance(ctrls, basestring):
 		ctrls = [ctrls]
@@ -797,39 +789,20 @@ def mirrorCtrlShape(ctrls, sub = False, posToNeg=True, leftRight=True, upDown=Fa
 		mirrorAxis = [1,1,1]
 
 		if posToNeg:
-			if left not in side and up not in side and front not in side:
+			if left not in side:
 				# can not mirror from positive to negative
 				logger.warn('{} can not mirror from positive axis to negative'.format(c))
 			else:
-				if left in side and leftRight:
-					# mirror left to right
-					mirrorAxis[0] = -1
-					sideMirror.replace(left, right)
-				if up in side.lower() and upDown:
-					# mirror up to down
-					mirrorAxis[1] = -1
-					sideMirror.replace(up, down)
-				if front in side.lower() and frontBack:
-					# mirror front to back
-					mirrorAxis[2] = -1
-					sideMirror.replace(front, back)
+				# mirror left to right
+				mirrorAxis[0] = -1
+				sideMirror.replace(left, right)
 		else:
-			if right not in side and down not in side and back not in side:
+			if right not in side:
 				# can not mirror from negative to positive
 				logger.warn('{} can not mirror from negative axis to positive'.format(c))
 			else:
-				if right in side and leftRight:
-					# mirror left to right
-					mirrorAxis[0] = -1
-					sideMirror.replace(right, left)
-				if down in side.lower() and upDown:
-					# mirror up to down
-					mirrorAxis[1] = -1
-					sideMirror.replace(down, up)
-				if back in side.lower() and frontBack:
-					# mirror front to back
-					mirrorAxis[2] = -1
-					sideMirror.replace(back, front)
+				mirrorAxis[0] = -1
+				sideMirror.replace(right, left)
 
 		NamingCtrl.side = sideMirror
 		__mirrorSingleCtrlShape(c, NamingCtrl.name, mirrorAxis)

@@ -10,7 +10,6 @@ import maya.cmds as cmds
 
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.naming.namingDict as namingDict
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
 import lib.common.nodeUtils as nodeUtils
@@ -110,10 +109,10 @@ class JointComponent(rigComponent.RigComponent):
 
 	def _buildBindJoints(self):
 		if self._bind and self._joints:
+			jntType = naming.getName('joint', 'type', returnType = 'shortName')
+			bindType = naming.getName('bindJoint', 'type', returnType = 'shortName')
 			self._binds = joints.createOnHierarchy(self._joints,
-							[namingDict.dNameConvension['type']['joint'], self._suffix],
-							[namingDict.dNameConvension['type']['bindJoint'], ''],
-							scaleCompensate = True)			
+							[jntType, self._suffix], [bindType, ''], scaleCompensate = True)			
 
 			# tag bind joints with drive joint
 			for jnts in zip(self._binds, self._joints):
@@ -125,10 +124,11 @@ class JointComponent(rigComponent.RigComponent):
 
 	def _buildXtrans(self):
 		if self._xtran and self._joints:
+			jntType = naming.getName('joint', 'type', returnType = 'shortName')
+			xtranType = naming.getName('xtran', 'type', returnType = 'shortName')
+			
 			self._xtrans = transforms.createOnHierarchy(self._blueprintJoints, 
-							[namingDict.dNameConvension['type']['joint'], self._suffix],
-							[namingDict.dNameConvension['type']['bindJoint'], ''],
-							rotateOrder=False, 
+							[jntType, self._suffix], [xtranType, ''], rotateOrder=False, 
 							lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
 
 			# tag xtrans

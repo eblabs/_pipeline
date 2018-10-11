@@ -1,4 +1,4 @@
-dNameConvension = {
+nameDict = {
 				'type': {	
 							#transform
 							'group': 'grp',
@@ -133,7 +133,7 @@ dNameConvension = {
 
 				}
 
-dNameConvensionInverse = {}
-for sKey in dNameConvension:
-	dInverse = {sKey: {v: k for k, v in dNameConvension[sKey].iteritems()}}
-	dNameConvensionInverse.update(dInverse)
+nameInverseDict = {}
+for sKey in nameDict:
+	inverseDict = {key: {v: k for k, v in nameDict[key].iteritems()}}
+	nameInverseDict.update(inverseDict)

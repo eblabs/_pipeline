@@ -59,18 +59,9 @@ class Naming(object):
 			suffix = kwargs.get('suffix', None)
 
 			# get keys short name from dictionary
-			self.__type, longName = self.getKeyFullNameFromDict(type, 
-									namingDict.dNameConvension['type'], 
-									namingDict.dNameConvensionInverse['type'])
-
-			self.__side, longName = self.getKeyFullNameFromDict(side, 
-									namingDict.dNameConvension['side'], 
-									namingDict.dNameConvensionInverse['side'])
-
-			self.__res, longName = self.getKeyFullNameFromDict(res, 
-								namingDict.dNameConvension['resolution'], 
-								namingDict.dNameConvensionInverse['resolution'])
-
+			self.__type = getName(type, 'type', returnType = 'shortName')
+			self.__side = getName(side, 'side', returnType = 'shortName')
+			self.__res = getName(res, 'resolution', returnType = 'shortName')
 			self.__part = part
 			self.__index = index
 			self.__suffix = suffix
@@ -87,9 +78,7 @@ class Naming(object):
 
 	@property
 	def typeLongName(self):
-		shortName, longName = self.getKeyFullNameFromDict(self.__type, 
-									namingDict.dNameConvension['type'], 
-									namingDict.dNameConvensionInverse['type'])
+		longName = getName(self.__type, 'type', returnType = 'longName')
 		return longName
 
 	@property
@@ -98,9 +87,7 @@ class Naming(object):
 
 	@property
 	def sideLongName(self):
-		shortName, longName = self.getKeyFullNameFromDict(self.__side, 
-									namingDict.dNameConvension['side'], 
-									namingDict.dNameConvensionInverse['side'])
+		longName = getName(self.__side, 'side', returnType = 'longName')
 		return longName
 
 	@property
@@ -109,9 +96,7 @@ class Naming(object):
 
 	@property
 	def resolutionLongName(self):
-		shortName, longName = self.getKeyFullNameFromDict(self.__res, 
-								namingDict.dNameConvension['resolution'], 
-								namingDict.dNameConvensionInverse['resolution'])
+		longName = getName(self.__res, 'resolution', returnType = 'longName')
 		return longName
 
 	@property
@@ -133,24 +118,15 @@ class Naming(object):
 
 	@type.setter
 	def type(self, key):
-		shortName, longName = self.getKeyFullNameFromDict(key, 
-									namingDict.dNameConvension['type'], 
-									namingDict.dNameConvensionInverse['type'])
-		self.__type = shortName
+		self.__type = getName(key, 'type', returnType = 'shortName')
 
 	@side.setter
 	def side(self, key):
-		shortName, longName = self.getKeyFullNameFromDict(key, 
-									namingDict.dNameConvension['side'], 
-									namingDict.dNameConvensionInverse['side'])
-		self.__side = shortName
+		self.__side = getName(key, 'side', returnType = 'shortName')
 
 	@resolution.setter
 	def resolution(self, key):
-		shortName, longName = self.getKeyFullNameFromDict(key, 
-								namingDict.dNameConvension['resolution'], 
-								namingDict.dNameConvensionInverse['resolution'])
-		self.__res = shortName
+		self.__res = getName(key, 'resolution', returnType = 'shortName')
 
 	@part.setter
 	def part(self, key):
@@ -192,7 +168,7 @@ class Naming(object):
 			# the name has type side part, and either res or index
 			self.__side = nameSplitList[1]
 
-			if nameSplitList[2] in namingDict.dNameConvensionInverse['resolution']:
+			if getName(nameSplitList[2], 'resolution', returnType='longName'):
 				# the name contains res
 				self.__res = nameSplitList[2]
 				self.__part = nameSplitList[3]
@@ -210,7 +186,7 @@ class Naming(object):
 			# the name doesn't have either res or suffix
 			self.__side = nameSplitList[1]
 
-			if nameSplitList[2] in namingDict.dNameConvensionInverse['resolution']:
+			if getName(nameSplitList[2], 'resolution', returnType='longName'):
 				# the name contains res
 				self.__res = nameSplitList[2]
 				self.__part = nameSplitList[3]
@@ -274,3 +250,45 @@ class Naming(object):
 			# the name is invalid, should at least has type
 			logger.error('The name is invalid, should at least has type')
 			raise RuntimeError()
+
+# get name function
+def getName(key, type, returnType='shortName'):
+	'''
+	this function will return the short or long name of the given key
+	base on the naming dictionary
+
+	parameters:
+	key(string): given name for the name (type/side/res)
+	type(string): given key of the dictionary (type/side/resolution)
+	returnType(string): shortName/longName
+	'''
+	if key in namingDict.nameDict[type]:
+		# value is the long name, find short name
+		longName = key
+		shortName = namingDict.nameDict[type]
+
+	elif key in namingDict.nameInverseDict[type]:
+		# value is the short name, find long name
+		shortName = key
+		longName = namingDict.nameInverseDict[type]
+	else:
+		shortName = None
+		longName = None
+
+	if returnType == 'shortName':
+		name = shortName
+	else:
+		name = longName
+
+	return name
+
+# get all keys from dictionary
+def getKeys(type, returnType='longName'):
+	if type in namingDict.nameDict:
+		if returnType == 'longName':
+			keyList = namingDict.nameDict[type].keys()
+		else:
+			keyList = namingDict.nameInverseDict[type].keys()
+	else:
+		keyList = []
+	return keyList

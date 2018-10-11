@@ -86,6 +86,11 @@ class RigComponent(object):
 				  'connect': {'value': '',
 				  			  'type': basestring}
 							}
+
+		# add resolution tag
+		res = naming.getKeys('resolution', returnType = 'longName')
+		kwargs.update('resolution': {'value': res, 'type': list})
+
 		self._kwargs.update(kwargs)
 
 	def _setVariables(self):
@@ -198,6 +203,9 @@ class RigComponent(object):
 
 		# parent holder matrix
 		cmds.addAttr(self._rigComponent, ln = 'parentHolderMatrix', at = 'matrix', lock = True)
+
+		# add resolution tag
+		self._addListAsStringAttr('resolution', self._resolution)
 
 		# controls
 		self._writeControlsInfo()

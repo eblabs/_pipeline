@@ -10,7 +10,6 @@ import maya.cmds as cmds
 
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.naming.namingDict as namingDict
 import lib.common.attributes as attributes
 import lib.common.nodeUtils as nodeUtils
 import lib.common.packages as packages
@@ -52,11 +51,10 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		# set sub components visible
 		cmds.setAttr('{}.subComponents'.format(self._rigComponent), 1)
 		# create joints
+		bpJntType = naming.getName('blueprintJoint', 'type', returnType = 'shortName')
+		jntType = naming.getName('joint', 'type', returnType = 'shortName')
 		self._joints = joints.createOnHierarchy(self._blueprintJoints, 
-						namingDict.dNameConvension['type']['blueprintJoint'], 
-						namingDict.dNameConvension['type']['joint'], 
-						suffix = self._suffix, 
-						parent = self._jointsGrp)
+						bpJntType, jntType, suffix = self._suffix, parent = self._jointsGrp)
 
 		# create rig components
 		componentsJnts = []

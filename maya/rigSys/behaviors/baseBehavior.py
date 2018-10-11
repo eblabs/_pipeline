@@ -11,7 +11,6 @@ import maya.cmds as cmds
 
 # -- import lib
 import lib.common.naming.naming as naming
-import lib.common.naming.namingDict as namingDict
 import lib.rigging.joints as joints
 
 class BaseBehavior(object):
@@ -43,10 +42,11 @@ class BaseBehavior(object):
 	def create(self):
 		# create joints
 		if self._createJoints:
-			self._joints = joints.createOnHierarchy(self._blueprintJoints, 
-						namingDict.dNameConvension['type']['blueprintJoint'], 
-						namingDict.dNameConvension['type']['joint'], 
-						suffix = self._jointSuffix, 
+			bpJntType = naming.getName('blueprintJoint', 'type', returnType = 'shortName')
+			jntType = naming.getName('joint', 'type', returnType = 'shortName') 
+
+			self._joints = joints.createOnHierarchy(self._blueprintJoints,	
+						bpJntType, jntType, suffix = self._jointSuffix, 
 						parent = self._jointsGrp, rotateOrder = False)
 		else:
 			self._joints = self._blueprintJoints
