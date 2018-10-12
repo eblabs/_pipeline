@@ -48,6 +48,7 @@ class ComponentsPackage(jointComponent.JointComponent):
 	def _getSubComponentNodesInfo(self):
 		self._subComponentNodes = self._getStringAttrAsList('subComponentNodes')
 		subComponentDict = {'list': self._subComponentNodes}
+		subComponentObjs = []
 		if self._subComponentNodes:
 			for node in self._subComponentNodes:
 				componentType = cmds.getAttr('{}.rigComponentType'.format(node))
@@ -56,4 +57,6 @@ class ComponentsPackage(jointComponent.JointComponent):
 				componentImport = packages.importModule(componentType)
 				Limb = getattr(componentImport, componentFunc)(node)
 				subComponentDict.update({node: Limb})
+				subComponentObjs.append(Limb)
+		subComponentDict.update('Components': subComponentObjs)
 		self._addObjAttr('subComponentNodes', subComponentDict)

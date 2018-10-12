@@ -26,22 +26,20 @@ class JointComponent(rigComponent.RigComponent):
 	def __init__(self, *args,**kwargs):
 		super(JointComponent, self).__init__(*args,**kwargs)
 
+	def connectDeformationNodes(self, parentNode):
+		if 'bindJoint' in self._deformationNodes:
+			hierarchy.parent(self._binds[0], parentNode)
+		if 'xtran' in self._deformationNodes:
+			hierarchy.parent(self._xtrans[0], parentNode)
+
 	def _registerDefaultKwargs(self):
 		super(JointComponent, self)._registerDefaultKwargs()
 		kwargs = {'blueprintJoints': {'value': [],
 						 			  'type': list},
 				  'jointsDescriptor': {'value': [],
 						 			   'type': list},
-				  'bind': {'value': False,
-				  		   'type': bool},
-				  'bindParent': {'value': '',
-				  				 'type': basestring},
-				  'xtran': {'value': False,
-				  			'type': bool},
-				  'xtranParent': {'value': '',
-				  				  'type': basestring}，
-				  'twsitExtract': {'value': False,
-				  				   'type': bool}
+				  'deformationNodes': {'value': [],
+				  				       'type': list},
 							}
 		self._kwargs.update(kwargs)
 
@@ -54,27 +52,18 @@ class JointComponent(rigComponent.RigComponent):
 
 	def create(self):
 		self._createComponent()
-		self._twistExtract()
-		self._buildBindJoints()
-		self._buildXtrans()
+		self._buildDeformationNodes()
 		self._writeRigComponentInfo()
 
-	def connect(self):
-		super(JointComponent, self).connect()
-		self._connectBindJoints()
-
-	def _twistExtract(self):
-		if self._twistExtract:
-			for j in self._joints:
-				transforms.extractTwist(j, nodeMatrix = 'matrix', attr = 'twistExctration')
-
-	def _connectBindJoints(self):
-		if self._binds:
-			hierarchy.parent(self._binds[0], self._bindParent)
-
-	def _connectXtrans(self):
-		if self._xtrans:
-			hierarchy.parent(self._xtrans[0], self._xtranParent)
+	def _buildDeformationNodes(self):
+		if self._deformationNodes:
+			for i, node in enumerate(self._deformationNodes):
+				nodeType = naming.getName(node, 'type', returnType='longName')
+				self._deformationNodes[i] = nodeType
+			if 'bindJoint' in self._deformationNodes:
+				self._buildBindJoints()
+			if 'xtran' in self._deformationNodes:
+				self._buildXtrans()
 
 	def _createComponent(self):
 		super(JointComponent, self)._createComponent()
@@ -108,7 +97,7 @@ class JointComponent(rigComponent.RigComponent):
 								 driver = self._rigComponent, force=True)
 
 	def _buildBindJoints(self):
-		if self._bind and self._joints:
+		if self._joints:
 			jntType = naming.getName('joint', 'type', returnType = 'shortName')
 			bindType = naming.getName('bindJoint', 'type', returnType = 'shortName')
 			self._binds = joints.createOnHierarchy(self._joints,
@@ -123,7 +112,7 @@ class JointComponent(rigComponent.RigComponent):
 			joints.tagJoints(self._binds)
 
 	def _buildXtrans(self):
-		if self._xtran and self._joints:
+		if self._joints:
 			jntType = naming.getName('joint', 'type', returnType = 'shortName')
 			xtranType = naming.getName('xtran', 'type', returnType = 'shortName')
 			
@@ -139,6 +128,7 @@ class JointComponent(rigComponent.RigComponent):
 	def _writeRigComponentInfo(self):
 		super(JointComponent, self)._writeRigComponentInfo()
 
+		self._addListAsStringAttr('deformationNodes', self._deformationNodes)
 		self._writeJointsInfo()
 		self._writeXtransInfo()
 
@@ -203,5 +193,6 @@ class JointComponent(rigComponent.RigComponent):
 		NamingGrp.type = 'jointsGrp'
 		self._addAttributeFromDict({'_jointsGrp': NamingGrp.name})
 
+		self._deformationNodes = self._getStringAttrAsList('deformationNodes')
 		self._getJointsInfo()
 		self._getXtransInfo()

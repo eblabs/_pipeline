@@ -53,8 +53,8 @@ class RigComponent(object):
 		self._createComponent()
 		self._writeRigComponentInfo()
 
-	def connect(self):
-		inputMatrixList = cmds.getAttr(self._connect)
+	def connect(self, matrixPlug):
+		inputMatrixList = cmds.getAttr(matrixPlug)
 		componentMatrixList = cmds.getAttr('{}.worldMatrix[0]'.format(self._rigComponent))
 
 		MMatrixComponent = apiUtils.convertListToMMatrix(componentMatrixList)
@@ -62,7 +62,7 @@ class RigComponent(object):
 
 		offsetMatrixList = apiUtils.convertMMatrixToList(MMatrixComponent * MMatrixInput.inverse())
 
-		attributes.connectAttrs(self._connect, self._inputMatrixPlug, force = True)
+		attributes.connectAttrs(matrixPlug, self._inputMatrixPlug, force = True)
 		attributes.setAttrs(self._offsetMatrixPlug, offsetMatrixList, type = 'matrix', force = True)
 
 	def _registerAttrs(self, kwargs):
@@ -83,8 +83,6 @@ class RigComponent(object):
 							 'type': basestring},
 				  'stacks': {'value': 3,
 							 'type': int},
-				  'connect': {'value': '',
-				  			  'type': basestring}
 							}
 
 		# add resolution tag

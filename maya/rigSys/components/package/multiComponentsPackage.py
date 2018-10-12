@@ -59,10 +59,7 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 						  'part': key[0].upper() + key[1:],
 						  'side': self._side,
 						  'index': self._index,
-						  'bind': self._bind,
-						  'bindParent': self._bindParent,
-						  'xtran': self._xtran,
-						  'xtranParent': self._xtranParent})
+						  'deformationNodes': self._deformationNodes})
 
 			componentImport = packages.importModule(componentType)
 			Limb = getattr(componentImport, componentFunc)(**kwargs)
@@ -78,3 +75,12 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 
 		self._controls += [packageCtrl]
 		self._subComponentNodes = subComponentNodes
+
+	def connectDeformationNodes(self, parentNode):
+		if 'bindJoint' in self._deformationNodes or 'xtran' in self._deformationNodes:
+			for Limb in self._subComponentNodes.Components:
+				if 'bindJoint' in self._deformationNodes:
+					hierarchy.parent(Limb._binds[0], parentNode)
+				if 'xtran' in self._deformationNodes:
+					hierarchy.parent(Limb._xtrans[0], parentNode)
+			
