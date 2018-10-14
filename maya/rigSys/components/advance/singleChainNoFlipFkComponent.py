@@ -42,7 +42,8 @@ class SingleChainNoFlipFkComponent(ikSCsolverComponent.IkSCsolverComponent):
 		NamingCtrl = naming.Naming(self._joints[0])
 		ControlFk = controls.create(NamingCtrl.part + 'Fk', side = NamingCtrl.side, 
 				index = NamingCtrl.index, stacks = self._stacks, parent = self._controlsGrp,
-				posParent = self._joints[0], lockHide = ['sx', 'sy', 'sz'], shape = 'rotate')
+				posParent = self._joints[0], lockHide = ['sx', 'sy', 'sz'], shape = 'rotate',
+				size = self._controlSize)
 
 		# connect root and base control
 		ControlRoot = controls.Control(self._controls[0])

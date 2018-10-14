@@ -5,19 +5,28 @@ logging.basicConfig(level=debugLevel)
 logger = logging.getLogger(__name__)
 logger.setLevel(debugLevel)
 
+# -- import os
+import os
+
+# -- import time
+import time
+
 # -- import maya lib
 import maya.cmds as cmds
 
 # -- import lib
+import lib.common.files.files as files
 import lib.common.naming.naming as naming
 import lib.common.transforms as transforms
+import lib.common.hierarchy as hierarchy
 import lib.modeling.curves as curves
 # ---- import end ----
 
-def create(name, rotateOrder=0, parent=None, posPoint=None, posOrient=None, posParent=None, scaleCompensate=True):
+def create(name, rotateOrder=0, parent=None, posPoint=None, posOrient=None, posParent=None, scaleCompensate=True, vis=True):
 	cmds.select(clear = True)
 	jnt = cmds.joint(name = name)
 	cmds.setAttr('{}.ro'.format(jnt), rotateOrder)
+	cmds.setAttr('{}.v'.format(jnt), vis)
 	transforms.setNodePos(jnt, posPoint = posPoint, posOrient = posOrient, posParent = posParent)
 	cmds.makeIdentity(jnt, apply = True, t = 1, r = 1, s = 1)
 	cmds.setAttr('{}.segmentScaleCompensate'.format(jnt), scaleCompensate)
@@ -130,3 +139,49 @@ def tagJoints(jnts):
 			if part:
 				tagPart += '{}_'.format(part) 
 		cmds.setAttr('{}.otherType'.format(j), tagPart[:-1], type = 'string')
+
+# save joints info
+def saveJointsInfo(jnts, path, name=None):
+	fileFormat = files.readJsonFile(files.path_fileFormat)
+	if isinstance(jnts, basestring):
+		jnts = [jnts]
+	if not name:
+		name = 'jointsInfo'
+
+	startTime = time.time()
+
+	jntsInfoDict = {}
+	for j in jnts:
+		jntInfo = __getJointInfo(j)
+		jntsInfoDict.update(jntInfo)
+	pathOutput = os.path.join(path, '{}.{}'.format(name, fileFormat['joint']))
+	files.writeJsonFile(pathOutput, geoInfoDict)
+
+	endTime = time.time()
+	logger.info('Save joints information at {}, took {} seconds'.format(pathOutput, endTime - startTime))
+
+# load joints info
+def loadJointsInfo(path, vis=True):
+	jntsInfoDict = files.readJsonFile(path)
+	for jnt, jntInfo in jntsInfoDict.iteritems():
+		transformInfo = jntInfo['transformInfo']
+		ro = jntInfo['rotateOrder']
+		scaleCompensate = jntInfo['scaleCompensate']
+		create(jnt, rotateOrder = ro, posParent = transformInfo, scaleCompensate = scaleCompensate, vis = vis)
+	for jnt, jntInfo in jntsInfoDict.iteritems():
+		parent = jntInfo['parent']
+		hierarchy.parent(jnt, parent)
+	return jntsInfoDict.keys()
+
+# get joint info
+def __getJointInfo(jnt):
+	ro = cmds.getAttr('{}.ro'.format(jnt))
+	scaleCompensate = cmds.getAttr('{}.segmentScaleCompensate'.format(jnt))
+	transformInfo = transforms.getNodeTransformInfo(node, rotateOrder = ro)
+	parent = cmds.listRelatives(jnt, p = True)
+	if parent:
+		parent = parent[0]
+	jntInfo = {jnt: {'transformInfo': transformInfo[:-1], #remove scale info
+					 'rotateOrder': ro,
+					 'scaleCompensate': scaleCompensate,
+					 'parent': parent}}

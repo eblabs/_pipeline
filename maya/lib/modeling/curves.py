@@ -23,7 +23,7 @@ def createCurveLine(name, nodes):
 	crvShape = cmds.rename(crvShape, '{}Shape'.format(crv))
 	cmds.setAttr('{}.overrideEnabled'.format(crvShape), 1)
 	cmds.setAttr('{}.overrideDisplayType'.format(crvShape), 2)
-	#cmds.setAttr('{}.inheritsTransform'.format(crv), 0)
+	cmds.setAttr('{}.inheritsTransform'.format(crv), 0)
 	attributes.lockHideAttrs(crv, ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
 	clsHndList = []
 	for i, node in enumerate(nodes):

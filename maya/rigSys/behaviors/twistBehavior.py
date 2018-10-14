@@ -59,7 +59,7 @@ class TwistBehavior(baseBehavior.BaseBehavior):
 		for i, jnt in enumerate(jointsLocal):
 			Control = controls.create('{}{:03d}'.format(self._twistName, i), side = self._side, index = self._index,
 									stacks = self._stacks, parent = self._controlsGrp, posParent = jnt, 
-									lockHide = ['sx', 'sy', 'sz'], shape = self._controlShapes[1])
+									lockHide = ['sx', 'sy', 'sz'], shape = self._controlShapes[1], size = self._controlSize)
 
 			# connect with joint
 			multMatrix = nodeUtils.create(type = 'multMatrix', side = self._side,
@@ -86,7 +86,8 @@ class TwistBehavior(baseBehavior.BaseBehavior):
 			ctrlPos = ['Start', 'End'][i]			
 			Control = controls.create(self._twistName + ctrlPos, side = self._side, index = self._index,
 									stacks = self._stacks, parent = self._controlsGrp, posParent = jnt, 
-									lockHide = ['sx', 'sy', 'sz'], shape = self._controlShapes[0])
+									lockHide = ['sx', 'sy', 'sz'], shape = self._controlShapes[0], 
+									size = self._controlSize)
 
 			#Control.lockHideAttrs('ro')
 			ControlList.append(Control)

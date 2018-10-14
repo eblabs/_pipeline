@@ -575,10 +575,6 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 	# show rotate order
 	attributes.unlockAttrs(ctrl, 'rotateOrder', keyable=True, channelBox=True)
 
-	# add sub ctrl vis attr
-	attributes.addAttrs(ctrl, 'subCtrlVis', attributeType = 'bool',
-					    defaultValue = 0, keyable = False, channelBox = True)
-
 	# output transform node
 	NamingGrp.type = 'output'
 
@@ -597,6 +593,10 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 		NamingGrp.type = 'control'
 		NamingGrp.part = '{}Sub'.format(NamingGrp.part)
 
+		# add sub ctrl vis attr
+		attributes.addAttrs(ctrl, 'subControlVis', attributeType = 'long', minValue = 0,
+						maxValue = 1, defaultValue = 0, keyable = False, channelBox = True)
+
 		sub = transforms.createTransformNode(NamingGrp.name, parent = ctrl,
 											 rotateOrder = rotateOrder,
 											 posParent = ctrl,
@@ -614,13 +614,13 @@ def create(part, side='middle', index=None, sub=True, stacks=1, parent=None, pos
 				 				driver = sub, driven = output, force = True)
 
 		# connect with ctrl vis
-		attributes.connectAttrs('subCtrlVis', 'v', 
+		attributes.connectAttrs('subControlVis', 'v', 
 								driver = ctrl, driven = sub, force = True)
 
 		# add sub ctrl shape
 		if not colorSub:
 			colorSub = color
-		addCtrlShape(sub, shape = shape, size = size * 0.8, color = colorSub)
+		addCtrlShape(sub, shape = shape, size = size * 0.9, color = colorSub)
 
 	# write control info
 	attributes.addAttrs(ctrl, 'stacks', attributeType = 'long', 

@@ -18,6 +18,7 @@ import lib.rigging.controls.controls as controls
 
 # -- import component
 import rigSys.core.componentsPackage as componentsPackage
+import rigSys.components.utils.componentUtils as componentUtils
 # ---- import end ----
 
 class MultiComponentsPackage(componentsPackage.ComponentsPackage):
@@ -52,24 +53,24 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 		subComponentNodes = []
 		for key in self._components.keys():
 			componentType = self._components[key]['componentType']
-			componentFunc = componentType.split('.')[-1]
-			componentFunc = componentFunc[0].upper() + componentFunc[1:]
 			kwargs = self._components[key]['kwargs']
 			kwargs.update({'parent': self._subComponents,
 						  'part': key[0].upper() + key[1:],
 						  'side': self._side,
 						  'index': self._index,
+						  'controlSize': self._controlSize,
 						  'deformationNodes': self._deformationNodes})
 
-			componentImport = packages.importModule(componentType)
-			Limb = getattr(componentImport, componentFunc)(**kwargs)
-			Limb.create()
+			Limb = componentUtils.createComponent(componentType, kwargs)
 
 			controls.addCtrlShape(Limb.controls.list, asCtrl = packageCtrl)
 
-			for attr in ['jointsVis', 'rigNodesVis', 'controlsVis']:
-				cmds.connectAttr('{}.{}'.format(self._rigComponent, attr),
-								 '{}.{}'.format(Limb._rigComponent, attr),)
+			attributes.connectAttrs(['jointsVis', 'rigNodesVis', 'controlsVis', 'localization', 
+									 'inputMatrix', 'offsetMatrix'],
+									['jointsVis', 'rigNodesVis', 'controlsVis', 'localization', 
+									 'inputMatrix', 'offsetMatrix'],
+									driver = self._rigComponent,
+									driven = Limb._rigComponent)
 
 			subComponentNodes.append(Limb._rigComponent)
 

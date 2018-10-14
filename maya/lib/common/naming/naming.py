@@ -17,33 +17,6 @@ class Naming(object):
 	class to compose name in correct format
 	type_side_(resolution)_part_(index)_(suffix)
 	"""
-	@staticmethod
-	def getKeyFullNameFromDict(value, shortDict, longDict):
-		'''
-		this function will return the short and long name of the given key
-		base on the naming dictionary
-
-		parameters:
-		value(string): given name for the name (type/side/res)
-		shortDict(dictionary): dictionary for short names (longName: short)
-		longDict(dictionary): dictionary for long names (shotName: long)
-		'''
-		if value in shortDict:
-			# value is the long name, find short name
-			longName = value
-			shortName = shortDict[value]
-
-		elif value in longDict:
-			# value is the short name, find long name
-			shortName = value
-			longName = longDict[value]
-
-		else:
-			shortName = None
-			longName = None
-
-		return shortName, longName
-
 	def __init__(self, *args,**kwargs):
 		super(Naming, self).__init__()
 		self.__name = '' # the output name
@@ -265,12 +238,12 @@ def getName(key, type, returnType='shortName'):
 	if key in namingDict.nameDict[type]:
 		# value is the long name, find short name
 		longName = key
-		shortName = namingDict.nameDict[type]
+		shortName = namingDict.nameDict[type][key]
 
 	elif key in namingDict.nameInverseDict[type]:
 		# value is the short name, find long name
 		shortName = key
-		longName = namingDict.nameInverseDict[type]
+		longName = namingDict.nameInverseDict[type][key]
 	else:
 		shortName = None
 		longName = None

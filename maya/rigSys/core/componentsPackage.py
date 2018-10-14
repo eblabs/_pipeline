@@ -21,13 +21,12 @@ class ComponentsPackage(jointComponent.JointComponent):
 	"""componentsPackage template"""
 	def __init__(self, *args,**kwargs):
 		super(ComponentsPackage, self).__init__(*args,**kwargs)
-		self._rigComponentType = 'rigSys.core.componentsPackage'
+		# default attrs
 		self._subComponentNodes = []
 
 	def _setVariables(self):
 		super(ComponentsPackage, self)._setVariables()
 		self._rigComponentType = 'rigSys.core.componentsPackage'
-		self._subComponentNodes = []
 
 	def _writeRigComponentInfo(self):
 		super(ComponentsPackage, self)._writeRigComponentInfo()
@@ -58,5 +57,5 @@ class ComponentsPackage(jointComponent.JointComponent):
 				Limb = getattr(componentImport, componentFunc)(node)
 				subComponentDict.update({node: Limb})
 				subComponentObjs.append(Limb)
-		subComponentDict.update('Components': subComponentObjs)
+		subComponentDict.update({'Components': subComponentObjs})
 		self._addObjAttr('subComponentNodes', subComponentDict)

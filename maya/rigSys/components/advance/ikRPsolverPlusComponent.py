@@ -64,13 +64,15 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 		ikJnts = joints.createOnHierarchy(bpJointsSC[1:], 
 						bpJntType, jntType, suffix = self._suffix, 
 						parent = self._joints[-1], rotateOrder = False)
-		ikRpTipJnt = self._joints[-1]
-		ikJntsSC = [ikRpTipJnt] + ikJnts
+		ikJntsLocal = joints.createOnHierarchy(ikJnts, '', '', suffix = 'Local', 
+						parent = self._jointsLocal[-1], rotateOrder = False)
+		ikRpTipJntLocal = self._jointsLocal[-1]
+		ikJntsSCLocal = [ikRpTipJntLocal] + ikJntsLocal
 		ikSCHandleList = []
 
-		for i, jnt in enumerate(ikJntsSC[:-1]):
+		for i, jnt in enumerate(ikJntsSCLocal[:-1]):
 			ikSCHandle = naming.Naming(type = 'ikHandle', side = self._side, part = '{}{}IkSC'.format(self._part, descriptor[i]), index = self._index).name
-			cmds.ikHandle(sj = jnt, ee = ikJntsSC[i+1], sol = 'ikSCsolver', name = ikSCHandle)
+			cmds.ikHandle(sj = jnt, ee = ikJntsSCLocal[i+1], sol = 'ikSCsolver', name = ikSCHandle)
 			ikSCHandleList.append(ikSCHandle)
 
 		if len(ikSCHandleList) == 1:
@@ -99,8 +101,8 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 							self._blueprintReverseJoints[1],
 							self._blueprintReverseJoints[2],
 							self._blueprintReverseJoints[3],
-							ikJntsSC[-2],
-							ikJntsSC[-2]]
+							ikJntsSCLocal[-2],
+							ikJntsSCLocal[-2]]
 
 			rvsAttrList = ['ballTwist', 'heelRoll', 'toeRoll', 'sideInn', 'sideOut',
 						   'toeTap', 'ballRoll']
@@ -118,7 +120,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			self._addAttributeFromDict(attrDict)
 
 			# orient joints
-			txJnt = cmds.getAttr('{}.tx'.format(ikJntsSC[1]))
+			txJnt = cmds.getAttr('{}.tx'.format(ikJntsSCLocal[1]))
 			if txJnt >= 0:
 				aimVec = [1, 0, 0]
 			else:
@@ -127,13 +129,13 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			aimList = [[self._ballTwist, self._toeRoll],
 					   [self._heelRoll, self._toeRoll],
 					   [self._toeRoll, self._heelRoll],
-					   [self._toeTap, ikJntsSC[-1]],
-					   [self._ballRoll, ikJntsSC[0]]]
+					   [self._toeTap, ikJntsSCLocal[-1]],
+					   [self._ballRoll, ikJntsSCLocal[0]]]
 
 			for jntList in aimList:
 				cmds.delete(cmds.aimConstraint(jntList[1], jntList[0], aimVector = aimVec, 
 												upVector = [0,1,0], worldUpType = 'objectrotation', 
-												worldUpObject = ikJntsSC[1]))
+												worldUpObject = ikJntsSCLocal[1]))
 				cmds.makeIdentity(jntList[0], apply = True, t = 1, r = 1, s = 1)
 
 			aimList = [[self._sideInn, self._sideOut],
@@ -150,7 +152,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			rvsJntList = [self._toeTap, self._sideInn, self._sideOut, 
 						  self._toeRoll, self._heelRoll, self._ballTwist]
 			rvsRoot = hierarchy.connectChain(rvsJntList)
-			cmds.parent(rvsRoot, self._nodesLocal[-1])
+			cmds.parent(rvsRoot, self._nodesHide[-1])
 			cmds.parent(self._ballRoll, self._sideInn)
 			
 			ControlIk = controls.Control(self._controls[-1])
@@ -166,6 +168,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 					  'createJoints': False,
 					  'lockHide': ['tx', 'ty', 'tz', 'sx', 'sy', 'sz'],
 					  'controlShape': 'rotate',
+					  'controlSize': self._controlSize,
 
 				  	  'controlsGrp': ControlIk.output}
 			

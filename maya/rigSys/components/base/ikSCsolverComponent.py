@@ -51,6 +51,7 @@ class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):
 				  'stacks': self._stacks,
 				  'ikSolver': self._ikSolver,
 				  'jointSuffix': self._suffix,
+				  'controlSize': self._controlSize,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,
@@ -67,3 +68,5 @@ class IkSCsolverComponent(ikSolverComponent.IkSolverComponent):
 		self._ikHandles = IkSCsolverBehavior._ikHandles
 		self._ikControls = IkSCsolverBehavior._controls
 		self._nodesLocal = IkSCsolverBehavior._nodesLocal
+		self._nodesHide = IkSCsolverBehavior._nodesHide
+		self._jointsLocal = IkSCsolverBehavior._jointsLocal

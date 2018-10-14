@@ -41,6 +41,8 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 		self._ikShape = kwargs.get('ikShape', 'cube')
 		self._fkShape = kwargs.get('fkShape', 'hemisphere')
 
+		self._local = True
+
 	def create(self):
 		super(IkSplineSolverBehavior, self).create()
 
@@ -61,18 +63,33 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 		
 		# set up ik and match joints to the curve
 		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, part = self._part + self._jointSuffix, index = self._index).name
-		cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = 'ikSplineSolver', ccv = False, scv = False, curve = self._curve, name = ikHandle)
+		cmds.ikHandle(sj = self._jointsLocal[0], ee = self._jointsLocal[-1], sol = 'ikSplineSolver', ccv = False, scv = False, curve = self._curve, name = ikHandle)
+		# disconnect joints and local joints temporally to zero out the rotation
+		for jnts in zip(self._joints, self._jointsLocal):
+			for attr in ['translate', 'rotate', 'scale']:
+				for axis in 'XYZ':
+					cmds.disconnectAttr('{}.{}{}'.format(jnts[1], attr, axis),
+									 '{}.{}{}'.format(jnts[0], attr, axis))
+
 		cmds.makeIdentity(self._joints[0], apply = True, t = 1, r = 1, s = 1)
+		cmds.makeIdentity(self._jointsLocal[0], apply = True, t = 1, r = 1, s = 1)
+		# connect back
+		for jnts in zip(self._joints, self._jointsLocal):
+			for attr in ['translate', 'rotate', 'scale']:
+				for axis in 'XYZ':
+					cmds.connectAttr('{}.{}{}'.format(jnts[1], attr, axis),
+									 '{}.{}{}'.format(jnts[0], attr, axis))
 
 		# parent nodes
 		cmds.parent(self._curve, clsHndList, self._nodesHideGrp)
-		cmds.parent(ikHandle, self._nodesLocalGrp)
+		cmds.parent(ikHandle, self._nodesHideGrp)
 
 		# controls
 		for i, clsHnd in enumerate(clsHndList):
 			NamingCtrl = naming.Naming(clsHnd)
 			Control = controls.create(self._part + self._jointSuffix + 'Tweak', side = NamingCtrl.side, index = NamingCtrl.index, 
-				stacks = self._stacks, parent = self._controlsGrp, lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'], shape = self._tweakerShape)
+				stacks = self._stacks, parent = self._controlsGrp, lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'], shape = self._tweakerShape,
+				size = self._controlSize)
 			cmds.delete(cmds.pointConstraint(clsHnd, Control.zero, mo = False))
 			NamingCtrl.type = 'null'
 			nullCls = transforms.createTransformNode(NamingCtrl.name, lockHide = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], 
@@ -106,12 +123,14 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			
 			pointStart = transforms.getNodeTransformInfo(self._controls[0])[0]
 			pointEnd = transforms.getNodeTransformInfo(self._controls[-1])[0]
-
+			
 			pointsList = [pointStart] + pointsList + [pointEnd]
 
 			self._curveDrive = naming.Naming(type = 'curve', side = self._side, part = self._part + self._jointSuffix + 'Drv', index = self._index).name
 			curves.createCurveOnNodes(self._curveDrive, pointsList, degree = 3, parent = self._nodesHideGrp)
-
+			# rebuild curve to make sure have enough cv
+			cmds.rebuildCurve(self._curveDrive, ch = 0, rebuildType = 0, degree = 3, s = 4, keepRange = 0, rpo = True)
+		
 			self._curveControlDrive = naming.Naming(type = 'curve', side = self._side, part = self._part + self._jointSuffix + 'CtrlDrv', index = self._index).name
 			cmds.duplicate(self._blueprintCurve, name = self._curveControlDrive)
 			cmds.parent(self._curveControlDrive, self._nodesHideGrp)
@@ -124,25 +143,27 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			cmds.connectAttr('{}.worldSpace[0]'.format(curveControlDriveShape), '{}.inputCurve'.format(crvInfo))
 
 			# ik drv ctrl
+			clsGrp = []
 			for bpCtrl in self._blueprintControls:
 				NamingCtrl = naming.Naming(bpCtrl)
 				Control = controls.create(NamingCtrl.part + self._jointSuffix, side = NamingCtrl.side, index = NamingCtrl.index, 
 					stacks = self._stacks, parent = self._controlsGrp, posParent = bpCtrl, lockHide = ['sx', 'sy', 'sz'],
-					shape = self._ikShape)
+					shape = self._ikShape, size = self._controlSize)
 				
 				NamingNode = naming.Naming(type = 'null', side = Control.side, part = Control.part, index = Control.index)
-				node = transforms.createTransformNode(NamingNode.name, parent = self._nodesLocalGrp, posParent = Control.output,
+				node = transforms.createTransformNode(NamingNode.name, parent = self._nodesHideGrp, posParent = Control.output,
 												  lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
 				constraints.matrixConnect(Control.name, Control.matrixWorldAttr, node, force = True, quatToEuler = False)
 			
-				self._nodesLocal.append(node)
+				clsGrp.append(node)
+				self._nodesHide.append(node)
 				self._ikControls.append(Control.name)
 
 			# cluster curve
 			clsHndList = curves.clusterCurve(self._curveDrive, relatives = False)
-			cmds.parent(clsHndList[:2], self._nodesLocal[0])
-			cmds.parent(clsHndList[-2:], self._nodesLocal[-1])
-			cmds.parent(clsHndList[2], self._nodesLocal[1])
+			cmds.parent(clsHndList[:3], clsGrp[0])
+			cmds.parent(clsHndList[-3:], clsGrp[-1])
+			cmds.parent(clsHndList[3], clsGrp[1])
 
 			# blend mid control
 			ControlMid = controls.Control(self._ikControls[1])
@@ -163,7 +184,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 				inputMatrixList.append('{}.matrixSum'.format(multMatrix))
 
 			constraints.constraintBlend(inputMatrixList, ControlMid.passer, 
-						weightList=['{}.weight'.format(ControlMid.name), rvsPlug], scale = False, parentInverseMatrix = '{}.parentInverseMatrix[0]'.format(ControlMid.passer))
+						weightList=['{}.weight'.format(ControlMid.name), rvsPlug], scale = False, parentInverseMatrix = '{}.inverseMatrix'.format(ControlMid.zero))
 			
 			parentConstraint = naming.Naming(type = 'parentConstraint', side = ControlMid.side,
 								part = '{}WtBlend'.format(ControlMid.part), index = ControlMid.index).name
@@ -215,7 +236,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 					jointRotFk = joints.createOnNode(jnt, jnt, NamingNode.name, parent = jnt)
 					Control = controls.create(NamingNode.part, side = NamingNode.side, index = NamingNode.index, 
 						stacks = self._stacks, parent = self._controlsGrp, posParent = jnt, lockHide = ['tx', 'ty', 'tz', 'sx', 'sy', 'sz'],
-						shape = self._fkShape)
+						shape = self._fkShape, size = self._controlSize)
 					constraints.matrixConnect(Control.name, Control.matrixLocalAttr, jointRotFk, skipTranslate = ['x', 'y', 'z'], skipScale = ['x', 'y', 'z'])
 					if i == 0:
 						matrixNode = jnt

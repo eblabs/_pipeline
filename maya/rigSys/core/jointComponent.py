@@ -26,6 +26,11 @@ class JointComponent(rigComponent.RigComponent):
 	def __init__(self, *args,**kwargs):
 		super(JointComponent, self).__init__(*args,**kwargs)
 
+		# default attrs
+		self._joints = []
+		self._binds = []
+		self._xtrans = []
+
 	def connectDeformationNodes(self, parentNode):
 		if 'bindJoint' in self._deformationNodes:
 			hierarchy.parent(self._binds[0], parentNode)
@@ -46,10 +51,7 @@ class JointComponent(rigComponent.RigComponent):
 	def _setVariables(self):
 		super(JointComponent, self)._setVariables()
 		self._rigComponentType = 'rigSys.core.jointComponent'
-		self._joints = []
-		self._binds = []
-		self._xtrans = []
-
+		
 	def create(self):
 		self._createComponent()
 		self._buildDeformationNodes()
@@ -166,16 +168,17 @@ class JointComponent(rigComponent.RigComponent):
 		self._addListAsStringAttr('binds', self._binds)
 
 		for i, jnt in enumerate(self._joints):
-			NamingJnt = naming.Naming(jnt)
-			NamingJnt.type = 'multMatrix'
-			NamingJnt.part = '{}Output'.format(NamingJnt.part)
-			multMatrixJnt = nodeUtils.create(name = NamingJnt.name)
-			attributes.connectAttrs(['{}.worldMatrix[0]'.format(jnt), '{}.outputInverseMatrix'.format(self._rigComponent)],
-									['matrixIn[0]', 'matrixIn[1]'], driven = multMatrixJnt)
+			# NamingJnt = naming.Naming(jnt)
+			# NamingJnt.type = 'multMatrix'
+			# NamingJnt.part = '{}Output'.format(NamingJnt.part)
+			# multMatrixJnt = nodeUtils.create(name = NamingJnt.name)
+			# attributes.connectAttrs(['{}.worldMatrix[0]'.format(jnt), '{}.outputInverseMatrix'.format(self._rigComponent)],
+			# 						['matrixIn[0]', 'matrixIn[1]'], driven = multMatrixJnt)
 			
 			cmds.addAttr(self._rigComponent, ln = 'joint{:03d}Matrix'.format(i), at = 'matrix')
 
-			cmds.connectAttr('{}.matrixSum'.format(multMatrixJnt), '{}.joint{:03d}Matrix'.format(self._rigComponent, i))
+			#cmds.connectAttr('{}.matrixSum'.format(multMatrixJnt), '{}.joint{:03d}Matrix'.format(self._rigComponent, i))
+			cmds.connectAttr('{}.worldMatrix[0]'.format(jnt), '{}.joint{:03d}Matrix'.format(self._rigComponent, i))
 
 		# discriptor
 		self._addListAsStringAttr('jointsDescriptor', self._jointsDescriptor)

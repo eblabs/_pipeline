@@ -39,6 +39,8 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 			mel.eval('ikSpringSolver')
 		self._controlShapes = kwargs.get('controlShapes', ['sphere', 'diamond', 'cube'])
 
+		self._local = True
+
 	def create(self):
 		super(IkRPsolverBehavior, self).create()
 
@@ -48,12 +50,12 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 			partSuffix = ['Pos', 'Pv', ''][i]
 			Control = controls.create(NamingCtrl.part + partSuffix + self._jointSuffix, side = NamingCtrl.side, 
 				index = NamingCtrl.index, stacks = self._stacks, parent = self._controlsGrp, 
-				posParent = bpCtrl, lockHide = ['sx', 'sy', 'sz'], shape = self._controlShapes[i])
+				posParent = bpCtrl, lockHide = ['sx', 'sy', 'sz'], shape = self._controlShapes[i], size = self._controlSize)
 			self._controls.append(Control.name)
 
 		# set ik solver
 		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, part = self._part + self._jointSuffix, index = self._index).name
-		cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = self._ikSolver, name = ikHandle)
+		cmds.ikHandle(sj = self._jointsLocal[0], ee = self._jointsLocal[-1], sol = self._ikSolver, name = ikHandle)
 
 		# check if flip for spring solver, seems like a maya bug
 		if self._ikSolver == 'ikSpringSolver':
@@ -80,16 +82,16 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		for ctrl in self._controls[1:]:
 			Control = controls.Control(ctrl)
 			NamingNode = naming.Naming(type = 'null', side = Control.side, part = Control.part, index = Control.index)
-			node = transforms.createTransformNode(NamingNode.name, parent = self._nodesLocalGrp, posParent = ctrl,
+			node = transforms.createTransformNode(NamingNode.name, parent = self._nodesHideGrp, posParent = ctrl,
 												  lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
 			constraints.matrixConnect(Control.name, Control.matrixWorldAttr, node, force = True, quatToEuler = False)
-			self._nodesLocal.append(node)
+			self._nodesHide.append(node)
 
 		# parent ik to node
-		cmds.parent(ikHandle, self._nodesLocal[-1])
+		cmds.parent(ikHandle, self._nodesHide[-1])
 
 		# pole vector constraint
-		cmds.poleVectorConstraint(self._nodesLocal[0], ikHandle)
+		cmds.poleVectorConstraint(self._nodesHide[0], ikHandle)
 
 		# pole vector line
 		crvLine = naming.Naming(type = 'crvLine', side = self._side, part = self._part + self._jointSuffix, index = self._index).name
@@ -109,7 +111,7 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 
 		# connect root jnt with controller
 		ControlRoot = controls.Control(self._controls[0])
-		constraints.matrixConnect(ControlRoot.name, ControlRoot.matrixWorldAttr, self._joints[0], force = True, skipRotate = ['x', 'y', 'z'], 
+		constraints.matrixConnect(ControlRoot.name, ControlRoot.matrixWorldAttr, self._jointsLocal[0], force = True, skipRotate = ['x', 'y', 'z'], 
 						  		  skipScale = ['x', 'y', 'z'])
 
 		# connect twist attr

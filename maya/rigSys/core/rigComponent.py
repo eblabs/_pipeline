@@ -24,6 +24,12 @@ class RigComponent(object):
 
 	def __init__(self, *args,**kwargs):
 
+		# default attrs
+		self._kwargs = {}
+		self._kwargsRemove = []
+		self._controls = []
+		self._suffix = ''
+
 		self._registerAttrs(kwargs)
 
 		if args:
@@ -71,7 +77,7 @@ class RigComponent(object):
 		self._registerInput(kwargs)
 		self._removeAttributes()
 		self._setVariables()
-
+		
 	def _registerDefaultKwargs(self):
 		kwargs = {'side': {'value': 'middle', 
 						   'type' : basestring},
@@ -83,20 +89,18 @@ class RigComponent(object):
 							 'type': basestring},
 				  'stacks': {'value': 3,
 							 'type': int},
+				  'controlSize': {'value': 1,
+				  				  'type': float}
 							}
 
 		# add resolution tag
 		res = naming.getKeys('resolution', returnType = 'longName')
-		kwargs.update('resolution': {'value': res, 'type': list})
+		kwargs.update({'resolution': {'value': res, 'type': list}})
 
 		self._kwargs.update(kwargs)
 
 	def _setVariables(self):
 		self._rigComponentType = 'rigSys.core.rigComponent'
-		self._kwargs = {}
-		self._kwargsRemove = []
-		self._controls = []
-		self._suffix = ''
 
 	def _createComponent(self):
 		'''
@@ -146,7 +150,8 @@ class RigComponent(object):
 
 		# inheritsTransform
 		attributes.setAttrs(['{}.inheritsTransform'.format(self._rigLocal),
-							 '{}.inheritsTransform'.format(self._rigWorld)],
+							 '{}.inheritsTransform'.format(self._rigWorld),
+							 '{}.inheritsTransform'.format(self._subComponents)],
 							 0, force = True)
 
 		# hide nodesHide
@@ -156,9 +161,11 @@ class RigComponent(object):
 		attributes.addAttrs(self._rigComponent, ['inputMatrix', 'offsetMatrix', 'outputMatrix', 'outputInverseMatrix'], 
 							attributeType = 'matrix', lock = True)
 		
-		attributes.addAttrs(self._rigComponent, ['controlsVis', 'rigNodesVis', 'subComponents'],
+		attributes.addAttrs(self._rigComponent, ['controlsVis', 'rigNodesVis', 'subComponents', 'localization'],
 							attributeType = 'long', minValue = 0, maxValue = 1, 
-							defaultValue = [1,0,0], keyable = False, channelBox = True)
+							defaultValue = [1,0,0,1], keyable = False, channelBox = True)
+
+		localizationPlug = attributes.addRvsAttr(self._rigComponent, 'localization')
 
 		# connect attrs
 		attributes.connectAttrs(['controlsVis', 'rigNodesVis', 'rigNodesVis', 'subComponents'], 
@@ -167,6 +174,7 @@ class RigComponent(object):
 								 '{}.v'.format(self._nodesHideGrp), 
 								 '{}.v'.format(self._subComponents)], 
 								 driver = self._rigComponent, force=True)
+		cmds.connectAttr(localizationPlug, '{}.inheritsTransform'.format(self._rigLocal))
 
 		# connect matrix
 		NamingGrp.type = 'multMatrix'
@@ -200,7 +208,8 @@ class RigComponent(object):
 		self._writeRigComponentType()
 
 		# parent holder matrix
-		cmds.addAttr(self._rigComponent, ln = 'parentHolderMatrix', at = 'matrix', lock = True)
+		cmds.addAttr(self._rigComponent, ln = 'parentHolderMatrix', at = 'matrix')
+		cmds.setAttr('{}.parentHolderMatrix'.format(self._rigComponent), lock = True)
 
 		# add resolution tag
 		self._addListAsStringAttr('resolution', self._resolution)

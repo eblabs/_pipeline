@@ -32,6 +32,9 @@ class FkDriveIkSplineSolverComponent(ikSplineSolverComponent.IkSplineSolverCompo
 	"""
 	def __init__(self, *args,**kwargs):
 		super(FkDriveIkSplineSolverComponent, self).__init__(*args,**kwargs)
+		# default attrs
+		self._fkControls = []
+		self._fkReverseControls = []
 
 	def _registerDefaultKwargs(self):
 		super(FkDriveIkSplineSolverComponent, self)._registerDefaultKwargs()
@@ -42,8 +45,6 @@ class FkDriveIkSplineSolverComponent(ikSplineSolverComponent.IkSplineSolverCompo
 	def _setVariables(self):
 		super(FkDriveIkSplineSolverComponent, self)._setVariables()
 		self._rigComponentType = 'rigSys.components.advance.fkDriveIkSplineSolverComponent'
-		self._fkControls = []
-		self._fkReverseControls = []
 
 	def _createComponent(self):
 		super(FkDriveIkSplineSolverComponent, self)._createComponent()
@@ -91,7 +92,8 @@ class FkDriveIkSplineSolverComponent(ikSplineSolverComponent.IkSplineSolverCompo
 											parent = ctrlParent, 
 											posParent = bpCtrl,
 											lockHide=['sx', 'sy', 'sz'],
-											shape = 'circle')
+											shape = 'circle',
+											size = self._controlSize)
 				cmds.connectAttr('{}.{}'.format(ikVisCtrl, visAttr), '{}.v'.format(ControlFk.zero))
 				ctrlParent = ControlFk.output
 				fkControllist.append(ControlFk.name)

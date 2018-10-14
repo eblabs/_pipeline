@@ -12,7 +12,6 @@ import maya.cmds as cmds
 import lib.common.naming.naming as naming
 import lib.common.attributes as attributes
 import lib.common.nodeUtils as nodeUtils
-import lib.common.packages as packages
 import lib.rigging.constraints as constraints
 import lib.rigging.joints as joints
 import lib.rigging.controls.controls as controls
@@ -21,7 +20,7 @@ import lib.rigging.controls.controls as controls
 # -- import component
 import rigSys.core.componentsPackage as componentsPackage
 import rigSys.core.space as space
-reload(componentsPackage)
+import rigSys.components.utils.componentUtils as componentUtils
 # ---- import end ----
 
 class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
@@ -62,28 +61,25 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 									part = '{}Blend'.format(self._part), index = self._index).name
 		subComponentNodes = []
 
-		for key in self._components.keys():
+		for key in self._components:
 			componentType = self._components[key]['componentType']
-			componentFunc = componentType.split('.')[-1]
-			componentFunc = componentFunc[0].upper() + componentFunc[1:]
 			kwargs = self._components[key]['kwargs']
 			kwargs.update({'blueprintJoints': self._blueprintJoints,
 						  'parent': self._subComponents,
 						  'part': self._part + key[0].upper() + key[1:],
 						  'side': self._side,
-						  'index': self._index})
-
-			componentImport = packages.importModule(componentType)
-			Limb = getattr(componentImport, componentFunc)(**kwargs)
-			Limb.create()
+						  'index': self._index,
+						  'controlSize': self._controlSize})
+			Limb = componentUtils.createComponent(componentType, kwargs)
 
 			componentsJnts.append(Limb.joints.list)
 
 			controls.addCtrlShape(Limb.controls.list, asCtrl = blendCtrl)
 
-			for attr in ['jointsVis', 'rigNodesVis']:
-				cmds.connectAttr('{}.{}'.format(self._rigComponent, attr),
-								 '{}.{}'.format(Limb._rigComponent, attr),)
+			attributes.connectAttrs(['jointsVis', 'rigNodesVis', 'localization', 'inputMatrix', 'offsetMatrix'],
+									['jointsVis', 'rigNodesVis', 'localization', 'inputMatrix', 'offsetMatrix'],
+									driver = self._rigComponent,
+									driven = Limb._rigComponent)
 
 			subComponentNodes.append(Limb._rigComponent)
 

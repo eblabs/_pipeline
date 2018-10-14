@@ -48,6 +48,7 @@ class TwistComponent(jointComponent.JointComponent):
 				  'stacks': self._stacks,
 				  'jointSuffix': self._suffix,
 				  'jointsNumber': self._jointsNumber,
+				  'controlSize': self._controlSize,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,

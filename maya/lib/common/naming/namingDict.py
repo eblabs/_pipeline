@@ -99,21 +99,20 @@ nameDict = {
 							'angleBetween': 'angleBtw',
 
 							# rig component
-							'master': 'master',
 							'deformationRig': 'deformationRig',
 							'animationRig': 'animationRig',
-							'geometryGrp': 'geometryGrp',
-							'skeletonGrp': 'skeletonGrp',
-							'rigNodesGrp': 'rigNodesGrp',
-							'componentsGrp': 'componentsGrp',
+							'geometryGroup': 'geometryGrp',
+							'skeletonGroup': 'skeletonGrp',
+							'componentsGroup': 'componentsGrp',
+							'rigNodesGroup': 'rigNodesGrp',
 							'rigComponent': 'rigComponent',
 							'rigLocal': 'rigLocal',
-							'controlsGrp': 'controlsGrp',
-							'jointsGrp': 'jointsGrp',
-							'nodesLocalGrp': 'nodesLocalGrp',
+							'controlsGroup': 'controlsGrp',
+							'jointsGroup': 'jointsGrp',
+							'nodesLocalGroup': 'nodesLocalGrp',
 							'rigWorld': 'rigWorld',
-							'nodesHideGrp': 'nodesHideGrp',
-							'nodesShowGrp': 'nodesShowGrp',
+							'nodesHideGroup': 'nodesHideGrp',
+							'nodesShowGrroup': 'nodesShowGrp',
 							'subComponents': 'subComponents',
 						},
 
@@ -134,6 +133,6 @@ nameDict = {
 				}
 
 nameInverseDict = {}
-for sKey in nameDict:
+for key in nameDict:
 	inverseDict = {key: {v: k for k, v in nameDict[key].iteritems()}}
 	nameInverseDict.update(inverseDict)

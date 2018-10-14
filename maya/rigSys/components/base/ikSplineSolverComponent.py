@@ -53,6 +53,7 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 				  'topFk': self._topFk,
 				  'bottomFk': self._bottomFk,
 				  'jointSuffix': self._suffix,
+				  'controlSize': self._controlSize,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,
@@ -71,6 +72,8 @@ class IkSplineSolverComponent(ikSolverComponent.IkSolverComponent):
 		self._ikTweakControls = IkSplineSolverBehavior._ikTweakControls
 		self._fkRotControls = IkSplineSolverBehavior._fkRotControls
 		self._curve = IkSplineSolverBehavior._curve
+		self._nodesHide = IkSplineSolverBehavior._nodesHide
+		self._jointsLocal = IkSplineSolverBehavior._jointsLocal
 
 	def _writeRigComponentInfo(self):
 		super(IkSplineSolverComponent, self)._writeRigComponentInfo()

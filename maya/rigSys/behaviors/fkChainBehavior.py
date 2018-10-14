@@ -37,7 +37,7 @@ class FkChainBehavior(baseBehavior.BaseBehavior):
 			NamingCtrl = naming.Naming(jnt)
 			Control = controls.create(NamingCtrl.part, side = NamingCtrl.side, index = NamingCtrl.index, 
 				stacks = self._stacks, parent = ctrlParent, posParent = jnt, lockHide = self._lockHide,
-				shape = self._controlShape)
+				shape = self._controlShape, size = self._controlSize)
 
 			## connect ctrl to joint
 			constraints.matrixConnect(Control.name, Control.matrixLocalAttr, jnt, skipTranslate = ['x', 'y', 'z'], 

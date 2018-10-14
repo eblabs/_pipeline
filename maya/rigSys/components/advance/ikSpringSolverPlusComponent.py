@@ -51,6 +51,7 @@ class IkSpringSolverPlusComponent(ikRPsolverPlusComponent.IkRPsolverPlusComponen
 				  'stacks': self._stacks,
 				  'blueprintControl': self._blueprintControl,
 				  'ikSolver': 'ikSpringSolver',
+				  'controlSize': self._controlSize,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,

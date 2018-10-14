@@ -28,8 +28,10 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 		self._ikSolver = kwargs.get('ikSolver', 'ikSCsolver')
 		if self._ikSolver == 'ikSCsolver':
 			self._jointSuffix = kwargs.get('jointSuffix', 'IkSC')
+			self._local = True
 		elif self._ikSolver == 'aimConstraint':
 			self._jointSuffix = kwargs.get('jointSuffix', 'AimSC')
+			self._local = False
 		self._controlShapes = kwargs.get('controlShapes', ['sphere', 'handle'])
 
 	def create(self):
@@ -41,7 +43,7 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 			Control = controls.create(NamingCtrl.part + ['Root', 'Target'][i], side = NamingCtrl.side, 
 				index = NamingCtrl.index, stacks = self._stacks, parent = self._controlsGrp, posPoint = bpCtrl, 
 				posOrient = self._joints[0], lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'], 
-				shape = self._controlShapes[i])
+				shape = self._controlShapes[i], size = self._controlSize)
 			self._controls.append(Control.name)
 
 		# connect root jnt with controller
@@ -56,17 +58,17 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 		if self._ikSolver == 'ikSCsolver':
 
 			# set ik solver
-			ikHandle = naming.Naming(type = 'ikHandle', side = self._side, sPart = self._part + self._jointSuffix, iIndex = self._index).name
-			cmds.ikHandle(sj = self._joints[0], ee = self._joints[-1], sol = 'ikSCsolver', name = ikHandle)
+			ikHandle = naming.Naming(type = 'ikHandle', side = self._side, part = self._part + self._jointSuffix, index = self._index).name
+			cmds.ikHandle(sj = self._jointsLocal[0], ee = self._jointsLocal[-1], sol = 'ikSCsolver', name = ikHandle)
 
 			# add transfrom group to control ik
 			Control = controls.Control(self._controls[-1])
 			NamingNode = naming.Naming(type = 'null', side = Control.side, part = Control.part, index = Control.index)
-			node = transforms.createTransformNode(NamingNode.name, parent = self._nodesLocalGrp, posParent = self._controls[-1],
+			node = transforms.createTransformNode(NamingNode.name, parent = self._nodesHideGrp, posParent = self._controls[-1],
 													lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
 			constraints.matrixConnect(Control.name, Control.matrixWorldAttr, node, force = True, quatToEuler = False)
 
-			self._nodesLocal = [node]
+			self._nodesHide = [node]
 
 			# parent ik to node
 			cmds.parent(ikHandle, node)

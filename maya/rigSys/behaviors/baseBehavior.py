@@ -33,7 +33,12 @@ class BaseBehavior(object):
 		self._nodesHideGrp = kwargs.get('nodesHideGrp', '')
 		self._nodesShowGrp = kwargs.get('nodesShowGrp', '')
 
+		self._controlSize = kwargs.get('controlSize', 1)
+
+		self._local = False
+
 		self._joints = []
+		self._jointsLocal = []
 		self._controls = []
 		self._nodesLocal = []
 		self._nodesHide = []
@@ -50,4 +55,14 @@ class BaseBehavior(object):
 						parent = self._jointsGrp, rotateOrder = False)
 		else:
 			self._joints = self._blueprintJoints
+
+		if self._local:
+			self._jointsLocal = joints.createOnHierarchy(self._joints,	
+								'', '', suffix = 'Local', 
+								parent = self._nodesHideGrp, rotateOrder = False)
+			for jnts in zip(self._joints, self._jointsLocal):
+				for attr in ['translate', 'rotate', 'scale']:
+					for axis in 'XYZ':
+						cmds.connectAttr('{}.{}{}'.format(jnts[1], attr, axis),
+										 '{}.{}{}'.format(jnts[0], attr, axis))
 

@@ -53,6 +53,7 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 				  'stacks': self._stacks,
 				  'blueprintControl': self._blueprintControl,
 				  'ikSolver': self._ikSolver,
+				  'controlSize': self._controlSize,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,
@@ -69,7 +70,9 @@ class IkRPsolverComponent(ikSolverComponent.IkSolverComponent):
 		self._ikHandles = IkRPsolverBehavior._ikHandles
 		self._ikControls = IkRPsolverBehavior._controls
 		self._nodesLocal = IkRPsolverBehavior._nodesLocal
+		self._nodesHide = IkRPsolverBehavior._nodesHide
 		self._crvLine = IkRPsolverBehavior._crvLine
+		self._jointsLocal = IkRPsolverBehavior._jointsLocal
 
 	def _writeRigComponentInfo(self):
 		super(IkRPsolverComponent, self)._writeRigComponentInfo()

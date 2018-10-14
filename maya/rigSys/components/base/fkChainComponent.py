@@ -48,6 +48,7 @@ class FkChainComponent(jointComponent.JointComponent):
 				  'stacks': self._stacks,
 				  'lockHide': self._lockHide,
 				  'jointSuffix': self._suffix,
+				  'controlSize': self._controlSize,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,
