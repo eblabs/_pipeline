@@ -1,0 +1,12 @@
+{
+    "fk": 0,
+    "ik": 1,
+    "world": 3,
+    "cog": 4,
+    "chest": 5,
+    "pelvis": 6,
+    "clavicle": 7,
+    "hand": 8,
+    "foot": 9,
+    "head": 10
+}

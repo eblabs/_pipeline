@@ -15,7 +15,7 @@ nameDict = {
 
 							#rigging
 							'joint': 'jnt',
-							'bind': 'bind',
+							'bindJoint': 'bind',
 							'blueprintJoint': 'bpJnt',
 							'reverseJoint': 'rvsJnt',
 							'blueprintCurve': 'bpCrv',

@@ -31,18 +31,18 @@ class JointComponent(rigComponent.RigComponent):
 		self._binds = []
 		self._xtrans = []
 
-	def connectDeformationNodes(self, parentNode):
+	def connectDeformationNodes(self, parentNodes):
+		if not isinstance(parentNodes, list):
+			parentNodes = [parentNodes]
 		if 'bindJoint' in self._deformationNodes:
-			hierarchy.parent(self._binds[0], parentNode)
+			hierarchy.parent(self.binds.bind000.name, parentNodes[0])
 		if 'xtran' in self._deformationNodes:
-			hierarchy.parent(self._xtrans[0], parentNode)
+			hierarchy.parent(self.xtrans.bind000.name, parentNodes[-1])
 
 	def _registerDefaultKwargs(self):
 		super(JointComponent, self)._registerDefaultKwargs()
 		kwargs = {'blueprintJoints': {'value': [],
 						 			  'type': list},
-				  'jointsDescriptor': {'value': [],
-						 			   'type': list},
 				  'deformationNodes': {'value': [],
 				  				       'type': list},
 							}
@@ -50,7 +50,7 @@ class JointComponent(rigComponent.RigComponent):
 
 	def _setVariables(self):
 		super(JointComponent, self)._setVariables()
-		self._rigComponentType = 'rigSys.core.jointComponent'
+		self._rigComponentType = 'rigSys.components.core.jointComponent'
 		
 	def create(self):
 		self._createComponent()
@@ -90,7 +90,7 @@ class JointComponent(rigComponent.RigComponent):
 							attributeType = 'long', minValue = 0, maxValue = 1, 
 							defaultValue = [0], keyable = False, channelBox = True)
 
-		attributes.addAttrs(self._rigComponent, ['joints', 'jointsDescriptor'],
+		attributes.addAttrs(self._rigComponent, ['joints'],
 							attributeType = 'string')
 
 		# connect attrs
@@ -107,7 +107,7 @@ class JointComponent(rigComponent.RigComponent):
 
 			# tag bind joints with drive joint
 			for jnts in zip(self._binds, self._joints):
-				attributes.addAttrsaddAttrs(jnts[0], 'joint', attributeType = 'string', 
+				attributes.addAttrs(jnts[0], 'joint', attributeType = 'string', 
 													defaultValue = jnts[1], lock = True)
 
 			# set bind joints tag
@@ -124,7 +124,7 @@ class JointComponent(rigComponent.RigComponent):
 
 			# tag xtrans
 			for xtr in zip(self._xtrans, self._joints):
-				attributes.addAttrsaddAttrs(xtr[0], 'joint', attributeType = 'string', 
+				attributes.addAttrs(xtr[0], 'joint', attributeType = 'string', 
 													defaultValue = xtr[1], lock = True)
 
 	def _writeRigComponentInfo(self):
@@ -132,62 +132,51 @@ class JointComponent(rigComponent.RigComponent):
 
 		self._addListAsStringAttr('deformationNodes', self._deformationNodes)
 		self._writeJointsInfo()
-		self._writeXtransInfo()
+		self._getJointsInfo()
 
 	def _getJointsInfo(self):
 		jointList = self._getStringAttrAsList('joints')
-		if jointList:
-
-			jointsDict = {'list': jointList,
-						 'count': len(jointList)}
-
-			self._addObjAttr('joints', jointsDict)
-
-			self._jointsDescriptor = self._getStringAttrAsList('jointsDescriptor')
-
-			for i, joint in enumerate(jointList):
-				jointsInfoDict = {'name': joint,
-								 'matrixPlug': '{}.joint{:03d}Matrix'.format(self._rigComponent, i)}
-
-				self._addObjAttr('joints.joint{:03d}'.format(i), jointsInfoDict)
-
-				if self._jointsDescriptor:
-					self._addObjAttr('joints.{}'.format(self._jointsDescriptor[i]), jointsInfoDict)
-
 		bindList = self._getStringAttrAsList('binds')
-		if bindList:
-			self._addAttributeFromDict({'binds': bindList})
-
-	def _getXtransInfo(self):
 		xtransList = self._getStringAttrAsList('xtrans')
-		if xtransList:
-			self._addAttributeFromDict({'xtrans': xtransList})
+
+		for i, nodeList in enumerate([jointList, bindList, xtransList]):
+			attr = ['joints', 'binds', 'xtrans'][i]
+			if nodeList:
+				nodesDict = {'list': nodeList,
+							 'count': len(nodeList)}
+				self._addObjAttr(attr, nodesDict)
+
+				for j, node in enumerate(nodeList):
+					nodesInfoDict = {'name': node}
+					if attr == 'joints':
+						nodesInfoDict.update({'localMatrixPlug': '{}.joint{:03d}MatrixLocal'.format(self._rigComponent, j),
+											  'worldMatrixPlug': '{}.joint{:03d}MatrixWorld'.format(self._rigComponent, j)})
+					self._addObjAttr('{}.{}{:03d}'.format(attr, attr[:-1], j), nodesInfoDict)
 
 	def _writeJointsInfo(self):
 		self._addListAsStringAttr('joints', self._joints)
 		self._addListAsStringAttr('binds', self._binds)
+		self._addListAsStringAttr('xtrans', self._xtrans)
 
 		for i, jnt in enumerate(self._joints):
-			# NamingJnt = naming.Naming(jnt)
-			# NamingJnt.type = 'multMatrix'
-			# NamingJnt.part = '{}Output'.format(NamingJnt.part)
-			# multMatrixJnt = nodeUtils.create(name = NamingJnt.name)
-			# attributes.connectAttrs(['{}.worldMatrix[0]'.format(jnt), '{}.outputInverseMatrix'.format(self._rigComponent)],
-			# 						['matrixIn[0]', 'matrixIn[1]'], driven = multMatrixJnt)
+			NamingJnt = naming.Naming(jnt)
 			
-			cmds.addAttr(self._rigComponent, ln = 'joint{:03d}Matrix'.format(i), at = 'matrix')
+			multMatrixLocal = nodeUtils.create(type = 'multMatrix', side = NamingJnt.side, 
+								part = '{}MatrixLocalOutput'.format(NamingJnt.part), index = NamingJnt.index)
+			multMatrixWorld = nodeUtils.create(type = 'multMatrix', side = NamingJnt.side, 
+								part = '{}MatrixWorldOutput'.format(NamingJnt.part), index = NamingJnt.index)
 
-			#cmds.connectAttr('{}.matrixSum'.format(multMatrixJnt), '{}.joint{:03d}Matrix'.format(self._rigComponent, i))
-			cmds.connectAttr('{}.worldMatrix[0]'.format(jnt), '{}.joint{:03d}Matrix'.format(self._rigComponent, i))
+			attributes.addAttrs(self._rigComponent, ['joint{:03d}MatrixLocal'.format(i),
+													 'joint{:03d}MatrixWorld'.format(i)], 
+								attributeType = 'matrix', lock = True)
 
-		# discriptor
-		self._addListAsStringAttr('jointsDescriptor', self._jointsDescriptor)
-
-		self._getJointsInfo()
-
-	def _writeXtransInfo(self):
-		self._addListAsStringAttr('xtrans', self._xtrans)
-		self._getXtransInfo()
+			attributes.connectAttrs(['{}.worldMatrix[0]'.format(jnt), self._localizationMatrixPlug,
+									 '{}.worldMatrix[0]'.format(jnt), self._localizationMatrixRvsPlug],
+									['{}.matrixIn[0]'.format(multMatrixLocal), '{}.matrixIn[1]'.format(multMatrixLocal),
+									 '{}.matrixIn[0]'.format(multMatrixWorld), '{}.matrixIn[1]'.format(multMatrixWorld)])
+			attributes.connectAttrs(['{}.matrixSum'.format(multMatrixLocal), '{}.matrixSum'.format(multMatrixWorld)],
+									['{}.joint{:03d}MatrixLocal'.format(self._rigComponent, i),
+									 '{}.joint{:03d}MatrixWorld'.format(self._rigComponent, i)])
 
 	def _getRigComponentInfo(self):
 		super(JointComponent, self)._getRigComponentInfo()
@@ -198,4 +187,3 @@ class JointComponent(rigComponent.RigComponent):
 
 		self._deformationNodes = self._getStringAttrAsList('deformationNodes')
 		self._getJointsInfo()
-		self._getXtransInfo()

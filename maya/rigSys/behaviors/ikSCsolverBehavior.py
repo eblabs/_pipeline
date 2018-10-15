@@ -44,11 +44,12 @@ class IkSCsolverBehavior(baseBehavior.BaseBehavior):
 				index = NamingCtrl.index, stacks = self._stacks, parent = self._controlsGrp, posPoint = bpCtrl, 
 				posOrient = self._joints[0], lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'], 
 				shape = self._controlShapes[i], size = self._controlSize)
+			Control.lockHideAttrs('ro')
 			self._controls.append(Control.name)
 
 		# connect root jnt with controller
 		ControlRoot = controls.Control(self._controls[0])
-		constraints.matrixConnect(ControlRoot.name, ControlRoot.matrixWorldAttr, self._joints[0], force = True, skipRotate = ['x', 'y', 'z'], 
+		constraints.matrixConnect(ControlRoot.name, ControlRoot.matrixWorldAttr, self._jointsLocal[0], force = True, skipRotate = ['x', 'y', 'z'], 
 						  		  skipScale = ['x', 'y', 'z'])
 
 		# lock hide attrs

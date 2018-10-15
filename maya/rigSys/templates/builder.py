@@ -83,7 +83,6 @@ class Builder(object):
 		for buildDict in [self._preBuild, self._build, self._postBuild]:
 			order = buildDict['order']
 			for task in order:
-				print task
 				TaskFunc = buildDict['info'][task]
 				TaskFunc()
 
@@ -127,6 +126,10 @@ class Builder(object):
 			kwargs.update({'parent': self._componentsGrp})
 			kwargs.update({'controlSize': 10})
 			Limb = componentUtils.createComponent(componentType, kwargs)
+			attributes.connectAttrs(['jointsVis', 'controlsVis', 'rigNodesVis', 'localization'],
+									['jointsVis', 'controlsVis', 'rigNodesVis', 'localization'],
+									driver = self._animationRig,
+									driven = Limb._rigComponent)
 			self._addAttributeFromDict({component: Limb})
 
 	def _connectComponents(self):
@@ -138,6 +141,18 @@ class Builder(object):
 				ComponentPlug = getattr(self, matrixPlug[0])
 				matrixPlug = componentUtils.getComponentAttr(ComponentPlug, matrixPlug[1:])
 				ComponentObj.connect(matrixPlug)
+			if 'deformationNodesParent' in componentInfo:
+				parentNode = componentInfo['deformationNodesParent']
+				if not isinstance(parentNode, list):
+					parentNode = [parentNode]
+				parentNodeList = []
+				for node in parentNode:
+					if node:
+						node = node.split('.')
+						NodeObj = getattr(self, node[0])
+						node = componentUtils.getComponentAttr(NodeObj, node[1:])
+					parentNodeList.append(node)
+				ComponentObj.connectDeformationNodes(parentNodeList)
 
 	def _addAttributeFromDict(self, attrDict):
 		for key, value in attrDict.items():

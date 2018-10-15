@@ -24,9 +24,10 @@ import lib.modeling.curves as curves
 # ---- import end ----
 
 # ---- global variable
-path_ctrlShapeDict = 'C:/_pipeline/maya/lib/rigging/controls/controlShapes.json'
-path_ctrlColorDict = 'C:/_pipeline/maya/lib/rigging/controls/controlColors.json'
-path_sideColorDict = 'C:/_pipeline/maya/lib/rigging/controls/sideColors.json'
+dirname = os.path.abspath(os.path.dirname(__file__))
+path_ctrlShapeDict = os.path.join(dirname, 'controlShapes.json')
+path_ctrlColorDict = os.path.join(dirname, 'controlColors.json')
+path_sideColorDict = os.path.join(dirname, 'sideColors.json')
 
 class Control(object):
 	"""

@@ -13,7 +13,7 @@ import lib.rigging.controls.controls as controls
 # ---- import end ----
 
 # -- import component
-import rigSys.core.jointComponent as jointComponent
+import rigSys.components.core.jointComponent as jointComponent
 import rigSys.behaviors.twistBehavior as twistBehavior
 # -- import end ----
 

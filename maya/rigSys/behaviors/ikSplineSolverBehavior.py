@@ -63,7 +63,9 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 		
 		# set up ik and match joints to the curve
 		ikHandle = naming.Naming(type = 'ikHandle', side = self._side, part = self._part + self._jointSuffix, index = self._index).name
-		cmds.ikHandle(sj = self._jointsLocal[0], ee = self._jointsLocal[-1], sol = 'ikSplineSolver', ccv = False, scv = False, curve = self._curve, name = ikHandle)
+		cmds.ikHandle(sj = self._jointsLocal[0], ee = self._jointsLocal[-1], sol = 'ikSplineSolver', ccv = False, 
+					  scv = False, curve = self._curve, parentCurve = False, name = ikHandle)
+
 		# disconnect joints and local joints temporally to zero out the rotation
 		for jnts in zip(self._joints, self._jointsLocal):
 			for attr in ['translate', 'rotate', 'scale']:
@@ -90,6 +92,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			Control = controls.create(self._part + self._jointSuffix + 'Tweak', side = NamingCtrl.side, index = NamingCtrl.index, 
 				stacks = self._stacks, parent = self._controlsGrp, lockHide = ['rx', 'ry', 'rz', 'sx', 'sy', 'sz'], shape = self._tweakerShape,
 				size = self._controlSize)
+			Control.lockHideAttrs('ro')
 			cmds.delete(cmds.pointConstraint(clsHnd, Control.zero, mo = False))
 			NamingCtrl.type = 'null'
 			nullCls = transforms.createTransformNode(NamingCtrl.name, lockHide = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'], 
@@ -167,6 +170,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 
 			# blend mid control
 			ControlMid = controls.Control(self._ikControls[1])
+			ControlMid.lockHideAttrs(['rx', 'ry', 'rz', 'ro'])
 			cmds.addAttr(ControlMid.name, ln = 'weight', at = 'float', min = 0, max = 1, dv = 0.5, keyable = True)
 			rvsPlug = attributes.addRvsAttr(ControlMid.name, 'weight')
 			

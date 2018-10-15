@@ -193,7 +193,7 @@ class IkRPsolverPlusComponent(ikRPsolverComponent.IkRPsolverComponent):
 			cmds.parent(ikSCHandleList[1], self._toeTap)
 
 			# lock hide attrs
-			lockHide = [['rx', 'ry'], ['rx', 'ry'], ['rx', 'rz']]
+			lockHide = [['rx', 'ry', 'ro'], ['rx', 'ry', 'ro'], ['rx', 'rz', 'ro']]
 			controlList = [self._reverseControls[-3], 
 						   self._reverseControls[-4], 
 						   self._reverseControls[0]]

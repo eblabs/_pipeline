@@ -14,6 +14,7 @@ import lib.common.transforms as transforms
 import lib.common.attributes as attributes
 import lib.common.apiUtils as apiUtils
 import lib.common.nodeUtils as nodeUtils
+import lib.common.hierarchy as hierarchy
 import lib.rigging.joints as joints
 import lib.rigging.constraints as constraints
 import lib.rigging.controls.controls as controls
@@ -71,6 +72,9 @@ class RigComponent(object):
 		attributes.connectAttrs(matrixPlug, self._inputMatrixPlug, force = True)
 		attributes.setAttrs(self._offsetMatrixPlug, offsetMatrixList, type = 'matrix', force = True)
 
+	def addSpace(self, ctrl, spaceDict):
+		pass
+
 	def _registerAttrs(self, kwargs):
 		self._registerDefaultKwargs()
 		self._registerAttributes()
@@ -100,7 +104,7 @@ class RigComponent(object):
 		self._kwargs.update(kwargs)
 
 	def _setVariables(self):
-		self._rigComponentType = 'rigSys.core.rigComponent'
+		self._rigComponentType = 'rigSys.components.core.rigComponent'
 
 	def _createComponent(self):
 		'''
@@ -143,22 +147,23 @@ class RigComponent(object):
 		self._addAttributeFromDict(attrDict)
 
 		# parent components
-		cmds.parent(self._rigComponent, self._parent)
+		hierarchy.parent(self._rigComponent, self._parent)
 		cmds.parent([self._controlsGrp, self._rigLocal, self._rigWorld, self._subComponents], self._rigComponent)
 		cmds.parent(self._nodesLocalGrp, self._rigLocal)
 		cmds.parent([self._nodesHideGrp, self._nodesShowGrp], self._rigWorld)
 
 		# inheritsTransform
 		attributes.setAttrs(['{}.inheritsTransform'.format(self._rigLocal),
-							 '{}.inheritsTransform'.format(self._rigWorld),
-							 '{}.inheritsTransform'.format(self._subComponents)],
+							 '{}.inheritsTransform'.format(self._rigWorld)],
 							 0, force = True)
 
 		# hide nodesHide
 		attributes.setAttrs('{}.v'.format(self._nodesHideGrp), 0, force = True)
 
 		# input matrix, offset matrix, component type, controls, rigNodes
-		attributes.addAttrs(self._rigComponent, ['inputMatrix', 'offsetMatrix', 'outputMatrix', 'outputInverseMatrix'], 
+		attributes.addAttrs(self._rigComponent, ['inputMatrix', 'offsetMatrix', 'outputMatrix', 
+												 'outputInverseMatrix', 'localizationMatrix',
+												 'localizationMatrixRvs'], 
 							attributeType = 'matrix', lock = True)
 		
 		attributes.addAttrs(self._rigComponent, ['controlsVis', 'rigNodesVis', 'subComponents', 'localization'],
@@ -195,13 +200,25 @@ class RigComponent(object):
 
 		constraints.matrixConnect(self._rigComponent, 'outputMatrix', [self._controlsGrp, self._rigLocal], force = True)
 
-		attributes.connectAttrs(['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'],
-								['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz'],
-								driver = self._controlsGrp, driven = self._rigLocal, force = True)
+		# localization matrix
+		matrixLocalization = nodeUtils.create(type = 'wtAddMatrix', side = self._side, part = self._part + 'LocalizationMatrix', index = self._index)
+		attributes.connectAttrs(['{}.localization'.format(self._rigComponent), '{}.worldInverseMatrix[0]'.format(self._rigComponent), localizationPlug],
+								['wtMatrix[0].weightIn', 'wtMatrix[1].matrixIn', 'wtMatrix[1].weightIn'], driven = matrixLocalization)
+		matrixList = cmds.getAttr('{}.outputMatrix'.format(self._rigComponent))
+		cmds.setAttr('{}.wtMatrix[0].matrixIn'.format(matrixLocalization), matrixList, type = 'matrix', lock = True)
+		attributes.connectAttrs('{}.matrixSum'.format(matrixLocalization), '{}.localizationMatrix'.format(self._rigComponent))
+
+		matrixLocalizationRvs = nodeUtils.create(type = 'wtAddMatrix', side = self._side, part = self._part + 'localizationMatrixRvs', index = self._index)
+		attributes.connectAttrs(['{}.localization'.format(self._rigComponent), '{}.worldMatrix[0]'.format(self._rigComponent), localizationPlug],
+								['wtMatrix[0].weightIn', 'wtMatrix[0].matrixIn', 'wtMatrix[1].weightIn'], driven = matrixLocalizationRvs)
+		cmds.setAttr('{}.wtMatrix[1].matrixIn'.format(matrixLocalizationRvs), matrixList, type = 'matrix', lock = True)
+		attributes.connectAttrs('{}.matrixSum'.format(matrixLocalizationRvs), '{}.localizationMatrixRvs'.format(self._rigComponent))
 
 		# get attrs
 		self._inputMatrixPlug = '{}.inputMatrix'.format(self._rigComponent)
 		self._offsetMatrixPlug = '{}.offsetMatrix'.format(self._rigComponent)
+		self._localizationMatrixPlug = '{}.localizationMatrix'.format(self._rigComponent)
+		self._localizationMatrixRvsPlug = '{}.localizationMatrixRvs'.format(self._rigComponent)
 
 	def _writeRigComponentInfo(self):
 		# rig component type
@@ -250,6 +267,8 @@ class RigComponent(object):
 
 		self._inputMatrixPlug = '{}.inputMatrix'.format(self._rigComponent)
 		self._offsetMatrixPlug = '{}.offsetMatrix'.format(self._rigComponent)
+		self._localizationMatrixPlug = '{}.localizationMatrix'.format(self._rigComponentType)
+		self._localizationMatrixRvsPlug = '{}.localizationMatrixRvs'.format(self._rigComponentType)
 
 		self._addObjAttr('parentHolder', {'matrixPlug': '{}.parentHolderMatrix'.format(self._rigComponent)})
 

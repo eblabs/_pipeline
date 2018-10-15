@@ -19,7 +19,7 @@ class IkSolverComponent(jointComponent.JointComponent):
 
 	def _setVariables(self):
 		super(IkSolverComponent, self)._setVariables()
-		self._rigComponentType = 'rigSys.core.ikSolverComponent'
+		self._rigComponentType = 'rigSys.components.core.ikSolverComponent'
 		self._ikControls = []
 		self._ikHandles = []
 

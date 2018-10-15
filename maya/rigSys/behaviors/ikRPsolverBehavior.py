@@ -73,7 +73,10 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 			pos = cmds.getAttr('{}.poleVector{}'.format(ikHandle, axis))
 			pvVec.append(pos)
 		posRoot = cmds.xform(self._joints[1], q = True, t = True, ws = True)
-		posPv = apiUtils.getPointFromVector(posRoot, pvVec, distance = 3 * self._poleVectorDistance)
+		posDisStart = cmds.xform(self._joints[0], q = True, t = True, ws = True)
+		posDisEnd = cmds.xform(self._joints[-1], q = True, t = True, ws = True)
+		dis = apiUtils.distance(posDisStart, posDisEnd)
+		posPv = apiUtils.getPointFromVector(posRoot, pvVec, distance = dis * self._poleVectorDistance)
 
 		ControlPv = controls.Control(self._controls[1])
 		transforms.setNodePos(ControlPv.zero, posParent = [posPv, [0,0,0]])
@@ -121,7 +124,7 @@ class IkRPsolverBehavior(baseBehavior.BaseBehavior):
 		# lock hide attrs
 		for ctrl in self._controls[:-1]:
 			Control = controls.Control(ctrl)
-			Control.lockHideAttrs(['rx', 'ry', 'rz'])
+			Control.lockHideAttrs(['rx', 'ry', 'rz', 'ro'])
 
 		# angle bias if ik spring solver
 		if self._ikSolver == 'ikSpringSolver':

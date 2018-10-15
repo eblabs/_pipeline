@@ -15,6 +15,7 @@ import lib.common.packages as packages
 
 # -- import component
 import jointComponent
+import rigSys.components.utils.componentUtils as componentUtils
 # ---- import end ----
 
 class ComponentsPackage(jointComponent.JointComponent):
@@ -26,7 +27,7 @@ class ComponentsPackage(jointComponent.JointComponent):
 
 	def _setVariables(self):
 		super(ComponentsPackage, self)._setVariables()
-		self._rigComponentType = 'rigSys.core.componentsPackage'
+		self._rigComponentType = 'rigSys.components.core.componentsPackage'
 
 	def _writeRigComponentInfo(self):
 		super(ComponentsPackage, self)._writeRigComponentInfo()

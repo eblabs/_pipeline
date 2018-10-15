@@ -36,7 +36,9 @@ def matrixConnect(driver, attr, drivens, offset = False, skipTranslate=None, ski
 	# get name
 	NamingDecompose = naming.Naming(driver)
 	NamingDecompose.type = 'decomposeMatrix'
-	NamingDecompose.part = NamingDecompose.part + attr[0].upper() + attr[1:]
+	attrName = cmds.ls(driver + '.' + attr)[0]
+	attrName = attrName.split('.')[-1]
+	NamingDecompose.part = NamingDecompose.part + attrName[0].upper() + attrName[1:]
 	NamingOffset = naming.Naming(driver)
 	NamingOffset.type = 'multMatrix'
 	NamingOffset.part = '{}Offset'.format(NamingOffset.part)

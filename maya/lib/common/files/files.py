@@ -11,6 +11,9 @@ import cPickle
 # -- import json
 import json
 
+# -- import os
+import os
+
 # -- import maya lib
 
 # -- import lib
@@ -18,7 +21,8 @@ import json
 # ---- import end ----
 
 # ---- global variable
-path_fileFormat = 'C:/_pipeline/maya/lib/common/files/fileFormat.json'
+dirname = os.path.abspath(os.path.dirname(__file__))
+path_fileFormat = os.path.join(dirname, 'fileFormat.json')
 
 # function
 # json 

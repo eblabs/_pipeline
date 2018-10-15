@@ -12,12 +12,13 @@ import maya.cmds as cmds
 import lib.common.naming.naming as naming
 import lib.common.attributes as attributes
 import lib.common.packages as packages
+import lib.common.hierarchy as hierarchy
 import lib.rigging.joints as joints
 import lib.rigging.controls.controls as controls
 # ---- import end ----
 
 # -- import component
-import rigSys.core.componentsPackage as componentsPackage
+import rigSys.components.core.componentsPackage as componentsPackage
 import rigSys.components.utils.componentUtils as componentUtils
 # ---- import end ----
 
@@ -77,11 +78,13 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 		self._controls += [packageCtrl]
 		self._subComponentNodes = subComponentNodes
 
-	def connectDeformationNodes(self, parentNode):
+	def connectDeformationNodes(self, parentNodes):
+		if not isinstance(parentNodes, list):
+			parentNodes = [parentNodes]
 		if 'bindJoint' in self._deformationNodes or 'xtran' in self._deformationNodes:
-			for Limb in self._subComponentNodes.Components:
+			for Limb in self.subComponentNodes.Components:
 				if 'bindJoint' in self._deformationNodes:
-					hierarchy.parent(Limb._binds[0], parentNode)
+					hierarchy.parent(Limb.binds.bind000.name, parentNodes[0])
 				if 'xtran' in self._deformationNodes:
-					hierarchy.parent(Limb._xtrans[0], parentNode)
+					hierarchy.parent(Limb.xtrans.xtran000.name, parentNodes[-1])
 			

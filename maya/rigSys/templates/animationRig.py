@@ -118,13 +118,12 @@ class AnimationRig(builder.Builder):
 								driver = self._ControlWorld.name)
 
 		cmds.addAttr(self._controlsGrp, ln = 'worldPosMatrix', at = 'matrix')
-		cmds.addAttr(self._controlsGrp, ln = 'worldPosInverseMatrix', at = 'matrix')
-		attributes.connectAttrs(['worldMatrix[0]', 'worldInverseMatrix[0]'], ['worldPosMatrix', 'worldPosInverseMatrix'],
-								driver = self._ControlLocal.output, driven = self._controlsGrp)
+		cmds.connectAttr('{}.worldMatrix[0]'.format(self._ControlLocal.output), '{}.worldPosMatrix'.format(self._controlsGrp))
 		self._worldPosMatrixPlug = '{}.worldPosMatrix'.format(self._controlsGrp)
-		self._worldPosInverseMatrixPlug = '{}.worldPosInverseMatrix'.format(self._controlsGrp)
+
+		constraints.matrixConnect(self._controlsGrp, 'worldPosMatrix', [self._componentsGrp, self._rigLocal], force = True)
 
 		# vis attrs
-		attributes.addAttrs(self._animationRig, ['jointsVis', 'controlsVis', 'rigNodesVis'], attributeType = 'long', minValue = 0, maxValue = 1, 
-							defaultValue = 0, keyable = False, channelBox = True)
+		attributes.addAttrs(self._animationRig, ['jointsVis', 'controlsVis', 'rigNodesVis', 'localization'], attributeType = 'long', minValue = 0, maxValue = 1, 
+							defaultValue = [0, 1, 0, 1], keyable = False, channelBox = True)
 		attributes.connectAttrs('rigNodesVis', 'v', driver = self._animationRig, driven = self._rigNodesGrp)

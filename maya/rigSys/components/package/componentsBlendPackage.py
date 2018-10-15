@@ -5,10 +5,14 @@ logging.basicConfig(level=debugLevel)
 logger = logging.getLogger(__name__)
 logger.setLevel(debugLevel)
 
+# -- import os
+import os
+
 # -- import maya lib
 import maya.cmds as cmds
 
 # -- import lib
+import lib.common.files.files as files
 import lib.common.naming.naming as naming
 import lib.common.attributes as attributes
 import lib.common.nodeUtils as nodeUtils
@@ -18,9 +22,9 @@ import lib.rigging.controls.controls as controls
 # ---- import end ----
 
 # -- import component
-import rigSys.core.componentsPackage as componentsPackage
-import rigSys.core.space as space
+import rigSys.components.core.componentsPackage as componentsPackage
 import rigSys.components.utils.componentUtils as componentUtils
+import rigSys.components.core as core
 # ---- import end ----
 
 class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
@@ -88,8 +92,9 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		indexCustom = 100
 		enumName = ''
 		for key in self._components.keys():
-			if key in space.spaceDict:
-				indexKey = space.spaceDict[key]
+			spaceDict = files.readJsonFile(core.path_spaceDict)
+			if key in spaceDict:
+				indexKey = spaceDict[key]
 			else:
 				indexKey = indexCustom
 				indexCustom += 1

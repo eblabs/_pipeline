@@ -13,7 +13,7 @@ import lib.rigging.controls.controls as controls
 # ---- import end ----
 
 # -- import component
-import rigSys.core.ikSolverComponent as ikSolverComponent
+import rigSys.components.core.ikSolverComponent as ikSolverComponent
 import rigSys.behaviors.ikSCsolverBehavior as ikSCsolverBehavior
 # -- import end ----
 
