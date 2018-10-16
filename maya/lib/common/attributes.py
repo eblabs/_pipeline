@@ -68,8 +68,9 @@ def addAttrs(node, attrs, attributeType='float', minValue=None, maxValue=None, d
 			cmds.setAttr('{}.{}'.format(node, attr), lock = lock)
 			# channelBox
 			if attributeType not in ['string', 'matrix']:
-				cmds.setAttr('{}.{}'.format(node, attr), 
-							 channelBox = channelBox)
+				if channelBox and not attrDict['keyable']:
+					cmds.setAttr('{}.{}'.format(node, attr), 
+								 channelBox = True)
 
 # set attrs
 def setAttrs(attrs, value, node=None, type=None, force=True):

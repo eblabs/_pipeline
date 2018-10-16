@@ -9,6 +9,7 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
+import lib.common.files.files as files
 import lib.common.naming.naming as naming
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
@@ -18,6 +19,10 @@ import lib.common.hierarchy as hierarchy
 import lib.rigging.joints as joints
 import lib.rigging.constraints as constraints
 import lib.rigging.controls.controls as controls
+# ---- import end ----
+
+# -- import component
+from rigSys.components.core import path_spaceDict
 # ---- import end ----
 
 class RigComponent(object):
@@ -73,7 +78,180 @@ class RigComponent(object):
 		attributes.setAttrs(self._offsetMatrixPlug, offsetMatrixList, type = 'matrix', force = True)
 
 	def addSpace(self, ctrl, spaceDict):
-		pass
+		# space dict template
+		# {'chest': {'matrixPlug': matrixPlug,
+		#			 'spaces': ['pos', 'scale']},
+		#  'pelvis':}
+		spaceKeys = files.readJsonFile(path_spaceDict)
+		Control = controls.Control(ctrl)
+
+		indexList = []
+		indexCustom = 100
+		keyIndexDict = {}
+
+		spaceChannelInfo = {'pos': {'channel': [True, True, False],
+									'attr': False,
+									'enumName': '',
+									'defaultA': 0,
+									'defaultB': 0,
+									'spaces': {}},
+							'point': {'channel': [True, False, False],
+									'attr': False,
+									'enumName': '',
+									'defaultA': 0,
+									'defaultB': 0,
+									'spaces': {}},
+							'orient': {'channel': [False, True, False],
+									'attr': False,
+									'enumName': '',
+									'defaultA': 0,
+									'defaultB': 0,
+									'spaces': {}},
+							'scale': {'channel': [False, False, True],
+									'attr': False,
+									'enumName': '',
+									'defaultA': 0,
+									'defaultB': 0,
+									'spaces': {}}}
+
+		# query ctrl's space attr
+		addPosAttrCheck = False
+
+		indexCustomList = []
+		for key in spaceChannelInfo:
+			check = cmds.attributeQuery('space{}A'.format(key.title()), node = ctrl, ex = True)
+			if check:
+				defaultA = cmds.addAttr('{}.space{}A'.format(ctrl, key.title()), q = True, dv = True)
+				defaultB = cmds.addAttr('{}.space{}B'.format(ctrl, key.title()), q = True, dv = True)				
+				enumName = cmds.addAttr('{}.space{}A'.format(ctrl, key.title()), q = True, en = True)
+				enumList = enumName.split(':')
+
+				for item in enumList:
+					attr = item.split('=')[0]
+					index = int(item.split('=')[-1])
+					keyIndexDict.update({attr: index})
+					indexCustomList.append(index)
+				spaceChannelInfo[key]['attr'] = True
+				spaceChannelInfo[key]['enumName'] = enumName + ':'
+				spaceChannelInfo[key]['defaultA'] = defaultA
+				spaceChannelInfo[key]['defaultB'] = defaultB
+
+		if indexCustomList:
+			maxIndex = max(indexCustomList)
+			if maxIndex >= indexCustom:
+				indexCustom = maxIndex + 2
+
+		if not spaceChannelInfo['point']['attr'] and not spaceChannelInfo['orient']['attr']:
+			addPosAttrCheck = True
+
+		# re organize dictionary
+		for space, spaceInfo in spaceDict.iteritems():
+			spaceList = spaceInfo['spaces']
+			spaceAddKeys = []
+			if 'pos' in spaceList and addPosAttrCheck:
+				spaceAddKeys.append('pos')
+			else:
+				if 'point' in spaceList:
+					spaceAddKeys.append('point')
+				if 'orient' in spaceList:
+					spaceAddKeys.append('orient')
+			if 'scale' in spaceList:
+				spaceAddKeys.append('scale')
+
+			if 'defaultA' in spaceInfo:
+				for key in spaceInfo['defaultA']:
+					spaceChannelInfo[key]['defaultA'] = space
+			if 'defaultB' in spaceInfo:
+				for key in spaceInfo['defaultB']:
+					spaceChannelInfo[key]['defaultB'] = space
+
+			for key in spaceAddKeys:
+				spaceChannelInfo[key]['spaces'].update({space: spaceInfo['matrixPlug']})
+
+		# do each space blend
+		for spaceType in ['pos', 'point', 'orient', 'scale']:
+			spaceInfo = spaceChannelInfo[spaceType]['spaces']
+			if spaceInfo:
+				# has key for this space type blend
+				enumName = spaceChannelInfo[spaceType]['enumName']
+				# get choice node, skip automatically if exist
+				choiceA = nodeUtils.create(type = 'choice', side = Control.side, 
+							part = '{}Space{}A'.format(Control.part, spaceType.title()), index = Control.index)
+				choiceB = nodeUtils.create(type = 'choice', side = Control.side, 
+							part = '{}Space{}B'.format(Control.part, spaceType.title()), index = Control.index)
+
+				for key in spaceInfo:
+					if key not in enumName:
+						# make sure the space not exist
+						# get index
+						if key in keyIndexDict:
+							index = keyIndexDict[key]
+						elif key in spaceKeys:
+							index = spaceKeys[key]
+							keyIndexDict.update({key: index})
+						else:
+							index = indexCustom
+							keyIndexDict.update({key: index})
+							indexCustom += 2
+						enumName += '{}={}:'.format(key, index)
+						
+						matrixPlug = spaceInfo[key]
+						nodePlug = matrixPlug.split('.')[0]
+						attrPlug = matrixPlug.replace(nodePlug + '.', '')
+						
+						# get multMatrix node, skip creation if exist
+						multMatrix = naming.Naming(type = 'multMatrix', side = Control.side,
+									part = '{}Space{}'.format(Control.part, index), index = Control.index).name
+						if not cmds.objExists(multMatrix):
+							multMatrix = nodeUtils.create(name = multMatrix)
+							matrixLocal = transforms.getLocalMatrix(Control.space, nodePlug, parentMatrix = attrPlug)
+							cmds.setAttr('{}.matrixIn[0]'.format(multMatrix), matrixLocal, type = 'matrix')
+							cmds.connectAttr(matrixPlug, '{}.matrixIn[1]'.format(multMatrix))
+						# connect multMatrix with choice
+						cmds.connectAttr('{}.matrixSum'.format(multMatrix), '{}.input[{}]'.format(choiceA, index))
+						cmds.connectAttr('{}.matrixSum'.format(multMatrix), '{}.input[{}]'.format(choiceB, index))
+
+				# get default value
+				defaultA = spaceChannelInfo[spaceType]['defaultA']
+				defaultB = spaceChannelInfo[spaceType]['defaultB']
+
+				if isinstance(defaultA, basestring):
+					defaultA = keyIndexDict[defaultA]
+				if isinstance(defaultB, basestring):
+					defaultB = keyIndexDict[defaultB]
+
+				if defaultA == 0:
+					# no given default val, pick one randomly
+					defaultA = keyIndexDict[spaceInfo.keys()[0]]
+				if defaultB == 0:
+					defaultB = keyIndexDict[spaceInfo.keys()[0]]
+
+				# add attr or edit attr
+				if not spaceChannelInfo[spaceType]['attr']:
+					attributes.addAttrs(ctrl, ['space{}A'.format(spaceType.title()), 'space{}B'.format(spaceType.title())],
+										attributeType = 'enum', keyable = True, channelBox = True, enumName = enumName[:-1],
+										defaultValue = [defaultA, defaultB])
+					cmds.addAttr(ctrl, ln = 'space{}Blend'.format(spaceType.title()), at = 'float', min = 0, max = 10, keyable = True)
+					multBlend = nodeUtils.create(type = 'multDoubleLinear',
+											 side = Control.side, 
+											 part = '{}Space{}Blend'.format(Control.part, spaceType.title()),
+											 index = Control.index)
+					cmds.connectAttr('{}.space{}Blend'.format(ctrl, spaceType.title()), '{}.input1'.format(multBlend))
+					cmds.setAttr('{}.input2'.format(multBlend), 0.1)
+					rvsBlend = nodeUtils.create(type = 'reverse',
+											 side = Control.side, 
+											 part = '{}Space{}Blend'.format(Control.part, spaceType.title()),
+											 index = Control.index)
+					cmds.connectAttr('{}.output'.format(multBlend), '{}.inputX'.format(rvsBlend))
+					cmds.connectAttr('{}.space{}A'.format(ctrl, spaceType.title()), '{}.selector'.format(choiceA))
+					cmds.connectAttr('{}.space{}B'.format(ctrl, spaceType.title()), '{}.selector'.format(choiceB))
+					constraints.constraintBlend(['{}.output'.format(choiceA), '{}.output'.format(choiceB)], Control.space, 
+						weightList = ['{}.outputX'.format(rvsBlend), '{}.output'.format(multBlend)], 
+						translate = spaceChannelInfo[spaceType]['channel'][0], rotate = spaceChannelInfo[spaceType]['channel'][1], 
+						scale = spaceChannelInfo[spaceType]['channel'][2], parentInverseMatrix = '{}.worldMatrix[0]'.format(Control.passer))
+				else:
+					cmds.addAttr('{}.space{}A'.format(ctrl, spaceType.title()), e = True, en = enumName[:-1], dv = defaultA)
+					cmds.addAttr('{}.space{}B'.format(ctrl, spaceType.title()), e = True, en = enumName[:-1], dv = defaultB)
 
 	def _registerAttrs(self, kwargs):
 		self._registerDefaultKwargs()

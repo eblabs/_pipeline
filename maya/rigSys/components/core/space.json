@@ -1,12 +1,12 @@
 {
     "fk": 0,
-    "ik": 1,
-    "world": 3,
-    "cog": 4,
-    "chest": 5,
-    "pelvis": 6,
-    "clavicle": 7,
-    "hand": 8,
-    "foot": 9,
-    "head": 10
+    "ik": 2,
+    "world": 4,
+    "cog": 6,
+    "chest": 8,
+    "pelvis": 10,
+    "clavicle": 12,
+    "hand": 14,
+    "foot": 16,
+    "head": 18
 }
