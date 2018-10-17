@@ -126,9 +126,16 @@ class RigComponent(object):
 				enumName = cmds.addAttr('{}.space{}A'.format(ctrl, key.title()), q = True, en = True)
 				enumList = enumName.split(':')
 
+				itemIndex = -1
+
 				for item in enumList:
-					attr = item.split('=')[0]
-					index = int(item.split('=')[-1])
+					if '=' in item:
+						attr = item.split('=')[0]
+						index = int(item.split('=')[-1])
+					else:
+						attr = item
+						index = itemIndex + 1
+					itemIndex = index
 					keyIndexDict.update({attr: index})
 					indexCustomList.append(index)
 				spaceChannelInfo[key]['attr'] = True
@@ -139,7 +146,7 @@ class RigComponent(object):
 		if indexCustomList:
 			maxIndex = max(indexCustomList)
 			if maxIndex >= indexCustom:
-				indexCustom = maxIndex + 2
+				indexCustom = maxIndex + 1
 
 		if not spaceChannelInfo['point']['attr'] and not spaceChannelInfo['orient']['attr']:
 			addPosAttrCheck = True
@@ -192,7 +199,7 @@ class RigComponent(object):
 						else:
 							index = indexCustom
 							keyIndexDict.update({key: index})
-							indexCustom += 2
+							indexCustom += 1
 						enumName += '{}={}:'.format(key, index)
 						
 						matrixPlug = spaceInfo[key]
@@ -228,9 +235,13 @@ class RigComponent(object):
 
 				# add attr or edit attr
 				if not spaceChannelInfo[spaceType]['attr']:
+					attributes.addDivider(ctrl, 'space')
 					attributes.addAttrs(ctrl, ['space{}A'.format(spaceType.title()), 'space{}B'.format(spaceType.title())],
-										attributeType = 'enum', keyable = True, channelBox = True, enumName = enumName[:-1],
-										defaultValue = [defaultA, defaultB])
+										attributeType = 'enum', keyable = True, channelBox = True, enumName = enumName[:-1])
+					cmds.addAttr('{}.space{}A'.format(ctrl, spaceType.title()), e = True, dv = defaultA)
+					cmds.addAttr('{}.space{}B'.format(ctrl, spaceType.title()), e = True, dv = defaultB)
+					attributes.setAttrs(['{}.space{}A'.format(ctrl, spaceType.title()), '{}.space{}B'.format(ctrl, spaceType.title())],
+										[defaultA, defaultB])
 					cmds.addAttr(ctrl, ln = 'space{}Blend'.format(spaceType.title()), at = 'float', min = 0, max = 10, keyable = True)
 					multBlend = nodeUtils.create(type = 'multDoubleLinear',
 											 side = Control.side, 
@@ -248,10 +259,14 @@ class RigComponent(object):
 					constraints.constraintBlend(['{}.output'.format(choiceA), '{}.output'.format(choiceB)], Control.space, 
 						weightList = ['{}.outputX'.format(rvsBlend), '{}.output'.format(multBlend)], 
 						translate = spaceChannelInfo[spaceType]['channel'][0], rotate = spaceChannelInfo[spaceType]['channel'][1], 
-						scale = spaceChannelInfo[spaceType]['channel'][2], parentInverseMatrix = '{}.worldMatrix[0]'.format(Control.passer))
+						scale = spaceChannelInfo[spaceType]['channel'][2], parentInverseMatrix = '{}.worldInverseMatrix[0]'.format(Control.passer))
 				else:
-					cmds.addAttr('{}.space{}A'.format(ctrl, spaceType.title()), e = True, en = enumName[:-1], dv = defaultA)
-					cmds.addAttr('{}.space{}B'.format(ctrl, spaceType.title()), e = True, en = enumName[:-1], dv = defaultB)
+					cmds.addAttr('{}.space{}A'.format(ctrl, spaceType.title()), e = True, en = enumName[:-1])
+					cmds.addAttr('{}.space{}B'.format(ctrl, spaceType.title()), e = True, en = enumName[:-1])
+					cmds.addAttr('{}.space{}A'.format(ctrl, spaceType.title()), e = True, dv = defaultA)
+					cmds.addAttr('{}.space{}B'.format(ctrl, spaceType.title()), e = True, dv = defaultB)
+					attributes.setAttrs(['{}.space{}A'.format(ctrl, spaceType.title()), '{}.space{}B'.format(ctrl, spaceType.title())],
+										[defaultA, defaultB])
 
 	def _registerAttrs(self, kwargs):
 		self._registerDefaultKwargs()
@@ -458,14 +473,14 @@ class RigComponent(object):
 			controlObjList = []
 			controlDict = {'list': controlList,
 						  'count': len(controlList)}
+			self._addObjAttr('controls', controlDict)
 
 			for i, control in enumerate(controlList):
+				controlInfoDict = {'name': control}
 				if cmds.objectType(control) == 'transform':
 					ControlObj = controls.Control(control)
-					controlDict.update({control: ControlObj})
-				else:
-					controlDict.update({control: control})
-			self._addObjAttr('controls', controlDict)
+					controlInfoDict.update({'object': ControlObj})
+				self._addObjAttr('controls.control{:03d}'.format(i), controlInfoDict)
 
 	def _writeRigComponentType(self):
 		self._addStringAttr('rigComponentType', self._rigComponentType)

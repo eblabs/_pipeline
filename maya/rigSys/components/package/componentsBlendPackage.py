@@ -34,8 +34,7 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		
 	def _registerDefaultKwargs(self):
 		super(ComponentsBlendPackage, self)._registerDefaultKwargs()
-		kwargs = {'components': {'value': {}, 'type': dict},
-				  'defaultA': {'value': '', 'type': basestring},
+		kwargs = {'defaultA': {'value': '', 'type': basestring},
 				  'defaultB': {'value': '', 'type': basestring} }
 		## components example
 			#{Key name: 
@@ -202,4 +201,5 @@ class ComponentsBlendPackage(componentsPackage.ComponentsPackage):
 		# pass info
 		self._controls.append(blendCtrl)
 		self._subComponentNodes = subComponentNodes
+
 

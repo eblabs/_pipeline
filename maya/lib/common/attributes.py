@@ -213,6 +213,16 @@ def connectAttrs(driverAttrs, drivenAttrs, driver=None, driven=None, force=True)
 								driver = driver, driven = driven,
 								force = force)
 
+# add divider
+def addDivider(nodes, name):
+	if isinstance(nodes, basestring):
+		nodes = [nodes]
+	for n in nodes:
+		attrName = name + 'Divider'
+		if not cmds.attributeQuery(attrName, n = n, ex = True):
+			cmds.addAttr(n, ln = attrName, nn = '{}{}__________:'.format(name[0].upper(), name[1:]), at = 'enum', en = ' ')
+			cmds.setAttr('{}.{}'.format(n, attrName), channelBox = True, lock = True)
+
 def attrInChannelBox(node, attr):
 	attr = '{}.{}'.format(node, attr)
 	return cmds.getAttr(attr, keyable = True) or cmds.getAttr(attr, cb = True)

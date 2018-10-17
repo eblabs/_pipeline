@@ -154,6 +154,22 @@ class Builder(object):
 					parentNodeList.append(node)
 				ComponentObj.connectDeformationNodes(parentNodeList)
 
+	def _spaceSwitch(self):
+		for component, componentInfo in self._componentsData.iteritems():
+			if 'space' in componentInfo:
+				ComponentObj = getattr(self, component)
+				for key, spaceInfo in componentInfo['space'].iteritems():
+					key = key.split('.')
+					ctrl = componentUtils.getComponentAttr(self, key)
+					# replace matrixPlug
+					for space in spaceInfo:
+						matrixPlug = spaceInfo[space]['matrixPlug']
+						matrixPlug = matrixPlug.split('.')
+						matrixPlug = componentUtils.getComponentAttr(self, matrixPlug)
+						spaceInfo[space]['matrixPlug'] = matrixPlug
+					# add space
+					ComponentObj.addSpace(ctrl, spaceInfo)
+
 	def _addAttributeFromDict(self, attrDict):
 		for key, value in attrDict.items():
 			setattr(self, key, value)

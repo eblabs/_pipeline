@@ -53,9 +53,9 @@ class AnimationRig(builder.Builder):
 						   'task': self._connectComponents,
 						   'section': 'build'})
 
-		# self.registerTask({'name': 'Space Switch',
-		# 				   'task': self._spaceSwitch,
-		# 				   'section': 'build'})
+		self.registerTask({'name': 'Space Switch',
+						   'task': self._spaceSwitch,
+						   'section': 'build'})
 
 		# self.registerTask({'name': 'Set Default Attributes',
 		# 				   'task': self._setDefaultAttributes,
@@ -119,7 +119,7 @@ class AnimationRig(builder.Builder):
 
 		cmds.addAttr(self._controlsGrp, ln = 'worldPosMatrix', at = 'matrix')
 		cmds.connectAttr('{}.worldMatrix[0]'.format(self._ControlLocal.output), '{}.worldPosMatrix'.format(self._controlsGrp))
-		self._worldPosMatrixPlug = '{}.worldPosMatrix'.format(self._controlsGrp)
+		self.worldPosMatrixPlug = '{}.worldPosMatrix'.format(self._controlsGrp)
 
 		constraints.matrixConnect(self._controlsGrp, 'worldPosMatrix', [self._componentsGrp, self._rigLocal], force = True)
 

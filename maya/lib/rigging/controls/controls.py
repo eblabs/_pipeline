@@ -198,6 +198,10 @@ class Control(object):
 	def matrixWorldInverseAttr(self):
 		return 'matrixWorldInverse'
 
+	@property
+	def matrixOutputPlug(self):
+		return '{}.worldMatrix[0]'.format(self.__output)
+	
 	@side.setter
 	def side(self, key):
 		self.__side = naming.getName(key, 'side', returnType = 'shortName')

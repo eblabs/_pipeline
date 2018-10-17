@@ -138,6 +138,9 @@ def constraintBlend(inputMatrixList, driven, weightList=[], translate=True, rota
 	if not parent:
 		parent = driven
 
+	MMatrixOrig = apiUtils.composeMMatrix()
+	matrixOrig = apiUtils.convertMMatrixToList(MMatrixOrig)
+
 	attrs = []
 	constraints = []
 	for i, attr in enumerate([translate, rotate, scale]):
@@ -173,6 +176,7 @@ def constraintBlend(inputMatrixList, driven, weightList=[], translate=True, rota
 				cmds.connectAttr(weightList[i], '{}.target[{}].targetWeight'.format(con, i))
 			else:
 				cmds.setAttr('{}.target[{}].targetWeight'.format(con, i), weightList[i])
+			cmds.setAttr('{}.target[{}].targetParentMatrix'.format(con, i), matrixOrig, type = 'matrix')
 
 	for i, con in enumerate(constraints):
 		if parentInverseMatrix:
@@ -191,6 +195,9 @@ def matrixAimConstraint(inputMatrix, drivens, parent=None, worldUpType='objectro
 
 	if isinstance(drivens, basestring):
 		drivens = [drivens]
+
+	MMatrixOrig = apiUtils.composeMMatrix()
+	matrixOrig = apiUtils.convertMMatrixToList(MMatrixOrig)
 
 	for driven in drivens:
 		NamingNode = naming.Naming(driven)
@@ -219,6 +226,8 @@ def matrixAimConstraint(inputMatrix, drivens, parent=None, worldUpType='objectro
 			cmds.connectAttr('{}.parentInverseMatrix[0]'.format(driven), '{}.constraintParentInverseMatrix'.format(aimConstraint))
 		cmds.connectAttr(worldUpMatrix, '{}.worldUpMatrix'.format(aimConstraint))
 		cmds.setAttr('{}.worldUpType'.format(aimConstraint), worldUpType)
+		cmds.setAttr('{}.target[0].targetParentMatrix'.format(aimConstraint), matrixOrig, type = 'matrix')
+
 
 		for axis in 'XYZ':
 			cmds.connectAttr('{}.constraintRotate{}'.format(aimConstraint, axis), '{}.rotate{}'.format(driven, axis))

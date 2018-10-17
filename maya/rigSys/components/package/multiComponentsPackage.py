@@ -29,13 +29,11 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 		
 	def _registerDefaultKwargs(self):
 		super(MultiComponentsPackage, self)._registerDefaultKwargs()
-		kwargs = {'components': {'value': {}, 'type': dict}}
 		## components example
 			#{Key name: 
 			#  { 'componentType': module path,
 			#	 'kwargs': kwargs,}
 			#}
-		self._kwargs.update(kwargs)
 		self._kwargsRemove += ['blueprintJoints', 'jointsDescriptor']
 
 	def _setVariables(self):
