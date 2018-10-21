@@ -28,23 +28,26 @@ class JointComponent(rigComponent.RigComponent):
 
 		# default attrs
 		self._joints = []
-		self._binds = []
-		self._xtrans = []
+		self._skeleton = []
+		self._skeletonRoot = []
 
-	def connectDeformationNodes(self, parentNodes):
-		if not isinstance(parentNodes, list):
-			parentNodes = [parentNodes]
-		if 'bindJoint' in self._deformationNodes:
-			hierarchy.parent(self.binds.bind000.name, parentNodes[0])
-		if 'xtran' in self._deformationNodes:
-			hierarchy.parent(self.xtrans.bind000.name, parentNodes[-1])
+	def connect(self, inputObj, **kwargs):
+		super(JointComponent, self).connect(inputObj, **kwargs)
+		skeletonParent = kwargs.get('skeletonParent', '')
+		self._connectSkeleton(inputObj, skeletonParent = skeletonParent)
+
+	def _connectSkeleton(self, inputObj):
+		if self._asSkeleton and inputObj and hasattr(inputObj, 'skeleton'):
+			hierarchy.parent(self._skeletonRoot, inputObj.skeleton)
+		elif self._asSkeleton and skeletonParent:
+			hierarchy.parent(self._skeletonRoot, skeletonParent)
 
 	def _registerDefaultKwargs(self):
 		super(JointComponent, self)._registerDefaultKwargs()
 		kwargs = {'blueprintJoints': {'value': [],
 						 			  'type': list},
-				  'deformationNodes': {'value': [],
-				  				       'type': list},
+				  'asSkeleton': {'value': False,
+				  				       'type': bool},
 							}
 		self._kwargs.update(kwargs)
 
@@ -57,15 +60,24 @@ class JointComponent(rigComponent.RigComponent):
 		self._buildDeformationNodes()
 		self._writeRigComponentInfo()
 
-	def _buildDeformationNodes(self):
-		if self._deformationNodes:
-			for i, node in enumerate(self._deformationNodes):
-				nodeType = naming.getName(node, 'type', returnType='longName')
-				self._deformationNodes[i] = nodeType
-			if 'bindJoint' in self._deformationNodes:
-				self._buildBindJoints()
-			if 'xtran' in self._deformationNodes:
-				self._buildXtrans()
+	def _buildSkeleton(self):
+		if self._asSkeleton:
+			jntType = naming.getName('joint', 'type', returnType = 'shortName')
+			skltType = naming.getName('skeleton', 'type', returnType = 'shortName')
+			self._skeleton = joints.createOnHierarchy(self._joints,
+							[jntType, self._suffix], [skltType, ''], 
+							parent = self._skeletonGrp, scaleCompensate = True)			
+
+			# tag bind joints with drive joint
+			for jnts in zip(self._skeleton, self._joints):
+				for channel in ['translate', 'rotate'. 'scale']:
+					for axis in 'XYZ':
+						cmds.connectAttr('{}.{}{}'.format(jnts[1], channel, axis),
+										 '{}.{}{}'.format(jnts[0], channel, axis))
+				attributes.addAttrs(jnts[0], 'joint', attributeType = 'string', 
+													defaultValue = jnts[1], lock = True)
+
+			self._skeletonRoot = cmds.listRelatives(self._skeletonGrp, c = True)
 
 	def _createComponent(self):
 		super(JointComponent, self)._createComponent()
@@ -76,15 +88,19 @@ class JointComponent(rigComponent.RigComponent):
 								  part = self._part,
 								  index = self._index)
 
-		transformNode = transforms.createTransformNode(NamingGrp.name, 
-													   lockHide = ['tx', 'ty', 'tz',
-																  'rx', 'ry', 'rz',
-																  'sx', 'sy', 'sz',
-																  'v'])
+		attrDict = {}
+		for grp in ['jointsGrp', 'skeletonGrp']:
+			NamingGrp.type = grp
+			transformNode = transforms.createTransformNode(NamingGrp.name, 
+														   lockHide = ['tx', 'ty', 'tz',
+																	  'rx', 'ry', 'rz',
+																	  'sx', 'sy', 'sz',
+																	  'v'])
+			attrDict.update({'_{}'.format(grp): transformNode})
 
-		self._addAttributeFromDict({'_jointsGrp': transformNode})
+		self._addAttributeFromDict(attrDict)
 
-		cmds.parent(self._jointsGrp, self._rigLocal)
+		cmds.parent(self._jointsGrp, self._skeletonGrp, self._rigLocal)
 
 		attributes.addAttrs(self._rigComponent, ['jointsVis'],
 							attributeType = 'long', minValue = 0, maxValue = 1, 
@@ -98,65 +114,39 @@ class JointComponent(rigComponent.RigComponent):
 								[ '{}.v'.format(self._jointsGrp)], 
 								 driver = self._rigComponent, force=True)
 
-	def _buildBindJoints(self):
-		if self._joints:
-			jntType = naming.getName('joint', 'type', returnType = 'shortName')
-			bindType = naming.getName('bindJoint', 'type', returnType = 'shortName')
-			self._binds = joints.createOnHierarchy(self._joints,
-							[jntType, self._suffix], [bindType, ''], scaleCompensate = True)			
-
-			# tag bind joints with drive joint
-			for jnts in zip(self._binds, self._joints):
-				attributes.addAttrs(jnts[0], 'joint', attributeType = 'string', 
-													defaultValue = jnts[1], lock = True)
-
-			# set bind joints tag
-			joints.tagJoints(self._binds)
-
-	def _buildXtrans(self):
-		if self._joints:
-			jntType = naming.getName('joint', 'type', returnType = 'shortName')
-			xtranType = naming.getName('xtran', 'type', returnType = 'shortName')
-			
-			self._xtrans = transforms.createOnHierarchy(self._blueprintJoints, 
-							[jntType, self._suffix], [xtranType, ''], rotateOrder=False, 
-							lockHide=['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'v'])
-
-			# tag xtrans
-			for xtr in zip(self._xtrans, self._joints):
-				attributes.addAttrs(xtr[0], 'joint', attributeType = 'string', 
-													defaultValue = xtr[1], lock = True)
-
 	def _writeRigComponentInfo(self):
 		super(JointComponent, self)._writeRigComponentInfo()
 
-		self._addListAsStringAttr('deformationNodes', self._deformationNodes)
 		self._writeJointsInfo()
 		self._getJointsInfo()
 
 	def _getJointsInfo(self):
 		jointList = self._getStringAttrAsList('joints')
-		bindList = self._getStringAttrAsList('binds')
-		xtransList = self._getStringAttrAsList('xtrans')
+		skeletonList = self._getStringAttrAsList('skeleton')
+		self._skeletonRoot = self._getStringAttrAsList('skeletonRoot')
 
-		for i, nodeList in enumerate([jointList, bindList, xtransList]):
-			attr = ['joints', 'binds', 'xtrans'][i]
-			if nodeList:
-				nodesDict = {'list': nodeList,
-							 'count': len(nodeList)}
-				self._addObjAttr(attr, nodesDict)
+		if skeletonList:
+			self._asSkeleton = True
+		else:
+			self._asSkeleton = False
 
-				for j, node in enumerate(nodeList):
-					nodesInfoDict = {'name': node}
-					if attr == 'joints':
-						nodesInfoDict.update({'localMatrixPlug': '{}.joint{:03d}MatrixLocal'.format(self._rigComponent, j),
-											  'worldMatrixPlug': '{}.joint{:03d}MatrixWorld'.format(self._rigComponent, j)})
-					self._addObjAttr('{}.{}{:03d}'.format(attr, attr[:-1], j), nodesInfoDict)
+		if jointList:
+			jntsDict = {'list': jointList,
+						 'count': len(jointList)}
+			self._addObjAttr('joints', jntsDict)
+
+			for i, jnt in enumerate(jointList):
+				jntsInfoDict = {'name': jnt,
+								'localMatrixPlug': '{}.joint{:03d}MatrixLocal'.format(self._rigComponent, i),
+								'worldMatrixPlug': '{}.joint{:03d}MatrixWorld'.format(self._rigComponent, i)}
+				if self._asSkeleton:
+					jntsInfoDict.update({'skeleton': skeletonList[i]})
+				self._addObjAttr('joints.joint{:03d}'.format(i), jntsInfoDict)
 
 	def _writeJointsInfo(self):
 		self._addListAsStringAttr('joints', self._joints)
-		self._addListAsStringAttr('binds', self._binds)
-		self._addListAsStringAttr('xtrans', self._xtrans)
+		self._addListAsStringAttr('skeleton', self._skeleton)
+		self._addListAsStringAttr('skeletonRoot', self._skeletonRoot)
 
 		for i, jnt in enumerate(self._joints):
 			NamingJnt = naming.Naming(jnt)
@@ -185,5 +175,4 @@ class JointComponent(rigComponent.RigComponent):
 		NamingGrp.type = 'jointsGrp'
 		self._addAttributeFromDict({'_jointsGrp': NamingGrp.name})
 
-		self._deformationNodes = self._getStringAttrAsList('deformationNodes')
 		self._getJointsInfo()

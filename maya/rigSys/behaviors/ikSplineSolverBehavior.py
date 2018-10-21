@@ -112,9 +112,17 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 			cmds.setAttr('{}.matrixIn[0]'.format(multMatrix), matrixLocal, type = 'matrix')
 			cmds.connectAttr(Control.matrixWorldPlug, '{}.matrixIn[1]'.format(multMatrix))
 			cmds.connectAttr('{}.matrixSum'.format(multMatrix), '{}.{}'.format(ikHandle, ['dWorldUpMatrix', 'dWorldUpMatrixEnd'][i]))
+			cmds.addAttr(ctrl, ln = 'twist', at = 'float', keyable = True)
 
 		cmds.setAttr('{}.dTwistControlEnable'.format(ikHandle), 1)
 		cmds.setAttr('{}.dWorldUpType'.format(ikHandle), 4)
+
+		# extra twist
+		cmds.connectAttr('{}.twist'.format(self._controls[0]), '{}.roll'.format(ikHandle))
+		twistRvsPlug = attributes.addWeightAttr(self._controls[0], 'twist', weight = -1)
+		twistSum = nodeUtils.create(type = 'addDoubleLinear', side = self._side, part = '{}ExtraTwistSum'.format(self._part), index = self._index)
+		attributes.connectAttrs(['{}.twist'.format(self._controls[1]), twistRvsPlug], ['input1', 'input2'], driven = twistSum)
+		cmds.connectAttr('{}.output'.format(twistSum), '{}.twist'.format(ikHandle)) 
 
 		self._ikHandles.append(ikHandle)
 
@@ -215,6 +223,7 @@ class IkSplineSolverBehavior(baseBehavior.BaseBehavior):
 				ControlTweak = controls.Control(ctrls[0])
 				constraints.matrixConnect(Control.name, Control.matrixWorldAttr, ControlTweak.zero, offset = Control.output, skipScale = ['x', 'y', 'z'])
 				cmds.setAttr('{}.v'.format(ControlTweak.zero), 0, lock = True)
+				attributes.copyConnectAttrs(ctrls[1], ctrls[0], attrs = ['twist'])
 
 			# connect other tweak controls with curveinfo
 			self._ikTweakControls = self._ikTweakControls[1: len(self._ikTweakControls) - 1]

@@ -309,7 +309,7 @@ def addRvsAttr(node, attr, addAttr=False):
 	return outputPlug
 
 # add weight attr
-def addWeightAttr(node, attr, weight = -1, addAttr=False, attrName=None):
+def addWeightAttr(node, attr, weight=-1, addAttr=False, attrName=None):
 	NamingNode = naming.Naming(node)
 	multNode = nodeUtils.create(type = 'multDoubleLinear', side = NamingNode.side,
 				part = '{}{}{}Weight'.format(NamingNode.part, attr[0].upper(), attr[1:]), 

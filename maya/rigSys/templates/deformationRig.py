@@ -14,61 +14,68 @@ import builder
 
 class DeformationRig(builder.Builder):
 	"""docstring for DeformationRig"""
-	def __init__(self, arg):
+	def __init__(self):
 		super(DeformationRig, self).__init__()
-		self.arg = arg
+		self._rigType = 'deformationRig'
+
+		self._hierarchyInfo.update({'bindGrp':{'name': naming.Naming(type = 'bindGrp',
+																	 side = 'middle',
+																	 part = self._rigType).name,
+											   'parent': 'master'},
+									'bindJoints': {'name': naming.Naming(type = 'bindJoints',
+																		 side = 'middle',
+																		 part = self._rigType).name,
+													  'parent': 'bindGrp'},
+									'bindObjectsLocal': {'name': naming.Naming(type = 'bindObjectsLocal',
+																			   side = 'middle',
+																			   part = self._rigType).name,
+														'parent': 'bindGrp'},
+									'bindObjectsWorld': {'name': naming.Naming(type = 'bindObjectsWorld',
+																			   side = 'middle',
+																			   part = self._rigType).name,
+														 'parent': 'bindGrp'}})
 
 	def registertion(self):
 		super(DeformationRig, self).registertion()
 
 		# prebuild
 
-		self.registerTask({'name': 'Create New Scene',
-						   'task': self._createNewScene,
-						   'section': 'preBuild'})
-
 		self.registerTask({'name': 'Import Model',
 						   'task': self._importModel,
-						   'section': 'preBuild'})
+						   'section': 'preBuild',
+						   'after': 0})
 
 		self.registerTask({'name': 'Import Skeleton',
 						   'task': self._importSkeleton,
-						   'section': 'preBuild'})
-
-		self.registerTask({'name': 'Import Misc',
-						   'task': self._importMisc,
-						   'section': 'preBuild'})
-
-		self.registerTask({'name': 'Base Hierarchy',
-						   'task': self._baseHierarchy,
-						   'section': 'preBuild'})
+						   'section': 'preBuild',
+						   'after': 1})
 
 		# build
-
-		self.registerTask({'name': 'Create Components',
-						   'task': self._createComponents,
-						   'section': 'build'})
-
-		self.registerTask({'name': 'Connect Components',
-						   'task': self._connectComponents,
-						   'section': 'build'})
-
-		self.registerTask({'name': 'Set Default Attributes',
-						   'task': self._setDefaultAttributes,
-						   'section': 'build'})
 
 		# postBuild
 
 		self.registerTask({'name': 'Load Hierarchy',
 						   'task': self._loadHierarchy,
-						   'section': 'postBuild'})
+						   'section': 'postBuild',
+						   'after': 0})
 
 		self.registerTask({'name': 'Load Deformers',
 						   'task': self._loadDeformers,
-						   'section': 'postBuild'})
+						   'section': 'postBuild',
+						   'after': 1})
 
-		self.registerTask({'name': 'Hide History',
-						   'task': self._hideHistory,
-						   'section': 'postBuild'})
+	def _baseHierarchy(self):
+		super(DeformationRig, self)._baseHierarchy()
+
+		attributes.addAttrs(self._master, ['bindNodesVis'], attributeType = 'long', minValue = 0, maxValue = 1, 
+							defaultValue = 0, keyable = False, channelBox = True)
+		attributes.connectAttrs('bindNodesVis', 'v', driver = self._master, driven = self._bindGrp)
+		
+		cmds.addAttr('{}.controlsComponentVis'.format(self._master), e = True, dv = 0)
+		cmds.setAttr('{}.controlsComponentVis'.format(self._master), 0)
+
+		constraints.matrixConnect(self._controlsGrp, 'worldPosMatrix', self._bindObjectsWorld, force = True)
+		constraints.matrixConnect(self._controlsGrp, 'localizationMatrix', [self._bindJoints, self._bindObjectsLocal], force = True)
+
 
 

@@ -58,7 +58,7 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 						  'side': self._side,
 						  'index': self._index,
 						  'controlSize': self._controlSize,
-						  'deformationNodes': self._deformationNodes})
+						  'asSkeleton': self._asSkeleton})
 
 			Limb = componentUtils.createComponent(componentType, kwargs)
 
@@ -76,13 +76,8 @@ class MultiComponentsPackage(componentsPackage.ComponentsPackage):
 		self._controls += [packageCtrl]
 		self._subComponentNodes = subComponentNodes
 
-	def connectDeformationNodes(self, parentNodes):
-		if not isinstance(parentNodes, list):
-			parentNodes = [parentNodes]
-		if 'bindJoint' in self._deformationNodes or 'xtran' in self._deformationNodes:
+	def _connectSkeleton(self, inputObj):
+		if self._asSkeleton and hasattr(inputObj, 'skeleton'):
 			for Limb in self.subComponentNodes.Components:
-				if 'bindJoint' in self._deformationNodes:
-					hierarchy.parent(Limb.binds.bind000.name, parentNodes[0])
-				if 'xtran' in self._deformationNodes:
-					hierarchy.parent(Limb.xtrans.xtran000.name, parentNodes[-1])
+				hierarchy.parent(Limb._skeletonRoot, inputObj.skeleton)
 			

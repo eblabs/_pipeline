@@ -65,7 +65,8 @@ class RigComponent(object):
 		self._createComponent()
 		self._writeRigComponentInfo()
 
-	def connect(self, matrixPlug):
+	def connect(self, inputObj, **kwargs):
+		matrixPlug = inputObj.localMatrixPlug
 		inputMatrixList = cmds.getAttr(matrixPlug)
 		componentMatrixList = cmds.getAttr('{}.worldMatrix[0]'.format(self._rigComponent))
 
