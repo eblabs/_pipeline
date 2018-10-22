@@ -99,9 +99,11 @@ nameDict = {
 							'choice': 'choice',
 							'angleBetween': 'angleBtw',
 
+							# model group
+							'modelGroup': 'modelGrp',
+
 							# rig component
-							'deformationRig': 'deformationRig',
-							'animationRig': 'animationRig',
+							'master': 'master',
 							'geometryGroup': 'geometryGrp',
 							'skeletonGroup': 'skeletonGrp',
 							'componentsGroup': 'componentsGrp',
@@ -115,6 +117,10 @@ nameDict = {
 							'nodesHideGroup': 'nodesHideGrp',
 							'nodesShowGrroup': 'nodesShowGrp',
 							'subComponents': 'subComponents',
+							'bindGroup': 'bindGrp',
+							'bindJoints': 'bindJoints',
+							'bindObjectsLocal': 'bindObjLocal',
+							'bindObjectsWorld': 'bindObjWorld',
 						},
 
 				'side': {
@@ -127,8 +133,9 @@ nameDict = {
 								'high': 'high',
 								'middle': 'mid',
 								'low': 'low',
-								'proxy': 'proxy',
-								'simulation': 'sim'
+								'proxy': 'pxy',
+								'simulation': 'sim',
+								'anatomy': 'atm',
 							},
 
 				}

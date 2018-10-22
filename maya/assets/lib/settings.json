@@ -1,0 +1,24 @@
+{
+    "fileName": {
+        "publish": "publishInfo", 
+        "version": "versionInfo",
+        "modelSet": "model",
+    }, 
+    "fileType": {
+        "maya": "mb", 
+        "publish": "publishInfo", 
+        "version": "versionInfo"
+    }, 
+    "folderName": {
+        "version": "versions", 
+        "wip": "wipFiles"
+    }, 
+    "mayaFileType": {
+        "ma": "mayaAscii", 
+        "mb": "mayaBinary"
+    }, 
+    "path": {
+        "work": "C:/_works/maya"
+    },
+    "versionLimit": 20
+}

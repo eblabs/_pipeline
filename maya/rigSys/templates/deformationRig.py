@@ -18,22 +18,22 @@ class DeformationRig(builder.Builder):
 		super(DeformationRig, self).__init__()
 		self._rigType = 'deformationRig'
 
-		self._hierarchyInfo.update({'bindGrp':{'name': naming.Naming(type = 'bindGrp',
+		self._hierarchyInfo.update({'bindGroup':{'name': naming.Naming(type = 'bindGroup',
 																	 side = 'middle',
 																	 part = self._rigType).name,
 											   'parent': 'master'},
 									'bindJoints': {'name': naming.Naming(type = 'bindJoints',
 																		 side = 'middle',
 																		 part = self._rigType).name,
-													  'parent': 'bindGrp'},
+													  'parent': 'bindGroup'},
 									'bindObjectsLocal': {'name': naming.Naming(type = 'bindObjectsLocal',
 																			   side = 'middle',
 																			   part = self._rigType).name,
-														'parent': 'bindGrp'},
+														'parent': 'bindGroup'},
 									'bindObjectsWorld': {'name': naming.Naming(type = 'bindObjectsWorld',
 																			   side = 'middle',
 																			   part = self._rigType).name,
-														 'parent': 'bindGrp'}})
+														 'parent': 'bindGroup'}})
 
 	def registertion(self):
 		super(DeformationRig, self).registertion()
@@ -69,7 +69,7 @@ class DeformationRig(builder.Builder):
 
 		attributes.addAttrs(self._master, ['bindNodesVis'], attributeType = 'long', minValue = 0, maxValue = 1, 
 							defaultValue = 0, keyable = False, channelBox = True)
-		attributes.connectAttrs('bindNodesVis', 'v', driver = self._master, driven = self._bindGrp)
+		attributes.connectAttrs('bindNodesVis', 'v', driver = self._master, driven = self._bindGroup)
 		
 		cmds.addAttr('{}.controlsComponentVis'.format(self._master), e = True, dv = 0)
 		cmds.setAttr('{}.controlsComponentVis'.format(self._master), 0)
