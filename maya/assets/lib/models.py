@@ -1,6 +1,6 @@
 # -- import for debug
 import logging
-debugLevel = logging.WARNING # debug level
+debugLevel = logging.INFO # debug level
 logging.basicConfig(level=debugLevel)
 logger = logging.getLogger(__name__)
 logger.setLevel(debugLevel)
@@ -16,6 +16,7 @@ import time
 
 # -- import lib
 import assets
+reload(assets)
 import lib.common.naming.naming as naming
 import lib.common.files.files as files
 import lib.common.transforms as transforms
@@ -26,13 +27,13 @@ dirname = os.path.abspath(os.path.dirname(__file__))
 path_settings = os.path.join(dirname, 'settings.json')
 settingsDict = files.readJsonFile(path_settings)
 
-modelSet = settingsDict['folderName']['model']
+modelSet = settingsDict['folderName']['modelSet']
 
 resolutions = naming.getKeys('resolution', returnType='longName')
 
 # create model set
 def createModelSet(asset, project):
-	pathAsset = assets.checkProjectExist(asset, project)
+	pathAsset = assets.checkAssetExist(asset, project)
 	if pathAsset:
 		# asset exist, create model set
 		pathModelSet = os.path.join(pathAsset, modelSet)
@@ -49,7 +50,7 @@ def createModelSet(asset, project):
 			files.writeJsonFile(pathPublishInfo, {})
 
 			logger.info('Create model set at {}'.format(pathModelSet))
-			return pathModel
+			return pathModelSet
 		else:
 			logger.warn('Model set already exists, skipped')
 			return None
@@ -70,17 +71,17 @@ def checkModelSetExist(asset, project):
 		return None
 
 # create resolution groups in scene
-def prepareAssetScene(asset, newScene=True):
+def prepareAssetScene(newScene=True):
 	if newScene:
 		cmds.file(f = True, new = True)
 
 	# create master node
 	NamingGrp = naming.Naming(type = 'modelGroup',
-							  side = 'side',
-							  part = asset)
+							  side = 'middle',
+							  part = settingsDict['fileName']['modelSet'])
 	modelGrp = NamingGrp.name
-	if not cmds.objExist(modelGrp):
-		modelGrp = transforms.createTransformNode(NamingGrp.name, 
+	if not cmds.objExists(modelGrp):
+		modelGrp = transforms.createTransformNode(modelGrp, 
 												  lockHide=['tx', 'ty', 'tz',
 															'rx', 'ry', 'rz',
 															'sx', 'sy', 'sz', 'v'])
@@ -88,7 +89,7 @@ def prepareAssetScene(asset, newScene=True):
 	NamingGrp.type = 'group'
 	for res in resolutions:
 		NamingGrp.resolution = res
-		if not cmds.objExist(NamingGrp.name):
+		if not cmds.objExists(NamingGrp.name):
 			transforms.createTransformNode(NamingGrp.name, 
 										   lockHide=['tx', 'ty', 'tz',
 													 'rx', 'ry', 'rz',
@@ -103,10 +104,10 @@ def publish(asset, project, comment=''):
 		return False
 
 	modelGrp = naming.Naming(type = 'modelGroup',
-							 side = 'side',
-							 part = asset).name
+							 side = 'middle',
+							 part = settingsDict['fileName']['modelSet']).name
 
-	if not cmds.objExist(modelGrp):
+	if not cmds.objExists(modelGrp):
 		logger.warn('Model group: {} does not exist, can not publish'.format(modelGrp))
 		return False
 
@@ -119,26 +120,33 @@ def publish(asset, project, comment=''):
 
 	startTime = time.time()
 
+	childGrps = cmds.listRelatives(modelGrp, c = True)
 	resList = []
 	# each res
 	for res in resolutions:
 		resGrp = naming.Naming(type = 'group',
-							   side = 'side',
+							   side = 'middle',
 							   resolution = res,
-							   part = asset).name
-		meshList = cmds.listRelatives(resGrp, ad = True, type = 'mesh')
-		if meshList:
-			resList.append(res)
-		else:
-			cmds.delete(resGrp)
+							   part = settingsDict['fileName']['modelSet']).name
+		if cmds.objExists(resGrp):
+			meshList = cmds.listRelatives(resGrp, ad = True, type = 'mesh')
+			parentGrp = cmds.listRelatives(resGrp, p = True)
+			if meshList and parentGrp and parentGrp[0] == modelGrp:
+				resList.append(res)
+				childGrps.remove(resGrp)
+			else:
+				cmds.delete(resGrp)
 
+	if childGrps:
+		cmds.delete(childGrps)
+				
 	# export file
 	modelSetFileType = settingsDict['fileType']['maya']
-	modelSetFile = '{}.{}'.format(settingsDict['fileName']['model'],
+	modelSetFile = '{}.{}'.format(settingsDict['fileName']['modelSet'],
 								  modelSetFileType)
 	mayaFileType = settingsDict['mayaFileType'][modelSetFileType]
 	pathModelFile = os.path.join(pathModelSet, modelSetFile)
-	cmds.select(NamingGrp.name)
+	cmds.select(modelGrp)
 	cmds.file(pathModelFile, force = True, type = mayaFileType, exportSelected = True)
 	
 	# update publish info
@@ -165,8 +173,8 @@ def publish(asset, project, comment=''):
 	files.writeJsonFile(pathPublishInfo, publishInfoDict)
 
 	# update versions
-	pathVersionFolder = os.path.join(pathModelSet, assets.versionFolder)
-	assets.updateVersion(pathVersionFolder, pathModelFile, modelSetFile, comment = comment)
+	pathVersionFolder = os.path.join(pathModelSet, settingsDict['folderName']['version'])
+	assets.updateVersion(pathVersionFolder, pathModelFile, modelSetFileType, comment = comment)
 	
 	endTime = time.time()
 	logger.info('Publish {} sucessfully at {}, took {} seconds'.format(modelSet, pathModelFile, endTime - startTime))
@@ -174,7 +182,7 @@ def publish(asset, project, comment=''):
 # import model
 def importModel(asset, project):
 	pathModelSet = checkModelSetExist(asset, project)
-	modelSetFile = '{}.{}'.format(settingsDict['fileName']['model'],
+	modelSetFile = '{}.{}'.format(settingsDict['fileName']['modelSet'],
 								  settingsDict['fileType']['maya'])
 	pathModelFile = os.path.join(pathModelSet, modelSetFile)
 	if os.path.exists(pathModelFile):

@@ -1,6 +1,6 @@
 # -- import for debug
 import logging
-debugLevel = logging.WARNING # debug level
+debugLevel = logging.INFO # debug level
 logging.basicConfig(level=debugLevel)
 logger = logging.getLogger(__name__)
 logger.setLevel(debugLevel)
@@ -63,7 +63,7 @@ def createAsset(asset, project):
 
 # check asset exist
 def checkAssetExist(asset, project):
-	pathAsset = os.path.join(path_assetFolder, project, asset)
+	pathAsset = os.path.join(path_work, project, asset)
 	if os.path.exists(pathAsset):
 		return pathAsset
 	else:
@@ -76,16 +76,17 @@ def createVersionFolder(path):
 	# create versionInfo file
 	versionInfoFile = '{}.{}'.format(settingsDict['fileName']['version'],
 									 settingsDict['fileType']['version'])
-	pathVersion = os.path.join(pathVersion, versionizeFile)
+	pathVersion = os.path.join(pathVersion, versionInfoFile)
 	files.writeJsonFile(pathVersion, {})
 
 # update versions
 def updateVersion(pathVersionFolder, pathFile, fileType, comment=''):
 	# template
 	# {'version_001': {'fileType': 'mb', 'comment': 'initial'}}
+	versionLimit = settingsDict['versionLimit']
 	versionInfoFile = '{}.{}'.format(settingsDict['fileName']['version'],
 									 settingsDict['fileType']['version'])
-	pathVersionFile = os.path.join(pathVersionFolder, versionizeFile)
+	pathVersionFile = os.path.join(pathVersionFolder, versionInfoFile)
 	versionInfo = files.readJsonFile(pathVersionFile)
 	if versionInfo:
 		keys = versionInfo.keys()
@@ -103,6 +104,7 @@ def updateVersion(pathVersionFolder, pathFile, fileType, comment=''):
 		version = 1
 	versionInfo.update({'version_{:03d}'.format(version): {'fileType': fileType,
 														   'comment': comment}})
+	files.writeJsonFile(pathVersionFile, versionInfo)
 	fileUpdate = 'version_{:03d}.{}'.format(version, fileType)
 	pathFileUpdate = os.path.join(pathVersionFolder, fileUpdate)
 	copyfile(pathFile, pathFileUpdate)

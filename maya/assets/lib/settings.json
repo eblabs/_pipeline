@@ -3,6 +3,7 @@
         "publish": "publishInfo", 
         "version": "versionInfo",
         "modelSet": "model",
+        "rigSet": "rig"
     }, 
     "fileType": {
         "maya": "mb", 
@@ -10,6 +11,8 @@
         "version": "versionInfo"
     }, 
     "folderName": {
+        "modelSet": "model",
+        "rigSet": "rig",
         "version": "versions", 
         "wip": "wipFiles"
     }, 

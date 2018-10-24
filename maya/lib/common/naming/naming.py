@@ -26,7 +26,7 @@ class Naming(object):
 		else:
 			type = kwargs.get('type', None)
 			side = kwargs.get('side', None)
-			res = kwargs.get('res', None)
+			res = kwargs.get('resolution', None)
 			part = kwargs.get('part', None)
 			index = kwargs.get('index', None)
 			suffix = kwargs.get('suffix', None)
