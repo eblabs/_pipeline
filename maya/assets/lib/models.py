@@ -16,7 +16,6 @@ import time
 
 # -- import lib
 import assets
-reload(assets)
 import lib.common.naming.naming as naming
 import lib.common.files.files as files
 import lib.common.transforms as transforms

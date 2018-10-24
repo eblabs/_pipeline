@@ -23,5 +23,23 @@
     "path": {
         "work": "C:/_works/maya"
     },
-    "versionLimit": 20
+    "versionLimit": 20,
+    "rigSet": {
+        "animationRig":{"name": "animationRig",
+                        "data": {"blueprints": "blueprints",
+                                 "miscs": "miscs",
+                                 "components": "components",
+                                 "attributes": "attributes",
+                                 "controlShapes": "controlShapes",
+                                 "buildScript": "buildScript"}},
+        "deformationRig":{"name": "deformationRig",
+                          "data": {"skeleton": "skeleton",
+                                   "miscs": "miscs",
+                                   "components": "components",
+                                   "attributes": "attributes",
+                                   "hierarchy": "hierarchy",
+                                   "deformers": "deformers",
+                                   "controlShapes": "controlShapes",
+                                   "buildScript": "buildScript"}}
+    }
 }
