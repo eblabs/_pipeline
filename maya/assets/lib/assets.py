@@ -11,6 +11,9 @@ import os
 # -- import shutil
 from shutil import copyfile
 
+# -- import datetime
+import datetime
+
 # -- import maya lib
 import maya.cmds as cmds
 
@@ -69,23 +72,53 @@ def checkAssetExist(asset, project):
 	else:
 		return None
 
-# create version folder
+# create component folder
 def createVersionFolder(path):
-	pathVersion = os.path.join(path, settingsDict['folderName']['version'])
-	os.makedirs(pathVersion)
+	for folder in ['publish', 'version', 'wip']:
+		pathFolder = os.path.join(path, settingsDict['folderName'][folder])
+		os.makedirs(pathFolder)
 	# create versionInfo file
 	versionInfoFile = '{}.{}'.format(settingsDict['fileName']['version'],
 									 settingsDict['fileType']['version'])
-	pathVersion = os.path.join(pathVersion, versionInfoFile)
+	pathVersion = os.path.join(path, settingsDict['folderName']['version'], versionInfoFile)
 	files.writeJsonFile(pathVersion, {})
+	# create publish file
+	publishInfoFile = '{}.{}'.format(settingsDict['fileName']['publish'],
+									 settingsDict['fileType']['publish'])
+	pathPublishInfo = os.path.join(path, publishInfoFile)
+	files.writeJsonFile(pathPublishInfo, {})
 
-# update versions
-def updateVersion(pathVersionFolder, pathFile, fileType, comment=''):
-	# template
-	# {'version_001': {'fileType': 'mb', 'comment': 'initial'}}
+# update publish info
+def updatePublishInfo(path, comment='', data=None):
+	# version template
+	# {'version_001': {'comment': 'initial'}}
+	# publish template
+	# {**data, comment: "", version: 1}
+
+	# assume file already published (different between each component)
+	# update publish info
+	publishInfoFile = '{}.{}'.format(settingsDict['fileName']['publish'],
+									 settingsDict['fileType']['publish'])
+	pathPublishInfo = os.path.join(path, publishInfoFile)
+	publishInfo = files.readJsonFile(pathPublishInfo)
+
+	# get version
+	if publishInfo:
+		version = publishInfo['version'] + 1
+	else:
+		version = 1
+
+	# get current time
+	currentTime = datetime.datetime.now()
+	publishInfo = {'version': version,
+				   'comment': comment,
+				   'date': currentTime.strftime("%Y-%m-%d %H:%M")}
+	publishInfo.update(data)
+
 	versionLimit = settingsDict['versionLimit']
 	versionInfoFile = '{}.{}'.format(settingsDict['fileName']['version'],
 									 settingsDict['fileType']['version'])
+	pathVersionFolder = os.path.join(path, settingsDict['folderName']['version'])
 	pathVersionFile = os.path.join(pathVersionFolder, versionInfoFile)
 	versionInfo = files.readJsonFile(pathVersionFile)
 	if versionInfo:
@@ -94,22 +127,16 @@ def updateVersion(pathVersionFolder, pathFile, fileType, comment=''):
 		version = len(keys) + 1
 		if version > versionLimit:
 			# remove the earliest version
-			keyRemove = keys[0]
-			fileRemove = keyRemove + '.' + versionInfo[keyRemove]['fileType']
-			pathFileRemove = os.path.join(pathVersionFolder, fileRemove)
+			pathFileRemove = os.path.join(pathVersionFolder, keys[0])
 			if os.path.exists(pathFileRemove):
 				os.remove(pathFileRemove)
-			versionInfo.pop(keyRemove)
+			versionInfo.pop(keys[0])
 	else:
 		version = 1
-	versionInfo.update({'version_{:03d}'.format(version): {'fileType': fileType,
-														   'comment': comment}})
+	versionInfo.update({'version_{:03d}'.format(version): {'comment': comment}})
 	files.writeJsonFile(pathVersionFile, versionInfo)
-	fileUpdate = 'version_{:03d}.{}'.format(version, fileType)
-	pathFileUpdate = os.path.join(pathVersionFolder, fileUpdate)
-	copyfile(pathFile, pathFileUpdate)
+	versionUpdate = 'version_{:03d}'.format(version)
+	pathPublishFolder = os.path.join(path, settingsDict['fileType']['publish'])
+	pathVersionUpdate = os.path.join(pathVersionFolder, versionUpdate)
+	copyfile(pathPublishFolder, pathVersionUpdate)
 
-# create wip folder
-def createWipFolder(path):
-	pathWip = os.path.join(path, settingsDict['folderName']['wip'])
-	os.makedirs(pathWip)

@@ -37,32 +37,21 @@ def createRigSet(asset, project):
 		if not os.path.exists(pathRigSet):
 			os.makedirs(pathRigSet)
 			# create animation rig and deformation rig folder
-			for key, rigFolderInfo in settingsDict['rigSet'].iteritems():
+			for key, rigFolderInfo in settingsDict['rigSet']['sets'].iteritems():
 				pathRigFolder = os.path.join(pathRigSet, rigFolderInfo['name'])
 				os.makedirs(pathRigFolder)
 				# create version folder for rig
 				assets.createVersionFolder(pathRigFolder)
-				# create wip folder for rig
-				assets.createWipFolder(pathRigFolder)
-				# create publish info
-				publishInfoFile = '{}.{}'.format(settingsDict['fileName']['publish'],
-												 settingsDict['fileType']['publish'])
-				pathPublishInfo = os.path.join(pathRigFolder, publishInfoFile)
-				files.writeJsonFile(pathPublishInfo, {})
 
 				# create data folders
-				for dataKey in rigFolderInfo['data']:
-					data = rigFolderInfo['data']['dataKey']
-					pathData = os.path.join(pathRigFolder, data)
+				dataDict = rigFolderInfo['data']
+				dataDict.update(settingsDict['rigSet']['common']['data'])
+				for dataKey in dataDict:
+					dataFolder = dataDict[dataKey]
+					pathData = os.path.join(pathRigFolder, dataFolder)
 					os.makedirs(pathData)
 					# create version folder for data
 					assets.createVersionFolder(pathData)
-					# create publish info
-					publishInfoFile = '{}.{}'.format(settingsDict['fileName']['publish'],
-												 settingsDict['fileType']['publish'])
-					pathPublishInfo = os.path.join(pathData, publishInfoFile)
-					files.writeJsonFile(pathPublishInfo, {})
-
 			logger.info('Create rig set at {}'.format(pathRigSet))
 			return pathRigSet
 		else:
@@ -82,4 +71,26 @@ def checkRigSetExist(asset, project):
 		else:
 			return None
 	else:
+		return None
+
+# get data path
+def getDataPath(file, data, rigSet, asset, project, mode='publish', version=0):
+	pathRig = checkRigSetExist(asset, project)
+	if pathRig:
+		rigSetFolder = settingsDict['rigSet']['sets'][rigSet]['name']
+		pathRigSet = os.path.join(pathRig, rigSetFolder)
+		dataFolder = settingsDict['rigSet']['sets'][rigSet]['data'][data]
+		pathData = os.path.join(pathRigSet, dataFolder)
+		fileFolder = settingsDict['folderName'][mode]
+		pathFile = os.path.join(pathData, fileFolder)
+		if mode == 'version':
+			pathFile = os.path.join(pathFile, 'version_{:03d}'.format(version))
+		pathFile = os.path.join(pathFile, file)
+		if os.path.exists(pathFile):
+			return pathFile
+		else:
+			logger.info('Can not find file from path: {}, skipped'.format(pathFile))
+			return None
+	else:
+		logger.info('Asset "{}" does not exist, skipped'.format(asset))
 		return None

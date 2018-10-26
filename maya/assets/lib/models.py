@@ -14,6 +14,9 @@ import os
 # -- import time
 import time
 
+# -- import shutil
+from shutil import copyfile
+
 # -- import lib
 import assets
 import lib.common.naming.naming as naming
@@ -38,16 +41,8 @@ def createModelSet(asset, project):
 		pathModelSet = os.path.join(pathAsset, modelSet)
 		if not os.path.exists(pathModelSet):
 			os.makedirs(pathModelSet)
-			# create version folder for model set
+			# create publish info and version folders
 			assets.createVersionFolder(pathModelSet)
-			# create wip folder for model set
-			assets.createWipFolder(pathModelSet)
-			# create publish info
-			publishInfoFile = '{}.{}'.format(settingsDict['fileName']['publish'],
-											 settingsDict['fileType']['publish'])
-			pathPublishInfo = os.path.join(pathModelSet, publishInfoFile)
-			files.writeJsonFile(pathPublishInfo, {})
-
 			logger.info('Create model set at {}'.format(pathModelSet))
 			return pathModelSet
 		else:
@@ -144,36 +139,20 @@ def publish(asset, project, comment=''):
 	modelSetFile = '{}.{}'.format(settingsDict['fileName']['modelSet'],
 								  modelSetFileType)
 	mayaFileType = settingsDict['mayaFileType'][modelSetFileType]
-	pathModelFile = os.path.join(pathModelSet, modelSetFile)
+	pathModelWipFile = os.path.join(pathModelSet, settingsDict['folderName']['wip'], modelSetFile)
 	cmds.select(modelGrp)
-	cmds.file(pathModelFile, force = True, type = mayaFileType, exportSelected = True)
+	cmds.file(pathModelWipFile, force = True, type = mayaFileType, exportSelected = True)
 	
-	# update publish info
-	publishInfoFile = '{}.{}'.format(settingsDict['fileName']['publish'],
-									 settingsDict['fileType']['publish'])
-	pathPublishInfo = os.path.join(pathModelSet, publishInfoFile)
-	publishInfo = files.readJsonFile(pathPublishInfo)
-	# template
-	# {asset:
-	#  project:
-	#  version:
-	#  resolutions:
-	#  comment:}
-	if publishInfo:
-		version = publishInfo['version'] + 1
-	else:
-		version = 1
-	publishInfoDict = {'asset': asset,
-					   'project': project,
-					   'version': version,
-					   'resolutions': resList,
-					   'comment': comment}
-	# write publish info
-	files.writeJsonFile(pathPublishInfo, publishInfoDict)
+	# update to publish folder
+	pathModelPublishFile = os.path.join(pathModelSet, settingsDict['folderName']['publish'], modelSetFile)
+	copyfile(pathModelWipFile, pathModelPublishFile)
 
-	# update versions
-	pathVersionFolder = os.path.join(pathModelSet, settingsDict['folderName']['version'])
-	assets.updateVersion(pathVersionFolder, pathModelFile, modelSetFileType, comment = comment)
+	# update publish info
+	publishData = {'asset': asset,
+				   'project': project,
+				   'resolutions': resList}
+
+	assets.updatePublishInfo(pathModelSet, comment = comment, data = publishData)
 	
 	endTime = time.time()
 	logger.info('Publish {} sucessfully at {}, took {} seconds'.format(modelSet, pathModelFile, endTime - startTime))

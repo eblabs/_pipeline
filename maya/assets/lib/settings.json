@@ -14,7 +14,8 @@
         "modelSet": "model",
         "rigSet": "rig",
         "version": "versions", 
-        "wip": "wipFiles"
+        "wip": "wipFiles",
+        "publish": "publish"
     }, 
     "mayaFileType": {
         "ma": "mayaAscii", 
@@ -25,21 +26,20 @@
     },
     "versionLimit": 20,
     "rigSet": {
-        "animationRig":{"name": "animationRig",
-                        "data": {"blueprints": "blueprints",
-                                 "miscs": "miscs",
-                                 "components": "components",
-                                 "attributes": "attributes",
-                                 "controlShapes": "controlShapes",
-                                 "buildScript": "buildScript"}},
-        "deformationRig":{"name": "deformationRig",
-                          "data": {"skeleton": "skeleton",
-                                   "miscs": "miscs",
-                                   "components": "components",
-                                   "attributes": "attributes",
-                                   "hierarchy": "hierarchy",
-                                   "deformers": "deformers",
-                                   "controlShapes": "controlShapes",
-                                   "buildScript": "buildScript"}}
+        "common": {"data": {"miscs": "miscs",
+                            "components": "components",
+                            "attributes": "attributes",
+                            "controlShapes": "controlShapes",
+                            "buildScript": "buildScript"}
+                            },
+        "sets": {"animationRig":{"name": "animationRig",
+                                 "data": {"blueprints": "blueprints"}
+                                },
+                 "deformationRig":{"name": "deformationRig",
+                                   "data": {"skeleton": "skeleton",
+                                            "hierarchy": "hierarchy",
+                                            "deformers": "deformers"}
+                                    }
+                    }
     }
 }
