@@ -15,7 +15,8 @@
         "rigSet": "rig",
         "version": "versions", 
         "wip": "wipFiles",
-        "publish": "publish"
+        "publish": "publish",
+        "rigData": "rigData"
     }, 
     "mayaFileType": {
         "ma": "mayaAscii", 

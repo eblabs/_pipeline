@@ -44,11 +44,13 @@ def createRigSet(asset, project):
 				assets.createVersionFolder(pathRigFolder)
 
 				# create data folders
+				pathRigDataFolder = os.path.join(pathRigFolder, settingsDict['folderName']['rigData'])
+				os.makedirs(pathRigDataFolder)
 				dataDict = rigFolderInfo['data']
 				dataDict.update(settingsDict['rigSet']['common']['data'])
 				for dataKey in dataDict:
 					dataFolder = dataDict[dataKey]
-					pathData = os.path.join(pathRigFolder, dataFolder)
+					pathData = os.path.join(pathRigDataFolder, dataFolder)
 					os.makedirs(pathData)
 					# create version folder for data
 					assets.createVersionFolder(pathData)

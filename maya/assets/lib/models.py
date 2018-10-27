@@ -19,6 +19,7 @@ from shutil import copyfile
 
 # -- import lib
 import assets
+reload(assets)
 import lib.common.naming.naming as naming
 import lib.common.files.files as files
 import lib.common.transforms as transforms
@@ -128,8 +129,6 @@ def publish(asset, project, comment=''):
 			if meshList and parentGrp and parentGrp[0] == modelGrp:
 				resList.append(res)
 				childGrps.remove(resGrp)
-			else:
-				cmds.delete(resGrp)
 
 	if childGrps:
 		cmds.delete(childGrps)
@@ -155,7 +154,7 @@ def publish(asset, project, comment=''):
 	assets.updatePublishInfo(pathModelSet, comment = comment, data = publishData)
 	
 	endTime = time.time()
-	logger.info('Publish {} sucessfully at {}, took {} seconds'.format(modelSet, pathModelFile, endTime - startTime))
+	logger.info('Publish {} sucessfully at {}, took {} seconds'.format(modelSet, pathModelPublishFile, endTime - startTime))
 
 # import model
 def importModel(asset, project):

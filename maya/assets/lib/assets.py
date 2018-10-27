@@ -9,7 +9,7 @@ logger.setLevel(debugLevel)
 import os
 
 # -- import shutil
-from shutil import copyfile
+from shutil import copyfile, copytree
 
 # -- import datetime
 import datetime
@@ -114,6 +114,7 @@ def updatePublishInfo(path, comment='', data=None):
 				   'comment': comment,
 				   'date': currentTime.strftime("%Y-%m-%d %H:%M")}
 	publishInfo.update(data)
+	files.writeJsonFile(pathPublishInfo, publishInfo)
 
 	versionLimit = settingsDict['versionLimit']
 	versionInfoFile = '{}.{}'.format(settingsDict['fileName']['version'],
@@ -136,7 +137,7 @@ def updatePublishInfo(path, comment='', data=None):
 	versionInfo.update({'version_{:03d}'.format(version): {'comment': comment}})
 	files.writeJsonFile(pathVersionFile, versionInfo)
 	versionUpdate = 'version_{:03d}'.format(version)
-	pathPublishFolder = os.path.join(path, settingsDict['fileType']['publish'])
+	pathPublishFolder = os.path.join(path, settingsDict['folderName']['publish'])
 	pathVersionUpdate = os.path.join(pathVersionFolder, versionUpdate)
-	copyfile(pathPublishFolder, pathVersionUpdate)
+	copytree(pathPublishFolder, pathVersionUpdate)
 
