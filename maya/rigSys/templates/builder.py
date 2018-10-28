@@ -20,15 +20,25 @@ import lib.rigging.joints as joints
 import rigSys.components.utils.componentUtils as componentUtils
 # ---- import end ----
 
+# -- import assets lib
+import assets.lib.rigs as rigs
+
+# -- import file format
+import common.files.files as files
+fileFormat = files.readJsonFile(files.path_fileFormat)
+
 class Builder(object):
 	"""docstring for Builder"""
-	def __init__(self):
+	def __init__(self, *args, **kwargs):
 		super(Builder, self).__init__()
 		
+		rigData = kwargs.get('rigData', {})
+
 		# build info
 		self._rigType = 'animationRig'
 
-		self._hierarchyInfo = {'master': {'name': naming.Naming(type = 'master', 
+		self._hierarchyInfo = {
+							   'master': {'name': naming.Naming(type = 'master', 
 																side = 'middle', 
 																part = self._rigType).name},
 							   'controlsGrp': {'name': naming.Naming(type = 'controlsGroup', 
@@ -55,13 +65,11 @@ class Builder(object):
 							   'rigWorld': {'name': naming.Naming(type = 'rigWorld', 
 																  side = 'middle', 
 																  part = self._rigType).name,
-											'parent': 'rigNodesGrp'},
-								}
+											'parent': 'rigNodesGrp'}}
 
-		self._pathBpJnt = []
-		self._pathBpGeo = []
-		self._pathComponents = []
-		self._componentsData = {}
+		self._rigData = self._getRigDataPath(rigData)
+		self._componentsData = self._composeRigData(self._rigData['components'])
+		#self._controlsData = self._composeRigData(self._rigData['controlShape'])
 
 		# preBuild, build, postBuild
 		self._preBuild = {'order': [],
@@ -163,14 +171,14 @@ class Builder(object):
 	def _createNewScene(self):
 		cmds.file(f = True, new = True)
 
-	def _importBlueprint(self):
-		bpGrp = '_blueprint_'
-		if not cmds.objExist(bpGrp):
-			cmds.group(empty = True, name = bpGrp)
-		for path in self._pathBpJnt:
-			joints.loadJointsInfo(path, vis=True)
-		for path in self._pathBpGeo:
-			geometries.loadGeoInfo(path, vis=True)
+	def _importMisc(self):
+		pathMiscs = self._rigData['miscs']
+		for pathM in pathMiscs:
+			try:
+				cmds.file(pathM, i = True)
+				logger.info('Import misc file: {} successfully'.format(pathM))
+			except:
+				logger.info('Can not import misc file: {}, skipped'.format(pathM))
 
 	def _buildGroupHierarchy(self, hierarchyInfo):
 		attrDict = {}
@@ -271,3 +279,56 @@ class Builder(object):
 	def _addAttributeFromDict(self, attrDict):
 		for key, value in attrDict.items():
 			setattr(self, key, value)
+
+	def _getRigDataPath(self, rigData):
+		# in the ui, each data component should return as follow
+		# key: etc blueprints
+		# dataKey: in case have multi data import from multi places
+		#          will be rigData001.... in order
+		# project: (None will look for current project)
+		# asset: (None will look for current)
+		# rigSet: (None will look for current)
+		# files: (list of file, empty will go over each files)
+		# fileType: (list of file type, empty will go over each files)
+		# mode: (publish/wip/version)
+		# version: (None will look for the latest)
+
+		dataPathDict = {}
+
+		for key, data in rigData.iteritems():
+			keyEachList = data.keys()
+			keyEachList.sort()
+			pathDataList = []
+			for keyEach in keyEachList:
+				#getDataPath(data, rigSet, asset, project, files=[], fileType=[], mode='publish', version=0):	
+				dataEach = data[keyEach]
+				getDataPathDict = {'files': dataEach['files'],
+								   'fileType': dataEach['fileType'],
+								   'mode': dataEach['mode'],
+								   'version': dataEach['version']}
+				pathDataEach = rigs.getDataPath(key, dataEach['rigSet'], dataEach['asset'], dataEach['project'], **getDataPathDict)
+				pathDataList += pathDataEach
+			dataPathDict.update({key: pathDataList})
+
+		self._rigData = dataPathDict
+
+	def _composeRigData(self, pathRigData):
+		dataDict = {}
+		fileFormatJson = [fileFormat['control'], fileFormat['joint']]
+		fileFormatPickle = [fileFormat['geometry']]
+		for p in pathRigData:
+			fileName, fileExtension = os.path.splitext(p)
+			fileExtension = fileExtension[1:] # remove '.'
+
+			if fileExtension in fileFormatJson:
+				dataEach = files.readJsonFile(p)
+			elif fileExtension in fileFormatPickle:
+				dataEach = files.readPickleFile(p)
+			else:
+				dataEach = {}
+
+			if dataEach:
+				for key, item in dataEach.iteritems():
+					if key not in dataDict:
+						dataDict.update({key: item})
+		return dataDict

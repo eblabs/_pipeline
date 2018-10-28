@@ -10,13 +10,18 @@ import maya.cmds as cmds
 
 # -- import lib
 import builder
-reload(builder)
 import lib.common.naming.naming as naming
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
 import lib.rigging.controls.controls as controls
 import lib.rigging.constraints as constraints
+import lib.rigging.joints as joints
+import lib.modeling.geometries as geometries
 # ---- import end ----
+
+# -- import file format
+import common.files.files as files
+fileFormat = files.readJsonFile(files.path_fileFormat)
 
 class AnimationRig(builder.Builder):
 	"""docstring for AnimationRig"""
@@ -29,10 +34,10 @@ class AnimationRig(builder.Builder):
 
 		# prebuild
 
-		# self.registerTask({'name': 'Import Blueprint',
-		# 				   'task': self._importBlueprint,
-		# 				   'section': 'preBuild',
-		#				   'after': 0})
+		self.registerTask({'name': 'Import Blueprint',
+						   'task': self._importBlueprint,
+						   'section': 'preBuild',
+						   'after': 0})
 
 	def _baseHierarchy(self):
 		super(AnimationRig, self)._baseHierarchy()
@@ -58,4 +63,15 @@ class AnimationRig(builder.Builder):
 								driver = self._ControlWorld.name)
 
 		cmds.connectAttr('{}.worldMatrix[0]'.format(self._ControlLocal.output), '{}.worldPosMatrix'.format(self._controlsGrp))
-		
+	
+	def _importBlueprint(self):
+		bpGrp = '_blueprint_'
+		if not cmds.objExist(bpGrp):
+			cmds.group(empty = True, name = bpGrp)
+		pathBlueprints = self._rigData['blueprints']
+		for pathBp in pathBlueprints:
+			if pathBp.endswith(fileFormat['joint']):
+				joints.loadJointsInfo(pathBp, vis = True)
+			elif pathBp.endswith(fileFormat['geometry']):
+				geometries.loadGeoInfo(pathBp, vis = True)
+		logger.info('import blueprints successfully')

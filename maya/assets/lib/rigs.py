@@ -11,6 +11,9 @@ import maya.cmds as cmds
 # -- import os
 import os
 
+# -- import glob
+import glob
+
 # -- import time
 import time
 
@@ -76,7 +79,8 @@ def checkRigSetExist(asset, project):
 		return None
 
 # get data path
-def getDataPath(file, data, rigSet, asset, project, mode='publish', version=0):
+def getDataPath(data, rigSet, asset, project, files=[], fileType=[], mode='publish', version=0):
+	pathFilesReturn = []
 	pathRig = checkRigSetExist(asset, project)
 	if pathRig:
 		rigSetFolder = settingsDict['rigSet']['sets'][rigSet]['name']
@@ -87,9 +91,27 @@ def getDataPath(file, data, rigSet, asset, project, mode='publish', version=0):
 		pathFile = os.path.join(pathData, fileFolder)
 		if mode == 'version':
 			pathFile = os.path.join(pathFile, 'version_{:03d}'.format(version))
-		pathFile = os.path.join(pathFile, file)
-		if os.path.exists(pathFile):
-			return pathFile
+		if files:
+			for f in files:
+				pathFileEach = os.path.join(pathFile, f)
+				if os.path.exists(pathFileEach):
+					pathFilesReturn.append(pathFileEach)
+				else:
+					logger.info('Can not find file from path: {}, skipped'.format(pathFileEach))
+		else:
+			# go over each file in the folder
+			if fileType:
+				for t in fileType:
+					pathFileSearch = os.path.join(pathFile, '*.' + t)
+					files = glob.glob(pathFileSearch)
+					pathFilesReturn += files
+			else:
+				pathFileSearch = os.path.join(pathFile, '*.*')
+				files = glob.glob(pathFileSearch)
+				pathFilesReturn += files
+		
+		if pathFilesReturn:
+			return pathFilesReturn
 		else:
 			logger.info('Can not find file from path: {}, skipped'.format(pathFile))
 			return None
