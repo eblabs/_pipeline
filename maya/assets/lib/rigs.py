@@ -70,7 +70,7 @@ def createRigSet(asset, project):
 def checkRigSetExist(asset, project):
 	pathAsset = assets.checkAssetExist(asset, project)
 	if pathAsset:
-		pathModelSet = os.path.join(pathAsset, rigSet)
+		pathRigSet = os.path.join(pathAsset, rigSet)
 		if os.path.exists(pathRigSet):
 			return pathRigSet
 		else:
@@ -85,8 +85,10 @@ def getDataPath(data, rigSet, asset, project, files=[], fileType=[], mode='publi
 	if pathRig:
 		rigSetFolder = settingsDict['rigSet']['sets'][rigSet]['name']
 		pathRigSet = os.path.join(pathRig, rigSetFolder)
+		rigDataFolder = settingsDict['folderName']['rigData']
+		pathRigData = os.path.join(pathRigSet, rigDataFolder)
 		dataFolder = settingsDict['rigSet']['sets'][rigSet]['data'][data]
-		pathData = os.path.join(pathRigSet, dataFolder)
+		pathData = os.path.join(pathRigData, dataFolder)
 		fileFolder = settingsDict['folderName'][mode]
 		pathFile = os.path.join(pathData, fileFolder)
 		if mode == 'version':

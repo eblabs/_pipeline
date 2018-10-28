@@ -14,8 +14,8 @@ import builder
 
 class DeformationRig(builder.Builder):
 	"""docstring for DeformationRig"""
-	def __init__(self):
-		super(DeformationRig, self).__init__()
+	def __init__(self, *args, **kwargs):
+		super(DeformationRig, self).__init__(*args, **kwargs)
 		self._rigType = 'deformationRig'
 
 		self._hierarchyInfo.update({'bindGroup':{'name': naming.Naming(type = 'bindGroup',

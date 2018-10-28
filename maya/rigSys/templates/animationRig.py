@@ -25,8 +25,8 @@ fileFormat = files.readJsonFile(files.path_fileFormat)
 
 class AnimationRig(builder.Builder):
 	"""docstring for AnimationRig"""
-	def __init__(self):
-		super(AnimationRig, self).__init__()
+	def __init__(self, *args, **kwargs):
+		super(AnimationRig, self).__init__(*args, **kwargs)
 		self._rigType = 'animationRig'
 
 	def registertion(self):
