@@ -1,6 +1,6 @@
 # -- import for debug
 import logging
-debugLevel = logging.WARNING # debug level
+debugLevel = logging.INFO # debug level
 logging.basicConfig(level=debugLevel)
 logger = logging.getLogger(__name__)
 logger.setLevel(debugLevel)
@@ -25,6 +25,8 @@ import curves
 
 # save geometries info
 def saveGeoInfo(geometry, path, name=None, separate=False):
+	saveGeo = False
+
 	if not name:
 		name = 'geoInfo'
 	if isinstance(geometry, basestring):
@@ -42,50 +44,60 @@ def saveGeoInfo(geometry, path, name=None, separate=False):
 		else:
 			geoShape = geo
 			geo = cmds.listRelatives(geoShape, p = True)[0]
-		if cmds.objectType(geoShape) == 'mesh':
-			geoInfo = meshes.__getMeshInfo(geoShape)
-		elif cmds.objectType(geoShape) == 'nurbsSurface':
-			geoInfo = surfaces.__getSurfaceInfo(geoShape)
-		elif cmds.objectType(geoShape) == 'nurbsCurve':
-			geoInfo = curves.__getCurveInfo(geoShape)
-		parent = cmds.listRelatives(geo, p = True)
-		if parent:
-			parent = parent[0]
-		geoInfo.update({'parent': parent})
-		geoInfo = {geo: geoInfo}
-		if separate:		
-			pathOutput = os.path.join(path, '{}.{}'.format(geo, fileFormat['geometry']))
-			files.writePickleFile(pathOutput, geoInfo)
-			logger.info('Save {} geoInfo at {}'.format(geo, pathOutput))
-		else:
-			geoInfoDict.update(geoInfo)
-	if not separate:
+		shapeType = cmds.objectType(geoShape)
+		if shapeType in ['mesh', 'nurbsSurface', 'nurbsCurve']:
+			if cmds.objectType(geoShape) == 'mesh':
+				geoInfo = meshes.__getMeshInfo(geoShape)
+			elif cmds.objectType(geoShape) == 'nurbsSurface':
+				geoInfo = surfaces.__getSurfaceInfo(geoShape)
+			elif cmds.objectType(geoShape) == 'nurbsCurve':
+				geoInfo = curves.__getCurveInfo(geoShape)
+			parent = cmds.listRelatives(geo, p = True)
+			if parent:
+				parent = parent[0]
+			geoInfo.update({'parent': parent})
+			geoInfo = {geo: geoInfo}
+			if separate:		
+				pathOutput = os.path.join(path, '{}.{}'.format(geo, fileFormat['geometry']))
+				files.writePickleFile(pathOutput, geoInfo)
+				logger.info('Save {} geoInfo at {}'.format(geo, pathOutput))
+				saveGeo = True
+			else:
+				geoInfoDict.update(geoInfo)
+
+	if not separate and geoInfoDict:
 		pathOutput = os.path.join(path, '{}.{}'.format(name, fileFormat['geometry']))
 		files.writePickleFile(pathOutput, geoInfoDict)
 		logger.info('Save {} geoInfo at {}'.format(geometry, pathOutput))
+		saveGeo = True
 
 	endTime = time.time()
-	logger.info('Save sucessfully, took {} seconds'.format(endTime - startTime))
-
+	if saveGeo:
+		logger.info('Save sucessfully, took {} seconds'.format(endTime - startTime))
+	else:
+		logger.info('No geometry given, skipped')
 
 # load geometries info
 def loadGeoInfo(path, vis=True):
+	startTime = time.time()
 	geoInfoDict = files.readPickleFile(path)
 	parentList = []
-	jntsList = geoInfoDict.keys()
+	geoList = geoInfoDict.keys()
 	for geo, geoInfo in geoInfoDict.iteritems():
 		if geoInfo['type'] == 'mesh':
 			geoInfo = meshes.__convertMeshInfo(geoInfo)
-		elif geoInfo['type'] == 'surface':
+		elif geoInfo['type'] == 'nurbsSurface':
 			geoInfo = surfaces.__convertSurfaceInfo(geoInfo)
-		elif geoInfo['type'] == 'curve':
+		elif geoInfo['type'] == 'nurbsCurve':
 			geoInfo = curves.__convertCurveInfo(geoInfo)
 		createGeo(geoInfo, name = geo, vis = vis)
 		parent = geoInfo['parent']
 		parentList.append(parent)
-	for jnts in zip(jntsList, parentList):
-		hierarchy.parent(jnts[0], jnts[1])
-	return jntsList
+	for geos in zip(geoList, parentList):
+		hierarchy.parent(geos[0], geos[1])
+	endTime = time.time()
+	logger.info('load geometry from {}, took {} seconds'.format(path, endTime - startTime))
+	return geoList
 
 # create geometry
 def createGeo(geoInfo, name=None, vis=True):
@@ -102,9 +114,9 @@ def createGeo(geoInfo, name=None, vis=True):
 	# create geo
 	if geoInfo['type'] == 'mesh':
 		geo = meshes.__createMesh(geoInfo, name)
-	elif geoInfo['type'] == 'surface':
+	elif geoInfo['type'] == 'nurbsSurface':
 		geo = surfaces.__createSurface(geoInfo, name)
-	elif geoInfo['type'] == 'curve':
+	elif geoInfo['type'] == 'nurbsCurve':
 		geo = curves.__createCurve(geoInfo, name)
 
 	# rename shape node
@@ -116,7 +128,8 @@ def createGeo(geoInfo, name=None, vis=True):
 		cmds.setAttr('{}.v'.format(geo), 0)
 
 	# assign default shader
-	maya.cmds.sets(geo, e=True, fe='initialShadingGroup')
+	if geoInfo['type'] != 'nurbsCurve':
+		cmds.sets(geo, e=True, fe='initialShadingGroup')
 
 	# log
 	endTime = time.time()

@@ -1,6 +1,6 @@
 # -- import for debug
 import logging
-debugLevel = logging.WARNING # debug level
+debugLevel = logging.INFO # debug level
 logging.basicConfig(level=debugLevel)
 logger = logging.getLogger(__name__)
 logger.setLevel(debugLevel)
@@ -155,7 +155,7 @@ def saveJointsInfo(jnts, path, name=None):
 		jntInfo = __getJointInfo(j)
 		jntsInfoDict.update(jntInfo)
 	pathOutput = os.path.join(path, '{}.{}'.format(name, fileFormat['joint']))
-	files.writeJsonFile(pathOutput, geoInfoDict)
+	files.writeJsonFile(pathOutput, jntsInfoDict)
 
 	endTime = time.time()
 	logger.info('Save joints information at {}, took {} seconds'.format(pathOutput, endTime - startTime))
@@ -163,6 +163,7 @@ def saveJointsInfo(jnts, path, name=None):
 # load joints info
 def loadJointsInfo(path, vis=True):
 	jntsInfoDict = files.readJsonFile(path)
+	startTime = time.time()
 	for jnt, jntInfo in jntsInfoDict.iteritems():
 		transformInfo = jntInfo['transformInfo']
 		ro = jntInfo['rotateOrder']
@@ -171,13 +172,15 @@ def loadJointsInfo(path, vis=True):
 	for jnt, jntInfo in jntsInfoDict.iteritems():
 		parent = jntInfo['parent']
 		hierarchy.parent(jnt, parent)
+	endTime = time.time()
+	logger.info('load joints information from {}, took {} seconds'.format(path, endTime - startTime))
 	return jntsInfoDict.keys()
 
 # get joint info
 def __getJointInfo(jnt):
 	ro = cmds.getAttr('{}.ro'.format(jnt))
 	scaleCompensate = cmds.getAttr('{}.segmentScaleCompensate'.format(jnt))
-	transformInfo = transforms.getNodeTransformInfo(node, rotateOrder = ro)
+	transformInfo = transforms.getNodeTransformInfo(jnt, rotateOrder = ro)
 	parent = cmds.listRelatives(jnt, p = True)
 	if parent:
 		parent = parent[0]
@@ -185,3 +188,4 @@ def __getJointInfo(jnt):
 					 'rotateOrder': ro,
 					 'scaleCompensate': scaleCompensate,
 					 'parent': parent}}
+	return jntInfo

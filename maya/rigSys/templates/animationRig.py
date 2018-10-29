@@ -66,7 +66,7 @@ class AnimationRig(builder.Builder):
 	
 	def _importBlueprint(self):
 		bpGrp = '_blueprint_'
-		if not cmds.objExist(bpGrp):
+		if not cmds.objExists(bpGrp):
 			cmds.group(empty = True, name = bpGrp)
 		pathBlueprints = self._rigData['blueprints']
 		for pathBp in pathBlueprints:
