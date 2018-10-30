@@ -16,9 +16,7 @@ import lib.common.naming.naming as naming
 import lib.common.files.files as files
 import lib.common.transforms as transforms
 import lib.rigging.joints as joints
-reload(joints)
 import lib.modeling.geometries as geometries
-reload(geometries)
 # ---- import end ----
 
 # -- import assets lib
@@ -30,9 +28,9 @@ grp_blueprint = '_blueprint_'
 file_blueprint = 'blueprints'
 format_files = files.readJsonFile(files.path_fileFormat)
 # export blueprints
-def exportBlueprints(asset, project):
+def exportBlueprints(rig='animationRig', asset=None, project=None):
 	# get export path
-	pathBp = rigs.getDataFolderPath('blueprints', 'animationRig', asset, project, mode='wip')
+	pathBp = rigs.getDataFolderPath('blueprints', rig, asset, project, mode='wip')
 	# export files
 	if cmds.objExists(grp_blueprint):
 		# get joints info and save
@@ -46,11 +44,11 @@ def exportBlueprints(asset, project):
 		logger.info('Blueprints Group {} does not exist, skipped'.format(grp_blueprint))
 
 # import blueprints
-def importBlueprints(asset, project, mode='publish', version=0):
+def importBlueprints(rig='animationRig', asset=None, project=None, mode='publish', version=0):
 	bpJntFile = file_blueprint + '.' + format_files['joint']
 	bpGeoFile = file_blueprint + '.' + format_files['geometry']
 	# get file path
-	pathBlueprints = rigs.getDataPath('blueprints', 'animationRig', asset, project, files = [bpJntFile, bpGeoFile], 
+	pathBlueprints = rigs.getDataPath('blueprints', rig, asset, project, files = [bpJntFile, bpGeoFile], 
 									  mode = mode, version = version)
 
 	if pathBlueprints:
@@ -63,5 +61,7 @@ def importBlueprints(asset, project, mode='publish', version=0):
 				joints.loadJointsInfo(p, vis = True)
 			elif p.endswith(format_files['geometry']):
 				geometries.loadGeoInfo(p, vis = True)
+	else:
+		logger.info('No blueprint file found, skipped')
 
 

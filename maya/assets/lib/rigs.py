@@ -67,10 +67,13 @@ def createRigSet(asset, project):
 		return None
 
 # check rig set exists
-def checkRigSetExist(asset, project):
+def checkRigSetExist(asset, project, rig=None):
 	pathAsset = assets.checkAssetExist(asset, project)
 	if pathAsset:
 		pathRigSet = os.path.join(pathAsset, rigSet)
+		if rig:
+			rig = settingsDict['rigSet']['sets'][rig]['name']
+			pathRigSet = os.path.join(pathRigSet, rig)
 		if os.path.exists(pathRigSet):
 			return pathRigSet
 		else:
@@ -79,14 +82,15 @@ def checkRigSetExist(asset, project):
 		return None
 
 # get data folder path
-def getDataFolderPath(data, rigSet, asset, project, mode='publish', version=0):
-	pathRig = checkRigSetExist(asset, project)
+def getDataFolderPath(data, rig, asset, project, mode='publish', version=0):
+	pathRig = checkRigSetExist(asset, project, rig = rig)
 	if pathRig:
-		rigSetFolder = settingsDict['rigSet']['sets'][rigSet]['name']
-		pathRigSet = os.path.join(pathRig, rigSetFolder)
 		rigDataFolder = settingsDict['folderName']['rigData']
-		pathRigData = os.path.join(pathRigSet, rigDataFolder)
-		dataFolder = settingsDict['rigSet']['sets'][rigSet]['data'][data]
+		pathRigData = os.path.join(pathRig, rigDataFolder)
+		if data in settingsDict['rigSet']['common']['data']:
+			dataFolder = settingsDict['rigSet']['common']['data'][data]
+		else:
+			dataFolder = settingsDict['rigSet']['sets'][rig]['data'][data]
 		pathData = os.path.join(pathRigData, dataFolder)
 		fileFolder = settingsDict['folderName'][mode]
 		pathFile = os.path.join(pathData, fileFolder)
@@ -98,9 +102,9 @@ def getDataFolderPath(data, rigSet, asset, project, mode='publish', version=0):
 		return None
 
 # get data path
-def getDataPath(data, rigSet, asset, project, files=[], fileType=[], mode='publish', version=0):
+def getDataPath(data, rig, asset, project, files=[], fileType=[], mode='publish', version=0):
 	pathFilesReturn = []
-	pathFile = getDataFolderPath(data, rigSet, asset, project, mode = mode, version = version)
+	pathFile = getDataFolderPath(data, rig, asset, project, mode = mode, version = version)
 	if pathFile:		
 		if files:
 			for f in files:
