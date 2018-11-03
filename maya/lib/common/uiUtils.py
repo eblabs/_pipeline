@@ -43,3 +43,51 @@ class BaseWindow(QtGui.QWidget):
 	def initUI(self):
 		pass
 		
+# widgets
+## base widget
+class BaseWidget(QtGui.QFrame):
+	"""docstring for BaseWidget"""
+	def __init__(self):
+		super(BaseWidget, self).__init__()
+		self.initWidget()
+	
+	def initWidget(self):
+		pass
+		
+## file list widget
+class ListViewSearch(BaseWidget):
+	def __init__(self, filterName='File', ListViewWidget=QtGui.QListView):
+		self.filterName = filterName
+		self.ListViewWidget = ListViewWidget
+		super(ListViewSearch, self).__init__()
+
+	def initWidget(self):
+		super(ListViewSearch, self).initWidget()
+		self.QVBoxLayout = QtGui.QVBoxLayout(self)
+
+		# filter
+		# add label
+		QLabel = QtGui.QLabel(self.filterName + ':')
+		self.QVBoxLayout.addWidget(QLabel)
+
+		# add filter
+		self.QLineEditFilter = QtGui.QLineEdit()
+		self.QLineEditFilter.setPlaceholderText('Filter...')
+		self.QVBoxLayout.addWidget(self.QLineEditFilter)
+
+		# file list
+		self.QSourceModel = QtGui.QStandardItemModel()
+		self.QProxyModel = QtGui.QSortFilterProxyModel()
+		self.QProxyModel.setDynamicSortFilter(True)
+		self.QProxyModel.setSourceModel(self.QSourceModel)
+
+		self.QListView = self.ListViewWidget()
+		self.QListView.setModel(self.QProxyModel)
+		self.QVBoxLayout.addWidget(self.QListView)
+
+		# connect filter
+		self.QLineEditFilter.textChanged.connect(self.filterRegExpChanged)
+
+	def filterRegExpChanged(self):
+		regExp = QtCore.QRegExp(self.QLineEditFilter.text(), QtCore.Qt.CaseInsensitive)
+		self.QProxyModel.setFilterRegExp(regExp)

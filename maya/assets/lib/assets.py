@@ -47,6 +47,11 @@ def checkProjectExist(project):
 	else:
 		return None
 
+# list all project
+def listAllProject():
+	projects = files.getFilesFromPath(path_work, type = 'folder')
+	return projects
+
 # create asset folder
 def createAsset(asset, project):
 	pathProject = checkProjectExist(project)
@@ -71,6 +76,15 @@ def checkAssetExist(asset, project):
 		return pathAsset
 	else:
 		return None
+
+# list all assets
+def listAllAsset(project):
+	pathProject = checkProjectExist(project)
+	if pathProject:
+		assets = files.getFilesFromPath(pathProject, type = 'folder')
+	else:
+		assets = None
+	return assets
 
 # create component folder
 def createVersionFolder(path):

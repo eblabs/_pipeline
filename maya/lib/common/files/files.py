@@ -50,3 +50,30 @@ def readPickleFile(path):
 	data = cPickle.load(infile)
 	infile.close()
 	return data
+
+def getFilesFromPath(path, type=None):
+	files = os.listdir(path)
+	filesReturn = []
+	if not files:
+		logger.warn('{} is empty, skipped'.format(path))
+		return None
+	if not type:
+		filesReturn = files
+	else:
+		for f in files:
+			pathFile = os.path.join(path, f)
+			if type == 'folder':
+				if os.path.isdir(pathFile):
+					filesReturn.append(f)
+			elif type == 'file':
+				if os.path.isfile(pathFile):
+					filesReturn.append(f)
+			else:
+				if os.path.isfile(pathFile) and f.endswith(type):
+					filesReturn.append(f)
+	if not filesReturn:
+		logger.warn('Can not find file from {}'.format(path))
+		return None
+	else:
+		return filesReturn
+
