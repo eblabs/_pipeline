@@ -102,6 +102,18 @@ def createVersionFolder(path):
 	pathPublishInfo = os.path.join(path, publishInfoFile)
 	files.writeJsonFile(pathPublishInfo, {})
 
+# get versions
+def getVersions(path):
+	versionsList = []
+	versionInfoFile = '{}.{}'.format(settingsDict['fileName']['version'],
+									 settingsDict['fileType']['version'])
+	pathVersion = os.path.join(path, versionInfoFile)
+	if os.path.exists(pathVersion):
+		versionInfo = files.readJsonFile(pathVersion)
+		versionsList = versionInfo.keys()
+		versionsList.sort(reverse = True)
+	return versionsList
+
 # update publish info
 def updatePublishInfo(path, comment='', data=None):
 	# version template

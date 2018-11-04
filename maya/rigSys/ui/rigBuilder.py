@@ -23,10 +23,12 @@ import maya.OpenMayaUI as OpenMayaUI
 # -- import lib
 import lib.common.uiUtils as uiUtils
 import assets.lib.assets as assets
+import assets.lib.rigs as rigs
 # ---- import end ----
 
 # -- import rigSys widget
 import rigInfoLineEdit
+import rigInfoLoadPushButton
 
 class RigBuilder(uiUtils.BaseWindow):
 	"""docstring for RigBuilder"""
@@ -58,9 +60,6 @@ class RigBuilder(uiUtils.BaseWindow):
 		# data ui
 		self._dataUI(QLayoutLeft)
 
-		# publish ui
-		#self._publishUI(QLayoutLeft)
-
 		# builder ui (right side)
 		self._builderUI(QLayoutRight)
 
@@ -91,13 +90,17 @@ class RigBuilder(uiUtils.BaseWindow):
 			QHBoxLayout.addWidget(QWidget, 1)
 
 		self._addAttributeFromDict(attrDict)
+
+		# connect QLineEdit text changed
+		self.QLineEditProject.textChanged.connect(self.QLineEditAsset.clear)
+		self.QLineEditAsset.textChanged.connect(self._getRigs)
+
+		# connect QComboBox item changed
+		self.QComboBoxRig.currentIndexChanged.connect(self._getRigInfo)
 		
-		QPushButton = QtGui.QPushButton('Load')
-		QPushButton.setMinimumHeight(40)
-		#QPushButton.setFixedWidth()
-		#QPushButton.setEnabled(False)
+		self.QPushButtonLoad = rigInfoLoadPushButton.RigInfoLoadPushButton()
 		#QPushButton.setStyleSheet('background-color:rgb(255,100,100)')
-		QVBoxLayout.addWidget(QPushButton)
+		QVBoxLayout.addWidget(self.QPushButtonLoad)
 
 	def _dataUI(self, QLayout):
 		QGroupBox = self._addGroupBox(QLayout, 'Data')
@@ -180,6 +183,44 @@ class RigBuilder(uiUtils.BaseWindow):
 		else:
 			fileList = []
 		return fileList
+
+	def _getRigs(self):
+		self.QComboBoxRig.clear()
+		project = self.QLineEditProject.text()
+		asset = self.QLineEditAsset.text()
+		if project and asset:
+			rigList = rigs.getRigs(asset, project)
+			if rigList:
+				for r in rigList:
+					self.QComboBoxRig.addItem(r)
+
+	def _getRigInfo(self):
+		self.QPushButtonLoad.setEnabled(False)
+		self.QPushButtonLoad.versionsList = []
+		self.QPushButtonLoad.checked = 'publish'
+		self.project = None
+		self.asset = None
+		self.rig = None
+
+		project = self.QLineEditProject.text()
+		asset = self.QLineEditAsset.text()
+		rig = self.QComboBoxRig.currentText()
+		if project and asset and rig:
+			pathRig = rigs.checkRigSetExist(asset, project, rig = rig)
+			if pathRig:
+				self.project = project
+				self.asset = asset
+				self.rig = rig
+
+				# get versions
+				pathVersionFolder = rigs.getDataFolderPath('buildScript', rig, asset, project, 
+											mode = 'version', version = None)
+				versionsList = assets.getVersions(pathVersionFolder)
+				self.QPushButtonLoad.versionsList = versionsList
+				self.QPushButtonLoad.setEnabled(True)
+
+	def _loadRigBuilder(self):
+		self._pathBuildScript = rigs.getDataPath('buildScript', self.rig, self.asset, self.project)
 
 	def _addAttributeFromDict(self, attrDict):
 		for key, value in attrDict.items():

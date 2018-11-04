@@ -81,6 +81,16 @@ def checkRigSetExist(asset, project, rig=None):
 	else:
 		return None
 
+# get rigs
+def getRigs(asset, project):
+	pathRigSet = checkRigSetExist(asset, project)
+	if pathRigSet:
+		rigs = files.getFilesFromPath(pathRigSet, type = 'folder')
+		return rigs
+	else:
+		logger.warn('No rigSet found at {}, skipped'.format(pathRigSet))
+		return None
+
 # get data folder path
 def getDataFolderPath(data, rig, asset, project, mode='publish', version=0):
 	pathRig = checkRigSetExist(asset, project, rig = rig)
@@ -94,7 +104,7 @@ def getDataFolderPath(data, rig, asset, project, mode='publish', version=0):
 		pathData = os.path.join(pathRigData, dataFolder)
 		fileFolder = settingsDict['folderName'][mode]
 		pathFile = os.path.join(pathData, fileFolder)
-		if mode == 'version':
+		if mode == 'version' and version >= 0:
 			pathFile = os.path.join(pathFile, 'version_{:03d}'.format(version))
 		return pathFile
 	else:
