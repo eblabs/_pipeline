@@ -29,92 +29,151 @@ dirname = os.path.abspath(os.path.dirname(__file__))
 path_settings = os.path.join(dirname, 'settings.json')
 settingsDict = files.readJsonFile(path_settings)
 
-rigSet = settingsDict['folderName']['rigSet']
+rigGrp = settingsDict['folderName']['rigGroup']
 
 # create rig set
-def createRigSet(asset, project):
+def createRigGroup(project, asset):
 	pathAsset = assets.checkAssetExist(asset, project)
 	if pathAsset:
 		# asset exist, create rig set
-		pathRigSet = os.path.join(pathAsset, rigSet)
-		if not os.path.exists(pathRigSet):
-			os.makedirs(pathRigSet)
-			# create animation rig and deformation rig folder
-			for key, rigFolderInfo in settingsDict['rigSet']['sets'].iteritems():
-				pathRigFolder = os.path.join(pathRigSet, rigFolderInfo['name'])
-				os.makedirs(pathRigFolder)
-				# create version folder for rig
-				assets.createVersionFolder(pathRigFolder)
+		pathRigGrp = os.path.join(pathAsset, rigGrp)
+		if not os.path.exists(pathRigGrp):
+			os.makedirs(pathRigGrp)
 
-				# create data folders
-				pathRigDataFolder = os.path.join(pathRigFolder, settingsDict['folderName']['rigData'])
-				os.makedirs(pathRigDataFolder)
-				dataDict = rigFolderInfo['data']
-				dataDict.update(settingsDict['rigSet']['common']['data'])
-				for dataKey in dataDict:
-					dataFolder = dataDict[dataKey]
-					pathData = os.path.join(pathRigDataFolder, dataFolder)
-					os.makedirs(pathData)
-					# create version folder for data
-					assets.createVersionFolder(pathData)
-			logger.info('Create rig set at {}'.format(pathRigSet))
-			return pathRigSet
+			# create animation rig (one rig group must include animation rig)
+			pathAnimationRig = os.path.join(pathRigGrp, 
+							settingsDict['rigGroup']['rigs']['animationRig']['name'])
+			os.makedirs(pathAnimationRig)
+			# create version folder for rig
+			assets.createVersionFolder(pathAnimationRig)
+
+			# create data folders
+			pathAnimationRigData = os.path.join(pathAnimationRig, 
+									settingsDict['folderName']['rigData'])
+			os.makedirs(pathAnimationRigData)
+			dataDict = settingsDict['rigGroup']['rigs']['animationRig']['data']
+			dataDict.update(settingsDict['rigGroup']['common']['data'])
+			for dataKey in dataDict:
+				dataFolder = dataDict[dataKey]
+				pathData = os.path.join(pathAnimationRigData, dataFolder)
+				os.makedirs(pathData)
+				# create version folder for data
+				assets.createVersionFolder(pathData)
+
+			logger.info('Create rig group at {}'.format(pathRigGrp))
+			return pathRigGrp
 		else:
-			logger.warn('Rig set already exists, skipped')
+			logger.warn('Rig group already exists, skipped')
 			return None
 	else:
 		logger.warn('Asset "{}" does not exist, skipped'.format(asset))
 		return None
 
-# check rig set exists
-def checkRigSetExist(asset, project, rig=None):
+# check rig group exists
+def checkRigGroupExist(project, asset, rig=None):
 	pathAsset = assets.checkAssetExist(asset, project)
 	if pathAsset:
-		pathRigSet = os.path.join(pathAsset, rigSet)
+		pathRigGrp = os.path.join(pathAsset, rigGrp)
 		if rig:
-			rig = settingsDict['rigSet']['sets'][rig]['name']
-			pathRigSet = os.path.join(pathRigSet, rig)
-		if os.path.exists(pathRigSet):
-			return pathRigSet
+			pathRigGrp = os.path.join(pathRigGrp, rig)
+		if os.path.exists(pathRigGrp):
+			return pathRigGrp
 		else:
 			return None
 	else:
 		return None
 
+# create rig
+def createRig(project, asset, rig, rigType='animationRig'):
+	pathRigGrp = checkRigGroupExist(project, asset, rig=None)
+	if pathRigGrp:
+		pathRig = os.path.join(pathRigGrp, rig)
+		if not os.path.exists(pathRig):
+			# create rig folder
+			os.makedirs(pathRig)
+
+			# create rig info dict
+			rigInfoDict = {'name': rig,
+						   'type': rigType,
+						   'data': []}
+
+			# create version folder for rig
+			assets.createVersionFolder(pathRig)
+			# create data folder
+			pathRigData = os.path.join(pathRig, 
+									settingsDict['folderName']['rigData'])
+			os.makedirs(pathRigData)
+			dataList = settingsDict['rigData'][rigType]
+			dataList += settingsDict['rigData']['common']
+
+			rigInfoDict.update({'data': dataList})
+
+			for data in dataList:
+				pathData = os.path.join(pathRigData, data)
+				os.makedirs(pathData)
+				assets.createVersionFolder(pathData)
+
+			rigInfoFile = '{}.{}'.format(settingsDict['fileName']['rigInfo'],
+										 settingsDict['fileType']['rigInfo'])
+
+			pathRigInfo = os.path.join(pathRig, rigInfoFile)
+			files.writeJsonFile(pathRigInfo, rigInfoDict)
+			logger.info('Create {} at {}'.format(rig, pathRig))
+		else:
+			logger.info('{} already exists, skipped'.format(rig))
+	else:
+		logger.info('Rig Group does not exist, skipped')
+
 # get rigs
-def getRigs(asset, project):
-	pathRigSet = checkRigSetExist(asset, project)
-	if pathRigSet:
-		rigs = files.getFilesFromPath(pathRigSet, type = 'folder')
+def getRigs(project, asset):
+	pathRigGrp = checkRigGroupExist(asset, project)
+	if pathRigGrp:
+		rigs = files.getFilesFromPath(pathRigGrp, type = 'folder')
 		return rigs
 	else:
-		logger.warn('No rigSet found at {}, skipped'.format(pathRigSet))
+		logger.warn('No rig group found at {}, skipped'.format(pathRigGrp))
 		return None
 
+# get rig info
+def getRigInfo(project, asset, rig):
+	pathRig = checkRigGroupExist(project, asset, rig=rig)
+	if pathRig:
+		rigInfoFile = '{}.{}'.format(settingsDict['fileName']['rigInfo'],
+									 settingsDict['fileType']['rigInfo'])
+		rigInfoDict = files.readJsonFile(rigInfoFile)
+		return rigInfoDict
+	else:
+		logger.warn('{} does not exist, skipped'.format(rig))
+		return None
+
+# list rig types
+def listRigTypes():
+	rigTypes = settingsDict['rigType']
+	return rigTypes
+
 # get data folder path
-def getDataFolderPath(data, rig, asset, project, mode='publish', version=0):
-	pathRig = checkRigSetExist(asset, project, rig = rig)
+def getDataFolderPath(project, asset, rig, data, mode='publish', version=0):
+	pathRig = checkRigGroupExist(project, asset, rig=rig)
 	if pathRig:
 		rigDataFolder = settingsDict['folderName']['rigData']
-		pathRigData = os.path.join(pathRig, rigDataFolder)
-		if data in settingsDict['rigSet']['common']['data']:
-			dataFolder = settingsDict['rigSet']['common']['data'][data]
+		pathRigData = os.path.join(pathRig, rigDataFolder, data)
+		if os.path.exists(pathRigData):
+			fileFolder = settingsDict['folderName'][mode]
+			pathFile = os.path.join(pathRigData, fileFolder)
+			if mode == 'version' and version >= 0:
+				pathFile = os.path.join(pathFile, 'version_{:03d}'.format(version))
+			return pathFile
 		else:
-			dataFolder = settingsDict['rigSet']['sets'][rig]['data'][data]
-		pathData = os.path.join(pathRigData, dataFolder)
-		fileFolder = settingsDict['folderName'][mode]
-		pathFile = os.path.join(pathData, fileFolder)
-		if mode == 'version' and version >= 0:
-			pathFile = os.path.join(pathFile, 'version_{:03d}'.format(version))
-		return pathFile
+			logger.info('{} does not have {}, skipped'.format(rig, data))
+			return None
 	else:
 		logger.info('Asset "{}" does not exist, skipped'.format(asset))
 		return None
 
 # get data path
-def getDataPath(data, rig, asset, project, files=[], fileType=[], mode='publish', version=0):
+def getDataPath(project, asset, rig, data, files=[], fileType=[], mode='publish', version=0):
 	pathFilesReturn = []
-	pathFile = getDataFolderPath(data, rig, asset, project, mode = mode, version = version)
+	pathFile = getDataFolderPath(project, asset, rig, data, mode = mode, version = version)
 	if pathFile:		
 		if files:
 			for f in files:
@@ -141,5 +200,4 @@ def getDataPath(data, rig, asset, project, files=[], fileType=[], mode='publish'
 			logger.info('Can not find file from path: {}, skipped'.format(pathFile))
 			return None
 	else:
-		logger.info('Asset "{}" does not exist, skipped'.format(asset))
 		return None

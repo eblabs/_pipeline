@@ -134,8 +134,7 @@ nameDict = {
 								'middle': 'mid',
 								'low': 'low',
 								'proxy': 'pxy',
-								'simulation': 'sim',
-								'anatomy': 'atm',
+								'simulation': 'sim'
 							},
 
 				}

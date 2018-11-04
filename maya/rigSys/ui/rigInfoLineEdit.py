@@ -15,7 +15,6 @@ except ImportError:
 
 # -- import rigSys widget
 import rigInfoMenu
-reload(rigInfoMenu)
 
 # rig info line eidt widget
 # have QMenu contain a filter and list view widget

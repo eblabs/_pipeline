@@ -52,13 +52,14 @@ class RigInfoLoadPushButton(QtGui.QPushButton):
 			self.QActionGroup.addAction(QAction)
 			actionDict.update({QAction.text(): QAction})
 
-		QMenu_version = QMenu.addMenu('version')
+		if self.versionsList:
+			QMenu_version = QMenu.addMenu('version')
 
-		for version in self.versionsList:
-			QAction_version = QtGui.QAction(version, QMenu_version, checkable=True)
-			QMenu_version.addAction(QAction_version)
-			self.QActionGroup.addAction(QAction_version)
-			actionDict.update({QAction_version.text(): QAction_version})
+			for version in self.versionsList:
+				QAction_version = QtGui.QAction(version, QMenu_version, checkable=True)
+				QMenu_version.addAction(QAction_version)
+				self.QActionGroup.addAction(QAction_version)
+				actionDict.update({QAction_version.text(): QAction_version})
 
 		if self.checked in actionDict:
 			QAction_checked = actionDict[self.checked]

@@ -2,17 +2,19 @@
     "fileName": {
         "publish": "publishInfo", 
         "version": "versionInfo",
-        "modelSet": "model",
-        "rigSet": "rig"
+        "modelGroup": "model",
+        "rigGroup": "rig",
+        "rigInfo": "rigInfo"
     }, 
     "fileType": {
         "maya": "mb", 
         "publish": "publishInfo", 
-        "version": "versionInfo"
+        "version": "versionInfo",
+        "rigInfo": "rigInfo"
     }, 
     "folderName": {
-        "modelSet": "model",
-        "rigSet": "rig",
+        "modelGroup": "modelGroup",
+        "rigGroup": "rigGroup",
         "version": "versions", 
         "wip": "wipFiles",
         "publish": "publish",
@@ -26,21 +28,16 @@
         "work": "C:/_works/maya"
     },
     "versionLimit": 20,
-    "rigSet": {
-        "common": {"data": {"miscs": "miscs",
-                            "components": "components",
-                            "attributes": "attributes",
-                            "controlShapes": "controlShapes",
-                            "buildScript": "buildScript"}
-                            },
-        "sets": {"animationRig":{"name": "animationRig",
-                                 "data": {"blueprints": "blueprints"}
-                                },
-                 "deformationRig":{"name": "deformationRig",
-                                   "data": {"skeleton": "skeleton",
-                                            "hierarchy": "hierarchy",
-                                            "deformers": "deformers"}
-                                    }
-                    }
-    }
+    "rigData": {
+        "common": ["miscs",
+                    "components",
+                    "attributes",
+                    "controlShapes",
+                    "buildScript"],
+        "animationRig": ["blueprints"],
+        "deformationRig": ["skeleton",
+                           "hierarchy",
+                           "deformers"]
+                    },
+    "rigType": ["animationRig", "deformationRig"]
 }

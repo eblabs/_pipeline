@@ -27,8 +27,7 @@ import assets.lib.rigs as rigs
 # ---- import end ----
 
 # -- import rigSys widget
-import rigInfoLineEdit
-import rigInfoLoadPushButton
+import rigInfoWidget
 
 class RigBuilder(uiUtils.BaseWindow):
 	"""docstring for RigBuilder"""
@@ -55,52 +54,14 @@ class RigBuilder(uiUtils.BaseWindow):
 		QLayoutRight = QtGui.QGridLayout(QFrameRight)
 
 		# rig info ui
-		self._rigInfoUI(QLayoutLeft)
+		self._RigInfo = rigInfoWidget.RigInfoWidget()
+		QLayoutLeft.addWidget(self._RigInfo)
 
 		# data ui
 		self._dataUI(QLayoutLeft)
 
 		# builder ui (right side)
 		self._builderUI(QLayoutRight)
-
-	def _rigInfoUI(self, QLayout):
-		QGroupBox = self._addGroupBox(QLayout, 'Rig Info')
-		QGroupBox.setFixedHeight(160)
-		# rig info labels
-		QVBoxLayout = QtGui.QVBoxLayout(QGroupBox)
-
-		attrDict = {}
-
-		for name in ['Project', 'Asset', 'Rig']:
-			QHBoxLayout = QtGui.QHBoxLayout()
-			QVBoxLayout.addLayout(QHBoxLayout)
-			QLabelName = QtGui.QLabel(name + ':')
-			if name != 'Rig':
-				if name == 'Project':
-					fileMethod = self._getProjects
-				elif name == 'Asset':
-					fileMethod = self._getAssets
-				QWidget = rigInfoLineEdit.RigInfoLineEdit(name = name, fileMethod = fileMethod)
-				attrDict.update({'QLineEdit' + name: QWidget})
-			else:
-				QWidget = QtGui.QComboBox()
-				attrDict.update({'QComboBox' + name: QWidget})
-
-			QHBoxLayout.addWidget(QLabelName)
-			QHBoxLayout.addWidget(QWidget, 1)
-
-		self._addAttributeFromDict(attrDict)
-
-		# connect QLineEdit text changed
-		self.QLineEditProject.textChanged.connect(self.QLineEditAsset.clear)
-		self.QLineEditAsset.textChanged.connect(self._getRigs)
-
-		# connect QComboBox item changed
-		self.QComboBoxRig.currentIndexChanged.connect(self._getRigInfo)
-		
-		self.QPushButtonLoad = rigInfoLoadPushButton.RigInfoLoadPushButton()
-		#QPushButton.setStyleSheet('background-color:rgb(255,100,100)')
-		QVBoxLayout.addWidget(self.QPushButtonLoad)
 
 	def _dataUI(self, QLayout):
 		QGroupBox = self._addGroupBox(QLayout, 'Data')
@@ -171,57 +132,3 @@ class RigBuilder(uiUtils.BaseWindow):
 		QGroupBox.setTitle(title)
 		QLayout.addWidget(QGroupBox)
 		return QGroupBox
-
-	def _getProjects(self):
-		fileList = assets.listAllProject()
-		return fileList
-
-	def _getAssets(self):
-		project = self.QLineEditProject.text()
-		if project:
-			fileList = assets.listAllAsset(project)
-		else:
-			fileList = []
-		return fileList
-
-	def _getRigs(self):
-		self.QComboBoxRig.clear()
-		project = self.QLineEditProject.text()
-		asset = self.QLineEditAsset.text()
-		if project and asset:
-			rigList = rigs.getRigs(asset, project)
-			if rigList:
-				for r in rigList:
-					self.QComboBoxRig.addItem(r)
-
-	def _getRigInfo(self):
-		self.QPushButtonLoad.setEnabled(False)
-		self.QPushButtonLoad.versionsList = []
-		self.QPushButtonLoad.checked = 'publish'
-		self.project = None
-		self.asset = None
-		self.rig = None
-
-		project = self.QLineEditProject.text()
-		asset = self.QLineEditAsset.text()
-		rig = self.QComboBoxRig.currentText()
-		if project and asset and rig:
-			pathRig = rigs.checkRigSetExist(asset, project, rig = rig)
-			if pathRig:
-				self.project = project
-				self.asset = asset
-				self.rig = rig
-
-				# get versions
-				pathVersionFolder = rigs.getDataFolderPath('buildScript', rig, asset, project, 
-											mode = 'version', version = None)
-				versionsList = assets.getVersions(pathVersionFolder)
-				self.QPushButtonLoad.versionsList = versionsList
-				self.QPushButtonLoad.setEnabled(True)
-
-	def _loadRigBuilder(self):
-		self._pathBuildScript = rigs.getDataPath('buildScript', self.rig, self.asset, self.project)
-
-	def _addAttributeFromDict(self, attrDict):
-		for key, value in attrDict.items():
-			setattr(self, key, value)
