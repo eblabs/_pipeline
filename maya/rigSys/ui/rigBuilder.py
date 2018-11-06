@@ -27,7 +27,9 @@ import assets.lib.rigs as rigs
 # ---- import end ----
 
 # -- import rigSys widget
-import rigInfoWidget
+import rigInfo.rigInfoWidget as rigInfoWidget
+import rigBuild.rigBuildWidget as rigBuildWidget
+reload(rigBuildWidget)
 
 class RigBuilder(uiUtils.BaseWindow):
 	"""docstring for RigBuilder"""
@@ -61,7 +63,8 @@ class RigBuilder(uiUtils.BaseWindow):
 		self._dataUI(QLayoutLeft)
 
 		# builder ui (right side)
-		self._builderUI(QLayoutRight)
+		self._rigBuild = rigBuildWidget.RigBuildWidget()
+		QLayoutRight.addWidget(self._rigBuild)
 
 	def _dataUI(self, QLayout):
 		QGroupBox = self._addGroupBox(QLayout, 'Data')
@@ -123,9 +126,6 @@ class RigBuilder(uiUtils.BaseWindow):
 		# publish button
 		QPushButton = QtGui.QPushButton('Publish')
 		QVBoxLayout.addWidget(QPushButton)
-
-	def _builderUI(self, QLayout):
-		QGroupBox = self._addGroupBox(QLayout, 'Builder')
 
 	def _addGroupBox(self, QLayout, title):
 		QGroupBox = QtGui.QGroupBox()
