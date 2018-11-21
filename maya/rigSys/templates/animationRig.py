@@ -10,6 +10,7 @@ import maya.cmds as cmds
 
 # -- import lib
 import builder
+reload(builder)
 import lib.common.naming.naming as naming
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
@@ -20,7 +21,7 @@ import lib.modeling.geometries as geometries
 # ---- import end ----
 
 # -- import file format
-import common.files.files as files
+import lib.common.files.files as files
 fileFormat = files.readJsonFile(files.path_fileFormat)
 
 class AnimationRig(builder.Builder):

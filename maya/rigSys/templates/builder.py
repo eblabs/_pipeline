@@ -9,11 +9,14 @@ logger.setLevel(debugLevel)
 import maya.cmds as cmds
 
 # -- import lib
+import lib.common.files.files as files
+import lib.common.naming.naming as naming
 import lib.common.transforms as transforms
 import lib.common.attributes as attributes
 import lib.common.hierarchy as hierarchy
 import lib.modeling.geometries as geometries
 import lib.rigging.joints as joints
+
 # ---- import end ----
 
 # -- import component
@@ -24,7 +27,6 @@ import rigSys.components.utils.componentUtils as componentUtils
 import assets.lib.rigs as rigs
 
 # -- import file format
-import common.files.files as files
 fileFormat = files.readJsonFile(files.path_fileFormat)
 
 class Builder(object):
@@ -67,8 +69,8 @@ class Builder(object):
 																  part = self._rigType).name,
 											'parent': 'rigNodesGrp'}}
 
-		self._rigData = self._getRigDataPath(rigData)
-		self._componentsData = self._composeRigData(self._rigData['components'])
+		#self._rigData = self._getRigDataPath(rigData)
+		#self._componentsData = self._composeRigData(self._rigData['components'])
 		#self._controlsData = self._composeRigData(self._rigData['controlShape'])
 
 		# preBuild, build, postBuild

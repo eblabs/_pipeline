@@ -30,6 +30,8 @@ import assets.lib.rigs as rigs
 import rigInfo.rigInfoWidget as rigInfoWidget
 import rigBuild.rigBuildWidget as rigBuildWidget
 reload(rigBuildWidget)
+import dataInfo.dataInfoWidget as dataInfoWidget
+reload(dataInfoWidget)
 
 class RigBuilder(uiUtils.BaseWindow):
 	"""docstring for RigBuilder"""
@@ -49,9 +51,15 @@ class RigBuilder(uiUtils.BaseWindow):
 		QLayoutBase.addWidget(QFrameLeft)
 		QLayoutLeft = QtGui.QVBoxLayout(QFrameLeft)
 
+		# middle layout
+		QFrameMiddle = QtGui.QFrame()
+		QFrameMiddle.setMinimumWidth(340)
+		QLayoutBase.addWidget(QFrameMiddle)
+		QLayoutMiddle = QtGui.QGridLayout(QFrameMiddle)
+
 		# right layout
 		QFrameRight = QtGui.QFrame()
-		QFrameRight.setMinimumWidth(340)
+		QFrameRight.setFixedWidth(340)
 		QLayoutBase.addWidget(QFrameRight)
 		QLayoutRight = QtGui.QGridLayout(QFrameRight)
 
@@ -62,9 +70,13 @@ class RigBuilder(uiUtils.BaseWindow):
 		# data ui
 		self._dataUI(QLayoutLeft)
 
-		# builder ui (right side)
-		self._rigBuild = rigBuildWidget.RigBuildWidget()
-		QLayoutRight.addWidget(self._rigBuild)
+		# builder ui (middle side)
+		self._RigBuild = rigBuildWidget.RigBuildWidget()
+		QLayoutMiddle.addWidget(self._RigBuild)
+
+		# data info ui
+		self._DataInfo = dataInfoWidget.DataInfoWidget()
+		QLayoutRight.addWidget(self._DataInfo)
 
 	def _dataUI(self, QLayout):
 		QGroupBox = self._addGroupBox(QLayout, 'Data')
@@ -77,9 +89,9 @@ class RigBuilder(uiUtils.BaseWindow):
 		QGridLayout.addWidget(QTabWidget)
 
 		# data info
-		QWidgetInfo = QtGui.QWidget()
-		self._dataInfoWidget(QWidgetInfo)
-		QTabWidget.addTab(QWidgetInfo, 'Data Info')
+		#QWidgetInfo = QtGui.QWidget()
+		#self._dataInfoWidget(QWidgetInfo)
+		#QTabWidget.addTab(QWidgetInfo, 'Data Info')
 		
 		# data edit
 		QWidgetEdit = QtGui.QWidget()

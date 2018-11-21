@@ -1,0 +1,20 @@
+global proc AErbfDriverTemplate ( string $nodeName )
+{
+	AEswatchDisplay $nodeName;
+	editorTemplate -beginScrollLayout;
+
+		editorTemplate -beginLayout "RBF Driver Attributes" -collapse 0;
+
+            editorTemplate -addControl "inputPoint";
+            editorTemplate -addControl "radial";
+            editorTemplate -addControl "interpType";
+            editorTemplate -addControl "inputData";
+            
+		editorTemplate -endLayout;
+
+	// include/call base class/node attributes
+	AEdependNodeTemplate $nodeName;
+
+	editorTemplate -addExtraControls;
+	editorTemplate -endScrollLayout;
+}
