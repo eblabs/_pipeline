@@ -44,10 +44,21 @@ class RbfDriver(OpenMayaMPx.MPxNode):
 		
 		# set output
 		MArrayDataHandle_output = dataBlock.outputArrayValue(RbfDriver.output)
-		for i in xrange(len(array_output)):
-			MArrayDataHandle_output.jumpToElement(i)
-			MDataHandle_output = MArrayDataHandle_output.outputValue()
-			MDataHandle_output.setFloat(array_output[i])
+		MArrayDataBuilder_output = MArrayDataHandle_output.builder()
+
+		count = len(array_output)
+		count_outputOrig = MArrayDataBuilder_output.elementCount()
+
+		for i in xrange(count):			
+			MDataHandle_element = MArrayDataBuilder_output.addElement(i)
+			MDataHandle_element.setFloat(array_output[i])
+
+		# remove extra output
+		if count < count_outputOrig:
+			for i in xrange(count_outputOrig - count):
+				MArrayDataBuilder_output.removeElement(count + i)
+
+		MArrayDataHandle_output.set(MArrayDataBuilder_output)
 
 		dataBlock.setClean(plug)
 
@@ -100,7 +111,6 @@ class RbfDriver(OpenMayaMPx.MPxNode):
 
 	def _computeOutput(self, MArrayDataHandle_inputData, inputPoint, radial=10.0):
 		count = MArrayDataHandle_inputData.elementCount()
-
 		# get matrix
 		matrix_interp = []
 		matrix_samples = []
@@ -108,11 +118,11 @@ class RbfDriver(OpenMayaMPx.MPxNode):
 		for i in xrange(count):
 			# interp matrix
 			row_interp = []
-			MArrayDataHandle_inputData.jumpToElement(i)
+			MArrayDataHandle_inputData.jumpToArrayElement(i)
 			data_i = MArrayDataHandle_inputData.inputValue().asFloat3()
 			list_data.append(data_i)
 			for j in xrange(count):
-				MArrayDataHandle_inputData.jumpToElement(j)
+				MArrayDataHandle_inputData.jumpToArrayElement(j)
 				data_j = MArrayDataHandle_inputData.inputValue().asFloat3()
 				distance = self._getDistance(data_i, data_j)
 				interpVal = self._interpFunction(distance, radial = radial)
@@ -193,6 +203,7 @@ def initialize():
 	RbfDriver.output = MFnNumericAttr_output.create('output', 'o', OpenMaya.MFnNumericData.kFloat, 0.0)
 	MFnNumericAttr_output.setArray(True)
 	MFnNumericAttr_output.setStorable(True)
+	MFnNumericAttr_output.setUsesArrayDataBuilder(True)
 
 	# add attrs
 	RbfDriver.addAttribute(RbfDriver.inputData)
