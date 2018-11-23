@@ -6,7 +6,7 @@ global proc AErbfDriverTemplate ( string $nodeName )
 		editorTemplate -beginLayout "RBF Driver Attributes" -collapse 0;
 
             editorTemplate -addControl "inputPoint";
-            editorTemplate -addControl "radial";
+            editorTemplate -addControl "epsilon";
             editorTemplate -addControl "interpType";
             editorTemplate -addControl "inputData";
             

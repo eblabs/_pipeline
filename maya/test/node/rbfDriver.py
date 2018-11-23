@@ -19,7 +19,7 @@ class RbfDriver(OpenMayaMPx.MPxNode):
 	"""docstring for RbfDriver"""
 
 	inputData = OpenMaya.MObject()
-	radial = OpenMaya.MObject()
+	epsilon = OpenMaya.MObject()
 	inputPoint = OpenMaya.MObject()
 	interpType = OpenMaya.MObject()
 
@@ -32,7 +32,7 @@ class RbfDriver(OpenMayaMPx.MPxNode):
 		# get input values
 		MArrayDataHandle_inputData = dataBlock.inputArrayValue(RbfDriver.inputData)
 
-		radial = dataBlock.inputValue(RbfDriver.radial).asFloat()
+		epsilon = dataBlock.inputValue(RbfDriver.epsilon).asFloat()
 		inputPoint = dataBlock.inputValue(RbfDriver.inputPoint).asFloat3()
 		interpType = dataBlock.inputValue(RbfDriver.interpType).asInt()
 
@@ -40,7 +40,7 @@ class RbfDriver(OpenMayaMPx.MPxNode):
 		self._getInterpFunction(interpType)
 
 		# compute
-		array_output = self._computeOutput(MArrayDataHandle_inputData, inputPoint, radial = radial)
+		array_output = self._computeOutput(MArrayDataHandle_inputData, inputPoint, epsilon = epsilon)
 		
 		# set output
 		MArrayDataHandle_output = dataBlock.outputArrayValue(RbfDriver.output)
@@ -78,38 +78,61 @@ class RbfDriver(OpenMayaMPx.MPxNode):
 			self._interpFunction = self._inverseMultiquadric
 		elif interpType == 4:
 			self._interpFunction = self._thinPlateSpline
+		elif interpType == 5:
+			self._interpFunction = self._shiftedLog
+		elif interpType == 6:
+			self._interpFunction = self._linear
+		elif interpType == 7:
+			self._interpFunction = self._cubic
+		elif interpType == 8:
+			self._interpFunction = self._quintic
 
-	def _gaussian(self, distance, radial=10.0):
-		# Gaussian f(r) = e^(-(radial * dis)^2)
-		parameter = -1 * ((radial*distance)**2)
+	def _gaussian(self, distance, epsilon=10.0):
+		# Gaussian f(r) = e^(-(dis/epsilon)^2)
+		parameter = -1 * ((distance/epsilon)**2)
 		interpolation = math.exp(parameter)
 		return interpolation
 
-	def _multiquadric(self, distance, radial=10.0):
-		# Multiquadric f(r) = sqrt(1 + (radial * dis)^2)
-		parameter = 1 + ((radial*distance)**2)
+	def _multiquadric(self, distance, epsilon=10.0):
+		# Multiquadric f(r) = sqrt(1 + (dis/epsilon)^2)
+		parameter = 1 + ((distance/float(epsilon))**2)
 		interpolation = math.sqrt(parameter)
 		return interpolation
 
-	def _inverseQuadratic(self, distance, radial=10.0):
-		# Inverse quadratic f(r) = 1 / (1 + (radial * dis)^2)
-		parameter = 1 + ((radial*distance)**2)
+	def _inverseQuadratic(self, distance, epsilon=10.0):
+		# Inverse quadratic f(r) = 1 / (1 + (dis/epsilon)^2)
+		parameter = 1 + ((distance/float(epsilon))**2)
 		interpolation = 1.0 / float(parameter)
 		return interpolation
 
-	def _inverseMultiquadric(self, distance, radial=10.0):
-		# Inverse multiquadric f(r) = 1 / sqrt(1 + (radial * dis)^2)
-		parameter = 1 + ((radial*distance)**2)
+	def _inverseMultiquadric(self, distance, epsilon=10.0):
+		# Inverse multiquadric f(r) = 1 / sqrt(1 + (epsilon * dis)^2)
+		parameter = 1 + ((epsilon*distance)**2)
 		interpolation = 1.0 / float(math.sqrt(parameter))
 		return interpolation
 
-	def _thinPlateSpline(self, distance, radial=10.0):
+	def _thinPlateSpline(self, distance, epsilon=10.0):
 		# Thin plate spline f(r) = r^2 * ln(r)
 		parameter = distance**2
-		interpolation = parameter * math.log(parameter)
+		interpolation = parameter * math.log(10e-1+parameter) #can't do log(0), add a small value
 		return interpolation
 
-	def _computeOutput(self, MArrayDataHandle_inputData, inputPoint, radial=10.0):
+	def _shiftedLog(self, distance, epsilon=10.0):
+		# Shifted Log f(r) = sqrt(log(r^2 + epsilon ^2))
+		parameter = distance**2 + epsilon**2
+		interpolation = math.sqrt(math.log10(10e-1+parameter))
+		return interpolation
+
+	def _linear(self, distance, epsilon=10.0):
+		return distance
+
+	def _cubic(self, distance, epsilon=10.0):
+		return distance**3
+
+	def _quintic(self, distance, epsilon=10.0):
+		return distance**5
+
+	def _computeOutput(self, MArrayDataHandle_inputData, inputPoint, epsilon=10.0):
 		count = MArrayDataHandle_inputData.elementCount()
 		# get matrix
 		matrix_interp = []
@@ -125,7 +148,7 @@ class RbfDriver(OpenMayaMPx.MPxNode):
 				MArrayDataHandle_inputData.jumpToArrayElement(j)
 				data_j = MArrayDataHandle_inputData.inputValue().asFloat3()
 				distance = self._getDistance(data_i, data_j)
-				interpVal = self._interpFunction(distance, radial = radial)
+				interpVal = self._interpFunction(distance, epsilon = epsilon)
 				row_interp.append(interpVal)
 			matrix_interp.append(row_interp)
 
@@ -151,9 +174,15 @@ class RbfDriver(OpenMayaMPx.MPxNode):
 		# sum final output value
 		for i in xrange(count):
 			distance = self._getDistance(inputPoint, list_data[i])
-			interpVal = self._interpFunction(distance, radial = radial)
+			interpVal = self._interpFunction(distance, epsilon = epsilon)
 			for j in xrange(count):
 				array_output[j] += array_weights[i][j] * interpVal
+
+		# normalize output to 0-1
+		array_output = numpy.clip(array_output, 0, 1)
+		weight_sum = 1/float(sum(array_output) + 10e-1)
+		array_output = numpy.dot(array_output, weight_sum)
+
 		return array_output
 				
 # creator
@@ -182,9 +211,9 @@ def initialize():
 	MFnNumericAttr_inputPoint.setKeyable(True)
 	MFnNumericAttr_inputPoint.setDisconnectBehavior(OpenMaya.MFnNumericAttribute.kNothing)
 
-	# radial
-	MFnNumericAttr_radial = OpenMaya.MFnNumericAttribute()
-	RbfDriver.radial = MFnNumericAttr_radial.create('radial', 'r', OpenMaya.MFnNumericData.kFloat, 10.0)
+	# epsilon
+	MFnNumericAttr_epsilon = OpenMaya.MFnNumericAttribute()
+	RbfDriver.epsilon = MFnNumericAttr_epsilon.create('epsilon', 'r', OpenMaya.MFnNumericData.kFloat, 10.0)
 	MFnNumericAttr_inputPoint.setStorable(True)
 	MFnNumericAttr_inputPoint.setKeyable(False)
 
@@ -196,6 +225,10 @@ def initialize():
 	MFnEnumAttr_interpType.addField('Inverse quadratic', 2)
 	MFnEnumAttr_interpType.addField('Inverse multiquadric', 3)
 	MFnEnumAttr_interpType.addField('Thin plate spline', 4)
+	MFnEnumAttr_interpType.addField('Shifted Log', 5)
+	MFnEnumAttr_interpType.addField('Linear', 6)
+	MFnEnumAttr_interpType.addField('Cubic', 7)
+	MFnEnumAttr_interpType.addField('Quintic', 8)
 
 	# initialize output plug
 	# output
@@ -208,14 +241,14 @@ def initialize():
 	# add attrs
 	RbfDriver.addAttribute(RbfDriver.inputData)
 	RbfDriver.addAttribute(RbfDriver.inputPoint)
-	RbfDriver.addAttribute(RbfDriver.radial)
+	RbfDriver.addAttribute(RbfDriver.epsilon)
 	RbfDriver.addAttribute(RbfDriver.interpType)
 	RbfDriver.addAttribute(RbfDriver.output)
 
 	# attr affects
 	RbfDriver.attributeAffects(RbfDriver.inputData, RbfDriver.output)
 	RbfDriver.attributeAffects(RbfDriver.inputPoint, RbfDriver.output)
-	RbfDriver.attributeAffects(RbfDriver.radial, RbfDriver.output)
+	RbfDriver.attributeAffects(RbfDriver.epsilon, RbfDriver.output)
 	RbfDriver.attributeAffects(RbfDriver.interpType, RbfDriver.output)
 
 # initializePlugin
