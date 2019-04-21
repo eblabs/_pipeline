@@ -1,0 +1,18 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+
+	"settings": {
+        "python_interpreter_path": "C:/Program Files/Autodesk/Maya2018/bin",
+
+        "python_package_paths": [
+            // Maya compiled packages
+            "C:/Users/harri/Documents/maya/scripts",
+            // Maya's python stubs
+            "C:/Program Files/Autodesk/Maya2018/devkit/devkit/other/pymel/extras/completion/py"
+            ]}
+}
