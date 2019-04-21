@@ -573,10 +573,12 @@
 	},
 	"expanded_folders":
 	[
-		"/C/_pipeline/mayaDev"
+		"/C/_pipeline/maya"
 	],
 	"file_history":
 	[
+		"/C/_pipeline/maya/mayaDev.sublime-project",
+		"/C/_pipeline/maya/maya.sublime-project",
 		"/C/Users/harri/AppData/Roaming/Sublime Text 3/Packages/Jedi - Python autocompletion/sublime_jedi.sublime-settings",
 		"/C/Users/harri/Documents/maya/scripts/userSetup.py",
 		"/C/_pipeline/mayaDev.sublime-project",
@@ -702,9 +704,7 @@
 		"/C/_pipeline/maya/rigSys/behaviors/baseBehavior.py",
 		"/C/_pipeline/maya/rigSys/components/utils/componentUtils.py",
 		"/C/Users/harri/Desktop/tf_smoothSkinWeight.py",
-		"/C/_pipeline/maya/rigSys/core/masterNode.py",
-		"/C/_pipeline/maya/rigSys/core/space.py",
-		"/C/_pipeline/maya/lib/common/transforms.py"
+		"/C/_pipeline/maya/rigSys/core/masterNode.py"
 	],
 	"find":
 	{
