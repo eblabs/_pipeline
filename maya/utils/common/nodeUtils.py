@@ -29,7 +29,7 @@ def node(*args, **kwargs):
 		name(str): node's name, will create node base on type
 		type(str): node's type (if name given, will follow name)
 		side(str): node's side (if name given, will follow name)
-		part(str): node's part (if name given, will follow name)
+		description(str): node's description (if name given, will follow name)
 		index(int): node's index (if name given, will follow name)
 		suffix(int): node's suffix (if name given, will follow name)
 
@@ -46,7 +46,7 @@ def node(*args, **kwargs):
 	_name = kwargs.get('name', None)
 	_type = kwargs.get('type', None)
 	_side = kwargs.get('side', None)
-	_part = kwargs.get('part', None)
+	_des = kwargs.get('description', None)
 	_index = kwargs.get('index', None)
 	_suffix = kwargs.get('suffix', None)
 
@@ -55,12 +55,12 @@ def node(*args, **kwargs):
 
 	_setAttrs = kwargs.get('setAttrs', {})
 
-
-	# check if the none suffix one exist
-	if Namer.suffix:
-		_suffix = Namer.suffix
-		_name = Namer.name
-		Namer.suffix = None
+	if _name:
+		Namer = naming.Namer(_name)
+	else:
+		Namer = naming.Namer(type=_type, side=_side,
+							 description=_des, index=_index,
+							 suffix=_suffix)
 
 	# check if node exist
 	if cmds.objExists(Namer.name):
@@ -102,7 +102,7 @@ def equation(expression, **kwargs):
 
 	Kwargs:
 		side(str): nodes' side
-		part(str): nodes' part
+		description(str): nodes' description
 		index(int): nodes' index
 		attrs(str/list): connect the equation to given attrs
 		force(bool)[True]: force the connection
@@ -113,13 +113,14 @@ def equation(expression, **kwargs):
 
 	# get vars
 	_side = kwargs.get('side', None)
-	_part = kwargs.get('part', None)
+	_des = kwargs.get('description', None)
 	_index = kwargs.get('index', None)
 	_attrs = kwargs.get('attrs', [])
 	_force = kwargs.get('force', True)
 
 	# node equation
-	outputAttr = NodeEquation.equation(expression)
+	outputAttr = NodeEquation.equation(expression, side=_side,
+									   description=_des, index=_index)
 
 	# connect attrs
 	if _attrs:
@@ -139,7 +140,7 @@ def plus_minus_average(inputAttrs, **kwargs):
 					      	have to be ['node.tx', 'node.ty', 'node.tz'])
 	Kwargs:
 		side(str): node's side
-		part(str): node's part
+		description(str): node's description
 		index(int): node's index
 		suffix(int): node's suffix
 		operation(int)[1]: plusMinusAvarge node's operation
@@ -149,11 +150,11 @@ def plus_minus_average(inputAttrs, **kwargs):
 		attrs(str/list): connect the node to given attrs
 		force(bool)[True]: force the connection
  	Returns:
- 		outputAttr(str/list): output attribute from the node
+ 		outputAttr(list): output attribute from the node
 	'''
 	# get vars
 	_side = kwargs.get('side', None)
-	_part = kwargs.get('part', None)
+	_des = kwargs.get('description', None)
 	_index = kwargs.get('index', None)
 	_suffix = kwargs.get('suffix', None)
 	_op = kwargs.get('operation', 1)
@@ -162,7 +163,7 @@ def plus_minus_average(inputAttrs, **kwargs):
 
 	# create node
 	pmav = node(type=naming.Type.plusMinusAvarge, side=_side,
-				part=_part, index=_index, suffix=_suffix,
+				description=_des, index=_index, suffix=_suffix,
 				setAttrs={'operation': _op})
 
 	# check input attr type(1D/2D/3D)
@@ -173,7 +174,7 @@ def plus_minus_average(inputAttrs, **kwargs):
 				cmds.connectAttr(inputAttr, '{}.input1D[{}]'.format(pmav, i)) 
 			else:
 				cmds.setAttr('{}.input1D[{}]'.format(pmav, i), inputAttr)
-		outputAttr = pmav+'.output1D'
+		outputAttr = [pmav+'.output1D']
 	else:
 		# 2D/3D
 		num = len(inputAttrs[0])
@@ -194,12 +195,13 @@ def plus_minus_average(inputAttrs, **kwargs):
 	# connect attr
 	if _attrs:
 		if isinstance(_attrs, basestring):
-			attributes.connect_attrs(outputAttr, _attrs, force=force)
-		else:
-			for attr in _attrs:
-				for attrInfo in zip(outputAttr, attr):
-					attributes.connect_attrs(attrInfo[0], attrInfo[1], force=force)
-	
+				_attrs = [_attrs]
+		elif isinstance(_attrs[0], basestring):
+			_attrs = [_attrs]
+		for attr in _attrs:
+			for attrInfo in zip(outputAttr, attr):
+				attributes.connect_attrs(attrInfo[0], attrInfo[1], force=force)
+
 	# return output attr
 	return outputAttr
 
@@ -214,7 +216,7 @@ def multiply_divide(inputAttr1, inputAttr2, **kwargs):
 						      maximum 3 attrs (['tx', 'ty', 'tz'])
 	Kwargs:
 		side(str): node's side
-		part(str): node's part
+		description(str): node's description
 		index(int): node's index
 		suffix(int): node's suffix
 		operation(int)[1]: multiplyDivide node's operation
@@ -228,7 +230,7 @@ def multiply_divide(inputAttr1, inputAttr2, **kwargs):
 	'''
 	# get vars
 	_side = kwargs.get('side', None)
-	_part = kwargs.get('part', None)
+	_des = kwargs.get('description', None)
 	_index = kwargs.get('index', None)
 	_suffix = kwargs.get('suffix', None)
 	_op = kwargs.get('operation', 1)
@@ -239,7 +241,7 @@ def multiply_divide(inputAttr1, inputAttr2, **kwargs):
 										  [], ['input1', 'input2'],
 										  ['X', 'Y', 'Z'], 'output',
 										  type=naming.Type.multiplyDivide,
-										  side=_side, part=_part, 
+										  side=_side, description=_des, 
 										  setAttrs={'operation': _op},
 										  attrs=_attrs, force=_force)
 	# return output attr
@@ -257,7 +259,7 @@ def condition(firstTerm, secondTerm, ifTrue, ifFalse, **kwargs):
 
 	Kwargs:
 		side(str): node's side
-		part(str): node's part
+		description(str): node's description
 		index(int): node's index
 		suffix(int): node's suffix
 		operation(int/str)[0]: condition node's operation
@@ -275,7 +277,7 @@ def condition(firstTerm, secondTerm, ifTrue, ifFalse, **kwargs):
 
 	# get vars
 	_side = kwargs.get('side', None)
-	_part = kwargs.get('part', None)
+	_des = kwargs.get('description', None)
 	_index = kwargs.get('index', None)
 	_suffix = kwargs.get('suffix', None)
 	_op = kwargs.get('operation', 0)
@@ -293,7 +295,7 @@ def condition(firstTerm, secondTerm, ifTrue, ifFalse, **kwargs):
 										  ['colorIfTrue', 'colorIfFalse'],
 										  ['R', 'G', 'B'], 'outColor',
 										  type=naming.Type.condition,
-										  side=_side, part=_part, 
+										  side=_side, description=_des, 
 										  setAttrs={'operation': _op},
 										  attrs=_attrs, force=_force)
 
@@ -311,7 +313,7 @@ def clamp(inputAttr, maxAttr, minAttr, **kwargs):
 
 	Kwargs:
 		side(str): node's side
-		part(str): node's part
+		description(str): node's description
 		index(int): node's index
 		suffix(int): node's suffix
 		attrs(str/list): connect the node to given attrs
@@ -322,7 +324,7 @@ def clamp(inputAttr, maxAttr, minAttr, **kwargs):
 
 	# get vars
 	_side = kwargs.get('side', None)
-	_part = kwargs.get('part', None)
+	_des = kwargs.get('description', None)
 	_index = kwargs.get('index', None)
 	_suffix = kwargs.get('suffix', None)
 	_attrs = kwargs.get('attrs', [])
@@ -332,7 +334,7 @@ def clamp(inputAttr, maxAttr, minAttr, **kwargs):
 										  [], ['input', 'max', 'min'],
 										  ['R', 'G', 'B'], 'output',
 										  type=naming.Type.clamp,
-										  side=_side, part=_part, 
+										  side=_side, description=_des, 
 										  attrs=_attrs, force=_force)
 
 	# return output attr
@@ -349,7 +351,7 @@ def blend(blender, inputAttr1, inputAttr2, **kwargs):
 
 	Kwargs:
 		side(str): node's side
-		part(str): node's part
+		description(str): node's description
 		index(int): node's index
 		suffix(int): node's suffix
 		attrs(str/list): connect the node to given attrs
@@ -360,7 +362,7 @@ def blend(blender, inputAttr1, inputAttr2, **kwargs):
 
 	# get vars
 	_side = kwargs.get('side', None)
-	_part = kwargs.get('part', None)
+	_des = kwargs.get('description', None)
 	_index = kwargs.get('index', None)
 	_suffix = kwargs.get('suffix', None)
 	_attrs = kwargs.get('attrs', [])
@@ -370,7 +372,7 @@ def blend(blender, inputAttr1, inputAttr2, **kwargs):
 										  ['blender'], ['color1', 'color2'],
 										  ['R', 'G', 'B'], 'output',
 										  type=naming.Type.blendColor,
-										  side=_side, part=_part, 
+										  side=_side, description=_des, 
 										  attrs=_attrs, force=_force)
 
 	# return output attr
@@ -387,7 +389,7 @@ def remap(inputValue, inputRange, outputRange, **kwargs):
 
 	Kwargs:
 		side(str): node's side
-		part(str): node's part
+		description(str): node's description
 		index(int): node's index
 		suffix(int): node's suffix
 		setAttrs(dict): set node's attrs
@@ -399,7 +401,7 @@ def remap(inputValue, inputRange, outputRange, **kwargs):
 
 	# get vars
 	_side = kwargs.get('side', None)
-	_part = kwargs.get('part', None)
+	_des = kwargs.get('description', None)
 	_index = kwargs.get('index', None)
 	_suffix = kwargs.get('suffix', None)
 	_setAttrs = kwargs.get('setAttrs', {})
@@ -407,7 +409,7 @@ def remap(inputValue, inputRange, outputRange, **kwargs):
 	_force = kwargs.get('force', True)
 
 	# create node
-	remap = node(type=naming.Type.remapValue, side=_side, part=_part,
+	remap = node(type=naming.Type.remapValue, side=_side, description=_des,
 				 index=_index, suffix=_suffix, setAttrs=_setAttrs)
 
 	# input connection
@@ -441,7 +443,7 @@ def _create_node_multi_attrs(inputAttrSingle, inputAttrMult, nodeAttrSingle,
 	# get vars
 	_type = kwargs.get('type', None)
 	_side = kwargs.get('side', None)
-	_part = kwargs.get('part', None)
+	_des = kwargs.get('description', None)
 	_index = kwargs.get('index', None)
 	_suffix = kwargs.get('suffix', None)
 	_setAttrs = kwargs.get('setAttrs', {})
@@ -449,7 +451,7 @@ def _create_node_multi_attrs(inputAttrSingle, inputAttrMult, nodeAttrSingle,
 	_force = kwargs.get('force', True)
 
 	# create node
-	_node = node(type=_type, side=_side, part=_part, 
+	_node = node(type=_type, side=_side, description=_des, 
 				 index=_index, suffix=_suffix, setAttrs=_setAttrs)
 
 	# connect input
@@ -501,7 +503,7 @@ def _add(left, right, **kwargs):
 
 	'''
 	side = kwargs.get('side', None)
-	part = kwargs.get('part', None)
+	des = kwargs.get('description', None)
 	index = kwargs.get('index', None)
 
 	strBool_l = isinstance(left, basestring)
@@ -509,7 +511,7 @@ def _add(left, right, **kwargs):
 
 	if strBool_l or strBool_r:
 		addNode = node(type=naming.Type.addDoubleLinear,
-					   side=side, part=part, index=index,
+					   side=side, description=des, index=index,
 					   autoSuffix=True)
 		for attrInfo in zip([left, right], 
 							[strBool_l, strBool_r],
@@ -529,7 +531,7 @@ def _mult(left, right, **kwargs):
 
 	'''
 	side = kwargs.get('side', None)
-	part = kwargs.get('part', None)
+	des = kwargs.get('description', None)
 	index = kwargs.get('index', None)
 
 	strBool_l = isinstance(left, basestring)
@@ -537,7 +539,7 @@ def _mult(left, right, **kwargs):
 
 	if strBool_l or strBool_r:
 		multNode = node(type=naming.Type.multDoubleLinear,
-					   side=side, part=part, index=index,
+					   side=side, description=des, index=index,
 					   autoSuffix=True)
 		for attrInfo in zip([left, right], 
 							[strBool_l, strBool_r],
@@ -557,7 +559,7 @@ def _sub(left, right, **kwargs):
 
 	'''
 	side = kwargs.get('side', None)
-	part = kwargs.get('part', None)
+	des = kwargs.get('description', None)
 	index = kwargs.get('index', None)
 
 	strBool_l = isinstance(left, basestring)
@@ -565,11 +567,11 @@ def _sub(left, right, **kwargs):
 
 	if strBool_l or strBool_r:
 		addNode = node(type=naming.Type.addDoubleLinear,
-					   side=side, part=part, index=index,
+					   side=side, description=des, index=index,
 					   autoSuffix=True)
 		if strBool_r:
 			multNode = node(type=naming.Type.multDoubleLinear,
-					   side=side, part=part, index=index,
+					   side=side, des=description, index=index,
 					   autoSuffix=True, setAttrs={'input2':-1})
 			cmds.connectAttr(right, multNode+'.input1')
 			cmds.connectAttr(multNode+'.output', addNode+'.input2')
@@ -591,7 +593,7 @@ def _divide(left, right, **kwargs):
 
 	'''
 	side = kwargs.get('side', None)
-	part = kwargs.get('part', None)
+	des = kwargs.get('description', None)
 	index = kwargs.get('index', None)
 
 	strBool_l = isinstance(left, basestring)
@@ -599,7 +601,7 @@ def _divide(left, right, **kwargs):
 
 	if strBool_l or strBool_r:
 		divNode = node(type=naming.Type.multiplyDivide,
-						side=side, part=part, index=index,
+						side=side, description=des, index=index,
 						autoSuffix=True, setAttrs={'operation':2})
 		for attrInfo in zip([left, right], 
 							[strBool_l, strBool_r],
@@ -620,7 +622,7 @@ def _pow(left, right, **kwargs):
 
 	'''
 	side = kwargs.get('side', None)
-	part = kwargs.get('part', None)
+	des = kwargs.get('description', None)
 	index = kwargs.get('index', None)
 
 	strBool_l = isinstance(left, basestring)
@@ -628,7 +630,7 @@ def _pow(left, right, **kwargs):
 
 	if strBool_l or strBool_r:
 		powNode = node(type=naming.Type.multiplyDivide,
-						side=side, part=part, index=index,
+						side=side, description=des, index=index,
 						autoSuffix=True, setAttrs={'operation':3})
 		for attrInfo in zip([left, right], 
 							[strBool_l, strBool_r],
@@ -648,11 +650,11 @@ def _reverse(operand, **kwargs):
 
 	'''
 	side = kwargs.get('side', None)
-	part = kwargs.get('part', None)
+	des = kwargs.get('description', None)
 	index = kwargs.get('index', None)
 
 	rvsNode = node(type=naming.Type.reverse,
-				   side=side, part=part, index=index,
+				   side=side, description=des, index=index,
 				   autoSuffix=True)        
 	cmds.connectAttr(operand, rvsNode+'.inputX')
 
@@ -665,13 +667,13 @@ def _uSub(operand, **kwargs):
 
 	'''
 	side = kwargs.get('side', None)
-	part = kwargs.get('part', None)
+	des = kwargs.get('description', None)
 	index = kwargs.get('index', None)
 
 	strBool = isinstance(operand, basestring)
 	if strBool:
 		multNode = node(type=naming.Type.multDoubleLinear,
-						side=side, part=part, index=index,
+						side=side, description=des, index=index,
 						autoSuffix=True, setAttrs={'input2':-1})
 		
 		cmds.connectAttr(operand, multNode+'.input1')
@@ -701,11 +703,17 @@ class NodeEquation(ast.NodeVisitor):
 	def visit_BinOp(self, node):
 		left = self.visit(node.left)
 		right = self.visit(node.right)
-		return _BINOP_MAP[type(node.op)](left, right)
+		return _BINOP_MAP[type(node.op)](left, right,
+										 side=self.side,
+										 description=self.des,
+										 index=self.index)
 
 	def visit_UnaryOp(self, node):
 		operand = self.visit(node.operand)
-		return _UNARYOP_MAP[type(node.op)](operand)
+		return _UNARYOP_MAP[type(node.op)](operand,
+										   side=self.side,
+										   description=self.des,
+										   index=self.index)
 
 	def visit_Num(self, node):
 		return node.n
@@ -717,7 +725,11 @@ class NodeEquation(ast.NodeVisitor):
 		return '{}.{}'.format(node.value.id, node.attr)
 
 	@classmethod
-	def equation(cls, expression):
+	def equation(cls, expression, **kwargs):
+		cls.side = kwargs.get('side', None)
+		cls.des = kwargs.get('description', None)
+		cls.index = kwargs.get('index', None)
+
 		tree = ast.parse(expression)
 		calc = cls()
 		return calc.visit(tree.body[0])
