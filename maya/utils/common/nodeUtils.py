@@ -396,7 +396,7 @@ def remap(inputValue, inputRange, outputRange, **kwargs):
 		attrs(str/list): connect the node to given attrs
 		force(bool)[True]: force the connection
  	Returns:
- 		outputAttr(list): output attribute from the node
+ 		outputAttr(str): output attribute from the node
 	'''
 
 	# get vars
@@ -428,6 +428,155 @@ def remap(inputValue, inputRange, outputRange, **kwargs):
 	if _attrs:
 		attributes.connect_attrs(outputAttr, _attrs, force=_force)
 
+	return outputAttr
+
+def add_matrix(inputMatrix, **kwargs):
+	'''
+	connect attrs with add matrix node
+
+	Args:
+		inputMatrix(list): list of input matrix
+						   each can be attribute/list
+
+	Kwargs:
+		side(str): node's side
+		description(str): node's description
+		index(int): node's index
+		suffix(int): node's suffix
+		attrs(str/list): connect the node to given attrs
+		force(bool)[True]: force the connection
+ 	Returns:
+ 		outputAttr: output attribute from the node
+	'''
+
+	# get vars
+	_side = kwargs.get('side', None)
+	_des = kwargs.get('description', None)
+	_index = kwargs.get('index', None)
+	_suffix = kwargs.get('suffix', None)
+	_setAttrs = kwargs.get('setAttrs', {})
+	_attrs = kwargs.get('attrs', [])
+	_force = kwargs.get('force', True)
+
+	# create node
+	addMatrix = node(type=naming.Type.addMatrix, side=_side,
+					 description=_des, index=_index, suffix=_suffix)
+
+	# input attrs
+	for i, matrix in enumerate(inputMatrix):
+		if isinstance(matrix, basestring):
+			cmds.connectAttr(matrix, '{}.matrixIn[{}]'.format(addMatrix, i))
+		else:
+			cmds.setAttr('{}.matrixIn[{}]'.format(addMatrix, i), matrix, type='matrix')
+
+	outputAttr = addMatrix+'.matrixSum'
+
+	if _attrs:
+		attributes.connect_attrs(outputAttr, _attrs, force=force)
+
+	# return output attr
+	return outputAttr
+
+def mult_matrix(inputMatrix, **kwargs):
+	'''
+	connect attrs with mult matrix node
+
+	Args:
+		inputMatrix(list): list of input matrix
+						   each can be attribute/list
+
+	Kwargs:
+		side(str): node's side
+		description(str): node's description
+		index(int): node's index
+		suffix(int): node's suffix
+		attrs(str/list): connect the node to given attrs
+		force(bool)[True]: force the connection
+ 	Returns:
+ 		outputAttr: output attribute from the node
+	'''
+
+	# get vars
+	_side = kwargs.get('side', None)
+	_des = kwargs.get('description', None)
+	_index = kwargs.get('index', None)
+	_suffix = kwargs.get('suffix', None)
+	_setAttrs = kwargs.get('setAttrs', {})
+	_attrs = kwargs.get('attrs', [])
+	_force = kwargs.get('force', True)
+
+	# create node
+	multMatrix = node(type=naming.Type.multMatrix, side=_side,
+					 description=_des, index=_index, suffix=_suffix)
+
+	# input attrs
+	for i, matrix in enumerate(inputMatrix):
+		if isinstance(matrix, basestring):
+			cmds.connectAttr(matrix, '{}.matrixIn[{}]'.format(multMatrix, i))
+		else:
+			cmds.setAttr('{}.matrixIn[{}]'.format(multMatrix, i), matrix, type='matrix')
+
+	outputAttr = multMatrix+'.matrixSum'
+
+	if _attrs:
+		attributes.connect_attrs(outputAttr, _attrs, force=force)
+
+	# return output attr
+	return outputAttr
+
+def compose_matrix(translate, rotate, scale=[1,1,1], rotateOrder=0, **kwargs):
+	'''
+	connect attrs with compose matrix node
+
+	Args:
+		translate(list): input translate
+						 each can be attribute/float
+		rotate(list): input rotate
+					  each can be attribute/float
+
+	Kwargs:
+		scale(list)[1,1,1]: input scale
+							each can be attribute/float
+		rotateOrder(int)[0]: input rotate order
+		side(str): node's side
+		description(str): node's description
+		index(int): node's index
+		suffix(int): node's suffix
+		attrs(str/list): connect the node to given attrs
+		force(bool)[True]: force the connection
+ 	Returns:
+ 		outputAttr: output attribute from the node
+	'''
+	# get vars
+	_side = kwargs.get('side', None)
+	_des = kwargs.get('description', None)
+	_index = kwargs.get('index', None)
+	_suffix = kwargs.get('suffix', None)
+	_attrs = kwargs.get('attrs', [])
+	_force = kwargs.get('force', True)
+
+	# node
+	compose = node(type=naming.Type.composeMatrix, side=_side,
+				   description=_des, index=_index, suffix=_suffix)
+	for inputAttrInfo in zip([translate, rotate, scale], ['translate', 'rotate', 'scale']):
+		for inputVal in zip(inputAttrInfo[0], ['X','Y','Z']):
+			if isinstance(inputVal[0], basestring):
+				cmds.connectAttr(inputVal[0], 
+								 '{}.input{}{}'.format(compose, inputAttrInfo[1].tilte(), inputVal[1]))
+			else:
+				cmds.setAttr('{}.input{}{}'.format(compose, inputAttrInfo[1].tilte(), inputVal[1]),
+							 inputVal[0])
+	if isinstance(rotateOrder, basestring):
+		cmds.connectAttr(rotateOrder, compose+'.inputRotateOrder')
+	else:
+		cmds.setAttr(compose+'.inputRotateOrder', rotateOrder)
+
+	outputAttr = compose+'.outputMatrix'
+
+	if _attrs:
+		attributes.connect_attrs(outputAttr, _attrs, force=force)
+
+	#return outputAttr
 	return outputAttr
 
 #=================#

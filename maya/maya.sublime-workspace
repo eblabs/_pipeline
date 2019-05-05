@@ -4,6 +4,34 @@
 		"selected_items":
 		[
 			[
+				"inputR",
+				"inputRotateOrder"
+			],
+			[
+				"roa",
+				"rotateOrder"
+			],
+			[
+				"rotat",
+				"rotateOrder"
+			],
+			[
+				"inputA",
+				"inputAttrInfo"
+			],
+			[
+				"attr",
+				"attributes"
+			],
+			[
+				"matri",
+				"matrixSum"
+			],
+			[
+				"input",
+				"inputMatrix"
+			],
+			[
 				"_su",
 				"_suffix"
 			],
@@ -16,10 +44,6 @@
 				"remapValue"
 			],
 			[
-				"inputA",
-				"inputAttr2"
-			],
-			[
 				"inputAtt",
 				"inputAttr1"
 			],
@@ -30,10 +54,6 @@
 			[
 				"node",
 				"nodeSubAttrs"
-			],
-			[
-				"input",
-				"inputAttr1"
 			],
 			[
 				"blen",
@@ -134,10 +154,6 @@
 			[
 				"attrC",
 				"attrConnect"
-			],
-			[
-				"attr",
-				"attrCheck"
 			],
 			[
 				"driv",
@@ -498,22 +514,6 @@
 			[
 				"QP",
 				"QPushButtonLoad"
-			],
-			[
-				"asset",
-				"asset"
-			],
-			[
-				"QC",
-				"QComboBoxRig"
-			],
-			[
-				"tex",
-				"textChanged"
-			],
-			[
-				"QLineEd",
-				"QLineEditAsset"
 			]
 		]
 	},
@@ -523,7 +523,7 @@
 			"file": "utils/common/nodeUtils.py",
 			"settings":
 			{
-				"buffer_size": 20520,
+				"buffer_size": 24790,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -764,6 +764,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"cmds.connectAttr",
 			"part",
 			"__attrExistsCheck",
 			"_set_or_connect_a_to_b",
@@ -890,8 +891,7 @@
 			"naming",
 			"_registerAttributes",
 			"_registerInput",
-			"_addObjAttr",
-			"_registerAttributes"
+			"_addObjAttr"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1022,15 +1022,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 20520,
+						"buffer_size": 24790,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3782,
-								3782
+								16458,
+								16458
 							]
 						],
 						"settings":
@@ -1040,7 +1040,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 4783.0,
+						"translation.y": 11386.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1173,7 +1173,7 @@
 		"cols":
 		[
 			0.0,
-			0.306217877416,
+			0.71369451293,
 			1.0
 		],
 		"rows":
