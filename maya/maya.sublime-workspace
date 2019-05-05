@@ -4,8 +4,176 @@
 		"selected_items":
 		[
 			[
+				"range",
+				"rangeValue"
+			],
+			[
+				"remap",
+				"remapValue"
+			],
+			[
+				"inputA",
+				"inputAttr2"
+			],
+			[
+				"inputAtt",
+				"inputAttr1"
+			],
+			[
+				"nodeAtt",
+				"nodeAttrSingle"
+			],
+			[
+				"node",
+				"nodeSubAttrs"
+			],
+			[
+				"input",
+				"inputAttr1"
+			],
+			[
+				"blen",
+				"blender"
+			],
+			[
+				"iputA",
+				"inputAttr1"
+			],
+			[
+				"max",
+				"maxAttr"
+			],
+			[
+				"first",
+				"firstTerm"
+			],
+			[
+				"fir",
+				"firstTerm"
+			],
+			[
+				"output",
+				"outputAttr"
+			],
+			[
+				"oup",
+				"outputAttr"
+			],
+			[
+				"inpu",
+				"inputAttr2"
+			],
+			[
+				"mult",
+				"multiplyDivide"
+			],
+			[
+				"attrI",
+				"attrInfo"
+			],
+			[
+				"inputAttr",
+				"inputAttrInfo"
+			],
+			[
+				"setA",
+				"setAttrs"
+			],
+			[
+				"value",
+				"valueNum"
+			],
+			[
+				"va",
+				"valueNum"
+			],
+			[
 				"val",
-				"val_short"
+				"value"
+			],
+			[
+				"is",
+				"isinstance"
+			],
+			[
+				"attri",
+				"attribute"
+			],
+			[
+				"base",
+				"basestring"
+			],
+			[
+				"for",
+				"force"
+			],
+			[
+				"att",
+				"attributes"
+			],
+			[
+				"No",
+				"NodeEquation"
+			],
+			[
+				"check",
+				"_check_attr_exists"
+			],
+			[
+				"driver",
+				"drivenAttrs"
+			],
+			[
+				"driven",
+				"drivenAttrs"
+			],
+			[
+				"attrC",
+				"attrConnect"
+			],
+			[
+				"attr",
+				"attrCheck"
+			],
+			[
+				"driv",
+				"drivenAttr"
+			],
+			[
+				"mul",
+				"multiplyDivide"
+			],
+			[
+				"strB",
+				"strBool_r"
+			],
+			[
+				"add",
+				"addDoubleLinear"
+			],
+			[
+				"auto",
+				"autoSuffix"
+			],
+			[
+				"nam",
+				"naming"
+			],
+			[
+				"op",
+				"operand"
+			],
+			[
+				"str",
+				"strBool"
+			],
+			[
+				"strBool",
+				"strBool_l"
+			],
+			[
+				"conec",
+				"connectAttr"
 			],
 			[
 				"val_",
@@ -120,10 +288,6 @@
 				"list_data"
 			],
 			[
-				"input",
-				"inputPoint"
-			],
-			[
 				"_ge",
 				"_getDistance"
 			],
@@ -192,16 +356,8 @@
 				"inputPoint"
 			],
 			[
-				"inpu",
-				"inputData"
-			],
-			[
 				"RV",
 				"RbfDriver"
-			],
-			[
-				"add",
-				"addAttribute"
 			],
 			[
 				"O",
@@ -358,189 +514,24 @@
 			[
 				"rigs",
 				"rigs"
-			],
-			[
-				"QLi",
-				"QLineEditProject"
-			],
-			[
-				"QLine",
-				"QLineEditProject"
-			],
-			[
-				"listA",
-				"listAllAsset"
-			],
-			[
-				"fileL",
-				"fileListMethod"
-			],
-			[
-				"fil",
-				"filterName"
-			],
-			[
-				"Qt",
-				"QtGui"
-			],
-			[
-				"sett",
-				"setText"
-			],
-			[
-				"QW",
-				"QWidget"
-			],
-			[
-				"files",
-				"filesReturn"
-			],
-			[
-				"QPushB",
-				"QPushButton"
-			],
-			[
-				"QPush",
-				"QPushButton"
-			],
-			[
-				"QLin",
-				"QLineEdit"
-			],
-			[
-				"QLa",
-				"QLabel"
-			],
-			[
-				"QG",
-				"QGridLayoutPublish"
-			],
-			[
-				"Qw",
-				"QWidgetPublish"
-			],
-			[
-				"setM",
-				"setMinimumWidth"
-			],
-			[
-				"File",
-				"FileView"
-			],
-			[
-				"ListV",
-				"ListViewWidget"
-			],
-			[
-				"QLineD",
-				"QLineEditProject"
-			],
-			[
-				"QLineE",
-				"QLineEdit"
-			],
-			[
-				"_add",
-				"_addAttributeFromDict"
-			],
-			[
-				"Lis",
-				"ListViewWidget"
-			],
-			[
-				"QH",
-				"QHBoxLayoutFilter"
-			],
-			[
-				"init",
-				"initWidget"
-			],
-			[
-				"Q",
-				"QFrame"
-			],
-			[
-				"_data",
-				"_dataInfoWidget"
-			],
-			[
-				"QF",
-				"QFrameRight"
-			],
-			[
-				"obj",
-				"objName"
-			],
-			[
-				"skele",
-				"skeletonFile"
-			],
-			[
-				"forma",
-				"format_import"
-			],
-			[
-				"pathM",
-				"pathMiscFile"
-			],
-			[
-				"format_",
-				"format_files"
-			],
-			[
-				"geom",
-				"geometries"
-			],
-			[
-				"j",
-				"joint"
-			],
-			[
-				"geo",
-				"geometries"
-			],
-			[
-				"nu",
-				"nurbsCurve"
-			],
-			[
-				"shape",
-				"shapeType"
-			],
-			[
-				"bluep",
-				"blueprintGroup"
-			],
-			[
-				"rigD",
-				"rigDataFolder"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "utils/common/apiUtils.py",
-			"settings":
-			{
-				"buffer_size": 1761,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "utils/common/naming.py",
-			"settings":
-			{
-				"buffer_size": 8999,
-				"line_ending": "Windows"
-			}
-		},
-		{
 			"file": "/C/_pipeline/maya_oldCodes/lib/common/apiUtils.py",
 			"settings":
 			{
 				"buffer_size": 6572,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/C/_pipeline/maya_oldCodes/lib/common/attributes.py",
+			"settings":
+			{
+				"buffer_size": 14957,
 				"line_ending": "Windows"
 			}
 		},
@@ -619,6 +610,11 @@
 	],
 	"file_history":
 	[
+		"/C/_pipeline/maya/utils/common/apiUtils.py",
+		"/C/_pipeline/maya/tests/nodeCalculation.py",
+		"/C/_pipeline/maya/utils/common/nodeUtils.py",
+		"/C/_pipeline/maya/templates/utils_template.py",
+		"/C/_pipeline/maya/utils/common/attributes.py",
 		"/C/Users/harri/Desktop/base_functions.py",
 		"/C/Users/harri/Desktop/base_operators.py",
 		"/C/Users/harri/Desktop/core.py",
@@ -641,7 +637,6 @@
 		"/C/Users/harri/Documents/maya/scripts/userSetup.py",
 		"/C/_pipeline/maya_oldCodes/oldCode/common/dataInfo.py",
 		"/C/_pipeline/maya_oldCodes/oldCode/common/debug.py",
-		"/C/_pipeline/maya/templates/utils_template.py",
 		"/C/_pipeline/maya/maya.sublime-project",
 		"/C/_pipeline/maya/maya.sublime-workspace",
 		"/C/_pipeline/maya_oldCodes/lib/common/attributes.py",
@@ -742,11 +737,7 @@
 		"/C/_pipeline/maya/rigSys/components/core/space.json",
 		"/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/componentsInfo.py",
 		"/C/_pipeline/maya/rigSys/components/package/componentsBlendPackage.py",
-		"/C/_pipeline/maya/rigSys/components/core/componentsPackage.py",
-		"/C/_pipeline/maya/lib/rigging/controls/controls.py",
-		"/C/_pipeline/maya/rigSys/components/package/multiComponentsPackage.py",
-		"/C/_pipeline/maya/oldCode/riggingAPI/rigComponents/baseComponent.py",
-		"/C/_pipeline/maya/rigSys/components/advance/ikRPsolverPlusComponent.py"
+		"/C/_pipeline/maya/rigSys/components/core/componentsPackage.py"
 	],
 	"find":
 	{
@@ -764,6 +755,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"__attrExistsCheck",
 			"_set_or_connect_a_to_b",
 			"_unravel_and_set_or_connect_a_to_b",
 			"_traced_create_node",
@@ -890,8 +882,7 @@
 			"_registerInput",
 			"_addObjAttr",
 			"_registerAttributes",
-			"outputMatrix",
-			"_addObjAttr"
+			"outputMatrix"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1013,76 +1004,16 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"sheets":
+			[
+			]
+		},
+		{
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "utils/common/apiUtils.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1761,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1761,
-								1761
-							]
-						],
-						"settings":
-						{
-							"show_definitions": false,
-							"syntax": "Packages/Python/Python.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 2916.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "utils/common/naming.py",
-					"semi_transient": true,
-					"settings":
-					{
-						"buffer_size": 8999,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								232,
-								199
-							]
-						],
-						"settings":
-						{
-							"show_definitions": false,
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 216.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				}
-			]
-		},
-		{
-			"selected": 0,
-			"sheets":
-			[
-				{
-					"buffer": 2,
 					"file": "/C/_pipeline/maya_oldCodes/lib/common/apiUtils.py",
 					"semi_transient": false,
 					"settings":
@@ -1108,11 +1039,41 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/C/_pipeline/maya_oldCodes/lib/common/attributes.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 14957,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								14956,
+								14808
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1468.0,
+						"zoom_level": 1.0
+					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 2,
 					"file": "/C/_pipeline/maya_oldCodes/test/node/rbfDriver.py",
 					"semi_transient": false,
 					"settings":
@@ -1146,7 +1107,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 45.0
+		"height": 50.0
 	},
 	"input":
 	{
@@ -1172,7 +1133,7 @@
 		"cols":
 		[
 			0.0,
-			0.610267721653,
+			0.806529403896,
 			1.0
 		],
 		"rows":
@@ -1194,7 +1155,7 @@
 	"project": "maya.sublime-project",
 	"replace":
 	{
-		"height": 86.0
+		"height": 96.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1224,7 +1185,7 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 1,
+	"selected_group": 0,
 	"settings":
 	{
 	},
@@ -1232,7 +1193,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 82.0,
+	"side_bar_width": 315.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{
