@@ -12,10 +12,26 @@ import maya.cmds as cmds
 #=================#
 from . import Logger
 
+ATTR_CONFIG = {'all': ['tx', 'ty', 'tz',
+					   'rx', 'ry', 'rz',
+					   'sx', 'sy', 'sz', 'v'],
+			   'translate': ['tx', 'ty', 'tz'],
+			   'rotate': ['rx', 'ry', 'rz'],
+			   'scale': ['sx', 'sy', 'sz'],
+			   'vis': ['v'],
+			   'scaleVis': ['sx', 'sy', 'sz', 'v']}
+
 #=================#
 #      CLASS      #
 #=================#
+class Attr(object):
+	"""Attr class to acess common attribute vars"""
+	def __init__(self):
+		pass
 
+for key, item in ATTR_CONFIG.iteritems():
+	setattr(Attr, key, item)
+					
 #=================#
 #    FUNCTION     #
 #=================#
@@ -44,17 +60,133 @@ def connect_attrs(driverAttrs, drivenAttrs, driver=None, driven=None, force=True
 							 driver=driver, driven=driven,
 							 force=force)
 	if len(driverAttrs) == 1:
-		if not _check_attr_exists(driverAttrs[0]):
+		if not __check_attr_exists(driverAttrs[0]):
 			return
 		for attr in drivenAttrs[1:]:
 			_connect_single_attr(drivenAttrs[0], attr, 
 								 driver=driver, driven=driven,
 								 force=force)
 
+def lock_hide_attrs(node, attrs):
+	'''
+	lock and hide attrs
+
+	Args:
+		node(str/list): the node to lock hide attrs
+		attrs(str/list): lock and hide given attrs
+	'''
+	if isinstance(node, basestring):
+		node = [node]
+	if isinstance(attrs, basestring):
+		attrs = [attrs]
+	for n in node:
+		for attr in attrs:
+			if cmds.attributeQuery(attr, node=n, ex=True):
+				cmds.setAttr('{}.{}'.format(n, attr), keyable=False,
+							 lock=True, channelBox=False)
+			else:
+				Logger.warn('{} does not have attribute: {}'.format(n, attr))
+
+def unlock_attrs(node, attrs, keyable=True, channelBox=True):
+	'''
+	unlock attrs
+
+	Args:
+		node(str/list): the node to unlock attrs
+		attrs(str/list): unlock and show given attrs
+	Kwargs:
+		keyable(bool)[True]: set attr keyable
+		channelBox(bool)[True]: show attr in channelBox (none keyable if False)
+	'''
+	if isinstance(node, basestring):
+		node = [node]
+	if isinstance(attrs, basestring):
+		attrs = [attrs]
+	for n in node:
+		for attr in attrs:
+			if cmds.attributeQuery(attr, node=n, ex=True):
+				cmds.setAttr('{}.{}'.format(n, attr), lock=False)
+				cmds.setAttr('{}.{}'.format(n, attr), channelBox=channelBox)
+				if channelBox == False:
+					keyable = False
+				cmds.setAttr('{}.{}'.format(n, attr), keyable=keyable)
+			else:
+				Logger.warn('{} does not have attribute: {}'.format(n, attr))
+
+def add_attrs(node, attrs, **kwargs):
+	'''
+	add attrs
+
+	Args:
+		node(str/list): nodes to assign attrs
+		attrs(str/list): add attrs
+	Kwargs:
+		attributeType(str)['float']: 'bool', 'long', 'enum', 'float', 'double', 
+						    		 'string', 'matrix'
+		range(list)[[]]:min/max value
+		defaultValue(float/int/list)[None]: default value
+		keyable(bool)[True]: set attr keyable
+		channelBox(bool)[True]: show attr in channel box
+		enumName(str)['']: enum attr name
+		lock(bool)[False]: lock attr  
+	'''
+	# get vars
+	attrType = kwargs.get('attributeType', 'float')
+	attrRange = kwargs.get('range', [])
+	defaultVal = kwargs.get('defaultValue', None)
+	keyable = kwargs.get('keyable', True)
+	channelBox = kwargs.get('channelBox', True)
+	enumName = kwargs.get('enumName', '')
+	lock = kwargs.get('lock', False)
+
+	if isinstance(node, basestring):
+		node = [node]
+	if isinstance(attrs, basestring):
+		attrs = [attrs]
+	if not isinstance(defaultVal, list):
+		defaultVal = [defaultVal]*len(attrs)
+
+	if not channelBox or lock:
+		keyable=False
+	if attrType != 'string':
+		attrTypeKey = 'attributeType'
+	else:
+		attrTypeKey = 'dataType'
+
+	attrDict = {attrTypeKey: attrType,
+				'keyable': keyable}
+
+	for n in node:
+		for attr, val in zip(attrs, defaultVal):
+			# check if attr exists
+			if not cmds.attributeQuery(attr, node=n, ex=True):
+				attrDict.update({'longName': attr})
+				if val:
+					attrDict.update({'defaultValue': val})
+				if attrRange:
+					if attrRange[0]:
+						attrDict.update({'minValue': attrRange[0]})
+					if attrRange[1]:
+						attrDict.update({'maxValue': attrRange[1]})
+				if enumName:
+					attrDict.update(enumName)
+				# add attr
+				cmds.addAttr(n, **attrDict)
+				# set default value for string/matrix
+				if attrType in ['string', 'matrix'] and val:
+					cmds.setAttr('{}.{}'.format(n, attr), val, type=attrType)
+				# lock
+				cmds.setAttr('{}.{}'.format(n, attr), lock=lock)
+				# channelBox
+				if attrType not in ['string', 'matrix'] and channelBox:
+					cmds.setAttr('{}.{}'.format(n, attr), channelBox=channelBox)
+			else:
+				Logger.warn('{} already havs attribute: {}'.format(n, attr))
+
 #=================#
 #  SUB FUNCTION   #
 #=================#
-def _check_attr_exists(attr, node=None):
+def __check_attr_exists(attr, node=None):
 	'''
 	Check if attr exists
 	'''
@@ -75,7 +207,7 @@ def _connect_single_attr(driverAttr, drivenAttr, driver=None, driven=None, force
 	attrConnect=[]
 	for attr, node in zip([driverAttr, drivenAttr],
 						  [driver, driven]):
-		attrCheck = _check_attr_exists(attr, node=node)
+		attrCheck = __check_attr_exists(attr, node=node)
 		if not attrCheck:
 			break
 		else:

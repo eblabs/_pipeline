@@ -5,6 +5,9 @@
 ## import maya packages
 import maya.cmds as cmds
 
+## import ast
+import ast
+
 ## import utils
 import naming
 import attributes
@@ -124,7 +127,7 @@ def equation(expression, **kwargs):
 
 	# connect attrs
 	if _attrs:
-		attributes.connect_attrs(outputAttr, _attrs, force=force)
+		attributes.connect_attrs(outputAttr, _attrs, force=_force)
 
 	return outputAttr
 
@@ -200,7 +203,7 @@ def plus_minus_average(inputAttrs, **kwargs):
 			_attrs = [_attrs]
 		for attr in _attrs:
 			for attrInfo in zip(outputAttr, attr):
-				attributes.connect_attrs(attrInfo[0], attrInfo[1], force=force)
+				attributes.connect_attrs(attrInfo[0], attrInfo[1], force=_force)
 
 	# return output attr
 	return outputAttr
@@ -472,7 +475,7 @@ def add_matrix(inputMatrix, **kwargs):
 	outputAttr = addMatrix+'.matrixSum'
 
 	if _attrs:
-		attributes.connect_attrs(outputAttr, _attrs, force=force)
+		attributes.connect_attrs(outputAttr, _attrs, force=_force)
 
 	# return output attr
 	return outputAttr
@@ -519,7 +522,7 @@ def mult_matrix(inputMatrix, **kwargs):
 	outputAttr = multMatrix+'.matrixSum'
 
 	if _attrs:
-		attributes.connect_attrs(outputAttr, _attrs, force=force)
+		attributes.connect_attrs(outputAttr, _attrs, force=_force)
 
 	# return output attr
 	return outputAttr
@@ -574,7 +577,7 @@ def compose_matrix(translate, rotate, scale=[1,1,1], rotateOrder=0, **kwargs):
 	outputAttr = compose+'.outputMatrix'
 
 	if _attrs:
-		attributes.connect_attrs(outputAttr, _attrs, force=force)
+		attributes.connect_attrs(outputAttr, _attrs, force=_force)
 
 	#return outputAttr
 	return outputAttr
@@ -641,7 +644,7 @@ def _create_node_multi_attrs(inputAttrSingle, inputAttrMult, nodeAttrSingle,
 			_attrs = [_attrs]
 		for attr in _attrs:
 			for attrInfo in zip(outputAttr, attr):
-				attributes.connect_attrs(attrInfo[0], attrInfo[1], force=force)
+				attributes.connect_attrs(attrInfo[0], attrInfo[1], force=_force)
 
 	# return output attr
 	return outputAttr

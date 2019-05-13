@@ -41,8 +41,8 @@ class Resolution(object):
 # add static attrs for above classes base on dictionary
 for key, item in DATA_CONFIG.iteritems():
 	Obj = getattr(sys.modules[__name__], key.title())
-	for nameLong, nameShort in item.iteritems():
-		setattr(Obj, nameLong, nameShort)
+	for nameLong in item:
+		setattr(Obj, nameLong, nameLong)
 
 class Namer(object):
 	"""
@@ -270,7 +270,7 @@ class Namer(object):
 
 			if splitNum == 3:
 				# name only contains type side and des
-				self.__description = self.__get_name(nameSplit[2])
+				self.__description = nameSplit[2]
 			
 			elif splitNum == 4:
 				# name contains type side des and res/index

@@ -2,18 +2,16 @@
 # IMPORT PACKAGES #
 #=================#
 
-## import python packages
-import math
-
-## import compiled packages
-import numpy
-
 ## import maya packages
 import maya.cmds as cmds
 import maya.api.OpenMaya as OpenMaya
 
+## import math
+import math
+
 ## import utils
 import naming
+import attributes
 
 #=================#
 #   GLOBAL VARS   #
@@ -21,74 +19,117 @@ import naming
 from . import Logger
 
 #=================#
-#      CLASS      #
-#=================#
-
-#=================#
 #    FUNCTION     #
 #=================#
-
-# points
-def distance(pointA, pointB):
+def set_MObj(node):
 	'''
-	distance between two given points
+	return MObject
 
 	Args:
-		pointA(list): first point 
-		pointB(list): second point
-
-	Returns:
-		distance(float): distance between two points
+		node
 	'''
-	dis = math.hypot(pointA[0]-pointB[0], 
-					 pointA[1]-pointB[1],
-					 pointA[2]-pointB[2])
+	MSel = OpenMaya.MSelectionList()
+	MSel.add(node)
+	MObj = MSel.getDependNode(0)
+	return MObj
 
-# vector
-def get_point_from_vector(point, vector, distance=1):
+def set_MDagPath(node):
 	'''
-	get point from vector and given point, vector can be scaled by distance
+	return MDagPath
 
 	Args:
-		point(list): point as orign
-		vector(list): vector to shoot from the orign point
+		node
+	'''
+	MSel = OpenMaya.MSelectionList()
+	MSel.add(node)
+	MDagPath = MSel.getDagPath(0)
+	return MDagPath
+
+def convert_MPointArray_to_list(MPointArray):
+	'''
+	convert MPointArray to python list
+	'''
+	pointList = []
+	for i in range(len(MPointArray)):
+		pointList.append([MPointArray[i].x,
+						  MPointArray[i].y,
+						  MPointArray[i].z])
+	return pointList
+
+def convert_MDoubleArray_to_list(MDoubleArray):
+	'''
+	convert MDoubleArray (or similiar array) to python list
+	'''
+	arrayList = []
+	for i in range(len(MDoubleArray)):
+		arrayList.append(MDoubleArray[i])
+	return arrayList
+
+def compose_matrix(translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], rotateOrder=0):
+	'''
+	compose matrix
 
 	Kwargs:
-		distance(float): scale factor of the vector
-
-	Returns:
-		point(list): point from vector and given point
+		translate(list)
+		rotate(list)
+		scale(list)
+		rotateOrder(int)
 	'''
-	vec = [vector[0]*distance, vector[1]*distance, vector[2]*distance]
-	pnt = [point[0]+vec[0], point[1]+vec[1], point[2]+vec[2]]
-	return pnt
+	# create MMatrix object
+	MTransformationMatrix = OpenMaya.MTransformationMatrix()
 
-# matrix
-def list_to_matrix(array, column=4, row=4):
+	# create MVector for translation
+	MVector = OpenMaya.MVector(translate[0], translate[1], translate[2])
+
+	# create MDoubleArray for rotation
+	MRotate = OpenMaya.MEulerRotation(math.radians(rotate[0]),
+								   	  math.radians(rotate[1]),
+								   	  math.radians(rotate[2]),
+								   	  rotateOrder)
+
+	# set MMatrix
+	MTransformationMatrix.setTranslation(MVector, OpenMaya.MSpace.kWorld)
+	MTransformationMatrix.setRotation(MRotate)
+	MTransformationMatrix.setScale(scale, OpenMaya.MSpace.kWorld)
+	
+	# get MMatrix
+	MMatrix = MTransformationMatrix.asMatrix()
+
+	matrix = convert_MMatrix_to_list(MMatrix)
+
+	return matrix
+
+def decompose_matrix(matrix, rotateOrder=0):
 	'''
-	convert list to numpy matrix
+	decompose matrix
 
 	Args:
-		array(list): given list
-
+		matrix(list)
 	Kwargs:
-		row(int): matrix's row number
-		column(int): matrix's column number
-
-	Return:
-		matrix(np_array): numpy array
+		rotateOrder(int)
 	'''
-	return numpy.reshape(array, (column, row))
+	MMatrix = OpenMaya.MMatrix(matrix)
+	MTransformationMatrix = OpenMaya.MTransformationMatrix(MMatrix)
+	
+	MTranslate = MTransformationMatrix.translation(OpenMaya.MSpace.kWorld)
+	MRotate = MTransformationMatrix.rotation(asQuaternion=False)
+	MRotate.reorderIt(rotateOrder)
+	scale = MTransformationMatrix.scale(OpenMaya.MSpace.kWorld)
 
-def matrix_to_list(matrix):
+	translate = [MTranslate.x, MTranslate.y, MTranslate.z]
+	rotate = [math.degrees(MRotate.x), math.degrees(MRotate.y), math.degrees(MRotate.z)]
+	
+	return [translate, rotate, scale]
+
+def convert_MMatrix_to_list(MMatrix):
 	'''
-	convert numpy matrix to list
+	convert MMatrix to list
 
 	Args:
-		matrix(np_array): numpy array
-
-	Returns:
-		array(list): list
+		MMatrix
 	'''
-	matrix = numpy.reshape(matrix, matrix.size)
-	return matrix.tolist()
+	matrix = []
+	for i in range(4):
+		for j in range(4):
+			matrix.append(MMatrix.getElement(i, j))
+	return matrix
