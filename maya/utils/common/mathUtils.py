@@ -94,3 +94,40 @@ def matrix_to_list(matrix):
 	matrix = numpy.reshape(matrix, matrix.size)
 	array = matrix.tolist()[0]
 	return array
+
+def inverse_matrix(matrix):
+	'''
+	inverse numpy matrix
+
+	Args:
+		matrix(np_array): numpy array
+	Returns:
+		array(list): list
+	'''
+	if isinstance(matrix, list):
+		matrix = list_to_matrix(matrix)
+	matrixInv = numpy.linalg.inv(matrix)
+	matrixInv = matrix_to_list(matrixInv)
+
+	return matrixInv
+
+def mult_matrix(matrices):
+	'''
+	multiply given matrices
+
+	Args:
+		matrices(list): list of numpy matrix/list
+	Returns:
+		array(list): list
+	'''
+	if isinstance(matrices[0], list):
+		matrixMult = list_to_matrix(matrices[0])
+	else:
+		matrixMult = matrices[0]
+	for matrix in matrices[1:]:
+		if isinstance(matrix, list):
+			matrix = list_to_matrix(matrix)
+		matrixMult = numpy.matmul(matrixMult, matrix)
+	matrixMult = matrix_to_list(matrixMult)
+
+	return matrixMult

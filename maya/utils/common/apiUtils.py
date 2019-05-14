@@ -12,6 +12,7 @@ import math
 ## import utils
 import naming
 import attributes
+import variables
 
 #=================#
 #   GLOBAL VARS   #
@@ -65,7 +66,7 @@ def convert_MDoubleArray_to_list(MDoubleArray):
 		arrayList.append(MDoubleArray[i])
 	return arrayList
 
-def compose_matrix(translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], rotateOrder=0):
+def compose_matrix(**kwargs):
 	'''
 	compose matrix
 
@@ -75,6 +76,11 @@ def compose_matrix(translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], rotateOrder
 		scale(list)
 		rotateOrder(int)
 	'''
+	# vars
+	translate = variables.kwargs('translate', [0,0,0], kwargs, shortName='t')
+	rotate = variables.kwargs('rotate', [0,0,0], kwargs, shortName='r')
+	scale = variables.kwargs('scale', [1,1,1], kwargs, shortName='s')
+	rotateOrder = variables.kwargs('rotateOrder', 0, kwargs, shortName='ro')
 	# create MMatrix object
 	MTransformationMatrix = OpenMaya.MTransformationMatrix()
 
@@ -99,7 +105,7 @@ def compose_matrix(translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], rotateOrder
 
 	return matrix
 
-def decompose_matrix(matrix, rotateOrder=0):
+def decompose_matrix(matrix, **kwargs):
 	'''
 	decompose matrix
 
@@ -108,6 +114,9 @@ def decompose_matrix(matrix, rotateOrder=0):
 	Kwargs:
 		rotateOrder(int)
 	'''
+	# vars
+	rotateOrder = variables.kwargs('rotateOrder', 0, kwargs, shortName='ro')
+
 	MMatrix = OpenMaya.MMatrix(matrix)
 	MTransformationMatrix = OpenMaya.MTransformationMatrix(MMatrix)
 	

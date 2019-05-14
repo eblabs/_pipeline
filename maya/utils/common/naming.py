@@ -8,7 +8,7 @@ import os
 
 ## import utils
 import files
-
+import variables
 #=================#
 #   GLOBAL VARS   #
 #=================#
@@ -41,8 +41,8 @@ class Resolution(object):
 # add static attrs for above classes base on dictionary
 for key, item in DATA_CONFIG.iteritems():
 	Obj = getattr(sys.modules[__name__], key.title())
-	for nameLong in item:
-		setattr(Obj, nameLong, nameLong)
+	for nameLong, nameShort in item.iteritems():
+		setattr(Obj, nameLong, nameShort)
 
 class Namer(object):
 	"""
@@ -51,11 +51,11 @@ class Namer(object):
 	"""
 
 	# shortcuts for inputs
-	shortcuts = {'type':        'typ',
-				 'side':        'sid',
+	shortcuts = {'type':        't',
+				 'side':        's',
 				 'resolution':  'res',
 				 'description': 'des',
-				 'index':       'idx',
+				 'index':       'i',
 				 'suffix':      'sfx'}
 
 	def __init__(self, *args,**kwargs):
@@ -88,11 +88,8 @@ class Namer(object):
 			self.__decompose_name(args[0])
 		else:
 			for key, item in self.shortcuts.iteritems():
-				val_short = kwargs.get(item, None)
-				val_long = kwargs.get(key, None)
-				if val_long:
-					val_short = val_long
-				setattr(self, '_Namer__'+key, val_short)
+				val = variables.kwargs(key, None, kwargs, shortName=item)
+				setattr(self, '_Namer__'+key, val)
 
 			self.__compose_name()
 

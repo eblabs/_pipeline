@@ -11,7 +11,7 @@ import ast
 ## import utils
 import naming
 import attributes
-
+import variables
 #=================#
 #   GLOBAL VARS   #
 #=================#
@@ -46,17 +46,17 @@ def node(*args, **kwargs):
 		name(str): node's name
 	'''
 	# get vars
-	_name = kwargs.get('name', None)
-	_type = kwargs.get('type', None)
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
+	_name = variables.kwargs('name', None, kwargs, shortName='n')
+	_type = variables.kwargs('type', None, kwargs, shortName='t')
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
 
-	_useExist = kwargs.get('useExist', False)
-	_autoSuffix = kwargs.get('autoSuffix', False)
+	_useExist = variables.kwargs('useExist', False, kwargs)
+	_autoSuffix = variables.kwargs('autoSuffix', False, kwargs)
 
-	_setAttrs = kwargs.get('setAttrs', {})
+	_setAttrs = variables.kwargs('setAttrs', {}, kwargs)
 
 	if _name:
 		Namer = naming.Namer(_name)
@@ -115,11 +115,11 @@ def equation(expression, **kwargs):
 	'''
 
 	# get vars
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	# node equation
 	outputAttr = NodeEquation.equation(expression, side=_side,
@@ -156,13 +156,13 @@ def plus_minus_average(inputAttrs, **kwargs):
  		outputAttr(list): output attribute from the node
 	'''
 	# get vars
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
-	_op = kwargs.get('operation', 1)
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+	_op = variables.kwargs('operation', 1, kwargs, shortName='op')
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	# create node
 	pmav = node(type=naming.Type.plusMinusAvarge, side=_side,
@@ -232,13 +232,14 @@ def multiply_divide(inputAttr1, inputAttr2, **kwargs):
  		outputAttr(str/list): output attribute from the node
 	'''
 	# get vars
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
-	_op = kwargs.get('operation', 1)
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
+
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+	_op = variables.kwargs('operation', 1, kwargs, shortName='op')
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	outputAttr = _create_node_multi_attrs([],[inputAttr1, inputAttr2],
 										  [], ['input1', 'input2'],
@@ -279,13 +280,13 @@ def condition(firstTerm, secondTerm, ifTrue, ifFalse, **kwargs):
 	'''
 
 	# get vars
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
-	_op = kwargs.get('operation', 0)
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+	_op = variables.kwargs('operation', 1, kwargs, shortName='op')
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	# get operation
 	if isinstance(_op, basestring):
@@ -326,12 +327,12 @@ def clamp(inputAttr, maxAttr, minAttr, **kwargs):
 	'''
 
 	# get vars
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	outputAttr = _create_node_multi_attrs([],[inputAttr, maxAttr, minAttr],
 										  [], ['input', 'max', 'min'],
@@ -364,12 +365,12 @@ def blend(blender, inputAttr1, inputAttr2, **kwargs):
 	'''
 
 	# get vars
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	outputAttr = _create_node_multi_attrs([blender],[inputAttr1, inputAttr2],
 										  ['blender'], ['color1', 'color2'],
@@ -403,13 +404,13 @@ def remap(inputValue, inputRange, outputRange, **kwargs):
 	'''
 
 	# get vars
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
-	_setAttrs = kwargs.get('setAttrs', {})
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+	_setAttrs = variables.kwargs('setAttrs', {}, kwargs)
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	# create node
 	remap = node(type=naming.Type.remapValue, side=_side, description=_des,
@@ -453,13 +454,12 @@ def add_matrix(inputMatrix, **kwargs):
 	'''
 
 	# get vars
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
-	_setAttrs = kwargs.get('setAttrs', {})
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	# create node
 	addMatrix = node(type=naming.Type.addMatrix, side=_side,
@@ -500,13 +500,12 @@ def mult_matrix(inputMatrix, **kwargs):
 	'''
 
 	# get vars
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
-	_setAttrs = kwargs.get('setAttrs', {})
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	# create node
 	multMatrix = node(type=naming.Type.multMatrix, side=_side,
@@ -527,7 +526,7 @@ def mult_matrix(inputMatrix, **kwargs):
 	# return output attr
 	return outputAttr
 
-def compose_matrix(translate, rotate, scale=[1,1,1], rotateOrder=0, **kwargs):
+def compose_matrix(translate, rotate, scale=[1,1,1], **kwargs):
 	'''
 	connect attrs with compose matrix node
 
@@ -551,12 +550,13 @@ def compose_matrix(translate, rotate, scale=[1,1,1], rotateOrder=0, **kwargs):
  		outputAttr: output attribute from the node
 	'''
 	# get vars
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
+	rotateOrder = variables.kwargs('rotateOrder', 0, kwargs, shortName='ro')
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	# node
 	compose = node(type=naming.Type.composeMatrix, side=_side,

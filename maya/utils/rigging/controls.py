@@ -6,14 +6,12 @@
 import sys
 import os
 
-## import numpy
-import numpy
-
 ## import maya packages
 import maya.cmds as cmds
 import maya.api.OpenMaya as OpenMaya
 
 ## import utils
+import utils.common.variables as variables
 import utils.common.files as files
 import utils.common.naming as naming
 import utils.common.attributes as attributes
@@ -30,9 +28,9 @@ from . import PATH_CONFIG, Logger
 SHAPE_CONFIG = files.read_json_file(os.path.join(PATH_CONFIG, 'CONTROL_SHAPE.cfg'))
 COLOR_CONFIG = files.read_json_file(os.path.join(PATH_CONFIG, 'CONTROL_COLOR.cfg'))
 
-SIDE_CONFIG = {naming.Side.left: 'blue',
-			   naming.Side.middle: 'yellow',
-			   naming.Side.right: 'red'}
+SIDE_CONFIG = {'left':   'blue',
+			   'middle': 'yellow',
+			   'right':  'red'}
 #=================#
 #      CLASS      #
 #=================#
@@ -98,18 +96,18 @@ def create(description, **kwargs):
 	'''
 
 	# get vars
-	side = kwargs.get('side', naming.Side.middle)
-	index = kwargs.get('index', None)
-	sub = kwargs.get('sub', False)
-	offsets = kwargs.get('offsets', 1)
-	parent = kwargs.get('parent', None)
-	pos = kwargs.get('pos', None)
-	rotateOrder = kwargs.get('rotateOrder', 0)
-	shape = kwargs.get('shape', 'cube')
-	size = kwargs.get('size', 1)
-	color = kwargs.get('color', None)
-	colorSub = kwargs.get('colorSub', None)
-	lockHide = kwargs.get('lockHide', attributes.Attr.scaleVis)
+	side = variables.kwargs('side', naming.Side.middle, kwargs, shortName='s')
+	index = variables.kwargs('index', None, kwargs, shortName='i')
+	sub = variables.kwargs('sub', False, kwargs)
+	offsets = variables.kwargs('offsets', 1, kwargs, shortName='ofst')
+	parent = variables.kwargs('parent', None, kwargs, shortName='p')
+	pos = variables.kwargs('pos', None, kwargs)
+	rotateOrder = variables.kwargs('rotateOrder', 0, kwargs, shortName='ro')
+	shape = variables.kwargs('shape', 'cube', kwargs)
+	size = variables.kwargs('size', 1, kwargs)
+	color = variables.kwargs('color', None, kwargs, shortName='col')
+	colorSub = variables.kwargs('colorSub', None, kwargs, shortName='colSub')
+	lockHide = variables.kwargs('lockHide', attributes.Attr.scaleVis, kwargs, shortName='lh')
 
 	Namer = naming.Namer(type=naming.Type.control, side=side,
 						 description=description, index=index)
@@ -193,7 +191,7 @@ def create(description, **kwargs):
 	for c, col, scale in zip(ctrlList, [color, colorSub], [size, size*0.9]):
 		__add_ctrl_shape(c, shape=shape, size=scale, color=col)
 
-def transform_ctrl_shape(ctrlShapes, translate=[0,0,0], rotate=[0,0,0], scale=[1,1,1], pivot='transform'):
+def transform_ctrl_shape(ctrlShapes, **kwargs):
 	'''
 	offset controls shape nodes
 
@@ -205,6 +203,12 @@ def transform_ctrl_shape(ctrlShapes, translate=[0,0,0], rotate=[0,0,0], scale=[1
 		scale(float/list): scale
 		pivot(str)['transform']: transform/shape, define the offset pivot
 	'''
+	# vars
+	translate = variables.kwargs('translate', [0,0,0], kwargs, shortName='t')
+	rotate = variables.kwargs('rotate', [0,0,0], kwargs, shortName='r')
+	scale = variables.kwargs('scale', [1,1,1], kwargs, shortName='s')
+	pivot = variables.kwargs('pivot', 'transform', kwargs)
+
 	if isinstance(ctrlShapes, basestring):
 		ctrlShapes = [ctrlShapes]
 	if not isinstance(scale, list):
@@ -218,37 +222,28 @@ def transform_ctrl_shape(ctrlShapes, translate=[0,0,0], rotate=[0,0,0], scale=[1
 			matrixOffset = apiUtils.compose_matrix(translate=translate,
 												   rotate=rotate,
 												   scale=scale)
-			matrixOffset_np = mathUtils.list_to_matrix(matrixOffset)
 			# get pivot matrix
 			if pivot == 'shape':
 				maxPos, minPos, centerPos = transforms.bounding_box_info(cvPnts)
 				matrixPivot = apiUtils.compose_matrix(translate=centerPos)
 			else:
 				matrixPivot = apiUtils.compose_matrix()
-			matrixPivot_np = mathUtils.list_to_matrix(matrixPivot)
-			inversePivot_np = numpy.linalg.inv(matrixPivot_np)
+			inversePivot = mathUtils.inverse_matrix(matrixPivot)
 			# move each point
 			for i, pnt in enumerate(cvPnts):
 				matrixPnt = apiUtils.compose_matrix(translate=pnt)
-				matrixPnt_np = mathUtils.list_to_matrix(matrixPnt)
 
 				# mult matrix
-				matrixPos_np = numpy.matmul(matrixPnt_np, inversePivot_np)
-				matrixPos_np = numpy.matmul(matrixPos_np, matrixOffset_np)
-				matrixPos_np = numpy.matmul(matrixPos_np, matrixPivot_np)
-				matrixPos = mathUtils.matrix_to_list(matrixPos_np)
+				matrixPos = mathUtils.mult_matrix([matrixPnt, inversePivot, 
+												   matrixOffset, matrixPivot])
+				
 				# get pos
 				pos = apiUtils.decompose_matrix(matrixPos)[0]
 
 				cvPnts[i] = pos
 
-			MPointArray = OpenMaya.MPointArray(cvPnts)
-
-			# get MFnNurbsCurve
-			MFnNurbsCurve = curves.__setMFnNurbsCurve(shape)
-
 			# set pos
-			MFnNurbsCurve.setCVPositions(MPointArray)
+			curves.set_curve_points(shape, cvPnts)
 
 		else:
 			Logger.warn('{} does not exist'.format(shape))

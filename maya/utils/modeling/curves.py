@@ -14,7 +14,7 @@ import maya.api.OpenMaya as OpenMaya
 import utils.common.naming as naming
 import utils.common.attributes as attributes
 import utils.common.apiUtils as apiUtils
-reload(apiUtils)
+import utils.common.variables as variables
 #=================#
 #   GLOBAL VARS   #
 #=================#
@@ -26,7 +26,7 @@ reload(apiUtils)
 #=================#
 #    FUNCTION     #
 #=================#
-def create_curve(name, controlVertices, knots, degree=1, form=1):
+def create_curve(name, controlVertices, knots, **kwargs):
 	'''
 	create curve with given information
 
@@ -39,6 +39,10 @@ def create_curve(name, controlVertices, knots, degree=1, form=1):
 	Returns:
 		transform, shape node
 	'''
+	# vars
+	degree = variables.kwargs('degree', 1, kwargs, shortName='d')
+	form = variables.kwargs('form', 1, kwargs)
+
 	if not cmds.objExists(name):
 		cmds.createNode('transform', name=name)
 	MObj = apiUtils.set_MObj(name)
@@ -85,6 +89,22 @@ def get_curve_info(curve):
 			     'form': form}
 
 	return curveInfo
+
+def set_curve_points(curve, points):
+	'''
+	set curve shape points positions
+
+	Args:
+		curve(str): curve shape node
+		points(list): curve cv positions
+	'''
+	MPointArray = OpenMaya.MPointArray(points)
+
+	# get MFnNurbsCurve
+	MFnNurbsCurve = __setMFnNurbsCurve(curve)
+
+	# set pos
+	MFnNurbsCurve.setCVPositions(MPointArray)
 
 #=================#
 #  SUB FUNCTION   #

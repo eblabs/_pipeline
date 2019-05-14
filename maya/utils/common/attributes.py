@@ -6,7 +6,7 @@
 import maya.cmds as cmds
 
 ## import utils
-
+import variables
 #=================#
 #   GLOBAL VARS   #
 #=================#
@@ -35,7 +35,7 @@ for key, item in ATTR_CONFIG.iteritems():
 #=================#
 #    FUNCTION     #
 #=================#
-def connect_attrs(driverAttrs, drivenAttrs, driver=None, driven=None, force=True):
+def connect_attrs(driverAttrs, drivenAttrs, **kwargs):
 	'''
 	Connect driver attrs to driven attrs
 
@@ -47,6 +47,10 @@ def connect_attrs(driverAttrs, drivenAttrs, driver=None, driven=None, force=True
 		driven(str): override the drivenAttrs
 		force(bool): override the connection/lock status
 	'''
+	# get vars
+	driver = variables.kwargs('driver', None, kwargs)
+	driven = variables.kwargs('driven', None, kwargs)
+	force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	# check if driverAttrs/drivenAttrs is string/list
 	if isinstance(driverAttrs, basestring):
@@ -87,7 +91,7 @@ def lock_hide_attrs(node, attrs):
 			else:
 				Logger.warn('{} does not have attribute: {}'.format(n, attr))
 
-def unlock_attrs(node, attrs, keyable=True, channelBox=True):
+def unlock_attrs(node, attrs, **kwargs):
 	'''
 	unlock attrs
 
@@ -98,6 +102,9 @@ def unlock_attrs(node, attrs, keyable=True, channelBox=True):
 		keyable(bool)[True]: set attr keyable
 		channelBox(bool)[True]: show attr in channelBox (none keyable if False)
 	'''
+	# get vars
+	keyable = variables.kwargs('keyable', True, kwargs, shortName='k')
+	channelBox = variables.kwargs('channelBox', True, kwargs, shortName='cb')
 	if isinstance(node, basestring):
 		node = [node]
 	if isinstance(attrs, basestring):
@@ -131,19 +138,21 @@ def add_attrs(node, attrs, **kwargs):
 		lock(bool)[False]: lock attr  
 	'''
 	# get vars
-	attrType = kwargs.get('attributeType', 'float')
-	attrRange = kwargs.get('range', [])
-	defaultVal = kwargs.get('defaultValue', None)
-	keyable = kwargs.get('keyable', True)
-	channelBox = kwargs.get('channelBox', True)
-	enumName = kwargs.get('enumName', '')
-	lock = kwargs.get('lock', False)
-
+	attrType = variables.kwargs('attributeType', 'float', kwargs, shortName='at')
+	attrRange = variables.kwargs('range', [], kwargs)
+	defaultVal = variables.kwargs('defaultValue', None, kwargs, shortName='dv')
+	keyable = variables.kwargs('keyable', True, kwargs, shortName='k')
+	channelBox = variables.kwargs('channelBox', True, kwargs, shortName='cb')
+	enumName = variables.kwargs('enumName', '', kwargs, shortName='enum')
+	lock = variables.kwargs('lock', False, kwargs)
+	
 	if isinstance(node, basestring):
 		node = [node]
 	if isinstance(attrs, basestring):
 		attrs = [attrs]
 	if not isinstance(defaultVal, list):
+		defaultVal = [defaultVal]*len(attrs)
+	elif not isinstance(defaultVal[0], list) and attributeType == 'matrix':
 		defaultVal = [defaultVal]*len(attrs)
 
 	if not channelBox or lock:

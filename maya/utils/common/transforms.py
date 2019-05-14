@@ -9,7 +9,7 @@ import maya.api.OpenMaya as OpenMaya
 ## import utils
 import naming
 import attributes
-
+import variables
 #=================#
 #   GLOBAL VARS   #
 #=================#
@@ -40,12 +40,12 @@ def create(name, **kwargs):
 		inheritsTransform(bool)[True]: set transform node's inheritance attr
 	'''
 	# get vars
-	lockHide = kwargs.get('lockHide', [])
-	parent = kwargs.get('parent', None)
-	rotateOrder = kwargs.get('rotateOrder', 0)
-	vis = kwargs.get('vis', True)
-	pos = kwargs.get('pos', None)
-	inherits = kwargs.get('inheritsTransform', True)
+	lockHide = variables.kwargs('lockHide', [], kwargs, shortName='lh')
+	parent = variables.kwargs('parent', None, kwargs, shortName='p')
+	rotateOrder = variables.kwargs('rotateOrder', 0, kwargs, shortName='ro')
+	vis = variables.kwargs('vis', True, kwargs, shortName='v')
+	pos = variables.kwargs('pos', None, kwargs)
+	inherits = variables.kwargs('inheritsTransform', True, kwargs)
 
 	# create transform
 	transform = cmds.createNode('transform', name=name)
