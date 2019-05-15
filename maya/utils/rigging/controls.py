@@ -35,12 +35,127 @@ SIDE_CONFIG = {'left':   'blue',
 #      CLASS      #
 #=================#
 class Control(object):
-	"""docstring for Control"""
+	"""class to get control information"""
 	def __init__(self, ctrl):
 		super(Control, self).__init__()
 		self.__get_control_info(ctrl)
 
-	def __get_control_into(ctrl):
+	@property
+	def name(self):
+		return self.__name
+
+	@property
+	def n(self):
+		return self.__name
+
+	@property
+	def side(self):
+		return self.__side
+
+	@property
+	def s(self):
+		return self.__side
+
+	@property
+	def description(self):
+		return self.__des
+
+	@property
+	def des(self):
+		return self.__des
+
+	@property
+	def index(self):
+		return self.__index
+
+	@property
+	def i(self):
+		return self.__index
+
+	@property
+	def zero(self):
+		return self.__zero
+
+	@property
+	def drive(self):
+		return self.__drive
+
+	@property
+	def space(self):
+		return self.__space
+
+	@property
+	def offsets(self):
+		return self.__offsets
+
+	@property
+	def output(self):
+		return self.__output
+	
+	@property
+	def sub(self):
+		return self.__sub
+
+	@property
+	def localMatrix(self):
+		matrix = cmds.getAttr(self.__localMatrixAttr)
+		return matrix
+
+	@property
+	def localMatrixAttr(self):
+		return self.__localMatrixAttr
+
+	@property
+	def worldMatrix(self):
+		matrix = cmds.getAttr(self.__worldMatrixAttr)
+		return self.__worldMatrixAttr
+
+	@property
+	def worldMatrixAttr(self):
+		return self.__worldMatrixAttr
+	
+	@side.setter
+	def side(self, key):
+		self.__side = key
+		self.__update_control_name()
+
+	@s.setter
+	def s(self, key):
+		self.__side = key
+		self.__update_control_name()
+
+	@description.setter
+	def description(self, key):
+		self.__des = key
+		self.__update_control_name()
+
+	@des.setter
+	def des(self, key):
+		self.__des = key
+		self.__update_control_name()
+
+	@index.setter
+	def index(self, num):
+		self.__index = num
+		self.__update_control_name()
+
+	@i.setter
+	def i(self, num):
+		self.__index = num
+		self.__update_control_name()
+
+	@offsets.setter
+	def offsets(self, num):
+		if isinstance(num, int) and num>0:
+			self.__update_offsets(num)
+		else:
+			Logger.warn('Given number: {} is invalid, must be an integer'.format(num))
+
+	@sub.setter
+	def sub(self, key):
+		self.__update_sub(key)
+
+	def __get_control_info(ctrl):
 		'''
 		get control's information
 
@@ -55,6 +170,159 @@ class Control(object):
 		self.__des = CtrlNamer.description
 		self.__index = CtrlNamer.index
 
+		# zero
+		CtrlNamer.type = naming.Type.zero
+		self.__zero = CtrlNamer.name
+
+		# drive
+		CtrlNamer.type = naming.Type.drive
+		self.__drive = CtrlNamer.name
+
+		# space
+		CtrlNamer.type = naming.Type.space
+		self.__space = CtrlNamer.name
+
+		# controlShape
+		CtrlNamer.type = naming.Type.controlShape
+		self.__ctrlShape = CtrlNamer.name
+
+		# output
+		CtrlNamer.type = naming.Type.output
+		self.__output = CtrlNamer.name
+
+		# offsets
+		CtrlNamer.type = naming.Type.offset
+		self.__offsets = cmds.ls(CtrlNamer.name+'_???', type='transform')
+
+		# sub
+		CtrlNamer.type = naming.Type.control
+		CtrlNamer.part = CtrlNamer.part+'Sub'
+		if cmds.objExists(CtrlNamer.name):
+			self.__sub = CtrlNamer.name
+			CtrlNamer.type = naming.Type.controlShape
+			self.__subShape = CtrlNamer.name
+		else:
+			self.__sub = None
+			self.__subShape = None
+
+		self.__localMatrixAttr = self.__name+'.matrixLocal'
+		self.__worldMatrixAttr = self.__name+'.matrixWorld'
+		self.__multMatrix = cmds.listConnections(self.__localMatrixAttr, 
+												 s=True, d=False, p=False)[0]
+
+	def __update_control_name(self):
+		CtrlNamer = naming.Name(type=naming.Type.zero, side=self.__side,
+								description=self.__des, index=self.__index)
+		# zero
+		self.__zero = cmds.rename(self.__zero, CtrlNamer.name)
+
+		# drive
+		CtrlNamer.type = naming.Type.drive
+		self.__drive = cmds.rename(self.__drive, CtrlNamer.name)
+
+		# space
+		CtrlNamer.type = naming.Type.space
+		self.__space = cmds.rename(self.__space, CtrlNamer.name)
+
+		# offsets
+		CtrlNamer.type = naming.Type.offset
+		for i, offset in enumerate(self.__offsets):
+			CtrlNamer.suffix = i+1
+			self.__offsets[i] = cmds.rename(self.__offsets[i], CtrlNamer.name)
+
+		# control
+		CtrlNamer.type = naming.Type.control
+		CtrlNamer.suffix = None
+		CtrlNamer.index = self.__index
+		self.__name = cmds.rename(self.__name, CtrlNamer.name)
+
+		# control shape
+		CtrlNamer.type = naming.Type.controlShape
+		self.__ctrlShape = cmds.rename(self.__ctrlShape, CtrlNamer.name)
+
+		# output
+		CtrlNamer.type = naming.Type.output
+		self.__output = cmds.rename(self.__output, CtrlNamer.name)
+
+		# sub
+		if self.__sub:
+			CtrlNamer.type = naming.Type.control
+			CtrlNamer.part = CtrlNamer.part + 'Sub'
+			self.__sub = cmds.rename(self.__sub, CtrlNamer.name)
+			CtrlNamer.type = naming.Type.controlShape
+			self.__subShape = cmds.rename(self.__subShape, CtrlNamer.name)
+
+		# mult matrix node
+		CtrlNamer.type = naming.Type.multMatrix
+		CtrlNamer.part = CtrlNamer.part.replace('Sub', 'LocalMatrix')
+		self.__multMatrix = cmds.rename(self.__multMatrix, CtrlNamer.name)
+
+	def __update_offsets(self, num):
+		offsetNum = len(self.__offsets)
+		childs = cmds.listRelatives(self.__offsets[-1], c=True, type='transform')
+		if num < offsetNum:
+			# delete extra offsets
+			cmds.parent(childs, self.__offsets[num-1])
+			cmds.delete(self.__offsets[num])
+			self.__offsets = self.__offsets[:num]
+		elif num > offsetNum:
+			CtrlNamer = naming.Name(self.__offsets[-1])
+			parent = self.__offsets[-1]
+			for i in range(num-offsetNum):
+				CtrlNamer.suffix = CtrlNamer.suffix+1
+				offset = transforms.create(CtrlNamer.name, parent=parent,
+										   pos=parent)
+				self.__offsets.append(offset)
+				parent = offset
+			# reparent childs
+			cmds.parent(childs, self.__offsets[-1])
+
+	def __update_sub(self, key):
+		if not key and self.__sub:
+			# delete sub
+			cmds.delete(self.__sub)
+			cmds.deleteAttr(self.__name+'.subControlVis')
+			self.__sub = None
+			self.__subShape = None
+		elif key and not self.__sub:
+			# add sub
+			CtrlNamer = naming.Name(type=naming.Type.control, side=self.__side,
+									description=self.__des+'Sub', index=self.__index)
+
+			# get lock hide attrs from control
+			lockHide = []
+			for attr in attributes.Attr.all:
+				if not attributes.attr_in_channelBox(self.__name, attr):
+					lockHide.append(attr)
+
+			self.__sub = transforms.create(CtrlNamer.name, parent=self.__name,
+										   pos=self.__name, lockHide=lockHide)
+
+			# connect output
+			attributes.connect_attrs(attributes.Attr.all+['rotateOrder'],
+									 attributes.Attr.all+['rotateOrder'],
+									 driver=self.__sub, driven=self.__output)
+			
+			# sub vis
+			attributes.add_attrs(self.__name, 'subControlVis', attributeType='long',
+								 range=[0,1], defaultValue=0, keyable=False,
+								 channelBox=True)
+			cmds.connect_attr(self.__name+'.subControlVis', self.__sub+'.v', force=True)
+
+			# unlock rotate order
+			attributes.unlock_attrs(self.__sub, 'rotateOrder', channelBox=True)
+
+			# shape
+			self.match_sub_ctrl_shape()
+			CtrlNamer.type = naming.Type.control
+			self.__subShape = CtrlNamer.name
+
+	def match_sub_ctrl_shape(self):
+		if self.__sub:
+			ctrlShapeInfo = curves.get_curve_info(self.__ctrlShape)
+			color = cmds.getAttr(self.__ctrlShape+'.overrideColor')
+			__add_ctrl_shape(self.__sub, shapeInfo=ctrlShapeInfo, size=0.9, 
+							 color=color, colorOverride=True)
 
 #=================#
 #    FUNCTION     #
@@ -65,7 +333,7 @@ def create(description, **kwargs):
 
 	hierarchy:
 	-zero
-	--driver
+	--drive
 	---space
 	----offset_001
 	-----offset_002
@@ -114,7 +382,7 @@ def create(description, **kwargs):
 
 	# build hierarchy
 	transformNodes = []
-	for trans in ['zero', 'driver', 'space', 'control',
+	for trans in ['zero', 'drive', 'space', 'control',
 				  'output']:
 		Namer.type = getattr(naming.Type, trans)
 		transform = transforms.create(Namer.name, parent=parent)
@@ -157,7 +425,6 @@ def create(description, **kwargs):
 		cmds.connect_attr(ctrl+'.subControlVis', sub+'.v', force=True)
 
 	# lock hide
-	print lockHide
 	attributes.lock_hide_attrs(ctrlList, lockHide)
 
 	# unlock rotate order
@@ -169,8 +436,8 @@ def create(description, **kwargs):
 	cmds.connectAttr(transformNodes[-1]+'.worldMatrix[0]', ctrl+'.matrixWorld')
 	nodeUtils.mult_matrix([transformNodes[-1]+'.worldMatrix[0]', 
 						   transformNodes[0]+'.worldInverseMatrix[0]'], 
-						   attrs=ctrl+'.matrixWorld', side=side, 
-						   description=description+'WorldMatrix', index=index)
+						   attrs=ctrl+'.matrixLocal', side=side, 
+						   description=description+'LocalMatrix', index=index)
 
 	# set pos
 	# match pos
@@ -257,21 +524,26 @@ def __add_ctrl_shape(ctrl, **kwargs):
 	color = kwargs.get('color', None)
 	colorOverride = kwargs.get('colorOverride', False)
 	transform = kwargs.get('transform', None)
+	shapeInfo = kwargs.get('shapeInfo', None)
 
-	shapeInfo = SHAPE_CONFIG[shape]
+	if not shapeInfo:
+		shapeInfo = SHAPE_CONFIG[shape]
 
 	if transform and cmds.objExists(ctrl):
-		return
-	if cmds.objExists(ctrl) and cmds.listRelatives(ctrl, s=True):
+		for trans in transform:
+			s = cmds.listRelatives(trans, s=True)
+			if not ctrl in s:
+				cmds.parent(ctrl, trans, shape=True, addObject=True)
 		return
 
 	crvTrans, crvShape = curves.create_curve('TEMP_CRV', shapeInfo['controlVertices'], 
 							shapeInfo['knots'], degree=shapeInfo['degree'], form=shapeInfo['form'])
 
 	if not transform:
-		print ctrl
 		Namer = naming.Namer(ctrl)
 		Namer.type = naming.Type.controlShape
+		if cmds.objExists(Namer.name):
+			cmds.delete(Namer.name)
 		crvShape = cmds.rename(crvShape, Namer.name)
 		transform = [ctrl]
 
@@ -280,7 +552,8 @@ def __add_ctrl_shape(ctrl, **kwargs):
 			sideCol = SIDE_CONFIG[Namer.side]
 			color = COLOR_CONFIG[sideCol]
 		else:
-			color = COLOR_CONFIG[color]
+			if isinstance(color, basestring):
+				color = COLOR_CONFIG[color]
 		cmds.setAttr(crvShape+'.overrideEnabled', 1)
 		cmds.setAttr(crvShape+'.overrideColor', color)
 		

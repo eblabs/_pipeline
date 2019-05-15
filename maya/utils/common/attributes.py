@@ -192,6 +192,22 @@ def add_attrs(node, attrs, **kwargs):
 			else:
 				Logger.warn('{} already havs attribute: {}'.format(n, attr))
 
+def attr_in_channelBox(node, attr):
+	'''
+	check if given attr is in channelBox
+
+	Args:
+		node(str)
+		attr(str)
+	Returns:
+		check(bool)
+	'''
+	attr = '{}.{}'.format(node, attr)
+	keyable = cmds.getAttr(attr, keyable=True)
+	channelBox = cmds.getAttr(attr, cb=True)
+	check = keyable or channelBox
+	return check
+
 #=================#
 #  SUB FUNCTION   #
 #=================#
