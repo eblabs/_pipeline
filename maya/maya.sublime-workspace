@@ -523,7 +523,7 @@
 			"file": "utils/rigging/controls.py",
 			"settings":
 			{
-				"buffer_size": 15789,
+				"buffer_size": 15874,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -845,6 +845,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"__get_control_info",
 			"__add_ctrl_shape",
 			"driver",
 			"drive",
@@ -971,8 +972,7 @@
 			"V2",
 			"convertRotationToRadians",
 			"getNodeTransformInfo",
-			"transformSnap",
-			"posParent"
+			"transformSnap"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1103,15 +1103,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 15789,
+						"buffer_size": 15874,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7850,
-								7850
+								3908,
+								3908
 							]
 						],
 						"settings":
@@ -1120,7 +1120,7 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 11335.0,
+						"translation.y": 6578.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,

@@ -155,7 +155,7 @@ class Control(object):
 	def sub(self, key):
 		self.__update_sub(key)
 
-	def __get_control_info(ctrl):
+	def __get_control_info(self, ctrl):
 		'''
 		get control's information
 
@@ -196,7 +196,7 @@ class Control(object):
 
 		# sub
 		CtrlNamer.type = naming.Type.control
-		CtrlNamer.part = CtrlNamer.part+'Sub'
+		CtrlNamer.description = CtrlNamer.description+'Sub'
 		if cmds.objExists(CtrlNamer.name):
 			self.__sub = CtrlNamer.name
 			CtrlNamer.type = naming.Type.controlShape
@@ -361,6 +361,9 @@ def create(description, **kwargs):
 		color(string/int)[None]: control shape's color, follow side preset if None
 		colorSub(string/int)[None]: sub control shape's color, follow control's color if None
 		lockHide(list)[]: lock and hide control's attributes
+
+	Returns:
+		Control(obj): Control object
 	'''
 
 	# get vars
@@ -457,6 +460,8 @@ def create(description, **kwargs):
 	# add shape
 	for c, col, scale in zip(ctrlList, [color, colorSub], [size, size*0.9]):
 		__add_ctrl_shape(c, shape=shape, size=scale, color=col)
+
+	return Control(ctrl)
 
 def transform_ctrl_shape(ctrlShapes, **kwargs):
 	'''
