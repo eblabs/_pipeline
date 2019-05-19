@@ -24,7 +24,7 @@ from . import Logger
 #=================#
 #    FUNCTION     #
 #=================#
-def node(*args, **kwargs):
+def node(**kwargs):
 	'''
 	Create maya node
 

@@ -12,14 +12,14 @@ import variables
 #=================#
 from . import Logger
 
-ATTR_CONFIG = {'all': ['tx', 'ty', 'tz',
-					   'rx', 'ry', 'rz',
-					   'sx', 'sy', 'sz', 'v'],
-			   'translate': ['tx', 'ty', 'tz'],
-			   'rotate': ['rx', 'ry', 'rz'],
-			   'scale': ['sx', 'sy', 'sz'],
-			   'vis': ['v'],
-			   'scaleVis': ['sx', 'sy', 'sz', 'v']}
+ATTR_CONFIG = {'all': ['translateX', 'translateY', 'translateZ',
+					   'rotateX', 'rotateY', 'rotateZ',
+					   'scaleX', 'scaleY', 'scaleZ', 'visibility'],
+			   'translate': ['translateX', 'translateY', 'translateZ'],
+			   'rotate': ['rotateX', 'rotateY', 'rotateZ'],
+			   'scale': ['scaleX', 'scaleY', 'scaleZ'],
+			   'vis': ['visibility'],
+			   'scaleVis': ['scaleX', 'scaleY', 'scaleZ', 'visibility']}
 
 #=================#
 #      CLASS      #
@@ -45,7 +45,7 @@ def connect_attrs(driverAttrs, drivenAttrs, **kwargs):
 	Kwargs:
 		driver(str): override the node in driverAttrs
 		driven(str): override the drivenAttrs
-		force(bool): override the connection/lock status
+		force(bool)[True]: override the connection/lock status
 	'''
 	# get vars
 	driver = variables.kwargs('driver', None, kwargs)
@@ -129,12 +129,13 @@ def add_attrs(node, attrs, **kwargs):
 		attrs(str/list): add attrs
 	Kwargs:
 		attributeType(str)['float']: 'bool', 'long', 'enum', 'float', 'double', 
-						    		 'string', 'matrix'
+						    		 'string', 'matrix', 'message'
 		range(list)[[]]:min/max value
 		defaultValue(float/int/list)[None]: default value
 		keyable(bool)[True]: set attr keyable
 		channelBox(bool)[True]: show attr in channel box
 		enumName(str)['']: enum attr name
+		multi(m)[False]: add attr as a multi-attribute
 		lock(bool)[False]: lock attr  
 	'''
 	# get vars
@@ -144,6 +145,7 @@ def add_attrs(node, attrs, **kwargs):
 	keyable = variables.kwargs('keyable', True, kwargs, shortName='k')
 	channelBox = variables.kwargs('channelBox', True, kwargs, shortName='cb')
 	enumName = variables.kwargs('enumName', '', kwargs, shortName='enum')
+	multi = variables.kwargs('multi', False, kwargs, shortName='m')
 	lock = variables.kwargs('lock', False, kwargs)
 	
 	if isinstance(node, basestring):
@@ -163,7 +165,8 @@ def add_attrs(node, attrs, **kwargs):
 		attrTypeKey = 'dataType'
 
 	attrDict = {attrTypeKey: attrType,
-				'keyable': keyable}
+				'keyable': keyable,
+				'multi': multi}
 
 	for n in node:
 		for attr, val in zip(attrs, defaultVal):
@@ -181,16 +184,62 @@ def add_attrs(node, attrs, **kwargs):
 					attrDict.update(enumName)
 				# add attr
 				cmds.addAttr(n, **attrDict)
-				# set default value for string/matrix
-				if attrType in ['string', 'matrix'] and val:
-					cmds.setAttr('{}.{}'.format(n, attr), val, type=attrType)
-				# lock
-				cmds.setAttr('{}.{}'.format(n, attr), lock=lock)
-				# channelBox
-				if attrType not in ['string', 'matrix'] and channelBox:
-					cmds.setAttr('{}.{}'.format(n, attr), channelBox=channelBox)
+				# skip message
+				if attrType != 'message':
+					# set default value for string/matrix
+					if attrType in ['string', 'matrix'] and val:
+						cmds.setAttr('{}.{}'.format(n, attr), val, type=attrType)
+					# lock
+					cmds.setAttr('{}.{}'.format(n, attr), lock=lock)
+					# channelBox
+					if attrType not in ['string', 'matrix'] and channelBox:
+						cmds.setAttr('{}.{}'.format(n, attr), channelBox=channelBox)
 			else:
 				Logger.warn('{} already havs attribute: {}'.format(n, attr))
+
+def set_attrs(attrs, value, node=None, type=None, force=True):
+	'''
+	set attrs
+
+	Args:
+		attrs(str/list): attrs need to be set
+		value: attrs values
+	Kwargs:
+		node(str): node name to override the attrs
+		type(str): if need to be specific
+		force(bool)[True]: force set value if locked
+	'''
+	if isinstance(attrs, basestring):
+		attrs = [attrs]
+	attrsNum = len(attrs)
+	if not isinstance(value, list):
+		value = [value]*attrsNum
+	elif type='matrix' and not isinstance(value[0], list):
+		value = [value]*attrsNum
+	for attr, val in zip(attrs, value):
+		attrCompose = __check_attr_exists(attr, node=node)
+		if attrCompose:
+			# check if connected
+			connections = cmds.listConnections(attrCompose, source = True, 
+									   destination = False, plugs = True, 
+									   skipConversionNodes = True)
+			if not connections:
+				setAttrDict={}
+				if type in ['matrix', 'string']:
+					setAttrDict.update({'type': type})
+				# check if locked
+				lock = cmds.getAttr(attrCompose, lock=True)
+				if not lock or force:
+					cmds.setAttr(attrCompose, lock=False)
+					cmds.setAttr(attrCompose, val, **setAttrDict)
+					if lock:
+						cmds.setAttr(attrCompose, lock=True)
+				else:
+					Logger.warn('{} is locked, skipped'.format(attrCompose))
+			else:
+				Logger.warn('{} has input connection: {}, skipped'.format(attrCompose, connections[0]))
+		else:
+			Logger.warn('{} does not exist, skipped'.format(attrCompose))
 
 def attr_in_channelBox(node, attr):
 	'''
@@ -215,9 +264,12 @@ def __check_attr_exists(attr, node=None):
 	'''
 	Check if attr exists
 	'''
+	attrSplit = attr.split('.')
 	if not node:
-		node = attr.split('.')[0]
-		attr = attr.replace(node+'.', '')
+		node = attrSplit[0]
+	if len(attrSplit)>1:
+		attr = attr.replace(attrSplit[0]+'.', '')
+
 	try:
 		cmds.getAttr('{}.{}'.format(node, attr))
 		return '{}.{}'.format(node, attr)

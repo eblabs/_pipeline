@@ -100,7 +100,7 @@ def inverse_matrix(matrix):
 	inverse numpy matrix
 
 	Args:
-		matrix(np_array): numpy array
+		matrix(np_array/list)
 	Returns:
 		array(list): list
 	'''

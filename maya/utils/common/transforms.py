@@ -104,7 +104,6 @@ def parent_node(node, parent):
 		else:
 			cmds.parent(n, parent)
 
-
 def bounding_box_info(nodes):
 	'''
 	get given nodes/pos bounding box info
