@@ -31,7 +31,7 @@ def parent(nodes, parent):
 	'''
 	if isinstance(nodes, basestring):
 		nodes=[nodes]
-	if cmds.objExists(parent):
+	if parent and cmds.objExists(parent):
 		for n in nodes:
 			p = cmds.listRelatives(n, p=True)
 			if not p or p[0] != parent:

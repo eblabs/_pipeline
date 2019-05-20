@@ -15,6 +15,9 @@ from . import Logger
 ATTR_CONFIG = {'all': ['translateX', 'translateY', 'translateZ',
 					   'rotateX', 'rotateY', 'rotateZ',
 					   'scaleX', 'scaleY', 'scaleZ', 'visibility'],
+			   'transform': ['translateX', 'translateY', 'translateZ',
+					   		 'rotateX', 'rotateY', 'rotateZ',
+					   		 'scaleX', 'scaleY', 'scaleZ'],
 			   'translate': ['translateX', 'translateY', 'translateZ'],
 			   'rotate': ['rotateX', 'rotateY', 'rotateZ'],
 			   'scale': ['scaleX', 'scaleY', 'scaleZ'],
@@ -147,14 +150,14 @@ def add_attrs(node, attrs, **kwargs):
 	enumName = variables.kwargs('enumName', '', kwargs, shortName='enum')
 	multi = variables.kwargs('multi', False, kwargs, shortName='m')
 	lock = variables.kwargs('lock', False, kwargs)
-	
+
 	if isinstance(node, basestring):
 		node = [node]
 	if isinstance(attrs, basestring):
 		attrs = [attrs]
 	if not isinstance(defaultVal, list):
 		defaultVal = [defaultVal]*len(attrs)
-	elif not isinstance(defaultVal[0], list) and attributeType == 'matrix':
+	elif not isinstance(defaultVal[0], list) and attrType == 'matrix':
 		defaultVal = [defaultVal]*len(attrs)
 
 	if not channelBox or lock:
@@ -164,21 +167,20 @@ def add_attrs(node, attrs, **kwargs):
 	else:
 		attrTypeKey = 'dataType'
 
-	attrDict = {attrTypeKey: attrType,
-				'keyable': keyable,
-				'multi': multi}
-
 	for n in node:
 		for attr, val in zip(attrs, defaultVal):
+			attrDict = {attrTypeKey: attrType,
+						'keyable': keyable,
+						'multi': multi}
 			# check if attr exists
 			if not cmds.attributeQuery(attr, node=n, ex=True):
 				attrDict.update({'longName': attr})
-				if val:
+				if val != None:
 					attrDict.update({'defaultValue': val})
 				if attrRange:
-					if attrRange[0]:
+					if attrRange[0] != None:
 						attrDict.update({'minValue': attrRange[0]})
-					if attrRange[1]:
+					if attrRange[1] != None:
 						attrDict.update({'maxValue': attrRange[1]})
 				if enumName:
 					attrDict.update(enumName)
@@ -197,7 +199,7 @@ def add_attrs(node, attrs, **kwargs):
 			else:
 				Logger.warn('{} already havs attribute: {}'.format(n, attr))
 
-def set_attrs(attrs, value, node=None, type=None, force=True):
+def set_attrs(attrs, value, **kwargs):
 	'''
 	set attrs
 
@@ -209,27 +211,31 @@ def set_attrs(attrs, value, node=None, type=None, force=True):
 		type(str): if need to be specific
 		force(bool)[True]: force set value if locked
 	'''
+	_node = variables.kwargs('node', '', kwargs, shortName='n')
+	_type = variables.kwargs('type', '', kwargs, shortName='t')
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
+	
 	if isinstance(attrs, basestring):
 		attrs = [attrs]
 	attrsNum = len(attrs)
 	if not isinstance(value, list):
 		value = [value]*attrsNum
-	elif type='matrix' and not isinstance(value[0], list):
+	elif _type=='matrix' and not isinstance(value[0], list):
 		value = [value]*attrsNum
 	for attr, val in zip(attrs, value):
-		attrCompose = __check_attr_exists(attr, node=node)
+		attrCompose = __check_attr_exists(attr, node=_node)
 		if attrCompose:
 			# check if connected
-			connections = cmds.listConnections(attrCompose, source = True, 
-									   destination = False, plugs = True, 
-									   skipConversionNodes = True)
+			connections = cmds.listConnections(attrCompose, source=True, 
+									   destination=False, plugs=True, 
+									   skipConversionNodes=True)
 			if not connections:
 				setAttrDict={}
-				if type in ['matrix', 'string']:
-					setAttrDict.update({'type': type})
+				if _type in ['matrix', 'string']:
+					setAttrDict.update({'type': _type})
 				# check if locked
 				lock = cmds.getAttr(attrCompose, lock=True)
-				if not lock or force:
+				if not lock or _force:
 					cmds.setAttr(attrCompose, lock=False)
 					cmds.setAttr(attrCompose, val, **setAttrDict)
 					if lock:

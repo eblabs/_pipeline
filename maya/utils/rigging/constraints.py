@@ -44,7 +44,7 @@ def matrix_connect(inputMatrix, nodes, **kwargs):
 	attrName = cmds.ls(inputMatrix)[0].split('.')[-1]
 	
 	NameDriver = naming.Namer(driver)
-	NameDriver.type = naming.type.decomposeMatrix
+	NameDriver.type = naming.Type.decomposeMatrix
 	NameDriver.description = NameDriver.description + attrName[0].upper() + attrName[1:]
 
 	desOffset = NameDriver.description+'Offset'
@@ -57,8 +57,8 @@ def matrix_connect(inputMatrix, nodes, **kwargs):
 
 	driverAttrs = []
 	drivenAttrs = []
-	for attr in attributes.Attr.all:
-		attrShort = attr[0]+attr[-1].lower
+	for attr in attributes.Attr.transform:
+		attrShort = attr[0]+attr[-1].lower()
 		if attr not in skip and attrShort not in skip:
 			driverAttrs.append('output{}{}'.format(attr[0].upper(), attr[1:]))
 			drivenAttrs.append(attr)
