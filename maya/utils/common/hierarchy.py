@@ -21,7 +21,7 @@ from . import Logger
 #=================#
 #    FUNCTION     #
 #=================#
-def parent(nodes, parent):
+def parent_node(nodes, parent):
 	'''
 	parent nodes under given parent node
 
@@ -37,7 +37,7 @@ def parent(nodes, parent):
 			if not p or p[0] != parent:
 				cmds.parent(n, parent)
 
-def parent_chain(nodes, reverse=False):
+def parent_chain(nodes, reverse=False, parent=None):
 	'''
 	chain parent given nodes
 
@@ -45,8 +45,16 @@ def parent_chain(nodes, reverse=False):
 		nodes(list): given nodes
 	Kwargs:
 		reverse(bool)[False]: reverse parent order
+		parent(str): parent chain
+	Return:
+		nodes(list)
 	'''
 	if reverse:
 		nodes.reverse()
-	for i in nodes[1:]:
-		parent(nodes[i+1], nodes[i])
+	nodes.append(parent)
+	num = len(nodes)
+	for i in range(num-1):
+		parent_node(nodes[i], nodes[i+1])
+	return nodes[:-1]
+
+

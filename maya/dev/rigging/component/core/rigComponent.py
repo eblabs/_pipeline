@@ -124,7 +124,7 @@ class RigComponent(object):
 		self._add_attr_from_dict(attrDict)
 
 		# parent hierarchy
-		hierarchy.parent(self._rigComponent, self._parent)
+		hierarchy.parent_node(self._rigComponent, self._parent)
 		cmds.parent(self._rigLocalGrp, self._rigWorldGrp, self._subComponentsGrp, self._rigComponent)
 		cmds.parent(self._controlsGrp, self._jointsGrp, self._nodesLocalGrp, self._rigLocalGrp)
 		cmds.parent(self._nodesHideGrp, self._nodesShowGrp, self._rigWorldGrp)

@@ -92,15 +92,15 @@ def parent_node(node, parent):
 	if isinstance(node, basestring):
 		node = [node]
 	if not cmds.objExists(parent):
-		Logger.warn('{} does not exist'.format(parent))
+		Logger.warning('{} does not exist'.format(parent))
 		return
 	for n in node:
 		if not cmds.objExists(n):
-			Logger.warn('{} does not exist'.format(n))
+			Logger.warning('{} does not exist'.format(n))
 		# check parent
 		p = cmds.listRelatives(n, p=True)
 		if p and p[0]==parent:
-			Logger.warn('{} is parented to {} already'.format(n, parent))
+			Logger.warning('{} is parented to {} already'.format(n, parent))
 		else:
 			cmds.parent(n, parent)
 

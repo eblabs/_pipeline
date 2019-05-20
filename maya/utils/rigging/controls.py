@@ -149,7 +149,7 @@ class Control(object):
 		if isinstance(num, int) and num>0:
 			self.__update_offsets(num)
 		else:
-			Logger.warn('Given number: {} is invalid, must be an integer'.format(num))
+			Logger.warning('Given number: {} is invalid, must be an integer'.format(num))
 
 	@sub.setter
 	def sub(self, key):
@@ -518,7 +518,7 @@ def transform_ctrl_shape(ctrlShapes, **kwargs):
 			curves.set_curve_points(shape, cvPnts)
 
 		else:
-			Logger.warn('{} does not exist'.format(shape))
+			Logger.warning('{} does not exist'.format(shape))
 
 #=================#
 #  SUB FUNCTION   #

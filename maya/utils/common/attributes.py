@@ -197,7 +197,7 @@ def add_attrs(node, attrs, **kwargs):
 					if attrType not in ['string', 'matrix'] and channelBox:
 						cmds.setAttr('{}.{}'.format(n, attr), channelBox=channelBox)
 			else:
-				Logger.warn('{} already havs attribute: {}'.format(n, attr))
+				Logger.warning('{} already havs attribute: {}'.format(n, attr))
 
 def set_attrs(attrs, value, **kwargs):
 	'''
@@ -241,11 +241,11 @@ def set_attrs(attrs, value, **kwargs):
 					if lock:
 						cmds.setAttr(attrCompose, lock=True)
 				else:
-					Logger.warn('{} is locked, skipped'.format(attrCompose))
+					Logger.warning('{} is locked, skipped'.format(attrCompose))
 			else:
-				Logger.warn('{} has input connection: {}, skipped'.format(attrCompose, connections[0]))
+				Logger.warning('{} has input connection: {}, skipped'.format(attrCompose, connections[0]))
 		else:
-			Logger.warn('{} does not exist, skipped'.format(attrCompose))
+			Logger.warning('{} does not exist, skipped'.format(attrCompose))
 
 def attr_in_channelBox(node, attr):
 	'''
@@ -280,7 +280,7 @@ def __check_attr_exists(attr, node=None):
 		cmds.getAttr('{}.{}'.format(node, attr))
 		return '{}.{}'.format(node, attr)
 	except:
-		Logger.warn('{} does not have attr {}'.format(node, attr))
+		Logger.warning('{} does not have attr {}'.format(node, attr))
 		return None
 
 def _connect_single_attr(driverAttr, drivenAttr, driver=None, driven=None, force=True):
@@ -316,6 +316,6 @@ def _connect_single_attr(driverAttr, drivenAttr, driver=None, driven=None, force
 				cmds.setAttr(attrConnect[1], lock=True)
 		else:
 			if inputPlug:
-				Logger.warn('{} already has connection from {}, skipped'.format(attrConnect[1], inputPlug[0]))
+				Logger.warning('{} already has connection from {}, skipped'.format(attrConnect[1], inputPlug[0]))
 			elif lock:
-				logger.warn('{} is locked, skipped'.format(attrConnect[1]))
+				logger.warning('{} is locked, skipped'.format(attrConnect[1]))
