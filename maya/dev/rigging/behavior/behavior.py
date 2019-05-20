@@ -27,6 +27,23 @@ class Behavior(object):
 	base behavior class
 
 	normally rig component will call behavior in class to do the rig
+	
+	Kwargs:
+		side(str)
+		description(str)
+		index(int)
+		blueprintJoints(list)
+		jointSuffix(str)
+		createJoints(bool): False will use blueprint joints as joints directly
+		offsets(int): controls' offset groups
+		controlSize(float)
+		controlColor(str/int): None will follow the side's preset
+		subControl(bool)[True]
+		controlsGrp(str): transform node to parent controls
+		jointsGrp(str): transform node to parent joints
+		nodesLocalGrp(str): transform node to parent local rig nodes
+		nodesHideGrp(str): transform node to parent hidden nodes
+		nodesShowGrp(str): transform node to parent visible nodes
 	"""
 	def __init__(self, **kwargs):
 		self._side = variables.kwargs('side', 'middle', kwargs, shortName='s')
@@ -37,7 +54,9 @@ class Behavior(object):
 		self._createJoints = variables.kwargs('createJoints', True, kwargs, shortName='create')
 
 		self._offsets = variables.kwargs('offsets', 1, kwargs, shortName=naming.Type.offset)
-		self._controlSize = variables.kwargs('controlSize', 1, kwargs, shortName='ctrlSize')
+		self._ctrlSize = variables.kwargs('controlSize', 1, kwargs, shortName='size')
+		self._ctrlCol = variables.kwargs('controlColor', None, kwargs, shortName='color')
+		self._sub = variables.kwargs('subControl', True, kwargs, shortName='sub')
 
 		self._controlsGrp = variables.kwargs('controlsGrp', '', kwargs, shortName=naming.Type.controlsGrp)
 		self._jointsGrp = variables.kwargs('jointsGrp', '', kwargs, shortName=naming.Type.jointsGrp)

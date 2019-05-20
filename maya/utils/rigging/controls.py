@@ -383,6 +383,9 @@ def create(description, **kwargs):
 	Namer = naming.Namer(type=naming.Type.control, side=side,
 						 description=description, index=index)
 
+	if attributes.Attr.vis not in lockHide:
+		lockHide.append(attributes.Attr.vis)
+
 	# build hierarchy
 	transformNodes = []
 	for trans in ['zero', 'drive', 'space', 'control',
@@ -404,7 +407,6 @@ def create(description, **kwargs):
 
 	# parent control to parent
 	cmds.parent(ctrl, parent)
-
 
 	# sub control
 	if sub:
