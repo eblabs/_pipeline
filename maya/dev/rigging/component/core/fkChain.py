@@ -32,7 +32,7 @@ from . import Logger, COMPONENT_PATH
 #=================#
 #      CLASS      #
 #=================#
-class FkChain(object):
+class FkChain(component.Component):
 	"""
 	fk chain component base class
 	

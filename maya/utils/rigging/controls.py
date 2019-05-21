@@ -383,8 +383,8 @@ def create(description, **kwargs):
 	Namer = naming.Namer(type=naming.Type.control, side=side,
 						 description=description, index=index)
 
-	if attributes.Attr.vis not in lockHide:
-		lockHide.append(attributes.Attr.vis)
+	if attributes.Attr.vis[0] not in lockHide:
+		lockHide.append(attributes.Attr.vis[0])
 
 	# build hierarchy
 	transformNodes = []
@@ -415,19 +415,19 @@ def create(description, **kwargs):
 		Namer.index = index
 		Namer.suffix = None
 
-		sub = transforms.create(sub, parent=ctrl)
+		sub = transforms.create(Namer.name, parent=ctrl)
 		ctrlList.append(sub)
 
 		# connect output
-		attributes.connect_attrs(attributes.Attr.all+['rotateOrder'],
-								 attributes.Attr.all+['rotateOrder'],
+		attributes.connect_attrs(attributes.Attr.transform+['rotateOrder'],
+								 attributes.Attr.transform+['rotateOrder'],
 								 driver=sub, driven=transformNodes[4])
 		
 		# sub vis
 		attributes.add_attrs(ctrl, 'subControlVis', attributeType='long',
 							 range=[0,1], defaultValue=0, keyable=False,
 							 channelBox=True)
-		cmds.connect_attr(ctrl+'.subControlVis', sub+'.v', force=True)
+		attributes.connect_attrs(ctrl+'.subControlVis', sub+'.v', force=True)
 
 	# lock hide
 	attributes.lock_hide_attrs(ctrlList, lockHide)
@@ -438,7 +438,11 @@ def create(description, **kwargs):
 	# add output attrs
 	attributes.add_attrs(ctrl, ['matrixLocal', 'matrixWorld'], attributeType='matrix')
 
-	cmds.connectAttr(transformNodes[-1]+'.worldMatrix[0]', ctrl+'.matrixWorld')
+	nodeUtils.mult_matrix([transformNodes[-1]+'.worldMatrix[0]', 
+						   transformNodes[0]+'.parentInverseMatrix[0]'], 
+						   attrs=ctrl+'.matrixWorld', side=side,
+						   description=description+'WorldMatrix', index=index)
+
 	nodeUtils.mult_matrix([transformNodes[-1]+'.worldMatrix[0]', 
 						   transformNodes[0]+'.worldInverseMatrix[0]'], 
 						   attrs=ctrl+'.matrixLocal', side=side, 
@@ -448,16 +452,16 @@ def create(description, **kwargs):
 	# match pos
 	if pos:
 		if isinstance(pos, basestring):
-			cmds.matchTransform(zero, pos, pos=True, rot=True)
+			cmds.matchTransform(transformNodes[0], pos, pos=True, rot=True)
 		else:
 			if isinstance(pos[0], basestring):
-				cmds.matchTransform(zero, pos[0], pos=True, rot=False)
+				cmds.matchTransform(transformNodes[0], pos[0], pos=True, rot=False)
 			else:
-				cmds.xform(zero, t=pos[0], ws=True)
+				cmds.xform(transformNodes[0], t=pos[0], ws=True)
 			if isinstance(pos[1], basestring):
-				cmds.matchTransform(zero, pos[1], pos=False, rot=True)
+				cmds.matchTransform(transformNodes[0], pos[1], pos=False, rot=True)
 			else:
-				cmds.xform(zero, rot=pos[1], ws=True)
+				cmds.xform(transformNodes[0], rot=pos[1], ws=True)
 
 	# add shape
 	for c, col, scale in zip(ctrlList, [color, colorSub], [size, size*0.9]):

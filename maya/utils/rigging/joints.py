@@ -111,7 +111,6 @@ def create_on_node(node, search, replace, **kwargs):
 	Namer = naming.Namer(jnt)
 	Namer.description = Namer.description + suffix
 	jnt = Namer.name
-
 	# check node exist
 	if not cmds.objExists(node):
 		Logger.error('{} does not exist'.format(node))

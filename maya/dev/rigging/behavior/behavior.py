@@ -74,6 +74,7 @@ class Behavior(object):
 		if self._createJoints:
 			self._jnts = joints.create_on_hierarchy(self._bpJnts,
 							naming.Type.blueprintJoint, naming.Type.joint,
-							suffix=self._jointSuffix, parent=self._jointsGrp)
+							suffix=self._jointSuffix, parent=self._jointsGrp,
+							reverse=True)
 		else:
 			self._jnts = self._bpJnts

@@ -55,6 +55,9 @@ def parent_chain(nodes, reverse=False, parent=None):
 	num = len(nodes)
 	for i in range(num-1):
 		parent_node(nodes[i], nodes[i+1])
-	return nodes[:-1]
+	nodesReturn = nodes[:-1]
+	if reverse:
+		nodesReturn.reverse()
+	return nodesReturn
 
 

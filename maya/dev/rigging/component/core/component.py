@@ -225,7 +225,7 @@ class Component(object):
 			cmds.connectAttr(jnt+'.message',
 							 '{}.joints[{}]'.format(self._component, i), f=True)
 			cmds.connectAttr(jnt+'.worldMatrix[0]',
-							 '{}.outputMatrix[{}]'.format(self.component, i), f=True)
+							 '{}.outputMatrix[{}]'.format(self._component, i), f=True)
 
 	def get_component_info(self, component):
 		self._component = component
@@ -281,5 +281,5 @@ class Component(object):
 			attrList=[]
 			for atr in attr:
 				val = cmds.getAttr(atr)
-				attrList.append(atr)
+				attrList.append(val)
 			return attrList

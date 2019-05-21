@@ -52,7 +52,7 @@ class FkChain(behavior.Behavior):
 		controlShape(str): controls shape
 	"""
 	def __init__(self, **kwargs):
-		super(FkChain, self).__init__(kwargs)
+		super(FkChain, self).__init__(**kwargs)
 		self._lockHide = variables.kwargs('lockHide', attributes.Attr.scale, kwargs, shortName='lh')
 		self._jointSuffix = variables.kwargs('jointSuffix', 'Fk', kwargs, shortName='jntSfx')
 		self._ctrlShape = variables.kwargs('controlShape', 'circle', kwargs, shortName='shape')
@@ -70,7 +70,9 @@ class FkChain(behavior.Behavior):
 									  size=self._ctrlSize, color=self._ctrlCol, sub=self._sub)
 
 			## connect ctrl to joint
-			constraints.matrix_connect(Control.localMatrixAttr, jnt)
+			constraints.matrix_connect(Control.localMatrixAttr, jnt, skip=attributes.Attr.translate)
+			constraints.matrix_connect(Control.worldMatrixAttr, jnt, 
+									   skip=attributes.Attr.rotate+attributes.Attr.scale)
 
 			self._ctrls.append(Control.name)
 			parent = Control.output
