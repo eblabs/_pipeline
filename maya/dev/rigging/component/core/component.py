@@ -49,6 +49,9 @@ class Component(object):
 		self._componentType = COMPONENT_PATH + '.component'
 		self._ctrls = []
 		self._jnts = []
+		self._nodesLocal = []
+		self._nodesShow = []
+		self._nodesHide = []
 
 		self.register_attributes(kwargs)
 
@@ -143,7 +146,6 @@ class Component(object):
 			-- worldGrp
 				-- nodesHideGrp
 				-- nodesShowGrp
-			-- subComponentsGrp
 		'''
 
 		Namer = naming.Namer(type=naming.Type.component,
@@ -155,7 +157,7 @@ class Component(object):
 		attrDict = {}
 		for trans in ['component', 'controlsGrp', 'localGrp',
 					  'jointsGrp', 'nodesLocalGrp', 'worldGrp',
-					  'nodesHideGrp', 'nodesShowGrp', 'subComponentsGrp']:
+					  'nodesHideGrp', 'nodesShowGrp']:
 			Namer.type = trans
 			transforms.create(Namer.name, lockHide=attributes.Attr.all)
 			attrDict.update({'_'+trans: Namer.name})
@@ -163,7 +165,7 @@ class Component(object):
 
 		# parent hierarchy
 		hierarchy.parent_node(self._component, self._parent)
-		cmds.parent(self._localGrp, self._worldGrp, self._subComponentsGrp, self._component)
+		cmds.parent(self._localGrp, self._worldGrp, self._component)
 		cmds.parent(self._controlsGrp, self._jointsGrp, self._nodesLocalGrp, self._localGrp)
 		cmds.parent(self._nodesHideGrp, self._nodesShowGrp, self._worldGrp)
 
@@ -179,7 +181,6 @@ class Component(object):
 		# controlsVis: controls visibility switch
 		# jointsVis: joints visibility switch
 		# rigNodesVis: rig nodes visibility switch
-		# subComponentsVis: sub components visibility switch
 		# componentType: component class type to get the node wrapped as object
 		# outputMatrix: joints' output matrices
 
@@ -188,8 +189,7 @@ class Component(object):
 		cmds.addAttr(self._component, ln='inputComponent', at='message')
 		attributes.add_attrs(self._component, ['controls', 'joints'],
 							attributeType='message', multi=True)
-		attributes.add_attrs(self._component, ['controlsVis', 'jointsVis', 
-												'rigNodesVis', 'subComponentsVis'],
+		attributes.add_attrs(self._component, ['controlsVis', 'jointsVis', 'rigNodesVis'],
 							attributeType='long', range=[0,1], 
 							defaultValue=[1,0,0,1], keyable=False, channelBox=True)
 		attributes.add_attrs(self._component, 'componentType', attributeType='string',
@@ -198,10 +198,10 @@ class Component(object):
 		
 		# connect attrs
 		attributes.connect_attrs(['controlsVis', 'jointsVis', 'rigNodesVis', 
-								  'rigNodesVis', 'subComponentsVis'], 
+								  'rigNodesVis'], 
 								 [self._controlsGrp+'.v', self._jointsGrp+'.v',
-								  self._nodesLocalGrp+'.v', self._nodesHideGrp+'.v',
-								  self._subComponentsGrp+'.v'], driver=self._component)
+								  self._nodesLocalGrp+'.v', self._nodesHideGrp+'.v'], 
+								  driver=self._component)
 
 		# mult matrix
 		multMatrixAttr = nodeUtils.mult_matrix([self._component+'.inputMatrix',

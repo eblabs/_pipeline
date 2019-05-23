@@ -423,9 +423,9 @@ def remap(inputValue, inputRange, outputRange, **kwargs):
 	for rangeValue in zip([inputRange, outputRange], ['input', 'output']):
 		for val in zip(rangeValue[0], ['min', 'max']):
 			if isinstance(val[0], basestring):
-				cmds.connectAttr(val[0], '{}.{}{}'.format(remap, rangeValue[1], val[1].tilte()))
+				cmds.connectAttr(val[0], '{}.{}{}'.format(remap, rangeValue[1], val[1].title()))
 			else:
-				cmds.setAttr('{}.{}{}'.format(remap, rangeValue[1], val[1].tilte()), val[0])
+				cmds.setAttr('{}.{}{}'.format(remap, rangeValue[1], val[1].title()), val[0])
 
 	outputAttr = remap+'.outValue'
 
@@ -565,9 +565,9 @@ def compose_matrix(translate, rotate, scale=[1,1,1], **kwargs):
 		for inputVal in zip(inputAttrInfo[0], ['X','Y','Z']):
 			if isinstance(inputVal[0], basestring):
 				cmds.connectAttr(inputVal[0], 
-								 '{}.input{}{}'.format(compose, inputAttrInfo[1].tilte(), inputVal[1]))
+								 '{}.input{}{}'.format(compose, inputAttrInfo[1].title(), inputVal[1]))
 			else:
-				cmds.setAttr('{}.input{}{}'.format(compose, inputAttrInfo[1].tilte(), inputVal[1]),
+				cmds.setAttr('{}.input{}{}'.format(compose, inputAttrInfo[1].title(), inputVal[1]),
 							 inputVal[0])
 	if isinstance(rotateOrder, basestring):
 		cmds.connectAttr(rotateOrder, compose+'.inputRotateOrder')
@@ -581,6 +581,45 @@ def compose_matrix(translate, rotate, scale=[1,1,1], **kwargs):
 
 	#return outputAttr
 	return outputAttr
+
+def twist_extract(inputMatrix, **kwargs):
+	'''
+	extract twist value from input matrix
+
+	Args:
+		inputMatrix(str)
+	Kwargs:
+		attrs(str/list): connect twist value to attrs
+		force(bool)[True]: force the connection
+	Returns:
+		outputAttr(str): output attr
+	'''
+	attrs = variables.kwargs('attrs', [], kwargs)
+	force = variables.kwargs('force', True, kwargs, shortName='f')
+
+	driver = inputMatrix.split('.')[0]
+
+	Namer = naming.Namer(driver)
+
+	Namer.type = naming.Type.decomposeMatrix
+	Namer.description = Namer.description+'TwsitExtract'
+
+	decomposeMatrix = node(name=Namer.name)
+	cmds.connectAttr(inputMatrix, decomposeMatrix+'.inputMatrix')
+
+	Namer.type = naming.Type.quatToEuler
+	quatToEuler = node(name=Namer.name)
+
+	cmds.connectAttr(decomposeMatrix+'.outputQuatX', 
+					 quatToEuler+'.inputQuatX')
+	cmds.connectAttr(decomposeMatrix+'.outputQuatW', 
+					 quatToEuler+'.inputQuatW')
+
+	if attrs:
+		attributes.connect_attrs(quatToEuler+'.outputRotateX', 
+								 attrs, force=force)
+	
+	return quatToEuler+'.outputRotateX'
 
 #=================#
 #  SUB FUNCTION   #

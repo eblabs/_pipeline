@@ -163,6 +163,7 @@ class Control(object):
 			ctrl(str): control's name
 		'''
 		self.__name = ctrl
+		self.__ctrls = [self.__name]
 
 		CtrlNamer = naming.Namer(ctrl)
 
@@ -199,6 +200,7 @@ class Control(object):
 		CtrlNamer.description = CtrlNamer.description+'Sub'
 		if cmds.objExists(CtrlNamer.name):
 			self.__sub = CtrlNamer.name
+			self.__ctrls.append(self.__sub)
 			CtrlNamer.type = naming.Type.controlShape
 			self.__subShape = CtrlNamer.name
 		else:
@@ -235,7 +237,7 @@ class Control(object):
 		CtrlNamer.suffix = None
 		CtrlNamer.index = self.__index
 		self.__name = cmds.rename(self.__name, CtrlNamer.name)
-
+		self.__ctrls[0] = self.__name
 		# control shape
 		CtrlNamer.type = naming.Type.controlShape
 		self.__ctrlShape = cmds.rename(self.__ctrlShape, CtrlNamer.name)
@@ -249,6 +251,7 @@ class Control(object):
 			CtrlNamer.type = naming.Type.control
 			CtrlNamer.part = CtrlNamer.part + 'Sub'
 			self.__sub = cmds.rename(self.__sub, CtrlNamer.name)
+			self.__ctrls[1] = self.__sub
 			CtrlNamer.type = naming.Type.controlShape
 			self.__subShape = cmds.rename(self.__subShape, CtrlNamer.name)
 
@@ -284,6 +287,7 @@ class Control(object):
 			cmds.deleteAttr(self.__name+'.subControlVis')
 			self.__sub = None
 			self.__subShape = None
+			self.__ctrls = self.__ctrls[:-1]
 		elif key and not self.__sub:
 			# add sub
 			CtrlNamer = naming.Name(type=naming.Type.control, side=self.__side,
@@ -297,7 +301,7 @@ class Control(object):
 
 			self.__sub = transforms.create(CtrlNamer.name, parent=self.__name,
 										   pos=self.__name, lockHide=lockHide)
-
+			self.__ctrls.append(self.__sub)
 			# connect output
 			attributes.connect_attrs(attributes.Attr.all+['rotateOrder'],
 									 attributes.Attr.all+['rotateOrder'],
@@ -324,6 +328,27 @@ class Control(object):
 			__add_ctrl_shape(self.__sub, shapeInfo=ctrlShapeInfo, size=0.9, 
 							 color=color, colorOverride=True)
 
+	def lock_hide_attrs(self, attrs):
+		'''
+		lock hide control's attrs
+
+		Args:
+			attrs(str/list): attributes to be locked and hidden
+		'''
+		attributes.lock_hide_attrs(self.__ctrls, attrs)
+
+	def unlock_attrs(self, attrs, **kwargs):
+		'''
+		unlock control's attrs
+
+		Args:
+			attrs(str/list): attributes
+		Kwargs:
+			keyable(bool)[True]
+			channelBox(bool)[True]
+		'''
+		attributes.unlock_attrs(self.__ctrls, attrs, **kwargs)
+		
 #=================#
 #    FUNCTION     #
 #=================#

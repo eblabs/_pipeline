@@ -38,6 +38,7 @@ class Behavior(object):
 		offsets(int): controls' offset groups
 		controlSize(float)
 		controlColor(str/int): None will follow the side's preset
+		controlShape(str/list): controls shape
 		subControl(bool)[True]
 		controlsGrp(str): transform node to parent controls
 		jointsGrp(str): transform node to parent joints
@@ -56,6 +57,7 @@ class Behavior(object):
 		self._offsets = variables.kwargs('offsets', 1, kwargs, shortName=naming.Type.offset)
 		self._ctrlSize = variables.kwargs('controlSize', 1, kwargs, shortName='size')
 		self._ctrlCol = variables.kwargs('controlColor', None, kwargs, shortName='color')
+		self._ctrlShape = variables.kwargs('controlShape', 'circle', kwargs, shortName='shape')
 		self._sub = variables.kwargs('subControl', True, kwargs, shortName='sub')
 
 		self._controlsGrp = variables.kwargs('controlsGrp', '', kwargs, shortName=naming.Type.controlsGrp)

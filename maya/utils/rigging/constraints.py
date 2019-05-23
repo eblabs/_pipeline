@@ -102,6 +102,80 @@ def matrix_connect(inputMatrix, nodes, **kwargs):
 			attributes.connect_attrs(driverAttrs, drivenAttrs,
 									 driver=decomposeMatrix, driven=n, force=force)
 
+def matrix_aim_constraint(inputMatrix, drivens, **kwargs):
+	'''
+	aim constraint using matrix connection
+
+	Args:
+		inputMatrix(str): input matrix attribute
+		drivens(str/list): driven nodes
+	Kwargs:
+		parent(str): parent constraint node to, None will parent under driven node
+		worldUpType(str)['objectrotation']
+		worldUpMatrix(str)
+		aimVector(list)[1,0,0]
+		upVector(list)[0,1,0]
+		local(bool)[False]: local will skip parent inverse matrix connection
+	'''
+	# get vars
+	parent = variables.kwargs('parent', None, kwargs, shortName='p')
+	worldUpType = variables.kwargs('worldUpType', 'objectrotation', kwargs)
+	worldUpMatrix = variables.kwargs('worldUpMatrix', None, kwargs)
+	aimVector = variables.kwargs('aimVector', [1,0,0], kwargs, shortName='aim')
+	upVector = variables.kwargs('upVector', [0,1,0], kwargs, shortName='up')
+	local = variables.kwargs('local', False, kwargs)
+
+	# world up type
+	if worldUpType == 'objectrotation':
+		worldUpType = 2
+	else:
+		worldUpType = 1
+
+	if isinstance(drivens, basestring):
+		drivens = [drivens]
+
+	driverNode = inputMatrix.split('.')[0]
+	NamerAim = naming.Namer(driverNode)
+	NamerAim.type = naming.Type.decomposeMatrix
+	NamerAim.description = NamerAim.description+'Aim'
+
+	for d in drivens:
+		if cmds.objExists(d):
+			Namer = naming.Namer(d)
+			Namer.type = naming.Type.aimConstraint
+			aimConstraint = nodeUtils.node(name=Namer.name)
+			if not parent or not cmds.objExists(parent):
+				parent = d
+			cmds.parent(aimConstraint, parent)
+
+			decomposeMatrix = nodeUtils.node(name=NamerAim.name, useExist=True)
+			cmds.connectAttr(inputMatrix, decomposeMatrix+'.inputMatrix', f=True)
+
+			for i, axis in enumerate('XYZ'):
+				cmds.setAttr('{}.aimVector{}'.format(aimConstraint, axis), aimVector[i])
+				cmds.setAttr('{}.upVector{}'.format(aimConstraint, axis), upVector[i])
+				cmds.connectAttr('{}.translate{}'.format(d, axis), 
+								 '{}.constraintTranslate{}'.format(aimConstraint, axis))
+				cmds.connectAttr('{}.outputTranslate{}'.format(decomposeMatrix, axis), 
+								 '{}.target[0].targetTranslate{}'.format(aimConstraint, axis))
+
+			if cmds.objectType(d) == 'joint':
+				for axis in 'XYZ':
+					cmds.connectAttr('{}.jointOrient{}'.format(d, axis), 
+									 '{}.constraintJointOrient{}'.format(aimConstraint, axis))
+
+			if not local:
+				cmds.connectAttr(d+'.parentInverseMatrix[0]', 
+								 aimConstraint+'.constraintParentInverseMatrix')
+			cmds.connectAttr(worldUpMatrix, aimConstraint+'.worldUpMatrix')
+			cmds.setAttr(aimConstraint+'.worldUpType', worldUpType)
+			cmds.setAttr(aimConstraint+'.target[0].targetParentMatrix', 
+						 mathUtils.MATRIX_DEFAULT, type='matrix')
+
+			for axis in 'XYZ':
+				attributes.connect_attrs('{}.constraintRotate{}'.format(aimConstraint, axis), 
+								 		 '{}.rotate{}'.format(d, axis))
+
 #=================#
 #  SUB FUNCTION   #
 #=================#

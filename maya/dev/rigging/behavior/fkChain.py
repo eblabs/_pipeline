@@ -33,30 +33,32 @@ class FkChain(behavior.Behavior):
 	fkChain rig behavior
 
 	Kwargs:
-		side(str)
-		description(str)
-		index(int)
-		blueprintJoints(list)
-		jointSuffix(str)
-		createJoints(bool): False will use blueprint joints as joints directly
-		offsets(int): controls' offset groups
-		controlSize(float)
-		controlColor(str/int): None will follow the side's preset
-		subControl(bool)[True]
-		controlsGrp(str): transform node to parent controls
-		jointsGrp(str): transform node to parent joints
-		nodesLocalGrp(str): transform node to parent local rig nodes
-		nodesHideGrp(str): transform node to parent hidden nodes
-		nodesShowGrp(str): transform node to parent visible nodes
-		lockHide(list): lock and hide controls channels
-		controlShape(str): controls shape
+		@behavior
+			side(str)
+			description(str)
+			index(int)
+			blueprintJoints(list)
+			jointSuffix(str)
+			createJoints(bool): False will use blueprint joints as joints directly
+			offsets(int): controls' offset groups
+			controlSize(float)
+			controlColor(str/int): None will follow the side's preset
+			controlShape(str): controls shape
+			subControl(bool)[True]
+			controlsGrp(str): transform node to parent controls
+			jointsGrp(str): transform node to parent joints
+			nodesLocalGrp(str): transform node to parent local rig nodes
+			nodesHideGrp(str): transform node to parent hidden nodes
+			nodesShowGrp(str): transform node to parent visible nodes			
+		@fkChain
+			lockHide(list): lock and hide controls channels
+			
 	"""
 	def __init__(self, **kwargs):
 		super(FkChain, self).__init__(**kwargs)
 		self._lockHide = variables.kwargs('lockHide', attributes.Attr.scale, kwargs, shortName='lh')
 		self._jointSuffix = variables.kwargs('jointSuffix', 'Fk', kwargs, shortName='jntSfx')
-		self._ctrlShape = variables.kwargs('controlShape', 'circle', kwargs, shortName='shape')
-
+		
 	def create(self):
 		super(FkChain, self).create()
 
