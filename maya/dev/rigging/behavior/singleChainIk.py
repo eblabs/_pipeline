@@ -80,22 +80,25 @@ class SingleChainIk(behavior.Behavior):
 									  side=Namer.side,
 									  index=Namer.index,
 									  pos=[jnt, self._jnts[0]],
-									  lockHide=attributes.Attr.rotate + attributes.Attr.scale,
+									  lockHide=attributes.Attr.scale,
 									  shape=ctrlShape,
 									  size=self._ctrlSize,
 									  color=self._ctrlCol,
 									  sub=self._sub,
 									  parent=self._controlsGrp)
-			Control.lock_hide_attrs('ro')
 			self._ctrls.append(Control.name)
 			Controls.append(Control)
 
+		Controls[1].lock_hide_attrs(attributes.Attr.rotate+attributes.Attr.rotateOrder)
+		cmds.parent(Controls[1].zero, Controls[0].output)
 		# connect root jnt with controller
 		constraints.matrix_connect(Controls[0].worldMatrixAttr, self._jnts[0], 
 									skip=attributes.Attr.rotate+attributes.Attr.scale)
 
-		# unhide target control attrs
-		Controls[1].unlock_attrs('rx')
+		multMatrixAttr = nodeUtils.mult_matrix([Controls[1].worldMatrixAttr, Controls[0].worldMatrixAttr],
+										   side=self._side,
+										   description=self._des+'TargetPos',
+										   index=self._index)
 
 		# set up ik
 		if self._ikType == 'ik':
@@ -114,7 +117,7 @@ class SingleChainIk(behavior.Behavior):
 									  parent=self._nodesLocalGrp,
 									  lockHide=attributes.Attr.all,
 									  vis=False)
-			constraints.matrix_connect(Controls[1].worldMatrixAttr, trans)
+			constraints.matrix_connect(multMatrixAttr, trans)
 
 			# parent ik handle to transform
 			cmds.parent(ikHandle, trans)
@@ -125,16 +128,6 @@ class SingleChainIk(behavior.Behavior):
 
 		else:
 			# aim constraint
-			twistAttr = nodeUtils.twist_extract(Controls[1].localMatrixAttr)
-			composeMatrixTwsit = nodeUtils.compose_matrix([0,0,0], [twistAttr,0,0],
-									side=Controls[1].side, 
-									description=Controls[1].description+'TwistExtract',
-									index=Controls[1].index)
-			matrixRoot = cmds.getAttr(self._jnts[0]+'.worldMatrix[0]')
-			multMatrixTwist = nodeUtils.mult_matrix([composeMatrixTwsit, matrixRoot],
-													side=self._side,
-													description=self._des+'AimUp',
-													index=self._index)
-			constraints.matrix_aim_constraint(Controls[1].worldMatrixAttr, self._jnts[0],
-											  worldUpMatrix=multMatrixTwist, local=True)
+			constraints.matrix_aim_constraint(multMatrixAttr, self._jnts[0],
+											  worldUpMatrix=Controls[0].worldMatrixAttr, local=True)
 

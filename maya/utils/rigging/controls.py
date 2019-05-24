@@ -349,6 +349,25 @@ class Control(object):
 		'''
 		attributes.unlock_attrs(self.__ctrls, attrs, **kwargs)
 		
+	def add_attrs(self, attrs, **kwargs):
+		'''
+		add attrs
+
+		Args:
+			attrs(str/list): add attrs
+		Kwargs:
+			attributeType(str)['float']: 'bool', 'long', 'enum', 'float', 'double', 
+							    		 'string', 'matrix', 'message'
+			range(list)[[]]:min/max value
+			defaultValue(float/int/list)[None]: default value
+			keyable(bool)[True]: set attr keyable
+			channelBox(bool)[True]: show attr in channel box
+			enumName(str)['']: enum attr name
+			multi(m)[False]: add attr as a multi-attribute
+			lock(bool)[False]: lock attr  
+		'''
+		attributes.add_attrs(self.__ctrls, attrs, **kwargs)
+		
 #=================#
 #    FUNCTION     #
 #=================#
