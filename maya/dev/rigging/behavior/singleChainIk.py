@@ -49,9 +49,9 @@ class SingleChainIk(behavior.Behavior):
 			subControl(bool)[True]
 			controlsGrp(str): transform node to parent controls
 			jointsGrp(str): transform node to parent joints
-			nodesLocalGrp(str): transform node to parent local rig nodes
 			nodesHideGrp(str): transform node to parent hidden nodes
 			nodesShowGrp(str): transform node to parent visible nodes
+			nodesWorldGrp(str): transform node to parent world rig nodes
 		@singleChainIk
 			ikType(str): ik/aim
 		
@@ -62,7 +62,6 @@ class SingleChainIk(behavior.Behavior):
 		self._jointSuffix = variables.kwargs('jointSuffix', self._ikType.title(),
 											 kwargs, shortName='jntSfx')
 		self._iks = []
-		self._nodesLocal = []
 
 	def create(self):
 		super(SingleChainIk, self).create()
@@ -114,7 +113,7 @@ class SingleChainIk(behavior.Behavior):
 								 description=Controls[1].description,
 								 index=Controls[1].index).name
 			trans = transforms.create(trans, pos=Controls[1].name, 
-									  parent=self._nodesLocalGrp,
+									  parent=self._nodesHideGrp,
 									  lockHide=attributes.Attr.all,
 									  vis=False)
 			constraints.matrix_connect(multMatrixAttr, trans)
@@ -123,7 +122,7 @@ class SingleChainIk(behavior.Behavior):
 			cmds.parent(ikHandle, trans)
 
 			# pass info
-			self._nodesLocal = [trans]
+			self._nodesHide = [trans]
 			self._iks.append(ikHandle)
 
 		else:

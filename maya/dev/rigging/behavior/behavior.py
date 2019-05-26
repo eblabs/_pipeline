@@ -42,9 +42,9 @@ class Behavior(object):
 		subControl(bool)[True]
 		controlsGrp(str): transform node to parent controls
 		jointsGrp(str): transform node to parent joints
-		nodesLocalGrp(str): transform node to parent local rig nodes
 		nodesHideGrp(str): transform node to parent hidden nodes
 		nodesShowGrp(str): transform node to parent visible nodes
+		nodesWorldGrp(str): transform node to parent world rig nodes
 	"""
 	def __init__(self, **kwargs):
 		self._side = variables.kwargs('side', 'middle', kwargs, shortName='s')
@@ -62,13 +62,13 @@ class Behavior(object):
 
 		self._controlsGrp = variables.kwargs('controlsGrp', '', kwargs, shortName=naming.Type.controlsGrp)
 		self._jointsGrp = variables.kwargs('jointsGrp', '', kwargs, shortName=naming.Type.jointsGrp)
-		self._nodesLocalGrp = variables.kwargs('nodesLocalGrp', '', kwargs, shortName=naming.Type.nodesLocalGrp)
 		self._nodesHideGrp = variables.kwargs('nodesHideGrp', '', kwargs, shortName=naming.Type.nodesHideGrp)
 		self._nodesShowGrp = variables.kwargs('nodesShowGrp', '', kwargs, shortName=naming.Type.nodesShowGrp)
+		self._nodesWorldGrp = variables.kwargs('nodesWorldGrp', '', kwargs, shortName=naming.Type.nodesWorldGrp)
 
 		self._jnts = []
 		self._ctrls = []
-		self._nodesLocal = []
+		self._nodesWorld = []
 		self._nodesHide = []
 		self._nodesShow = []
 

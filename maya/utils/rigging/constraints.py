@@ -176,6 +176,55 @@ def matrix_aim_constraint(inputMatrix, drivens, **kwargs):
 				attributes.connect_attrs('{}.constraintRotate{}'.format(aimConstraint, axis), 
 								 		 '{}.rotate{}'.format(d, axis))
 
+def matrix_pole_vector_constraint(inputMatrix, ikHandle, joint, **kwargs):
+	'''
+	pole vector constraint using matrix connection
+
+	Args:
+		inputMatrix(str): input matrix attribute
+		ikHandle(str): driven ikHandle
+		joint(str): root joint of the ik chain
+	Kwargs:
+		parent(str): parent constraint node to, None will parent under driven node
+		parentInverseMatrix(str)[None]: ikHandle's parent inverse matrix,
+										None will use ikHandle's parentInverseMatrix attr
+	'''
+	# get vars
+	parent = variables.kwargs('parent', None, kwargs, shortName='p')
+	parentInverseMatrix = variables.kwargs('parentInverseMatrix', None, kwargs)
+	
+	# get name
+	Namer = naming.Namer(ikHandle)
+	decomposeMatrix = nodeUtils.node(type=naming.Type.decomposeMatrix,
+									 side=Namer.side,
+									 description=Namer.description+'Pv',
+									 index=Namer.index)
+	cmds.connectAttr(inputMatrix, decomposeMatrix+'.inputMatrix')
+
+	# constraint
+	pvCons = nodeUtils.node(type=naming.Type.poleVectorConstraint,
+							side=Namer.side,
+							description=Namer.description+'Pv',
+							index=Namer.index)
+	if not parent or not cmds.objExists(parent):
+		parent = ikHandle
+	cmds.parent(pvCons, parent)
+
+	for outputAttr, inputAttr in zip([decomposeMatrix+'.outputTranslate',
+									  joint+'.translate'],
+									 ['target[0].targetTranslate',
+									  'constraintRotatePivot']):
+		for axis in 'XYZ':
+			cmds.connectAttr(outputAttr+axis, '{}.{}{}'.format(pvCons, inputAttr, axis))
+	if not parentInverseMatrix:
+		parentInverseMatrix = ikHandle+'.parentInverseMatrix[0]'
+	cmds.connectAttr(parentInverseMatrix, pvCons+'.constraintParentInverseMatrix')
+
+	# output
+	for axis in 'XYZ':
+		cmds.connectAttr('{}.constraintTranslate{}'.format(pvCons, axis),
+						 '{}.poleVector{}'.format(ikHandle, axis), f=True)
+
 #=================#
 #  SUB FUNCTION   #
 #=================#

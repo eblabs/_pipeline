@@ -45,9 +45,10 @@ def distance(pointA, pointB):
 	Returns:
 		distance(float): distance between two points
 	'''
-	dis = math.hypot(pointA[0]-pointB[0], 
-					 pointA[1]-pointB[1],
-					 pointA[2]-pointB[2])
+	dis = math.sqrt(math.pow(pointB[0]-pointA[0], 2) +
+					math.pow(pointB[1]-pointA[1], 2) +
+					math.pow(pointB[2]-pointA[2], 2))
+	return dis 
 
 # vector
 def get_point_from_vector(point, vector, distance=1):
@@ -66,7 +67,23 @@ def get_point_from_vector(point, vector, distance=1):
 	'''
 	vec = [vector[0]*distance, vector[1]*distance, vector[2]*distance]
 	pnt = [point[0]+vec[0], point[1]+vec[1], point[2]+vec[2]]
+	
 	return pnt
+
+def get_unit_vector(vector):
+	'''
+	get unit vector
+
+	Args:
+		vector(list)
+	Returns:
+		vectorUnit(list): unit vector
+	'''
+	vector = numpy.array(vector)
+	scalar = numpy.linalg.norm(vector)
+	vector /= scalar
+
+	return vector.tolist()
 
 # matrix
 def list_to_matrix(array, column=4, row=4):
@@ -84,6 +101,7 @@ def list_to_matrix(array, column=4, row=4):
 		matrix(np_matrix): numpy array
 	'''
 	np_array = numpy.reshape(array, (column, row))
+	
 	return numpy.asmatrix(np_array)
 	
 def matrix_to_list(matrix):
@@ -98,6 +116,7 @@ def matrix_to_list(matrix):
 	'''
 	matrix = numpy.reshape(matrix, matrix.size)
 	array = matrix.tolist()[0]
+	
 	return array
 
 def inverse_matrix(matrix):

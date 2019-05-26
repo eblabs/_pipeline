@@ -78,9 +78,9 @@ class SingleChainIk(component.Component):
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,
-				  'nodesLocalGrp': self._nodesLocalGrp,
 				  'nodesHideGrp': self._nodesHideGrp,
-				  'nodesShowGrp': self._nodesShowGrp}
+				  'nodesShowGrp': self._nodesShowGrp,
+				  'nodesWorldGrp': self._nodesWorldGrp}
 
 		Behavior = singleChainIkBhv.SingleChainIk(**kwargs)
 		Behavior.create()
@@ -89,5 +89,5 @@ class SingleChainIk(component.Component):
 		self._jnts += Behavior._jnts
 		self._ctrls += Behavior._ctrls
 		self._iks += Behavior._iks
-		self._nodesLocal += Behavior._nodesLocal
+		self._nodesHide += Behavior._nodesHide
 

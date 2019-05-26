@@ -47,9 +47,9 @@ class FkChain(behavior.Behavior):
 			subControl(bool)[True]
 			controlsGrp(str): transform node to parent controls
 			jointsGrp(str): transform node to parent joints
-			nodesLocalGrp(str): transform node to parent local rig nodes
 			nodesHideGrp(str): transform node to parent hidden nodes
-			nodesShowGrp(str): transform node to parent visible nodes			
+			nodesShowGrp(str): transform node to parent visible nodes
+			nodesWorldGrp(str): transform node to parent world rig nodes			
 		@fkChain
 			lockHide(list): lock and hide controls channels
 			

@@ -15,6 +15,7 @@ import utils.common.naming as naming
 import utils.common.attributes as attributes
 import utils.common.apiUtils as apiUtils
 import utils.common.variables as variables
+import utils.common.hierarchy as hierarchy
 #=================#
 #   GLOBAL VARS   #
 #=================#
@@ -56,6 +57,39 @@ def create_curve(name, controlVertices, knots, **kwargs):
 	shape = cmds.rename(shape, name+'Shape')
 
 	return name, shape
+
+def create_guide_line(name, attrs, reference=True, parent=None):
+	'''
+	create guide line
+
+	Args:
+		name(str): guide line's name
+		attrs(list): input connections to the cv points
+					example: [['node1.tx', 'node1.ty', 'node1.tz'],
+							  ['node2.tx', 'node2.ty', 'node2.tz']]
+	Kwargs:
+		reference(bool)[True]: if set shape to reference
+		parent(str)[None]: parent guide line to the given node
+	Returns:
+		curve(str): guide line's transform
+	'''
+	crv = cmds.curve(d=1, p=[[0,0,0],[0,0,0]], name=name)
+	crvShape = cmds.listRelatives(crv, s=True)[0]
+	crvShape = cmds.rename(crvShape, crv+'Shape')
+	if reference:
+		cmds.setAttr(crvShape+'.overrideEnabled', 1)
+		cmds.setAttr(crvShape+'.overrideDisplayType', 2)
+	attributes.lock_hide_attrs(crv, attributes.Attr.all)
+
+	hierarchy.parent_node(crv, parent)
+	attributes.connect_attrs(attrs[0]+attrs[1],
+							 [crvShape+'.controlPoints[0].xValue',
+							  crvShape+'.controlPoints[0].yValue',
+							  crvShape+'.controlPoints[0].zValue',
+							  crvShape+'.controlPoints[1].xValue',
+							  crvShape+'.controlPoints[1].yValue',
+							  crvShape+'.controlPoints[1].zValue'])
+	return crv
 
 def get_curve_info(curve):
 	'''

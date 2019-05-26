@@ -49,7 +49,7 @@ class Component(object):
 		self._componentType = COMPONENT_PATH + '.component'
 		self._ctrls = []
 		self._jnts = []
-		self._nodesLocal = []
+		self._nodesWorld = []
 		self._nodesShow = []
 		self._nodesHide = []
 
@@ -142,10 +142,10 @@ class Component(object):
 			-- localGrp
 				-- controlsGrp
 				-- jointsGrp
-				-- nodesLocalGrp
-			-- worldGrp
-				-- nodesHideGrp
 				-- nodesShowGrp
+				-- nodesHideGrp
+			-- worldGrp
+				-- nodesWorldGrp
 		'''
 
 		Namer = naming.Namer(type=naming.Type.component,
@@ -156,8 +156,8 @@ class Component(object):
 		# create transforms
 		attrDict = {}
 		for trans in ['component', 'controlsGrp', 'localGrp',
-					  'jointsGrp', 'nodesLocalGrp', 'worldGrp',
-					  'nodesHideGrp', 'nodesShowGrp']:
+					  'jointsGrp', 'nodesHideGrp', 'nodesShowGrp',
+					  'worldGrp', 'nodesWorldGrp']:
 			Namer.type = trans
 			transforms.create(Namer.name, lockHide=attributes.Attr.all)
 			attrDict.update({'_'+trans: Namer.name})
@@ -166,8 +166,9 @@ class Component(object):
 		# parent hierarchy
 		hierarchy.parent_node(self._component, self._parent)
 		cmds.parent(self._localGrp, self._worldGrp, self._component)
-		cmds.parent(self._controlsGrp, self._jointsGrp, self._nodesLocalGrp, self._localGrp)
-		cmds.parent(self._nodesHideGrp, self._nodesShowGrp, self._worldGrp)
+		cmds.parent(self._controlsGrp, self._jointsGrp, self._nodesHideGrp, 
+					self._nodesShowGrp, self._localGrp)
+		cmds.parent(self._nodesWorldGrp, self._worldGrp)
 
 		# inheritsTransform
 		cmds.setAttr(self._worldGrp+'.inheritsTransform', 0)
@@ -200,7 +201,7 @@ class Component(object):
 		attributes.connect_attrs(['controlsVis', 'jointsVis', 'rigNodesVis', 
 								  'rigNodesVis'], 
 								 [self._controlsGrp+'.v', self._jointsGrp+'.v',
-								  self._nodesLocalGrp+'.v', self._nodesHideGrp+'.v'], 
+								  self._nodesWorldGrp+'.v', self._nodesHideGrp+'.v'], 
 								  driver=self._component)
 
 		# mult matrix

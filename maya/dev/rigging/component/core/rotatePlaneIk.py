@@ -22,7 +22,7 @@ import utils.rigging.constraints as constraints
 import component
 
 ## import behavior
-import dev.rigging.behavior.fkChain as fkChainBhv
+import dev.rigging.behavior.rotatePlaneIk as rotatePlaneIkBhv
 
 #=================#
 #   GLOBAL VARS   #
@@ -32,9 +32,9 @@ from . import Logger, COMPONENT_PATH
 #=================#
 #      CLASS      #
 #=================#
-class FkChain(component.Component):
+class RotatePlaneIk(component.Component):
 	"""
-	fk chain component base class
+	rotate plane ik component base class
 	
 	Args:
 		component(str)
@@ -48,21 +48,26 @@ class FkChain(component.Component):
 		controlSize(float)
 		controlColor(str/int): None will follow the side's preset
 		subControl(bool)[True]
-		lockHide(list): lock and hide controls channels
+		ikType(str): rp (spring is not availble due to maya issue)
+		blueprintControl(str): control blueprint position
+		poleVectorDistance(float)
 	Returns:
 		Component(obj)
 	"""
 	def __init__(self, *arg, **kwargs):
-		super(FkChain, self).__init__(*arg, **kwargs)
-		self._componentType = COMPONENT_PATH + '.fkChain'
-		self._suffix = 'Fk'
+		super(RotatePlaneIk, self).__init__(*arg, **kwargs)
+		self._componentType = COMPONENT_PATH + '.singleChainIk'
+		self._suffix = self._ikType.title()
+		self._iks = []
 
 	def register_kwargs(self):
-		super(FkChain, self).register_kwargs()
-		self._kwargs.update({'lockHide': ['lockHide', attributes.Attr.scale, 'lh']})
+		super(RotatePlaneIk, self).register_kwargs()
+		self._kwargs.update({'ikType': ['ikType', 'rp'],
+							 'bpCtrl': ['blueprintControl', '', 'bpCtrl'],
+							 'pvDis': ['poleVectorDistance', 1, 'pvDis']})
 
 	def create_component(self):
-		super(FkChain, self).create_component()
+		super(RotatePlaneIk, self).create_component()
 
 		kwargs = {'side': self._side,
 				  'description': self._des,
@@ -73,7 +78,9 @@ class FkChain(component.Component):
 				  'controlSize': self._ctrlSize,
 				  'controlColor': self._ctrlCol,
 				  'subControl': self._sub,
-				  'lockHide': self._lockHide,
+				  'ikType': self._ikType,
+				  'blueprintControl': self._bpCtrl,
+				  'poleVectorDistance': self._pvDis,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,
@@ -81,9 +88,16 @@ class FkChain(component.Component):
 				  'nodesShowGrp': self._nodesShowGrp,
 				  'nodesWorldGrp': self._nodesWorldGrp}
 
-		Behavior = fkChainBhv.FkChain(**kwargs)
+		Behavior = rotatePlaneIkBhv.RotatePlaneIk(**kwargs)
 		Behavior.create()
 
 		# pass info
 		self._jnts += Behavior._jnts
 		self._ctrls += Behavior._ctrls
+		self._iks += Behavior._iks
+		self._nodesShow += Behavior._nodesShow
+		self._nodesHide += Behavior._nodesHide
+
+		# connect vis for guide line
+		attributes.connect_attrs(self._component+'.controlsVis',
+								 self._nodesShow[0]+'.v')

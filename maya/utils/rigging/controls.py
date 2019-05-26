@@ -351,7 +351,7 @@ class Control(object):
 		
 	def add_attrs(self, attrs, **kwargs):
 		'''
-		add attrs
+		add attrs, only for main control
 
 		Args:
 			attrs(str/list): add attrs
@@ -366,7 +366,7 @@ class Control(object):
 			multi(m)[False]: add attr as a multi-attribute
 			lock(bool)[False]: lock attr  
 		'''
-		attributes.add_attrs(self.__ctrls, attrs, **kwargs)
+		attributes.add_attrs(self.__ctrls[0], attrs, **kwargs)
 		
 #=================#
 #    FUNCTION     #
@@ -500,12 +500,12 @@ def create(description, **kwargs):
 		else:
 			if isinstance(pos[0], basestring):
 				cmds.matchTransform(transformNodes[0], pos[0], pos=True, rot=False)
-			else:
+			elif pos[0]:
 				cmds.xform(transformNodes[0], t=pos[0], ws=True)
 			if isinstance(pos[1], basestring):
 				cmds.matchTransform(transformNodes[0], pos[1], pos=False, rot=True)
-			else:
-				cmds.xform(transformNodes[0], rot=pos[1], ws=True)
+			elif pos[1]:
+				cmds.xform(transformNodes[0], ro=pos[1], ws=True)
 
 	# add shape
 	for c, col, scale in zip(ctrlList, [color, colorSub], [size, size*0.9]):
