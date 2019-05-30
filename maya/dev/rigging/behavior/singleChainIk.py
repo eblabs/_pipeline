@@ -78,6 +78,7 @@ class SingleChainIk(behavior.Behavior):
 			Control = controls.create(Namer.description+suffix,
 									  side=Namer.side,
 									  index=Namer.index,
+									  offset=offsets,
 									  pos=[jnt, self._jnts[0]],
 									  lockHide=attributes.Attr.scale,
 									  shape=ctrlShape,

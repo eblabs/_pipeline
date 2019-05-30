@@ -108,7 +108,7 @@ class Control(object):
 	@property
 	def worldMatrix(self):
 		matrix = cmds.getAttr(self.__worldMatrixAttr)
-		return self.__worldMatrixAttr
+		return matrix
 
 	@property
 	def worldMatrixAttr(self):
@@ -473,11 +473,11 @@ def create(description, **kwargs):
 							 channelBox=True)
 		attributes.connect_attrs(ctrl+'.subControlVis', sub+'.v', force=True)
 
-	# lock hide
-	attributes.lock_hide_attrs(ctrlList, lockHide)
-
 	# unlock rotate order
 	attributes.unlock_attrs(ctrlList, 'rotateOrder', channelBox=True)
+
+	# lock hide
+	attributes.lock_hide_attrs(ctrlList, lockHide)
 
 	# add output attrs
 	attributes.add_attrs(ctrl, ['matrixLocal', 'matrixWorld'], attributeType='matrix')

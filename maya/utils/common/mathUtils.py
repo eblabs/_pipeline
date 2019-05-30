@@ -155,3 +155,18 @@ def mult_matrix(matrices):
 	matrixMult = matrix_to_list(matrixMult)
 
 	return matrixMult
+
+def get_local_matrix(matrixA, matrixB):
+	'''
+	get matrixA' local matrix on matrixB
+
+	Args:
+		matrixA(list): list of numpy matrix/list
+		matrixB(list): list of numpy matrix/list
+	Returns:
+		array(list): list
+	'''
+	matrixInv = inverse_matrix(matrixB)
+	matrixLocal = mult_matrix([matrixA, matrixInv])
+	
+	return matrixLocal

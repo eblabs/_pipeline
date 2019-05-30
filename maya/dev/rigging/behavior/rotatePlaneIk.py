@@ -35,7 +35,7 @@ from . import Logger
 #=================#
 class RotatePlaneIk(behavior.Behavior):
 	"""
-	single chain ik rig behavior
+	rotate plane ik rig behavior
 
 	Kwargs:
 		@behavior
@@ -55,7 +55,7 @@ class RotatePlaneIk(behavior.Behavior):
 			nodesHideGrp(str): transform node to parent hidden nodes
 			nodesShowGrp(str): transform node to parent visible nodes
 			nodesWorldGrp(str): transform node to parent world rig nodes
-		@singleChainIk
+		@rotatePlaneIk
 			ikType(str): rp (spring is not availble due to maya issue)
 			blueprintControl(str): control blueprint position
 			poleVectorDistance(float)
@@ -64,7 +64,7 @@ class RotatePlaneIk(behavior.Behavior):
 	def __init__(self, **kwargs):
 		super(RotatePlaneIk, self).__init__(**kwargs)
 		self._ikType = variables.kwargs('ikType', 'rp', kwargs, shortName='ik')
-		self._jointSuffix = variables.kwargs('jointSuffix', 'ik'+self._ikType.title(),
+		self._jointSuffix = variables.kwargs('jointSuffix', 'Ik'+self._ikType.title(),
 											 kwargs, shortName='jntSfx')
 		self._bpCtrl = variables.kwargs('blueprintControl', '', kwargs, shortName='bpCtrl')
 		self._distance = variables.kwargs('poleVectorDistance', 1, kwargs, shortName='pvDis')
@@ -84,7 +84,7 @@ class RotatePlaneIk(behavior.Behavior):
 							  	   		  [self._bpJnts[0], None, self._bpCtrl],
 							  	   		  self._ctrlShape):
 			Control = controls.create(self._des+sfx, side=self._side,
-									  index=self._index,
+									  index=self._index, offset=offsets,
 									  pos=[bpJnt, rot],
 									  lockHide=attributes.Attr.rotate + 
 									  		   attributes.Attr.scale + 

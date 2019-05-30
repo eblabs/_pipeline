@@ -150,6 +150,9 @@ def create_on_hierarchy(nodes, search, replace, **kwargs):
 	vis = variables.kwargs('vis', True, kwargs, shortName='v')
 	reverse = variables.kwargs('reverse', False, kwargs)
 	
+	# parent chain function has opposite reverse direction
+	reverse = not reverse 
+
 	# create jnts
 	jntList = []
 

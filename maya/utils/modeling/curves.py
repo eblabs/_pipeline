@@ -91,6 +91,33 @@ def create_guide_line(name, attrs, reference=True, parent=None):
 							  crvShape+'.controlPoints[1].zValue'])
 	return crv
 
+def create_curve_on_nodes(name, nodes, degree=3, parent=None):
+	'''
+	create curve on given nodes
+
+	Args:
+		name(str): curve's name
+		nodes(list): given nodes, can be node name or transform values
+	Kwargs:
+		degres(int)[3]: curve's degree
+		parent(str): curve's parent node
+	Returns:
+		curve(str)
+	'''
+	posList = []
+	for n in nodes:
+		if isinstance(n, basestring):
+			pos = cmds.xform(n, q=True, t=True, ws=True)
+			posList.append(pos)
+		else:
+			posList.append(n)
+	crv = cmds.curve(p=posList, d=degree, name=name)
+	crvShape = cmds.listRelatives(crv, s=True)[0]
+	crvShape = cmds.rename(crvShape, crv+'Shape')
+	hierarchy.parent_node(crv, parent)
+
+	return crv
+
 def get_curve_info(curve):
 	'''
 	get curve shape info
