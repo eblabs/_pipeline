@@ -284,7 +284,7 @@ def condition(firstTerm, secondTerm, ifTrue, ifFalse, **kwargs):
 	_des = variables.kwargs('description', None, kwargs, shortName='des')
 	_index = variables.kwargs('index', None, kwargs, shortName='i')
 	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_op = variables.kwargs('operation', 1, kwargs, shortName='op')
+	_op = variables.kwargs('operation', 0, kwargs, shortName='op')
 	_attrs = variables.kwargs('attrs', [], kwargs)
 	_force = variables.kwargs('force', True, kwargs, shortName='f')
 
@@ -294,7 +294,7 @@ def condition(firstTerm, secondTerm, ifTrue, ifFalse, **kwargs):
 		_op = _op_list.index(_op)
 
 	outputAttr = _create_node_multi_attrs([firstTerm, secondTerm],
-										  [inputAttr1, inputAttr2],
+										  [ifTrue, ifFalse],
 										  ['firstTerm', 'secondTerm'], 
 										  ['colorIfTrue', 'colorIfFalse'],
 										  ['R', 'G', 'B'], 'outColor',
@@ -630,7 +630,6 @@ def _create_node_multi_attrs(inputAttrSingle, inputAttrMult, nodeAttrSingle,
 	create node with multi attrs (like RGB/XYZ), connect with attrs
 
 	'''
-
 	# get vars
 	_type = kwargs.get('type', None)
 	_side = kwargs.get('side', None)
@@ -671,9 +670,9 @@ def _create_node_multi_attrs(inputAttrSingle, inputAttrMult, nodeAttrSingle,
 
 	outputNum = min(inputAttrNum)
 
-	outputAttr=[]
+	outputAttrList=[]
 	for attrInfo in zip(range(outputNum), nodeSubAttrs):
-		outputAttr.append('{}.{}{}'.format(_node, outputAttr, attrInfo[1]))
+		outputAttrList.append('{}.{}{}'.format(_node, outputAttr, attrInfo[1]))
 
 	# connect output
 	if _attrs:
@@ -686,7 +685,7 @@ def _create_node_multi_attrs(inputAttrSingle, inputAttrMult, nodeAttrSingle,
 				attributes.connect_attrs(attrInfo[0], attrInfo[1], force=_force)
 
 	# return output attr
-	return outputAttr
+	return outputAttrList
 # operation functions
 def _add(left, right, **kwargs):
 	'''

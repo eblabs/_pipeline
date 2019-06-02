@@ -258,7 +258,7 @@ def matrix_blend_constraint(inputMatrices, driven, **kwargs):
 
 	if not weights:
 		weights = 1
-	if not isinstance(weight, list):
+	if not isinstance(weights, list):
 		weights = [weights] * len(inputMatrices)
 
 	potc = None
@@ -273,12 +273,12 @@ def matrix_blend_constraint(inputMatrices, driven, **kwargs):
 		cmds.parent(potc, driven)
 
 	if rotate:
-		rotc = nodeUtils.node(type=naming.Type.orientConstraint,
+		ontc = nodeUtils.node(type=naming.Type.orientConstraint,
 						 	  side=Namer.side,
 						 	  description=Namer.description+'BlendConstraint',
 						 	  index=Namer.index)
-		cmds.setAttr(rotc+'.interpType', 2)
-		cmds.parent(rotc, driven)
+		cmds.setAttr(ontc+'.interpType', 2)
+		cmds.parent(ontc, driven)
 
 	if scale:
 		sclc = nodeUtils.node(type=naming.Type.scaleConstraint,
@@ -305,16 +305,24 @@ def matrix_blend_constraint(inputMatrices, driven, **kwargs):
 					cmds.connectAttr('{}.output{}{}'.format(decompose, attr.title(), axis),
 									 '{}.target[{}].target{}{}'.format(con, i, attr.title(), axis))
 			
-					if isinstance(weights[i], basestring):
-						cmds.connectAttr(weights[i], '{}.target[{}].targetWeight'.format(con, i))
-					else:
-						cmds.setAttr('{}.target[{}].targetWeight'.format(con, i), weights[i])
-					cmds.setAttr('{}.target[{}].targetParentMatrix'.format(con, i), 
-								 mathUtils.MATRIX_DEFAULT, type='matrix')
+				if isinstance(weights[i], basestring):
+					cmds.connectAttr(weights[i], '{}.target[{}].targetWeight'.format(con, i))
+				else:
+					cmds.setAttr('{}.target[{}].targetWeight'.format(con, i), weights[i])
+				cmds.setAttr('{}.target[{}].targetParentMatrix'.format(con, i), 
+							 mathUtils.MATRIX_DEFAULT, type='matrix')
 
-					attributes.connect_attrs('{}.constraint{}{}'.format(con, attr.title(), axis), 
-									 '{}.{}{}'.format(driven, attr, axis), force=force)	
+	for attr, con in zip(['translate', 'rotate', 'scale'],
+						 [potc, ontc, sclc]):
+		if con:
+			for axis in 'XYZ':
+				attributes.connect_attrs('{}.constraint{}{}'.format(con, attr.title(), axis), 
+								 '{}.{}{}'.format(driven, attr, axis), force=force)	
 
+				# joint orient
+				if attr == 'rotate' and cmds.attributeQuery('jointOrient'+axis, n=driven, ex=True):
+					cmds.connectAttr('{}.jointOrient{}'.format(driven, axis),
+									 '{}.constraintJointOrient{}'.format(con, axis))
 #=================#
 #  SUB FUNCTION   #
 #=================#

@@ -17,6 +17,8 @@ import utils.common.transforms as transforms
 import utils.common.attributes as attributes
 import utils.common.hierarchy as hierarchy
 import utils.common.nodeUtils as nodeUtils
+import utils.rigging.joints as joints
+import utils.rigging.controls as controls
 import utils.rigging.constraints as constraints
 
 # import pack
@@ -58,16 +60,16 @@ class Blend(pack.Pack):
 		self._suffix = 'Blend'
 
 	def register_kwargs(self):
-		super(Pack, self).register_kwargs()
+		super(Blend, self).register_kwargs()
 		self._kwargs.update({'defaults': ['defaults', [], 'd']})
 
 	def create_component(self):
-		super(Pack, self).create_component()
+		super(Blend, self).create_component()
 
 		# create joints
 		self._jnts = joints.create_on_hierarchy(self._bpJnts,
 					 naming.Type.blueprintJoint, naming.Type.joint,
-					 suffix=self._suffix, parent=self._jntsGrp)
+					 suffix=self._suffix, parent=self._jointsGrp)
 		
 		# create components
 		blendCtrl = naming.Namer(type=naming.Type.control,
@@ -81,12 +83,14 @@ class Blend(pack.Pack):
 		indexCustom = 101
 		enumName = ''
 		
-		for key, componentInfo in self._components.iterItems():
+		for key, componentInfo in self._components.iteritems():
 			componentType = componentInfo['componentType']
 			if len(key) > 1:
 				keySuffix = key[0].upper() + key[1:]
 			else:
 				keySuffix = key.title()
+			if 'kwargs' not in componentInfo:
+				componentInfo.update({'kwargs': {}})
 			kwargs = componentInfo['kwargs']
 			kwargs.update({'blueprintJoints': self._jnts,
 						   'parent': self._subComponentsGrp,
@@ -103,8 +107,8 @@ class Blend(pack.Pack):
 
 			controls.add_ctrls_shape(blendCtrl, transform=Component.controls)
 
-			attributes.connectAttrs(['inputMatrix', 'offsetMatrix', 'jointsVis'],
-									['inputMatrix', 'offsetMatrix', 'jointsVis'],
+			attributes.connect_attrs(['inputMatrix', 'offsetMatrix'],
+									['inputMatrix', 'offsetMatrix'],
 									driver=self._component, driven=Component.name)
 
 			if key in SPACE_DICT:
@@ -138,7 +142,7 @@ class Blend(pack.Pack):
 										side=self._side,
 										description=self._des+'CtrlVis',
 										index=self._index,
-										operation=4)
+										operation='<')
 
 		for key, cpnt in zip(self._components.keys(), componentNodes):
 			
@@ -182,10 +186,10 @@ class Blend(pack.Pack):
 								 		  '{}.input[{}]'.format(choiceNodes[1], 
 								 		  self._components[key]['index'])])
 
-				constraints.matrix_blend_constraint([choiceNodes[0]+'.output',
-													 choiceNodes[1]+'.output'], 
-													 jnt, 
-													 weights=[rvsAttr, blendCtrl+'.blend'])
+			constraints.matrix_blend_constraint([choiceNodes[0]+'.output',
+												 choiceNodes[1]+'.output'], 
+												 jnt, 
+												 weights=[rvsAttr, blendCtrl+'.blend'])
 
 		# pass info
 		self._ctrls.append(blendCtrl)

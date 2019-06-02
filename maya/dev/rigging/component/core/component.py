@@ -112,9 +112,6 @@ class Component(base.Base):
 		attributes.add_attrs(self._component, ['rigNodesVis'], attributeType='long', 
 							 range=[0,1], defaultValue=0, keyable=False, 
 							 channelBox=True)
-		attributes.add_attrs(self._component, 'componentType', attributeType='string',
-							lock=True)
-		cmds.addAttr(self._component, ln='outputMatrix', at='matrix', multi=True)
 		
 		# connect attrs
 		attributes.connect_attrs(['rigNodesVis', 'rigNodesVis'], 

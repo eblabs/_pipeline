@@ -17,6 +17,10 @@ import utils.common.attributes as attributes
 import utils.common.hierarchy as hierarchy
 import utils.common.nodeUtils as nodeUtils
 import utils.rigging.constraints as constraints
+
+## import base class
+import dev.rigging.component.base as base
+
 #=================#
 #   GLOBAL VARS   #
 #=================#
@@ -25,7 +29,7 @@ from . import Logger, COMPONENT_PATH
 #=================#
 #      CLASS      #
 #=================#
-class Pack(object):
+class Pack(base.Base):
 	"""
 	Pack base class
 
@@ -45,7 +49,7 @@ class Pack(object):
 		Component(obj)
 	"""
 	def __init__(self, *arg, **kwargs):
-		super(Pack, self).__init__()
+		super(Pack, self).__init__(*arg, **kwargs)
 		self._componentType = COMPONENT_PATH + '.pack'
 		self._subComponents = []
 
@@ -104,7 +108,7 @@ class Pack(object):
 							 '{}.subComponents[{}]'.format(self._component, i), f=True)
 
 	def get_component_info(self, component):
-		super(Pack, self).get_component_info()
+		super(Pack, self).get_component_info(component)
 
 		self._subComponents = self._get_attr(self._component+'.subComponents', 
 											 message=True, asList=True)
@@ -124,7 +128,7 @@ class Pack(object):
 
 	def _get_component_build_obj(self, componentType, **kwargs):
 		componentImport, componentFunc = import_module(componentType)
-		Obj = getatttr(componentImport, componentFunc)(**kwargs)
+		Obj = getattr(componentImport, componentFunc)(**kwargs)
 		return Obj
 
 #=================#

@@ -583,10 +583,10 @@ def add_ctrls_shape(ctrls, **kwargs):
 							 transform nodes the shape would parented to
 		shapeInfo(dict): if has custome shape node (like copy/paste)
 	'''
-	if isinstance(ctrl, basestring):
-		ctrl = [ctrl]
+	if isinstance(ctrls, basestring):
+		ctrls = [ctrls]
 
-	for c in ctrl:
+	for c in ctrls:
 		__add_ctrl_shape(c, **kwargs)
 
 
@@ -658,7 +658,7 @@ def __add_ctrl_shape(ctrl, **kwargs):
 	# assign shape
 	for trans in transform:
 		cmds.parent(crvShape, trans, shape=True, addObject=True)
-		cmds.delete('TEMP_CRV')
+	cmds.delete('TEMP_CRV')
 	return crvShape
 		
 

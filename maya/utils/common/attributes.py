@@ -64,14 +64,14 @@ def connect_attrs(driverAttrs, drivenAttrs, **kwargs):
 
 	# connect each attr
 	for attrs in zip(driverAttrs, drivenAttrs):
-		_connect_single_attr(attrs[0], attrs[1], 
+		__connect_single_attr(attrs[0], attrs[1], 
 							 driver=driver, driven=driven,
 							 force=force)
 	if len(driverAttrs) == 1:
-		if not __check_attr_exists(driverAttrs[0]):
+		if not __check_attr_exists(driverAttrs[0], node=driver):
 			return
 		for attr in drivenAttrs[1:]:
-			_connect_single_attr(drivenAttrs[0], attr, 
+			__connect_single_attr(drivenAttrs[0], attr, 
 								 driver=driver, driven=driven,
 								 force=force)
 
@@ -184,7 +184,7 @@ def add_attrs(node, attrs, **kwargs):
 					if attrRange[1] != None:
 						attrDict.update({'maxValue': attrRange[1]})
 				if enumName:
-					attrDict.update(enumName)
+					attrDict.update({'enumName': enumName})
 				# add attr
 				cmds.addAttr(n, **attrDict)
 				# skip message
@@ -284,7 +284,7 @@ def __check_attr_exists(attr, node=None):
 		Logger.warning('{} does not have attr {}'.format(node, attr))
 		return None
 
-def _connect_single_attr(driverAttr, drivenAttr, driver=None, driven=None, force=True):
+def __connect_single_attr(driverAttr, drivenAttr, driver=None, driven=None, force=True):
 	'''
 	Connect single attr
 	'''

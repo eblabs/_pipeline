@@ -84,7 +84,7 @@ class RotatePlaneIk(behavior.Behavior):
 							  	   		  [self._bpJnts[0], None, self._bpCtrl],
 							  	   		  self._ctrlShape):
 			Control = controls.create(self._des+sfx, side=self._side,
-									  index=self._index, offset=offsets,
+									  index=self._index, offset=self._offsets,
 									  pos=[bpJnt, rot],
 									  lockHide=attributes.Attr.rotate + 
 									  		   attributes.Attr.scale + 
