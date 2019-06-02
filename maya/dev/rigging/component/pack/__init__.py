@@ -6,7 +6,7 @@
 import logging
 
 ## Component path
-from . import COMPONENT_PATH
+from . import COMPONENT_PATH, CONFIG_PATH
 
 #=================#
 #   GLOBAL VARS   #

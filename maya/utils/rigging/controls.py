@@ -24,13 +24,11 @@ import utils.modeling.curves as curves
 #=================#
 #   GLOBAL VARS   #
 #=================#
-from . import PATH_CONFIG, Logger
-SHAPE_CONFIG = files.read_json_file(os.path.join(PATH_CONFIG, 'CONTROL_SHAPE.cfg'))
-COLOR_CONFIG = files.read_json_file(os.path.join(PATH_CONFIG, 'CONTROL_COLOR.cfg'))
+from . import CONFIG_PATH, Logger
+SHAPE_CONFIG = files.read_json_file(os.path.join(CONFIG_PATH, 'CONTROL_SHAPE.cfg'))
+COLOR_CONFIG = files.read_json_file(os.path.join(CONFIG_PATH, 'CONTROL_COLOR.cfg'))
+SIDE_CONFIG = files.read_json_file(os.path.join(CONFIG_PATH, 'CONTROL_SIDE_COLOR.cfg'))
 
-SIDE_CONFIG = {'left':   'blue',
-			   'middle': 'yellow',
-			   'right':  'red'}
 #=================#
 #      CLASS      #
 #=================#
@@ -326,7 +324,7 @@ class Control(object):
 			ctrlShapeInfo = curves.get_curve_info(self.__ctrlShape)
 			color = cmds.getAttr(self.__ctrlShape+'.overrideColor')
 			__add_ctrl_shape(self.__sub, shapeInfo=ctrlShapeInfo, size=0.9, 
-							 color=color, colorOverride=True)
+							 color=color)
 
 	def lock_hide_attrs(self, attrs):
 		'''
@@ -570,16 +568,54 @@ def transform_ctrl_shape(ctrlShapes, **kwargs):
 		else:
 			Logger.warning('{} does not exist'.format(shape))
 
+def add_ctrls_shape(ctrls, **kwargs):
+	'''
+	add shape node to controller
+
+	Args:
+		ctrl(str/list): control's name
+	Kwargs:
+		shape(str)['cube']: control's shape
+		size(float)[1]: control shape's size
+		color(str/int)[None]: control's color
+							  None will follow the side preset
+		transform(str/list): if add shape node as control, the
+							 transform nodes the shape would parented to
+		shapeInfo(dict): if has custome shape node (like copy/paste)
+	'''
+	if isinstance(ctrl, basestring):
+		ctrl = [ctrl]
+
+	for c in ctrl:
+		__add_ctrl_shape(c, **kwargs)
+
+
 #=================#
 #  SUB FUNCTION   #
 #=================#
 def __add_ctrl_shape(ctrl, **kwargs):
+	'''
+	add shape node to controller
+
+	Args:
+		ctrl(str): control's name
+	Kwargs:
+		shape(str)['cube']: control's shape
+		size(float)[1]: control shape's size
+		color(str/int)[None]: control's color
+							  None will follow the side preset
+		transform(str/list): if add shape node as control, the
+							 transform nodes the shape would parented to
+		shapeInfo(dict): if has custome shape node (like copy/paste)
+	'''
 	shape = kwargs.get('shape', 'cube')
 	size = kwargs.get('size', 1)
 	color = kwargs.get('color', None)
-	colorOverride = kwargs.get('colorOverride', False)
 	transform = kwargs.get('transform', None)
 	shapeInfo = kwargs.get('shapeInfo', None)
+
+	if transform and isinstance(transform, basestring):
+		transform = [transform]
 
 	if not shapeInfo:
 		shapeInfo = SHAPE_CONFIG[shape]
@@ -603,7 +639,7 @@ def __add_ctrl_shape(ctrl, **kwargs):
 		transform = [ctrl]
 
 		# set color
-		if not colorOverride or not color:
+		if not color:
 			sideCol = SIDE_CONFIG[Namer.side]
 			color = COLOR_CONFIG[sideCol]
 		else:

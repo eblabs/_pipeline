@@ -116,6 +116,7 @@ def matrix_aim_constraint(inputMatrix, drivens, **kwargs):
 		aimVector(list)[1,0,0]
 		upVector(list)[0,1,0]
 		local(bool)[False]: local will skip parent inverse matrix connection
+		force(bool)[True]: force connect
 	'''
 	# get vars
 	parent = variables.kwargs('parent', None, kwargs, shortName='p')
@@ -124,6 +125,7 @@ def matrix_aim_constraint(inputMatrix, drivens, **kwargs):
 	aimVector = variables.kwargs('aimVector', [1,0,0], kwargs, shortName='aim')
 	upVector = variables.kwargs('upVector', [0,1,0], kwargs, shortName='up')
 	local = variables.kwargs('local', False, kwargs)
+	force = variables.kwargs('force', True, kwargs, shortName='f')
 
 	# world up type
 	if worldUpType == 'objectrotation':
@@ -174,7 +176,7 @@ def matrix_aim_constraint(inputMatrix, drivens, **kwargs):
 
 			for axis in 'XYZ':
 				attributes.connect_attrs('{}.constraintRotate{}'.format(aimConstraint, axis), 
-								 		 '{}.rotate{}'.format(d, axis))
+								 		 '{}.rotate{}'.format(d, axis), force=force)
 
 def matrix_pole_vector_constraint(inputMatrix, ikHandle, joint, **kwargs):
 	'''
@@ -188,11 +190,13 @@ def matrix_pole_vector_constraint(inputMatrix, ikHandle, joint, **kwargs):
 		parent(str): parent constraint node to, None will parent under driven node
 		parentInverseMatrix(str)[None]: ikHandle's parent inverse matrix,
 										None will use ikHandle's parentInverseMatrix attr
+		force(bool)[True]: force connect
 	'''
 	# get vars
 	parent = variables.kwargs('parent', None, kwargs, shortName='p')
 	parentInverseMatrix = variables.kwargs('parentInverseMatrix', None, kwargs)
-	
+	force = variables.kwargs('force', True, kwargs, shortName='f')
+
 	# get name
 	Namer = naming.Namer(ikHandle)
 	decomposeMatrix = nodeUtils.node(type=naming.Type.decomposeMatrix,
@@ -222,8 +226,94 @@ def matrix_pole_vector_constraint(inputMatrix, ikHandle, joint, **kwargs):
 
 	# output
 	for axis in 'XYZ':
-		cmds.connectAttr('{}.constraintTranslate{}'.format(pvCons, axis),
-						 '{}.poleVector{}'.format(ikHandle, axis), f=True)
+		attributes.connect_attrs('{}.constraintTranslate{}'.format(pvCons, axis),
+						 '{}.poleVector{}'.format(ikHandle, axis), force=force)
+
+def matrix_blend_constraint(inputMatrices, driven, **kwargs):
+	'''
+	blend constraint using matrix connection
+
+	Args:
+		inputMatrices(list): input matrices attribute
+		driven(str): driven node
+	Kwargs:
+		parent(str): parent constraint node to, None will parent under driven node
+		weights(float/list): weight value for each target
+							 can be a list of attribute to connect
+		translate(bool)[True]: constraint translate
+		rotate(bool)[True]: constraint rotate
+		scale(bool)[True]: constraint scale
+		force(bool)[True]: force connect
+	'''
+	parent = variables.kwargs('parent', None, kwargs, shortName='p')
+	weights = variables.kwargs('weights', 1, kwargs, shortName='w')
+	translate = variables.kwargs('translate', True, kwargs, shortName='t')
+	rotate = variables.kwargs('rotate', True, kwargs, shortName='r')
+	scale = variables.kwargs('scale', True, kwargs, shortName='s')
+	force = variables.kwargs('force', True, kwargs, shortName='f')
+
+	Namer = naming.Namer(driven)
+	if not parent or not cmds.objExists(parent):
+		parent = driven
+
+	if not weights:
+		weights = 1
+	if not isinstance(weight, list):
+		weights = [weights] * len(inputMatrices)
+
+	potc = None
+	ontc = None
+	sclc = None
+
+	if translate:
+		potc = nodeUtils.node(type=naming.Type.pointConstraint,
+						 	  side=Namer.side,
+						 	  description=Namer.description+'BlendConstraint',
+						 	  index=Namer.index)
+		cmds.parent(potc, driven)
+
+	if rotate:
+		rotc = nodeUtils.node(type=naming.Type.orientConstraint,
+						 	  side=Namer.side,
+						 	  description=Namer.description+'BlendConstraint',
+						 	  index=Namer.index)
+		cmds.setAttr(rotc+'.interpType', 2)
+		cmds.parent(rotc, driven)
+
+	if scale:
+		sclc = nodeUtils.node(type=naming.Type.scaleConstraint,
+						 	  side=Namer.side,
+						 	  description=Namer.description+'BlendConstraint',
+						 	  index=Namer.index)
+		cmds.parent(sclc, driven)
+
+	for i, matrix in enumerate(inputMatrices):
+		driver = matrix.split('.')[0]
+		NamerDriver = naming.Namer(driver)
+
+		decompose = nodeUtils.node(type=naming.Type.decomposeMatrix,
+								   side=NamerDriver.side,
+								   description=NamerDriver.description+'BlendConstraint',
+								   index=NamerDriver.index)
+		cmds.connectAttr(matrix, decompose+'.inputMatrix')
+
+		
+		for attr, con in zip(['translate', 'rotate', 'scale'],
+							 [potc, ontc, sclc]):
+			if con:
+				for axis in 'XYZ':
+					cmds.connectAttr('{}.output{}{}'.format(decompose, attr.title(), axis),
+									 '{}.target[{}].target{}{}'.format(con, i, attr.title(), axis))
+			
+					if isinstance(weights[i], basestring):
+						cmds.connectAttr(weights[i], '{}.target[{}].targetWeight'.format(con, i))
+					else:
+						cmds.setAttr('{}.target[{}].targetWeight'.format(con, i), weights[i])
+					cmds.setAttr('{}.target[{}].targetParentMatrix'.format(con, i), 
+								 mathUtils.MATRIX_DEFAULT, type='matrix')
+
+					attributes.connect_attrs('{}.constraint{}{}'.format(con, attr.title(), axis), 
+									 '{}.{}{}'.format(driven, attr, axis), force=force)	
 
 #=================#
 #  SUB FUNCTION   #

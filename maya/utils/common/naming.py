@@ -12,8 +12,8 @@ import variables
 #=================#
 #   GLOBAL VARS   #
 #=================#
-from . import PATH_CONFIG, Logger
-FILE_CONFIG = os.path.join(PATH_CONFIG, 'NAME_CONVENTION.cfg')
+from . import CONFIG_PATH, Logger
+FILE_CONFIG = os.path.join(CONFIG_PATH, 'NAME_CONVENTION.cfg')
 DATA_CONFIG = files.read_json_file(FILE_CONFIG)
 
 DATA_INVERSE = {}

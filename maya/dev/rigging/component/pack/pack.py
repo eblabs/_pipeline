@@ -71,7 +71,7 @@ class Pack(object):
 							 index=self._index)
 
 		# create transforms
-		self._subComponents = transforms.create(Namer.name, lockHide=attributes.Attr.all, 
+		self._subComponentsGrp = transforms.create(Namer.name, lockHide=attributes.Attr.all, 
 						  						parent=self._component)
 		# add attrs
 		# input matrix: input connection from other component
@@ -92,7 +92,7 @@ class Pack(object):
 		cmds.addAttr(self._component, ln='subComponents', at='message', multi=True)
 		
 		# connect attrs
-		attributes.connect_attrs(['subComponentsVis'], [self._subComponents+'.v'], 
+		attributes.connect_attrs(['subComponentsVis'], [self._subComponentsGrp+'.v'], 
 								  driver=self._component)
 
 	def register_component_info(self):
@@ -111,17 +111,20 @@ class Pack(object):
 		subComponents = {'names': self._subComponents,
 						 'Components': []}
 		for i, cpnt in enumerate(self._subComponents):
-			Obj = self._get_component_obj(cpnt)
+			Obj = self._get_component_info_obj(cpnt)
 			subComponents['Components'].append(Obj)
 
 		self._add_obj_attr('subComponents', subComponents)
 
-	def _get_component_obj(self, component):
-		componentType = cmds.getAttr(cpnt+'.componentType')
-		componentFuc = componentType.split('.')[-1]
-		componentFuc = componentFuc[0].upper() + componentFuc[1:]
-		componentImport = import_module(componentType)
-		Obj = getattr(componentImport, componentFuc)(cpnt)
+	def _get_component_info_obj(self, component):
+		componentType = cmds.getAttr(component+'.componentType')
+		componentImport, componentFunc = import_module(componentType)
+		Obj = getattr(componentImport, componentFunc)(component)
+		return Obj
+
+	def _get_component_build_obj(self, componentType, **kwargs):
+		componentImport, componentFunc = import_module(componentType)
+		Obj = getatttr(componentImport, componentFunc)(**kwargs)
 		return Obj
 
 #=================#
@@ -129,6 +132,7 @@ class Pack(object):
 #=================#
 def import_module(path):
 	components = path.split('.')
+	func = components[-1][0].upper() + components[-1][1:]
 	if len(components) > 1:
 		path = ''
 		for c in components:
@@ -136,4 +140,4 @@ def import_module(path):
 		module = __import__(path[:-1], fromlist = [components[-1]])
 	else:
 		module = __import__(path)
-	return module
+	return module, func
