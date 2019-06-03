@@ -46,7 +46,7 @@ class Blend(pack.Pack):
 		index(int)
 		parent(str)
 		blueprintJoints(list)
-		components(dict): components as sub components
+		subComponents(dict): components as sub components
 						  {Key name:
 						  	{'componentType'(str): component path,
 						  	 'kwargs'(dict): component kwargs}}
@@ -83,7 +83,7 @@ class Blend(pack.Pack):
 		indexCustom = 101
 		enumName = ''
 		
-		for key, componentInfo in self._components.iteritems():
+		for key, componentInfo in self._subComponentsDict.iteritems():
 			componentType = componentInfo['componentType']
 			if len(key) > 1:
 				keySuffix = key[0].upper() + key[1:]
@@ -122,8 +122,8 @@ class Blend(pack.Pack):
 		indexDefaults = []
 		if self._defaults:
 			for key in self._defaults:
-				if key in self._components:
-					indexDefaults.append(self._components[key]['index'])
+				if key in self._subComponentsDict:
+					indexDefaults.append(self._subComponentsDict[key]['index'])
 		if not indexDefaults:
 			indexDefaults = None
 
@@ -144,7 +144,7 @@ class Blend(pack.Pack):
 										index=self._index,
 										operation='<')
 
-		for key, cpnt in zip(self._components.keys(), componentNodes):
+		for key, cpnt in zip(self._subComponentsDict.keys(), componentNodes):
 			
 			if len(key) > 1:
 				keySuffix = key[0].upper() + key[1:]
@@ -152,7 +152,7 @@ class Blend(pack.Pack):
 				keySuffix = key.title()
 
 			conditionAttr_cpnt = nodeUtils.condition(conditionAttr[0],
-													self._components[key]['index'],
+													self._subComponentsDict[key]['index'],
 													1, 0,
 													side=self._side,
 													description='{}{}CtrlVis'.format(self._des, 
@@ -179,12 +179,12 @@ class Blend(pack.Pack):
 				choiceNodes.append(choice)
 
 			# feed in all components joints matrix to choice
-			for j, key in enumerate(self._components.keys()):
+			for j, key in enumerate(self._subComponentsDict.keys()):
 				attributes.connect_attrs(componentJnts[j][i]+'.matrix',
 								 		 ['{}.input[{}]'.format(choiceNodes[0], 
-								 		  self._components[key]['index']),
+								 		  self._subComponentsDict[key]['index']),
 								 		  '{}.input[{}]'.format(choiceNodes[1], 
-								 		  self._components[key]['index'])])
+								 		  self._subComponentsDict[key]['index'])])
 
 			constraints.matrix_blend_constraint([choiceNodes[0]+'.output',
 												 choiceNodes[1]+'.output'], 

@@ -135,7 +135,7 @@ def add_attrs(node, attrs, **kwargs):
 		attributeType(str)['float']: 'bool', 'long', 'enum', 'float', 'double', 
 						    		 'string', 'matrix', 'message'
 		range(list)[[]]:min/max value
-		defaultValue(float/int/list)[None]: default value
+		defaultValue(float/int/list/str)[None]: default value
 		keyable(bool)[True]: set attr keyable
 		channelBox(bool)[True]: show attr in channel box
 		enumName(str)['']: enum attr name
@@ -176,7 +176,7 @@ def add_attrs(node, attrs, **kwargs):
 			# check if attr exists
 			if not cmds.attributeQuery(attr, node=n, ex=True):
 				attrDict.update({'longName': attr})
-				if val != None:
+				if val != None and not isinstance(val, basestring) and not isinstance(val, list):
 					attrDict.update({'defaultValue': val})
 				if attrRange:
 					if attrRange[0] != None:

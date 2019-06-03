@@ -41,7 +41,7 @@ class Pack(base.Base):
 		index(int)
 		parent(str)
 		blueprintJoints(list)
-		components(dict): components as sub components
+		subComponents(dict): components as sub components
 						  {Key name:
 						  	{'componentType'(str): component path,
 						  	 'kwargs'(dict): component kwargs}}
@@ -55,8 +55,8 @@ class Pack(base.Base):
 
 	def register_kwargs(self):
 		super(Pack, self).register_kwargs()
-		self._kwargs.update({'components': ['components', {}, 
-								naming.Type.component]})
+		self._kwargs.update({'subComponentsDict': ['subComponents', {}, 
+								naming.Type.subComponentsGrp]})
 
 	def create_component(self):
 		super(Pack, self).create_component()

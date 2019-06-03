@@ -269,6 +269,28 @@ class Base(object):
 				attrParent = getattr(attrParent, a)
 		setattr(attrParent, attrSplit[-1], Objectview(attrDict))
 
+	def _add_list_as_string_attr(self, attr, valList):
+		valString = ''
+		for val in valList:
+			valString += '{},'.format(val)
+		if valString:
+			valString = valString[:-1]
+		self._add_string_attr(attr, valString)
+
+	def _get_string_attr_as_list(self, attr):
+		attrList = None
+		if cmds.attributeQuery(attr, node=self._component, ex=True):
+			val = cmds.getAttr('{}.{}'.format(self._component, attr))
+			if val:
+				attrList = val.split(',')
+		return attrList
+
+	def _add_string_attr(self, attr, val):
+		if not cmds.attributeQuery(attr, node=self._component, ex=True):
+			attributes.add_attrs(self._component, attr, 
+								 attributeType='string', 
+								 defaultValue=val, lock=True)
+
 #=================#
 #    SUB CLASS    #
 #=================#
