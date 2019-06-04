@@ -57,7 +57,8 @@ class Multi(pack.Pack):
 		index(int)
 		parent(str)
 		subComponents(dict): components as sub components
-						  {Key name:
+						  {	'keys': ['thumb', 'index', ....]
+						  	Key name:
 						  	{'componentType'(str): component path,
 						  	 'kwargs'(dict): component kwargs}}
 	Returns:
@@ -76,7 +77,8 @@ class Multi(pack.Pack):
 
 		componentNodes = []
 		componentObjs = []
-		for key, componentInfo in self._subComponentsDict.iteritems():
+		for key in self._subComponentsDict['keys']:
+			componentInfo = self._subComponentsDict[key]
 
 			componentType = componentInfo['componentType']
 			kwargs = componentInfo['kwargs']
@@ -103,7 +105,7 @@ class Multi(pack.Pack):
 		super(Multi, self).register_component_info()
 
 		# add keys
-		self._add_list_as_string_attr('subComponentsKey', self._subComponentsDict.keys())
+		self._add_list_as_string_attr('subComponentsKey', self._subComponentsDict['keys'])
 
 		# add compound attrs
 		# subComponentsInfo

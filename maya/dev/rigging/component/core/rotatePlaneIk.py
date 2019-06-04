@@ -51,6 +51,10 @@ class RotatePlaneIk(component.Component):
 		ikType(str): rp (spring is not availble due to maya issue)
 		blueprintControl(str): control blueprint position
 		poleVectorDistance(float)
+		singleChainIk(int)[0]: if need to set some joints as single chain ik
+						like ik leg
+						it will define the number of joints going to be
+						set to scIk, maxium is 2
 	Returns:
 		Component(obj)
 	"""
@@ -64,10 +68,21 @@ class RotatePlaneIk(component.Component):
 		super(RotatePlaneIk, self).register_kwargs()
 		self._kwargs.update({'ikType': ['ikType', 'rp'],
 							 'bpCtrl': ['blueprintControl', '', 'bpCtrl'],
-							 'pvDis': ['poleVectorDistance', 1, 'pvDis']})
+							 'pvDis': ['poleVectorDistance', 1, 'pvDis'],
+							 'sc': ['singleChainIk', 0, 'sc']})
 
 	def create_component(self):
 		super(RotatePlaneIk, self).create_component()
+
+		if self._sc == 0:
+			self._scJnts = []
+			self._bpJnts = self._bpJnts
+		elif self._sc == 1:
+			self._scJnts = self._bpJnts[-2:]
+			self._bpJnts = self._bpJnts[:-1]
+		else:
+			self._scJnts = self._bpJnts[-3:]
+			self._bpJnts = self._bpJnts[:-2]
 
 		kwargs = {'side': self._side,
 				  'description': self._des,
@@ -97,6 +112,20 @@ class RotatePlaneIk(component.Component):
 		self._iks += Behavior._iks
 		self._nodesShow += Behavior._nodesShow
 		self._nodesHide += Behavior._nodesHide
+
+		# sc ik
+		if self._scJnts:
+			jntBase = self._scJnts[0]
+			for jnt, sfx in zip(self._scJnts[1:], ['A', 'B']):
+				ikHandle = naming.Namer(type=naming.Type.ikHandle,
+										side=self._side,
+										description='{}IkSc{}'.format(self._des, sfx),
+										index=self._index).name
+				cmds.ikHandle(sj=jntBase, ee=jnt, sol='ikSCsolver', name=ikHandle)						
+				cmds.parent(ikHandle, self._nodesHide[1])
+				jntBase = jnt	
+
+				self._iks.append(ikHandle)
 
 		# connect vis for guide line
 		attributes.connect_attrs(self._component+'.controlsVis',
