@@ -15,6 +15,7 @@ import utils.common.naming as naming
 import utils.common.variables as variables
 import utils.common.attributes as attributes
 import utils.common.transforms as transforms
+import utils.common.hierarchy as hierarchy
 import utils.common.nodeUtils as nodeUtils
 import utils.common.mathUtils as mathUtils
 import utils.modeling.curves as curves
@@ -24,6 +25,7 @@ import utils.rigging.controls as controls
 
 ## import behavior
 import behavior
+import fkChain as fkChainBhv
 
 #=================#
 #   GLOBAL VARS   #
@@ -59,7 +61,12 @@ class RotatePlaneIk(behavior.Behavior):
 			ikType(str): rp (spring is not availble due to maya issue)
 			blueprintControl(str): control blueprint position
 			poleVectorDistance(float)
-		
+			singleChainIk(int)[0]: if need to set some joints as single chain ik
+						like ik leg
+						it will define the number of joints going to be
+						set to scIk, maxium is 2
+			reverseJoints(list): blueprint of the reverse joints
+								 structure: [heel, toe, sideInn, sideOut, ball]
 	"""
 	def __init__(self, **kwargs):
 		super(RotatePlaneIk, self).__init__(**kwargs)
@@ -68,7 +75,10 @@ class RotatePlaneIk(behavior.Behavior):
 											 kwargs, shortName='jntSfx')
 		self._bpCtrl = variables.kwargs('blueprintControl', '', kwargs, shortName='bpCtrl')
 		self._distance = variables.kwargs('poleVectorDistance', 1, kwargs, shortName='pvDis')
+		self._sc = variables.kwargs('singleChainIk', 0, kwargs, 'sc')
+		self._rvsJnts = variables.kwargs('reverseJoints', [], kwargs, 'rvsJnts')
 		self._iks = []
+		self._rvsCtrls = []
 
 	def create(self):
 		super(RotatePlaneIk, self).create()
@@ -101,12 +111,6 @@ class RotatePlaneIk(behavior.Behavior):
 		Ctrls[-1].unlock_attrs(attributes.Attr.rotate)
 		Ctrls[-1].unlock_attrs(attributes.Attr.rotateOrder, keyable=False, channelBox=True)
 
-		# ik handle name
-		ikHandle = naming.Namer(type=naming.Type.ikHandle,
-								side=self._side,
-								description=self._des+self._ikType.title(),
-								index=self._index).name
-
 		# connect root with jnt translate
 		constraints.matrix_connect(Ctrls[0].worldMatrixAttr, self._jnts[0],
 								   skip=attributes.Attr.rotate+attributes.Attr.scale)
@@ -130,18 +134,142 @@ class RotatePlaneIk(behavior.Behavior):
 		# 	ikSolver = 'ikSpringSolver'
 		# 	mel.eval('ikSpringSolver')
 
-		cmds.ikHandle(sj=self._jnts[0], ee=self._jnts[-1],
+		# ik solvers
+		if self._sc == 0:
+			self._scJnts = []
+			self._rpJnts = self._jnts
+		elif self._sc == 1:
+			self._scJnts = self._jnts[-2:]
+			self._rpJnts = self._jnts[:-1]
+		else:
+			self._scJnts = self._jnts[-3:]
+			self._rpJnts = self._jnts[:-2]
+
+		# rp ik handle
+		ikHandle = naming.Namer(type=naming.Type.ikHandle,
+								side=self._side,
+								description=self._des+self._ikType.title(),
+								index=self._index).name
+
+		cmds.ikHandle(sj=self._rpJnts[0], ee=self._rpJnts[-1],
 					  sol=ikSolver, name=ikHandle)
 
 		cmds.parent(ikHandle, self._nodesHide[1])
-		self._iks.append(ikHandle)
+		self._iks = [ikHandle]
+
+		# sc ik handle
+		if self._sc:
+			jntBase = self._rpJnts[-1]
+			for jnt, sfx in zip(self._scJnts[1:], ['A', 'B']):
+				ikHandle = naming.Namer(type=naming.Type.ikHandle,
+										side=self._side,
+										description='{}IkSc{}'.format(self._des, sfx),
+										index=self._index).name
+				cmds.ikHandle(sj=jntBase, ee=jnt, sol='ikSCsolver', name=ikHandle)						
+				cmds.parent(ikHandle, self._nodesHide[1])
+				jntBase = jnt
+
+				self._iks.append(ikHandle)
+
+			# reverse joints
+			# [heel, toe, sideInn, sideOut, ball]
+			if self._rvsJnts and self._sc > 1:
+				# get descriptor
+				descriptor = []
+				for jnt in self._rvsJnts:
+					Namer = naming.Namer(jnt)
+					descriptor.append(Namer.description)
+
+				# get descriptor for each pivot
+				rvsJntsDes = [descriptor[-1]+'Twist',
+							  descriptor[0]+'Roll',
+							  descriptor[1]+'Roll',
+							  descriptor[2],
+							  descriptor[-2],
+							  descriptor[1]+'Tap',
+							  descriptor[-1]+'Roll']
+
+				rvsBpJnts = [self._rvsJnts[-1],
+							 self._rvsJnts[0],
+							 self._rvsJnts[1],
+							 self._rvsJnts[2],
+							 self._rvsJnts[-2],
+							 self._rvsJnts[-1],
+							 self._rvsJnts[-1]]
+
+				rvsJnts = []
+				for des, jnt in zip(rvsJntsDes, rvsBpJnts):
+					Namer = naming.Namer(jnt)
+					Namer.description = des
+					rvsJnt = joints.create(Namer.name, pos=[jnt,None], parent=self._nodesHide[1])
+					rvsJnts.append(rvsJnt)
+
+				# orient jnts
+				# get tx to check if it's a mirrored joint chain
+				txJnt = cmds.getAttr(self._jnts[-2]+'.tx')
+				if txJnt >= 0:
+					aimVector = [1,0,0]
+				else:
+					aimVector = [-1,0,0]
+
+				aimList = [self._rvsJnts[1], self._rvsJnts[1], self._rvsJnts[0],
+						   self._jnts[-1], self._jnts[-3]]
+
+				for jnt, target in zip(rvsJnts, aimList):
+					if jnt not in rvsJnts[3:5]:
+						upVector = self._jnts[-2]
+					else:
+						upVector = rvsJnts[0]
+					cmds.delete(cmds.aimConstraint(target, jnt, aimVector=aimVector,
+												   upVector=[0,1,0], worldUpType='objectrotation',
+												   worldUpObject=upVector, mo=False))
+					cmds.makeIdentity(jnt, apply=True, t=1, r=1, s=1)
+
+				# parent rvs joints
+				rvsJntChain = [rvsJnts[0], rvsJnts[1], rvsJnts[2],
+							   rvsJnts[4], rvsJnts[3], rvsJnts[-1]]
+				hierarchy.parent_chain(rvsJntChain, reverse=True)
+				cmds.parent(rvsJnts[-2], rvsJnts[3])
+
+				# fk rig for the rvs chain
+				kwargs = {'side': self._side,
+						  'description': self._description,
+						  'index': self._index,
+						  'blueprintJoints': rvsJntChain,
+						  'offsets': self._offsets,
+						  'jointSuffix': '',
+						  'createJoints': False,
+						  'lockHide': attributes.Attr.translate+attributes.Attr.scale,
+						  'controlShape': 'rotate',
+						  'controlSize': self._ctrlSize,
+						  'controlsGrp': Ctrls[-1].output}
+
+				RvsRig = fkChainBhv.FkChain(**kwargs)
+				RvsRig.create()
+
+				self._rvsCtrls = RvsRig._ctrls
+
+				ctrlGrp = controls.Control(self._rvsCtrls[-2]).output
+				kwargs.update({'blueprintJoints': [rvsJnts[-2]],
+							   'controlsGrp': ctrlGrp})
+
+				RvsRig = fkChainBhv.FkChain(**kwargs)
+				RvsRig.create()
+
+				self._rvsCtrls.insert(-1, RvsRig._ctrls)
+
+				# parent ik handles
+				cmds.parent(self._iks[:-1], self._rvsJnts[-1])
+				cmds.parent(self._iks[-1], self._rvsJnts[-2])
+
+				self._ctrls += self._rvsCtrls
 
 		# connect twist attr
-		cmds.addAttr(self._ctrls[-1], ln='twist', at='float', dv=0, keyable=True)
-		cmds.connectAttr(self._ctrls[-1]+'.twist', ikHandle+'.twist')
+		cmds.addAttr(Ctrls[-1].name, ln='twist', at='float', dv=0, keyable=True)
+		cmds.connectAttr(Ctrls[-1].name+'.twist', self._iks[0]+'.twist')
 
 		# pole vector position
-		pvVec = cmds.getAttr(ikHandle+'.poleVector')[0]
+		pvVec = cmds.getAttr(self._iks[0]+'.poleVector')[0]
 		pvVecUnit = mathUtils.get_unit_vector(pvVec)
 		posRoot = cmds.xform(self._jnts[1], q=True, t=True, ws=True)
 		posDisStart = cmds.xform(self._jnts[0], q=True, t=True, ws=True)
@@ -154,7 +282,7 @@ class RotatePlaneIk(behavior.Behavior):
 
 		# pv constraint
 		constraints.matrix_pole_vector_constraint(self._nodesHide[0]+'.matrix', 
-							ikHandle, self._jnts[0], 
+							self._iks[0], self._jnts[0], 
 							parentInverseMatrix=self._nodesHide[1]+'.inverseMatrix')
 
 		# pv line
