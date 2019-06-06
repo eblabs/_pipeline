@@ -57,6 +57,7 @@ class RotatePlaneIk(component.Component):
 						set to scIk, maxium is 2
 		reverseJoints(list): blueprint of the reverse joints
 								 structure: [heel, toe, sideInn, sideOut, ball]
+		reverseDescription(list): each reverse joint position's description
 	Returns:
 		Component(obj)
 	"""
@@ -73,7 +74,9 @@ class RotatePlaneIk(component.Component):
 							 'bpCtrl': ['blueprintControl', '', 'bpCtrl'],
 							 'pvDis': ['poleVectorDistance', 1, 'pvDis'],
 							 'sc': ['singleChainIk', 0, 'sc'],
-							 'rvsJnts': ['reverseJoints', [], 'rvsJnts']})
+							 'rvsJnts': ['reverseJoints', [], 'rvsJnts'],
+							 'rvsDes': ['reverseDescription', ['heel', 'toe', 
+							 			'sideInn', 'sideOut', 'ball'], 'rvsDes']})
 
 	def create_component(self):
 		super(RotatePlaneIk, self).create_component()

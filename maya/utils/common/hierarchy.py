@@ -49,13 +49,14 @@ def parent_chain(nodes, reverse=False, parent=None):
 	Return:
 		nodes(list)
 	'''
+	chainNodes = nodes[:]
 	if reverse:
-		nodes.reverse()
-	nodes.append(parent)
-	num = len(nodes)
+		chainNodes.reverse()
+	chainNodes.append(parent)
+	num = len(chainNodes)
 	for i in range(num-1):
-		parent_node(nodes[i], nodes[i+1])
-	nodesReturn = nodes[:-1]
+		parent_node(chainNodes[i], chainNodes[i+1])
+	nodesReturn = chainNodes[:-1]
 	if reverse:
 		nodesReturn.reverse()
 	return nodesReturn

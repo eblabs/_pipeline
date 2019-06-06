@@ -526,6 +526,47 @@ def mult_matrix(inputMatrix, **kwargs):
 	# return output attr
 	return outputAttr
 
+def inverse_matrix(inputMatrix, **kwargs):
+	'''
+	connect attrs with inverse matrix node
+
+	Args:
+		inputMatrix(str): input matrix attr
+
+	Kwargs:
+		side(str): node's side
+		description(str): node's description
+		index(int): node's index
+		suffix(int): node's suffix
+		attrs(str/list): connect the node to given attrs
+		force(bool)[True]: force the connection
+ 	Returns:
+ 		outputAttr: output attribute from the node
+	'''
+
+	# get vars
+	_side = variables.kwargs('side', None, kwargs, shortName='s')
+	_des = variables.kwargs('description', None, kwargs, shortName='des')
+	_index = variables.kwargs('index', None, kwargs, shortName='i')
+	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+	_attrs = variables.kwargs('attrs', [], kwargs)
+	_force = variables.kwargs('force', True, kwargs, shortName='f')
+
+	# create node
+	invMatrix = node(type=naming.Type.inverseMatrix, side=_side,
+					 description=_des, index=_index, suffix=_suffix)
+
+	# input attrs
+	cmds.connectAttr(inputMatrix, invMatrix+'.inputMatrix')
+
+	outputAttr = invMatrix+'.outputMatrix'
+
+	if _attrs:
+		attributes.connect_attrs(outputAttr, _attrs, force=_force)
+
+	# return output attr
+	return outputAttr
+
 def compose_matrix(translate, rotate, scale=[1,1,1], **kwargs):
 	'''
 	connect attrs with compose matrix node

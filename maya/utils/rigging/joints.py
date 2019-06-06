@@ -63,12 +63,12 @@ def create(name, **kwargs):
 		else:
 			if isinstance(pos[0], basestring):
 				cmds.matchTransform(jnt, pos[0], pos=True, rot=False)
-			else:
+			elif isinstance(pos[0], list):
 				cmds.xform(jnt, t=pos[0], ws=True)
 			if isinstance(pos[1], basestring):
 				cmds.matchTransform(jnt, pos[1], pos=False, rot=True)
-			else:
-				cmds.xform(jnt, rot=pos[1], ws=True)
+			elif isinstance(pos[1], list):
+				cmds.xform(jnt, ro=pos[1], ws=True)
 		cmds.makeIdentity(jnt, apply=True, t=True, r=True, s=True)
 	
 	# parent

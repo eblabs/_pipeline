@@ -51,6 +51,21 @@ def distance(pointA, pointB):
 	return dis 
 
 # vector
+def get_vector_from_points(pointA, pointB):
+	'''
+	get vector from two points
+
+	Args:
+		pointA(list)
+		pointB(list)
+	return:
+		vector(list)
+	'''
+	vec = [pointA[0]-pointB[0],
+		   pointA[1]-pointB[1],
+		   pointA[2]-pointB[2]]
+	return vec
+
 def get_point_from_vector(point, vector, distance=1):
 	'''
 	get point from vector and given point, vector can be scaled by distance
