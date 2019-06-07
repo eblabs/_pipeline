@@ -68,10 +68,6 @@ class Base(object):
 		return self._componentType
 
 	@property
-	def inputComponent(self):
-		return self._inputComponent
-
-	@property
 	def inputMatrixAttr(self):
 		return self._inputMatrixAttr
 
@@ -99,6 +95,25 @@ class Base(object):
 		self.register_kwargs()
 		self.register_inputs(kwargs)
 
+	def create(self):
+		'''
+		create rig component
+		'''
+		self.create_component()
+		self.register_component_info()
+		self.get_component_info(self._component)
+
+	def connect(self, **kwargs):
+		'''
+		connect component
+
+		Kwargs:
+			inputMatrix(str): input matrix attr
+		'''
+		self.register_connections(kwargs)
+		self.connect_component()
+
+	# register input kwargs functions
 	def register_kwargs(self):
 		self._kwargs = {'side': ['side', naming.Side.middle, 's'],
 						'des': ['description', '', 'des'],
@@ -115,14 +130,7 @@ class Base(object):
 			attrVal = variables.kwargs(val[0], val[1], kwargs, shortName=shortName)
 			self.__setattr__('_'+key, attrVal)
 
-	def create(self):
-		'''
-		create rig component
-		'''
-		self.create_component()
-		self.register_component_info()
-		self.get_component_info(self._component)
-
+	# create component functions
 	def create_component(self):
 		'''
 		create component node hierarchy
@@ -155,7 +163,6 @@ class Base(object):
 		# add attrs
 		# input matrix: input connection from other component
 		# offset matrix: offset from the input to the current component
-		# inputComponent: message info to get input component name
 		# controls: message info to get all the controllers' names
 		# joints: message info to get all the joints' names
 		# controlsVis: controls visibility switch
@@ -165,7 +172,6 @@ class Base(object):
 
 		attributes.add_attrs(self._component, ['inputMatrix', 'offsetMatrix'],
 							attributeType='matrix', lock=True)
-		cmds.addAttr(self._component, ln='inputComponent', at='message')
 		attributes.add_attrs(self._component, ['controls', 'joints'],
 							attributeType='message', multi=True)
 		attributes.add_attrs(self._component, ['controlsVis', 'jointsVis'],
@@ -204,10 +210,10 @@ class Base(object):
 			cmds.connectAttr(jnt+'.worldMatrix[0]',
 							 '{}.outputMatrix[{}]'.format(self._component, i), f=True)
 
+	# get component infomation functions
 	def get_component_info(self, component):
 		self._component = component
 		self._componentType = self._get_attr(self._component+'.componentType')
-		self._inputComponent = self._get_attr(self._component+'.inputComponent', message=True)
 		self._ctrls = self._get_attr(self._component+'.controls', message=True, asList=True)
 		self._jnts = self._get_attr(self._component+'.joints', message=True, asList=True)
 
@@ -222,6 +228,21 @@ class Base(object):
 				outputMatrixDict['_outputMatrixAttr'].append(self._component+'.outputMatrix[{}]'.format(i))
 
 		self._add_attr_from_dict(outputMatrixDict)
+
+	# connect component functions
+	def register_connections(self, **kwargs):
+		self._inputConnection = variables.kwargs('inputMatrix', '', 
+											kwargs, shortName='im')
+
+	def connect_component(self):
+		# get input matrix and offset matrix
+		inputMatrix = cmds.getAttr(self._inputConnection)
+		inputMatrixInv = mathUtils.inverse_matrix(inputMatrix)
+		offsetMatrix = mathUtils.mult_matrix([mathUtils.MATRIX_DEFAULT, 
+											  inputMatrixInv])
+		# connect input matrix, set offset matrix
+		attributes.connect_attrs(self._inputConnection, self._inputMatrixAttr)
+		attributes.set_attrs(self._offsetMatrixAttr, offsetMatrix, type='matrix')
 
 	def _add_attr_from_dict(self, attrDict):
 		'''
