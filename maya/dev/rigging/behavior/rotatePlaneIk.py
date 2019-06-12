@@ -74,6 +74,7 @@ class RotatePlaneIk(behavior.Behavior):
 		self._ikType = variables.kwargs('ikType', 'rp', kwargs, shortName='ik')
 		self._jointSuffix = variables.kwargs('jointSuffix', 'Ik'+self._ikType.title(),
 											 kwargs, shortName='jntSfx')
+		self._ctrlSize = variables.kwargs('controlShape', ['sphere', 'diamond', 'cube'], kwargs, shortName='shape')
 		self._bpCtrl = variables.kwargs('blueprintControl', '', kwargs, shortName='bpCtrl')
 		self._distance = variables.kwargs('poleVectorDistance', 1, kwargs, shortName='pvDis')
 		self._sc = variables.kwargs('singleChainIk', 0, kwargs, 'sc')

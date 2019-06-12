@@ -19,7 +19,7 @@ import utils.common.nodeUtils as nodeUtils
 import utils.rigging.constraints as constraints
 
 ## import base class
-import dev.rigging.component.base as base
+import base
 
 #=================#
 #   GLOBAL VARS   #

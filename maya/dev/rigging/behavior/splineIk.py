@@ -65,6 +65,7 @@ class SplineIk(behavior.Behavior):
 	def __init__(self, **kwargs):
 		super(SplineIk, self).__init__(**kwargs)
 		self._jointSuffix = variables.kwargs('jointSuffix', 'IkSpline', kwargs, shortName='jntSfx')		
+		self._ctrlSize = variables.kwargs('controlShape', 'cube', kwargs, shortName='shape')
 		self._bpCrv = variables.kwargs('blueprintCurve', None, 
 										kwargs, shortName=naming.Type.blueprintCurve)
 		self._rebuild = variables.kwargs('rebuildCurve', True, kwargs, shortName='rebuild')

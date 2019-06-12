@@ -47,7 +47,7 @@ class SingleChainIk(behavior.Behavior):
 			controlColor(str/int): None will follow the side's preset
 			controlShape(str): controls shape
 			subControl(bool)[True]
-			controlsGrp(str): transform node to parent controls
+			controlsGrp(str/list): transform node to parent controls
 			jointsGrp(str): transform node to parent joints
 			nodesHideGrp(str): transform node to parent hidden nodes
 			nodesShowGrp(str): transform node to parent visible nodes
@@ -61,6 +61,7 @@ class SingleChainIk(behavior.Behavior):
 		self._ikType = variables.kwargs('ikType', 'ik', kwargs, shortName='ik')
 		self._jointSuffix = variables.kwargs('jointSuffix', self._ikType.title(),
 											 kwargs, shortName='jntSfx')
+		self._ctrlShape = variables.kwargs('controlShape', ['sphere', 'handle'], kwargs, shortName='shape')
 		self._iks = []
 
 	def create(self):

@@ -113,6 +113,10 @@ class Base(object):
 		self.register_connections(kwargs)
 		self.connect_component()
 
+	def disconnect(self):
+		self.register_disconnect_attrs()
+		self.disconnect_component()
+
 	# register input kwargs functions
 	def register_kwargs(self):
 		self._kwargs = {'side': ['side', naming.Side.middle, 's'],
@@ -120,6 +124,8 @@ class Base(object):
 						'index': ['index', None, 'i'],
 						'parent': ['parent', None, 'p'],
 						'bpJnts': ['blueprintJoints', [], 'bpJnts']}
+
+		self._kwargsConnect = {'inputMatrix': ['inputMatrix', [], 'im']}
 
 	def register_inputs(self, kwargs):
 		for key, val in self._kwargs.iteritems():
@@ -231,18 +237,42 @@ class Base(object):
 
 	# connect component functions
 	def register_connections(self, **kwargs):
-		self._inputConnection = variables.kwargs('inputMatrix', '', 
-											kwargs, shortName='im')
+		for key, val in self._kwargsConnect.iteritems():
+			if len(val) > 2:
+				shortName = val[2]
+			else:
+				shortName = None
+			attrVal = variables.kwargs(val[0], val[1], kwargs, shortName=shortName)
+			self.__setattr__('_'+key, attrVal)
 
 	def connect_component(self):
 		# get input matrix and offset matrix
-		inputMatrix = cmds.getAttr(self._inputConnection)
+		inputMatrix = cmds.getAttr(self._inputMatrix)
 		inputMatrixInv = mathUtils.inverse_matrix(inputMatrix)
 		offsetMatrix = mathUtils.mult_matrix([mathUtils.MATRIX_DEFAULT, 
 											  inputMatrixInv])
 		# connect input matrix, set offset matrix
-		attributes.connect_attrs(self._inputConnection, self._inputMatrixAttr)
+		attributes.connect_attrs(self._inputMatrix, self._inputMatrixAttr)
 		attributes.set_attrs(self._offsetMatrixAttr, offsetMatrix, type='matrix')
+
+	def register_disconnect_attrs(self):
+		self._disconnect = {'inputMatrix': {'type': 'matrix',
+											'value': mathUtils.MATRIX_DEFAULT},
+							'offsetMatrix': {'type': 'matrix',
+											 'value': mathUtils.MATRIX_DEFAULT}}
+
+	def disconnect_component(self):
+		for attr, item in self._disconnect.iteritems():
+			plugs = cmds.listConnections('{}.{}'.format(self._component, attr),
+										s=True, d=False, p=True)
+			if plugs:
+				cmds.disconnectAttr(plugs[0], '{}.{}'.format(self._component, attr))
+			
+			kwargs = {}
+			if 'type' in item:
+				kwargs.update({'type':item['type']})
+			attributes.set_attrs('{}.{}'.format(self._component, attr),
+								 item['value'], **kwargs)
 
 	def _add_attr_from_dict(self, attrDict):
 		'''

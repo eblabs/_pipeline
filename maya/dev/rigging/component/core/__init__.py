@@ -5,7 +5,6 @@
 ## import for debug
 import logging
 
-
 #=================#
 #   GLOBAL VARS   #
 #=================#

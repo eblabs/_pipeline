@@ -49,6 +49,7 @@ class FkChain(component.Component):
 		controlColor(str/int): None will follow the side's preset
 		subControl(bool)[True]
 		lockHide(list): lock and hide controls channels
+		endJoint(bool)[True]: add control to the end joint
 	Returns:
 		Component(obj)
 	"""
@@ -59,7 +60,8 @@ class FkChain(component.Component):
 
 	def register_kwargs(self):
 		super(FkChain, self).register_kwargs()
-		self._kwargs.update({'lockHide': ['lockHide', attributes.Attr.scale, 'lh']})
+		self._kwargs.update({'lockHide': ['lockHide', attributes.Attr.scale, 'lh'],
+							 'end': ['endJoint', True, 'end']})
 
 	def create_component(self):
 		super(FkChain, self).create_component()
@@ -74,6 +76,7 @@ class FkChain(component.Component):
 				  'controlColor': self._ctrlCol,
 				  'subControl': self._sub,
 				  'lockHide': self._lockHide,
+				  'endJoint': self._end,
 
 				  'controlsGrp': self._controlsGrp,
 				  'jointsGrp': self._jointsGrp,

@@ -11,3 +11,5 @@ import logging
 logging.basicConfig(level=logging.WARNING)
 Logger = logging.getLogger(__name__)
 Logger.setLevel(logging.WARNING)
+
+TASK_PATH = 'dev.rigging.task.core'
