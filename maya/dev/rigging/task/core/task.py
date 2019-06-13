@@ -42,6 +42,9 @@ class Task(object):
 		self.register_kwargs()
 		self.register_inputs(kwargs)
 
+	def run(self):
+		pass
+
 	def register_kwargs(self):
 		self._kwargs = {}
 

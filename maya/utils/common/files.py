@@ -96,3 +96,50 @@ def read_numpy_file(path):
 	'''
 	data = numpy.load(path)
 	return data
+
+def get_files_from_path(path, extension=[]):
+	'''
+	Get files from the given path
+
+	Args:
+		path(str): given path
+	Kwargs:
+		extension(list/str): specific extension
+	return:
+		filePaths(list)
+	'''
+	files = os.listdir(path)
+	filePaths = []
+
+	if isinstance(extension, basestring):
+		extension = [extension]
+
+	if files:
+		for f in files:
+			path_file = os.path.join(path, f)
+			if os.path.isfile(path_file):
+				ext = os.path.splitext(path_file)[-1].lower()
+				if ext in extension or not extension:
+					filePaths.append(path_file)
+
+	return filePaths
+
+def get_folders_from_path(path):
+	'''
+	Get folders from the given path
+
+	Args:
+		path(str): given path
+	return:
+		folderPaths(list)
+	'''
+	files = os.listdir(path)
+	folderPaths = []
+
+	if files:
+		for f in files:
+			path_file = os.path.join(path, f)
+			if os.path.isdir(path_file):
+				folderPaths.append(path_file)
+
+	return folderPaths
