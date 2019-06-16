@@ -12,6 +12,7 @@ import maya.cmds as cmds
 ## import utils
 import utils.common.naming as naming
 import utils.common.variables as variables
+import utils.common.modules as modules
 import utils.common.transforms as transforms
 import utils.common.attributes as attributes
 import utils.common.hierarchy as hierarchy
@@ -127,21 +128,6 @@ class Pack(base.Base):
 		return Obj
 
 	def _get_component_build_obj(self, componentType, **kwargs):
-		componentImport, componentFunc = import_module(componentType)
+		componentImport, componentFunc = modules.import_module(componentType)
 		Obj = getattr(componentImport, componentFunc)(**kwargs)
 		return Obj
-
-#=================#
-#  SUB FUNCTION   #
-#=================#
-def import_module(path):
-	components = path.split('.')
-	func = components[-1][0].upper() + components[-1][1:]
-	if len(components) > 1:
-		path = ''
-		for c in components:
-			path += '{}.'.format(c)
-		module = __import__(path[:-1], fromlist = [components[-1]])
-	else:
-		module = __import__(path)
-	return module, func

@@ -12,6 +12,7 @@ import maya.cmds as cmds
 ## import utils
 import utils.common.naming as naming
 import utils.common.variables as variables
+import utils.common.modules as modules
 import utils.common.transforms as transforms
 import utils.common.attributes as attributes
 import utils.common.hierarchy as hierarchy
@@ -26,66 +27,46 @@ from . import Logger
 #=================#
 #      CLASS      #
 #=================#
-class Base(object):
+class Builder(object):
 	"""
 	base template for all the build script
 	"""
 	def __init__(self):
-		super(Base, self).__init__()
+		super(Builder, self).__init__()
+		self._tasks = []
 		
-		self._preBuild = []
-		self._build = []
-		self._postBuild = []
-
 	def register_task(self, **kwargs):
 		'''
 		register task to build script
 
 		Kwargs:
-			name(str): task dispay name
+			name(str): task name
 			task(method): task function
-			section(str): register task to section
-						 'PreBuild', 'Build', 'PostBuild'
 			index(str/int): register task at specific index
 							if given string, it will register after the given task
 			parent(str): parent task to the given task
+			kwargs(dict): task kwargs
 		'''
 
 		# get kwargs
-		name = variables.kwargs('name', '', kwargs, shortName='n')
-		task = variables.kwargs('task', None, kwargs, shortName='tsk')
-		section = variables.kwargs('section', '', kwargs, shortName='s')
-		index = variables.kwargs('index', None, kwargs, shortName='i')
-		parent = variables.kwargs('parent', '', kwargs, shortName='p')
+		_name = variables.kwargs('name', '', kwargs, shortName='n')
+		_task = variables.kwargs('task', None, kwargs, shortName='tsk')
+		_index = variables.kwargs('index', None, kwargs, shortName='i')
+		_parent = variables.kwargs('parent', '', kwargs, shortName='p')
+		_kwargs = variables.kwargs('kwargs', {}, kwargs)
 
-		# get section list
-		if section.lower() == 'prebuild':
-			section = self._preBuild
-		elif section.lower() == 'build':
-			section = self._build
-		else:
-			section = self._postbuild
-
-		# get index
-		if isinstance(index, basestring):
-			if index in section:
-				index = section.index(index)+1
-			else:
-				index = len(section)
-		elif isinstance(index, int):
-			pass
-		else:
-			index = len(section)
-
-		# add to section
-		section.insert(index, {'name': name,
-							   'task': task,
-							   'parent': parent})
+		# add to task list
+		_taskInfo = {'name': {'task': _task,
+							  'index': _index,
+							  'parent': _parent,
+							  'kwargs': _kwargs}}
+		self._tasks.append(_taskInfo)
 
 	def registertion(self):
 		'''
 		register all the task to the builder
 		'''
 		pass
+
 
 
