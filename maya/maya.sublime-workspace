@@ -561,8 +561,16 @@
 			"file": "dev/rigging/builder/core/builder.py",
 			"settings":
 			{
-				"buffer_size": 2756,
+				"buffer_size": 2745,
 				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "dev/rigging/component/pack/pack.py",
+			"settings":
+			{
+				"buffer_size": 4045,
 				"line_ending": "Windows"
 			}
 		},
@@ -1111,7 +1119,7 @@
 						"translation.y": 1414.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
@@ -1142,7 +1150,7 @@
 						"translation.y": 432.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -1168,10 +1176,10 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 324.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -1197,7 +1205,7 @@
 							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 324.0,
+						"translation.y": 263.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
@@ -1209,15 +1217,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2756,
+						"buffer_size": 2745,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2199,
-								2199
+								2188,
+								2188
 							]
 						],
 						"settings":
@@ -1227,7 +1235,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 838.0,
+						"translation.y": 2376.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1235,6 +1243,36 @@
 				},
 				{
 					"buffer": 5,
+					"file": "dev/rigging/component/pack/pack.py",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 4045,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4032,
+								3905
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 4320.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
 					"file": "tests/treeList2.py",
 					"semi_transient": false,
 					"settings":
@@ -1265,7 +1303,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 7,
 					"file": "tests/data.py",
 					"semi_transient": false,
 					"settings":
@@ -1291,7 +1329,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 5,
 					"type": "text"
 				}
 			]
@@ -1301,7 +1339,7 @@
 			"sheets":
 			[
 				{
-					"buffer": 7,
+					"buffer": 8,
 					"file": "/C/_pipeline/maya_oldCodes/rigSys/ui/rigBuilder.py",
 					"semi_transient": false,
 					"settings":
@@ -1327,11 +1365,11 @@
 						"translation.y": 756.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 9,
 					"file": "/C/_pipeline/maya_oldCodes/lib/common/uiUtils.py",
 					"semi_transient": false,
 					"settings":
@@ -1357,11 +1395,11 @@
 						"translation.y": 1080.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 10,
 					"file": "/C/_pipeline/maya_oldCodes/rigSys/ui/rigBuild/rigBuildInfoTreeWidget.py",
 					"semi_transient": false,
 					"settings":
@@ -1387,7 +1425,7 @@
 						"translation.y": 1512.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 8,
 					"type": "text"
 				}
 			]

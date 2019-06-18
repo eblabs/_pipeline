@@ -33,9 +33,7 @@ class Builder(object):
 	"""
 	def __init__(self):
 		super(Builder, self).__init__()
-		self._data = []
-		self._tasks = {}
-		self._hierarchy = []
+		self._tasks = []
 		
 	def register_task(self, **kwargs):
 		'''
@@ -57,24 +55,26 @@ class Builder(object):
 		_parent = variables.kwargs('parent', '', kwargs, shortName='p')
 		_kwargs = variables.kwargs('kwargs', {}, kwargs)
 
-		# add to task list
-		_taskInfo = {_name: {'task': _task,
-							 'parent': _parent,
-							 'kwargs': _kwargs}}
+		# add task info to class as attribute
+		_taskInfo = {'Task': _task,
+					 'kwargs': _kwargs,
+					 'parent': _parent}
+		# import module
+		if isinstance(_task, basestring):
+			taskImport, taskFunc = modules.import_module(_task)
+			_Task = getattr(taskImport, taskFunc)
+			_taskInfo['Task'] = _Task
+
+		self._add_obj_attr('_'+_name, _taskInfo)
 
 		# get index
 		if isinstance(_index, basestring):
-			for i, t in enumerate(self._data):
-				key = t.keys()[0]
-				if _index == key:
-					_index = i+1
-					break
-			if isinstance(_index, basestring):
-				_index = len(self._data)
+			if _index in self._tasks:
+				_index = self._tasks.index(_index) + 1
+			else:
+				_index = len(self._tasks)
 
-		self._data.insert(_index, _taskInfo)
-		self._tasks.update({_name: {'task': _task,
-									'kwargs': _kwargs}})
+		self._tasks.insert(_index, _name)
 
 	def registertion(self):
 		'''
@@ -82,34 +82,31 @@ class Builder(object):
 		'''
 		pass
 
-	def _insert_child(self, tree, data):
-		'''
-		insert child to parent task as a tree hierarchy
-		'''
-		key = data.keys()[0]
-		item = data[key]
-		if 'parent' in item and item['parent']:
-			parentTask = item['parent']
-			for treeData in tree:
-				keyTree = treeData.keys()[0]
-				itemTree = treeData[keyTree]
-				if parentTask == keyTree:
-					itemTree['children'].append({key: {'children': []}})
-					return True
-				else:
-					isParent = get_child(itemTree['children'], data)
-					if isParent:
-						return True
-		else:
-			tree.append({key: {'children': []}})
+	def _get_task_info(self, task):
+		taskInfo = getattr(self, '_'+task)
+		return taskInfo
 
-	def _build_task_tree(self):
+	def _add_attr_from_dict(self, attrDict):
 		'''
-		build task tree hierarchy
+		add class attributes from given dictionary
 		'''
-		for d in self._data:
-			self._insert_child(self._hierarchy, d)
+		for key, val in attrDict.iteritems():
+			setattr(self, key, val)
 
+	def _add_obj_attr(self, attr, attrDict):
+		attrSplit = attr.split('.')
+		attrParent = self
+		if len(attrSplit) > 1:
+			for a in attrSplit[:-1]:
+				attrParent = getattr(attrParent, a)
+		setattr(attrParent, attrSplit[-1], Objectview(attrDict))
 
+#=================#
+#    SUB CLASS    #
+#=================#
+
+class Objectview(object):
+	def __init__(self, kwargs):
+		self.__dict__ = kwargs
 
 
