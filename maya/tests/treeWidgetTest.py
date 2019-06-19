@@ -48,6 +48,9 @@ class TreeWidget(QtGui.QTreeWidget):
 			  {'task6': {'display': 'task6',
 			  			 'children': [{'task7': {'display': 'task7'}},
 			  			 			  {'task8': {'display': 'task8'}}]}}]
+
+		
+
 		for sectionInfo in zip(sections, ['PreBuild', 'Build', 'PostBuild']):
 			QTreeWidgetItem_section = QtGui.QTreeWidgetItem(QTreeWidgetItem_asset)
 			QTreeWidgetItem_section.setText(0, sectionInfo[1])
