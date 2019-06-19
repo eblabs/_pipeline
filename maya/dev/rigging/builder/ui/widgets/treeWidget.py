@@ -7,12 +7,8 @@ import sys
 import os
 
 # import PySide
-try:
-	from PySide2 import QtCore, QtGui
-	from shiboken2 import wrapInstance 
-except ImportError:
-	from PySide import QtCore, QtGui
-	from shiboken import wrapInstance
+from PySide2 import QtCore, QtGui, QtWidgets
+from shiboken2 import wrapInstance 
 
 #=================#
 #   GLOBAL VARS   #
@@ -22,7 +18,7 @@ from . import Logger
 #=================#
 #      CLASS      #
 #=================#
-class TreeWidget(QtGui.QTreeWidget):
+class TreeWidget(QtWidgets.QTreeWidget):
 	"""base class for TreeWidget"""
 	def __init__(self, *args, **kwargs):
 		super(TreeWidget, self).__init__(*args, **kwargs)
@@ -33,18 +29,18 @@ class TreeWidget(QtGui.QTreeWidget):
 		self.init_widget()
 
 	def init_widget(self):
-		QHeader = QtGui.QTreeWidgetItem(self._header)
+		QHeader = QtWidgets.QTreeWidgetItem(self._header)
 		self.setHeaderItem(QHeader)
 		self.setRootIsDecorated(False)
 		self.setAlternatingRowColors(True)
-		self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+		self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 		self.setHeaderHidden(True)
-		self.header().setResizeMode(0, QtGui.QHeaderView.Stretch)
+		self.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
 		self.header().setStretchLastSection(False)
 		self.setColumnWidth(1,40)
 		
 	def add_tree_items(self, data, root='Root'):
-		QTreeWidgetItem_root = QtGui.QTreeWidgetItem(self)
+		QTreeWidgetItem_root = QtWidgets.QTreeWidgetItem(self)
 		QTreeWidgetItem_root.setText(0, root)
 		QTreeWidgetItem_root.setFlags(QTreeWidgetItem_root.flags())
 
@@ -53,14 +49,15 @@ class TreeWidget(QtGui.QTreeWidget):
 		self.expandAll()
 
 	def _add_child_item(self, QItem, data):
-		name = data.keys()[0]
-		dataInfo = data[name]
+		for d in data:
+			name = d.keys()[0]
+			dataInfo = d[name]
 
-		QTreeWidgetItem = QtGui.QTreeWidgetItem()
-		QTreeWidgetItem.setText(0, name)
-		QTreeWidgetItem.setFlags(QTreeWidgetItem.flags())
+			QTreeWidgetItem = QtWidgets.QTreeWidgetItem()
+			QTreeWidgetItem.setText(0, name)
+			QTreeWidgetItem.setFlags(QTreeWidgetItem.flags())
 
-		QItem.addChild(QTreeWidgetItem)
+			QItem.addChild(QTreeWidgetItem)
 
-		if 'children' in dataInfo:
-			self._add_child_item(QTreeWidgetItem, dataInfo['children'])
+			if 'children' in dataInfo:
+				self._add_child_item(QTreeWidgetItem, dataInfo['children'])

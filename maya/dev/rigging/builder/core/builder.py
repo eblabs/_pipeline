@@ -51,7 +51,7 @@ class Builder(object):
 		# get kwargs
 		_name = variables.kwargs('name', '', kwargs, shortName='n')
 		_task = variables.kwargs('task', None, kwargs, shortName='tsk')
-		_index = variables.kwargs('index', None, kwargs, shortName='i')
+		_index = variables.kwargs('index', len(self._tasks), kwargs, shortName='i')
 		_parent = variables.kwargs('parent', '', kwargs, shortName='p')
 		_kwargs = variables.kwargs('kwargs', {}, kwargs)
 
@@ -65,14 +65,12 @@ class Builder(object):
 			_Task = getattr(taskImport, taskFunc)
 			_taskInfo['Task'] = _Task
 
-		self._add_obj_attr('_'+_name, _taskInfo)
+		self._add_attr_from_dict({'_'+_name: _taskInfo})
 
 		# get index
 		if isinstance(_index, basestring):
 			if _index in self._tasks:
 				_index = self._tasks.index(_index) + 1
-			else:
-				_index = len(self._tasks)
 
 		self._tasks.insert(_index, _name)
 
@@ -81,6 +79,26 @@ class Builder(object):
 		register all the task to the builder
 		'''
 		pass
+
+	def tree_hierarchy(self):
+		hierarchy = []
+		for task in self._tasks:
+			self._add_child(hierarchy, task)
+		return hierarchy
+
+	def _add_child(self, hierarchy, task):
+		taskInfo = self._get_task_info(task)
+		parent = taskInfo['parent']
+		if parent:
+			for hieInfo in hierarchy:
+				key = hieInfo.keys()[0]
+				if parent == key:
+					hieInfo[parent]['children'].append({task: {'children': []}})
+					return True
+				else:
+					isParent = self._add_child(hieInfo[key]['children'], task)
+		else:
+			hierarchy.append({task:{'children': []}})
 
 	def _get_task_info(self, task):
 		taskInfo = getattr(self, '_'+task)
