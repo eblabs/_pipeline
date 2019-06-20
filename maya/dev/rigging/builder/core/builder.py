@@ -34,6 +34,7 @@ class Builder(object):
 	def __init__(self):
 		super(Builder, self).__init__()
 		self._tasks = []
+		self._taskInfos = {}
 		
 	def register_task(self, **kwargs):
 		'''
@@ -65,7 +66,7 @@ class Builder(object):
 			_Task = getattr(taskImport, taskFunc)
 			_taskInfo['Task'] = _Task
 
-		self._add_attr_from_dict({'_'+_name: _taskInfo})
+		self._taskInfos.update({_name: _taskInfo})
 
 		# get index
 		if isinstance(_index, basestring):
@@ -101,7 +102,7 @@ class Builder(object):
 			hierarchy.append({task:{'children': []}})
 
 	def _get_task_info(self, task):
-		taskInfo = getattr(self, '_'+task)
+		taskInfo = self._taskInfos[task]
 		return taskInfo
 
 	def _add_attr_from_dict(self, attrDict):

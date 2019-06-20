@@ -7,8 +7,17 @@ import sys
 import os
 
 # import PySide
-from PySide2 import QtCore, QtGui, QtWidgets
-from shiboken2 import wrapInstance 
+try:
+  from PySide2.QtCore import * 
+  from PySide2.QtGui import * 
+  from PySide2.QtWidgets import *
+  from PySide2 import __version__
+  from shiboken2 import wrapInstance 
+except ImportError:
+  from PySide.QtCore import * 
+  from PySide.QtGui import * 
+  from PySide import __version__
+  from shiboken import wrapInstance 
 
 #=================#
 #   GLOBAL VARS   #
@@ -18,7 +27,7 @@ from . import Logger
 #=================#
 #      CLASS      #
 #=================#
-class TreeWidget(QtWidgets.QTreeWidget):
+class TreeWidget(QTreeWidget):
 	"""base class for TreeWidget"""
 	def __init__(self, *args, **kwargs):
 		super(TreeWidget, self).__init__(*args, **kwargs)
@@ -29,22 +38,23 @@ class TreeWidget(QtWidgets.QTreeWidget):
 		self.init_widget()
 
 	def init_widget(self):
-		QHeader = QtWidgets.QTreeWidgetItem(self._header)
+		QHeader = QTreeWidgetItem(self._header)
 		self.setHeaderItem(QHeader)
-		self.setRootIsDecorated(False)
+		self.setRootIsDecorated(True)
 		self.setAlternatingRowColors(True)
-		self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+		self.setSelectionBehavior(QAbstractItemView.SelectRows)
 		self.setHeaderHidden(True)
-		self.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+		self.header().setSectionResizeMode(0, QHeaderView.Stretch)
 		self.header().setStretchLastSection(False)
 		self.setColumnWidth(1,40)
-		
-	def add_tree_items(self, data, root='Root'):
-		QTreeWidgetItem_root = QtWidgets.QTreeWidgetItem(self)
-		QTreeWidgetItem_root.setText(0, root)
-		QTreeWidgetItem_root.setFlags(QTreeWidgetItem_root.flags())
 
-		self._add_child_item(QTreeWidgetItem_root, data)
+		self.setSelectionMode(self.ExtendedSelection)
+		self.setDragDropMode(self.InternalMove)
+		self.setDragEnabled(True)
+		self.setDropIndicatorShown(True)
+		
+	def add_tree_items(self, data):
+		self._add_child_item(self.invisibleRootItem(), data)
 
 		self.expandAll()
 
@@ -53,11 +63,82 @@ class TreeWidget(QtWidgets.QTreeWidget):
 			name = d.keys()[0]
 			dataInfo = d[name]
 
-			QTreeWidgetItem = QtWidgets.QTreeWidgetItem()
-			QTreeWidgetItem.setText(0, name)
-			QTreeWidgetItem.setFlags(QTreeWidgetItem.flags())
+			QTreeWidgetItem_child = QTreeWidgetItem()
+			QTreeWidgetItem_child.setText(0, name)
+			QTreeWidgetItem_child.setFlags(QTreeWidgetItem_child.flags()|Qt.ItemIsTristate|Qt.ItemIsUserCheckable)
+			QTreeWidgetItem_child.setCheckState(0, Qt.Checked)
 
-			QItem.addChild(QTreeWidgetItem)
+
+			QItem.addChild(QTreeWidgetItem_child)
 
 			if 'children' in dataInfo:
-				self._add_child_item(QTreeWidgetItem, dataInfo['children'])
+				self._add_child_item(QTreeWidgetItem_child, dataInfo['children'])
+
+	def dropEvent(self, event):
+		if event.source() == self:
+			QAbstractItemView.dropEvent(self, event)
+
+	def dropMimeData(self, parent, row, data, action):
+		if action == Qt.MoveAction:
+			return self.moveSelection(parent, row)
+		return False
+
+	def moveSelection(self, parent, position):
+		selection = [QPersistentModelIndex(i)
+					 for i in self.selectedIndexes()]
+		parent_index = self.indexFromItem(parent)
+		if parent_index in selection:
+			return False
+		# save the drop location in case it gets moved
+		target = self.model().index(position, 0, parent_index).row()
+		if target < 0:
+			target = position
+		# remove the selected items
+		taken = []
+		for index in reversed(selection):
+			item = self.itemFromIndex(QModelIndex(index))
+			if item is None or item.parent() is None:
+				taken.append(self.takeTopLevelItem(index.row()))
+			else:
+				taken.append(item.parent().takeChild(index.row()))
+		# insert the selected items at their new positions
+		while taken:
+			if position == -1:
+				# append the items if position not specified
+				if parent_index.isValid():
+					parent.insertChild(
+						parent.childCount(), taken.pop(0))
+				else:
+					self.insertTopLevelItem(
+						self.topLevelItemCount(), taken.pop(0))
+			else:
+				# insert the items at the specified position
+				if parent_index.isValid():
+					parent.insertChild(min(target,
+						parent.childCount()), taken.pop(0))
+				else:
+					self.insertTopLevelItem(min(target,
+						self.topLevelItemCount()), taken.pop(0))
+		return True
+
+	def keyPressEvent(self, event):
+		if (event.key() == Qt.Key_Escape and
+			event.modifiers() == Qt.NoModifier):
+			self.clearSelection()
+			self.clearFocus()
+			self.setCurrentIndex(QModelIndex())
+		else:
+			QTreeWidget.keyPressEvent(self, event)
+
+	def mousePressEvent(self, event):
+		if not self.indexAt(event.pos()).isValid():
+			self.clearSelection()
+			self.clearFocus()
+			self.setCurrentIndex(QModelIndex())
+		super(TreeWidget, self).mousePressEvent(event)
+
+	def mouseDoubleClickEvent(self, event):
+		if self.indexAt(event.pos()).isValid():
+			TaskItem = self.currentItem()
+			task = TaskItem.text(0)
+			print task 

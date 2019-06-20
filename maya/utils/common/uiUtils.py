@@ -12,11 +12,16 @@ import maya.OpenMayaUI as OpenMayaUI
 
 ## import PySide
 try:
-	from PySide2 import QtCore, QtGui
-	from shiboken2 import wrapInstance 
+  from PySide2.QtCore import * 
+  from PySide2.QtGui import * 
+  from PySide2.QtWidgets import *
+  from PySide2 import __version__
+  from shiboken2 import wrapInstance 
 except ImportError:
-	from PySide import QtCore, QtGui
-	from shiboken import wrapInstance
+  from PySide.QtCore import * 
+  from PySide.QtGui import * 
+  from PySide import __version__
+  from shiboken import wrapInstance 
 
 #=================#
 #   GLOBAL VARS   #
@@ -26,7 +31,7 @@ from . import Logger
 #=================#
 #      CLASS      #
 #=================#
-class BaseWindow(QtGui.QWidget):
+class BaseWindow(QWidget):
 	"""class for Base Window in maya"""
 	def __init__(self, **kwargs):
 		super(BaseWindow, self).__init__()
@@ -38,7 +43,7 @@ class BaseWindow(QtGui.QWidget):
 		
 		# parent widget
 		self.setParent(_parent)
-		self.setWindowFlags(QtCore.Qt.Window)
+		self.setWindowFlags(Qt.Window)
 
 		# set the object name
 		self.setObjectName(_title.replace(' ', '') + '_uniqueId')
@@ -56,4 +61,4 @@ class BaseWindow(QtGui.QWidget):
 #=================#
 def get_maya_window():
 	ptr = OpenMayaUI.MQtUtil.mainWindow()
-	return wrapInstance(long(ptr), QtGui.QMainWindow)
+	return wrapInstance(long(ptr), QMainWindow)
