@@ -16,7 +16,7 @@ except ImportError:
 	from shiboken import wrapInstance
 
 # import baseAttrWidget
-import baseAttrWidget
+import stringAttrWidget
 
 # =================#
 #   GLOBAL VARS   #
@@ -26,19 +26,15 @@ from . import Logger
 # =================#
 #      CLASS      #
 # =================#
-class ListAttrWidget(baseAttrWidget.BaseAttrWidget):
+class ListAttrWidget(stringAttrWidget.StringAttrWidget):
 	"""base class for ListAttrWidget"""
 	def __init__(self, **kwargs):
 		super(ListAttrWidget, self).__init__(**kwargs)
 
-	def add_attr_widget(self):
-		self._widget = QLineEdit(str(self._val))
-		super(ListAttrWidget, self).add_attr_widget()
-
 	def _build_right_click_menu(self):
 		super(ListAttrWidget, self)._build_right_click_menu()
-		action_items = self.right_menu.addAction('List Items')
-		action_items.connect(action_items, SIGNAL("triggered()"), self.list_data_menu)
+		action_data = self.right_menu.addAction('Edit Data')
+		action_data.connect(action_data, SIGNAL("triggered()"), self.list_data_menu)
 	
-	def list_items_menu(self):
+	def list_data_menu(self):
 		pass

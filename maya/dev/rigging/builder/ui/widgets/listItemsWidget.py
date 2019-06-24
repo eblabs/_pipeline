@@ -23,8 +23,9 @@ from . import Logger
 # =================#
 #      CLASS      #
 # =================#
-class ListAttrWidget(QWidget):
+class ListItemsWidget(QListView):
 	"""docstring for ListAttrWidget"""
 	def __init__(self, kwargs):
-		super(ListAttrWidget, self).__init__()
+		super(ListItemsWidget, self).__init__()
+
 		
