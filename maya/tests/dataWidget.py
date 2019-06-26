@@ -13,8 +13,34 @@ except ImportError:
 
 import ast
 
-valueRole = Qt.UserRole + 1
-defaultRole = valueRole +1
+role_defaultValue = Qt.UserRole + 1
+role_attrType = Qt.UserRole + 2
+role_min = Qt.UserRole + 3
+role_max = Qt.UserRole + 4
+role_enum = Qt.UserRole + 5
+role_template = Qt.UserRole + 6
+
+itemType = {'strAttr': {'value': '',
+						'widget': QLineEdit},
+			'floatAttr': {'value': 0.0,
+						  'min': None,
+						  'max': None,
+						  'widget': QDoubleSpinBox},
+			'intAttr': {'value': 0,
+						'min': None,
+						'max': None,
+						'widget': QSpinBox},
+			'enumAttr': {'value': None,
+						 'enumName': [],
+						 'widget': QComboBox},
+			'boolAttr': {'value': True,
+						 'widget': QComboBox},
+			'listAttr': {'value': [],
+						 'template': '',
+						 'widget': QLineEdit},
+			'dictAttr': {'value': {},
+						 'template': [],
+						 'widget': QLineEdit}}
 
 class DataWdiget(QTreeView):
 	"""docstring for DataWdiget"""
@@ -22,20 +48,27 @@ class DataWdiget(QTreeView):
 	def __init__(self):
 		super(DataWdiget, self).__init__()
 
-		self._data = [{'attr1': 'text1'},
-					  {'attr2': 3.0},
-					  {'attr3': 5},
-					  {'attr4': False},
-					  {'attr5': ['path1', 'path2', 'path3']},
-					  {'attr6': {'key1': 'val1',
-								 'key2': 'val2',
-								 'key3': 'val3'}},
-					  {'attr7': [{'dict1': {'key1': 'attr1', 'key2': 'attr2'}},
-								 {'dict2': {'key1': 'attr1',
-										   'key2': 'attr2'}}]},
-					  {'attr8': {'key1': ['path1', 'path2'],
-								 'key2': {'key1': 'val1',
-										  'key2': 'val2'}}}]
+		self._data = [{'attr1': {'value': 'text1'}},
+					  {'attr2': {'value': 3.0,
+					  			 'min': 0.0,
+					  			 'max': 10.0}},
+					  {'attr3': {'value': 5,
+					  			 'min': 1}},
+					  {'attr4': {'value':False}},
+					  {'attr5': {'value': ['path1', 'path2', 'path3'],
+					  			 'template': 'strAttr'}},
+					  {'attr6': {'value': {'key1': 'val1',
+								 		   'key2':  2.0,
+								 		   'key3': 3},
+								 'template': {'key1': 'strAttr',
+								 			  'key2': 'floatAttr',
+								 			  'key3': 'intAttr'}}},
+					  {'attr7': {'value': 'option2',
+					  			 'type': 'enumAttr',
+					  			 'enumName': ['option1',
+					  			 			  'option2',
+					  			 			  'option3',
+					  			 			  'option4']}}]
 
 		self.init_widget()
 		self.assign_data()
@@ -44,14 +77,13 @@ class DataWdiget(QTreeView):
 		# QHeader = QTreeWidgetItem(['Attribute', 'Value'])
 		# self.setHeaderItem(QHeader)
 		# self.setRootIsDecorated(True)
-		# self.setAlternatingRowColors(True)
+		self.setAlternatingRowColors(True)
 		self.setHeaderHidden(False)
 		#self.setUniformRowHeights(True)
 		delegate = AttrDelegate(self)
 		delegate.QSignelCollectData.connect(self._collect_data)
 		delegate.QSignelRebuildData.connect(self._rebuild_data)
-		
-		
+				
 		#self.header().setSectionResizeMode(0, QHeaderView.Stretch)
 		self.header().setStretchLastSection(True)
 
@@ -69,8 +101,26 @@ class DataWdiget(QTreeView):
 		
 		
 	def assign_data(self):
+		size=QSize(20,20)
 		for attrDict in self._data:
-			self._assign_data(self._model, attrDict)
+			key = attrDict.keys()[0]
+			attrInfo = attrDict[key]
+
+			column_attr = QStandardItem(key)
+			column_attr.setEditable(False)
+			column_attr.setData(size, role=Qt.SizeHintRole)
+
+			column_val = AttrItem(**attrInfo)
+			column_val.setData(size, role=Qt.SizeHintRole)
+
+			self._model.appendRow([column_attr, column_val])
+
+			if isinstance(attrInfo['value'], list) or isinstance(attrInfo['value'], dict):
+
+				template_item = column_val.data(role=role_template)
+
+				self._assign_data(column_attr, attrInfo['value'], template=template_item)
+
 			'''
 			key = attrDict.keys()[0]
 			val = attrDict[key]
@@ -88,37 +138,43 @@ class DataWdiget(QTreeView):
 					column_attr.appendRow([attr, val])
 			'''
 
-	def _assign_data(self, model, data):
+	def _assign_data(self, model, data, template=None):
 		size=QSize(20,20)
-		if isinstance(data, list):
+		if isinstance(data, list):		
 			for i, item in enumerate(data):
 				# add each item
-				column_attr = QStandardItem(str(i+1))
+				column_attr = QStandardItem(str(i))
 				column_attr.setEditable(False)
 				column_attr.setData(size, role=Qt.SizeHintRole)
 
-				column_val = QStandardItem(str(item))
-				column_val.setData('value', role=valueRole)
-				column_val.setData(str(item), role=defaultRole)
+				column_val = AttrItem(str(item), type=template)
 				column_val.setData(size, role=Qt.SizeHintRole)
 
 				model.appendRow([column_attr, column_val])
 
-				self._assign_data(column_attr, item)
+				template_item = column_val.data(role=role_template)
+
+				self._assign_data(column_attr, item, template=template_item)
 
 		elif isinstance(data, dict):
 			for key, item in data.iteritems():
 				column_attr = QStandardItem(key)
 				column_attr.setEditable(False)
 				column_attr.setData(size, role=Qt.SizeHintRole)
-				column_val = QStandardItem(str(item))
-				column_val.setData('value', role=valueRole)
-				column_val.setData(str(item), role=defaultRole)
+
+				if template and key in template:
+					attr_type = template[key]
+				else:
+					attr_type = None
+
+				column_val = AttrItem(str(item), type=attr_type)
 				column_val.setData(size, role=Qt.SizeHintRole)
 
 				model.appendRow([column_attr, column_val])
 
-				self._assign_data(column_attr, item)
+				template_item = column_val.data(role=role_template)
+
+				self._assign_data(column_attr, item, template=template_item)
 
 	def _collect_data(self, item):
 		# get item parent
@@ -205,30 +261,30 @@ class AttrDelegate(QItemDelegate):
 		super(AttrDelegate, self).__init__(parent)
 		
 	def createEditor(self, parent, option, index):
-		value = index.model().data(index)
-		try:
-			value = ast.literal_eval(str(value))
-		except:
-			pass
+		item = index.model().itemFromIndex(index)
+		attrType = item.data(role=role_attrType)
 
-		if isinstance(value, basestring):
-			line_edit = QLineEdit(parent)
-			return line_edit
-		elif isinstance(value, float):
-			spin_double_box = QDoubleSpinBox(parent)
-			return spin_double_box		
-		elif value in [True, False]:
-			check_box = QCheckBox(parent)
-			return check_box
-		elif isinstance(value, int):
-			spin_box = QSpinBox(parent)
-			return spin_box
-		elif isinstance(value, list):
-			line_edit = QLineEdit(parent)
-			return line_edit
-		elif isinstance(value, dict):
-			line_edit = QLineEdit(parent)
-			return line_edit
+		value = index.data()
+
+		widget = itemType[attrType]['widget'](parent)
+
+		# extra setting
+		if isinstance(widget, QComboBox):
+			enumName = item.data(role=role_enum)
+			widget.addItems(enumName)
+			enumIndex = widget.findText(value, Qt.MatchFixedString)
+			widget.setCurrentIndex(enumIndex)
+		elif isinstance(widget, QDoubleSpinBox) or isinstance(widget, QSpinBox):
+			minVal = item.data(role=role_min)
+			maxVal = item.data(role=role_max)
+			if minVal:
+				widget.setMinimum(minVal)
+			if maxVal:
+				widget.setMaximum(maxVal)
+		elif isinstance(widget, QLineEdit):
+			widget.setFrame(False)
+
+		return widget
 
 	def setEditorData(self, editor, index):
 		super(AttrDelegate, self).setEditorData(editor, index)
@@ -236,12 +292,99 @@ class AttrDelegate(QItemDelegate):
 	def setModelData(self, editor, model, index):
 		super(AttrDelegate, self).setModelData(editor, model, index)
 		item = model.itemFromIndex(index)
-		print 'setModelData'
-		print item.data(role=valueRole)
-		print item.data(role=defaultRole)
 		self.QSignelCollectData.emit(model.itemFromIndex(index))
 		self.QSignelRebuildData.emit(model.itemFromIndex(index))
-	
+
+	'''
+	def paint(self, painter, option, index):
+		super(AttrDelegate, self).paint(painter, option, index)
+		painter.save()
+		painter.setPen(Qt.black)
+		painter.drawRect(option.rect)
+		painter.restore()
+	'''
+
+class AttrItem(QStandardItem):
+	"""docstring for AttrItem"""
+	def __init__(self, *args, **kwargs):
+		super(AttrItem, self).__init__()
+
+		self._attrVal = kwargs.get('value', None)
+		self._attrType = kwargs.get('type', None)
+		self._enumName = kwargs.get('enumName', [])
+		self._min = kwargs.get('min', None)
+		self._max = kwargs.get('max', None)
+		self._template = kwargs.get('template', None)
+		self._hint = kwargs.get('hint', '')
+
+		if args:
+			self._attrVal = args[0]
+		
+		self._set_data()
+
+		self.setEditable(True)
+
+	def _set_data(self):
+		data_info = {'value': None,
+					 'min': None,
+					 'max': None,
+					 'enumName': None,
+					 'template': None,
+					 'type': None,
+					 'hint': ''}
+		
+		if not self._attrType:
+			if self._attrVal in [True, False]:
+				self._attrType = 'boolAttr'
+				self._enumName = ['True', 'False']
+			elif isinstance(self._attrVal, float):
+				self._attrType = 'floatAttr'
+			elif isinstance(self._attrVal, int):
+				self._attrType = 'intAttr'
+			elif isinstance(self._attrVal, list):
+				self._attrType = 'listAttr'
+			elif isinstance(self._attrVal, dict):
+				self._attrType = 'dictAttr'
+			elif isinstance(self._attrVal, basestring):
+				self._attrType = 'strAttr'
+			else:
+				return
+
+		for key, item in itemType[self._attrType].iteritems():
+			data_info.update({key: item})
+
+		data_info['type'] = self._attrType
+
+		if self._attrVal:
+			data_info['value'] = self._attrVal
+		if self._min:
+			data_info['min'] = self._min
+		if self._max:
+			data_info['max'] = self._max
+		if self._enumName:
+			data_info['enumName'] = self._enumName
+		if self._template:
+			data_info['template'] = self._template
+		if self._hint:
+			data_info['hint'] = self._hint
+
+		self.setText(str(data_info['value']))
+
+		self.setData(str(data_info['value']), role=role_defaultValue)
+		self.setData(data_info['type'], role_attrType)
+		self.setData(data_info['min'], role_min)
+		self.setData(data_info['max'], role_max)
+		self.setData(data_info['enumName'], role_enum)
+		self.setData(data_info['template'], role_template)
+		if data_info['hint']:
+			self.setData(data_info['hint'], Qt.ToolTipRole)
+
+
+
+		
+
+
+		
 
 
 
