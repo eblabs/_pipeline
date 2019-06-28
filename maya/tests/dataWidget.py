@@ -290,8 +290,15 @@ class AttrDelegate(QItemDelegate):
 		super(AttrDelegate, self).setEditorData(editor, index)
 
 	def setModelData(self, editor, model, index):
-		super(AttrDelegate, self).setModelData(editor, model, index)
 		item = model.itemFromIndex(index)
+		print 'setModelData1'
+		print item.text()
+		print type(editor)
+		super(AttrDelegate, self).setModelData(editor, model, index)
+
+		print 'setModelData2'
+		print item.text()
+		item.setText('test')
 		self.QSignelCollectData.emit(model.itemFromIndex(index))
 		self.QSignelRebuildData.emit(model.itemFromIndex(index))
 

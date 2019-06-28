@@ -68,7 +68,6 @@ class TreeWidget(QTreeWidget):
 			QTreeWidgetItem_child.setFlags(QTreeWidgetItem_child.flags()|Qt.ItemIsTristate|Qt.ItemIsUserCheckable)
 			QTreeWidgetItem_child.setCheckState(0, Qt.Checked)
 
-
 			QItem.addChild(QTreeWidgetItem_child)
 
 			if 'children' in dataInfo:
