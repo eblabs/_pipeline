@@ -51,13 +51,18 @@ class Builder(object):
 
 		# get kwargs
 		_name = variables.kwargs('name', '', kwargs, shortName='n')
+		_display = variables.kwargs('display', '', kwargs, shortName='dis')
 		_task = variables.kwargs('task', None, kwargs, shortName='tsk')
 		_index = variables.kwargs('index', len(self._tasks), kwargs, shortName='i')
 		_parent = variables.kwargs('parent', '', kwargs, shortName='p')
 		_kwargs = variables.kwargs('kwargs', {}, kwargs)
 
+		if not _display:
+			_display = _name
+
 		# add task info to class as attribute
 		_taskInfo = {'Task': _task,
+					 'display': _display,
 					 'kwargs': _kwargs,
 					 'parent': _parent}
 		# import module
@@ -90,16 +95,20 @@ class Builder(object):
 	def _add_child(self, hierarchy, task):
 		taskInfo = self._get_task_info(task)
 		parent = taskInfo['parent']
+		taskInfo_add = {task:{'Task': taskInfo['Task'],
+						 	  'display': taskInfo['display'],
+						 	  'kwargs': taskInfo['kwargs'],
+							  'children': []}}
 		if parent:
 			for hieInfo in hierarchy:
 				key = hieInfo.keys()[0]
 				if parent == key:
-					hieInfo[parent]['children'].append({task: {'children': []}})
+					hieInfo[parent]['children'].append(taskInfo_add)
 					return True
 				else:
 					isParent = self._add_child(hieInfo[key]['children'], task)
 		else:
-			hierarchy.append({task:{'children': []}})
+			hierarchy.append(taskInfo_add)
 
 	def _get_task_info(self, task):
 		taskInfo = self._taskInfos[task]

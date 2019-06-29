@@ -24,6 +24,10 @@ except ImportError:
 #=================#
 from . import Logger
 
+ROLE_TASK_NAME = Qt.UserRole + 1
+ROLE_TASK_FUNC = Qt.UserRole + 2
+ROLE_TASK_KWARGS = Qt.UserRole + 3
+
 #=================#
 #      CLASS      #
 #=================#
@@ -62,9 +66,14 @@ class TreeWidget(QTreeWidget):
 		for d in data:
 			name = d.keys()[0]
 			dataInfo = d[name]
+			print name
+			print dataInfo
 
 			QTreeWidgetItem_child = QTreeWidgetItem()
-			QTreeWidgetItem_child.setText(0, name)
+			QTreeWidgetItem_child.setText(0, dataInfo['display'])
+			QTreeWidgetItem_child.setData(0, ROLE_TASK_NAME, name)
+			QTreeWidgetItem_child.setData(0, ROLE_TASK_FUNC, dataInfo['Task'])
+			QTreeWidgetItem_child.setData(0, ROLE_TASK_KWARGS, dataInfo['kwargs'])
 			QTreeWidgetItem_child.setFlags(QTreeWidgetItem_child.flags()|Qt.ItemIsTristate|Qt.ItemIsUserCheckable)
 			QTreeWidgetItem_child.setCheckState(0, Qt.Checked)
 
@@ -139,5 +148,12 @@ class TreeWidget(QTreeWidget):
 	def mouseDoubleClickEvent(self, event):
 		if self.indexAt(event.pos()).isValid():
 			TaskItem = self.currentItem()
-			task = TaskItem.text(0)
-			print task 
+			display = TaskItem.text(0)
+			name = TaskItem.data(0, ROLE_TASK_NAME)
+			Task = TaskItem.data(0, ROLE_TASK_FUNC)
+			kwargs = TaskItem.data(0, ROLE_TASK_KWARGS)
+			print 'display: ' + display
+			print 'name: ' + name
+			print 'kwargs:'
+			print kwargs
+			Task()
