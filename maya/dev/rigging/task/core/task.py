@@ -6,8 +6,14 @@
 import sys
 import os
 
+## import OrderedDict
+from collections import OrderedDict 
+
 ## import maya packages
 import maya.cmds as cmds
+
+## import utils
+import utils.common.variables as variables
 
 #=================#
 #   GLOBAL VARS   #
@@ -47,15 +53,33 @@ class Task(object):
 
 	def register_kwargs(self):
 		self._kwargs = {}
+		self._kwargs_ui = OrderedDict()
+
+	def register_single_kwargs(self, longName, **kwargs):
+		'''
+		Args:
+			longName(str): kwarg key name
+		Kwargs:	
+			shortName(str)[None]: kwarg short name
+			defaultValue[None]: default value
+			attributeName(str)['']: attribute name in class, will use longName if not any
+			uiKwargs(dict)[{}]: kwargs for ui base on PROPERTY_ITEMS.py
+		'''
+		shortName = kwargs.get('shortName', '')
+		defaultVal = kwargs.get('defaultValue', None)
+		attrName = kwargs.get('attributeName', '')
+		uiKwargs = kwargs.get('uiKwargs', {})
+
+		kwargInfo, kwargInfo_ui = variables.register_single_kwarg(longName, defaultValue=defaultVal, 
+								  shortName=shortName, attributeName=attrName, uiKwargs=uiKwargs)
+		
+		self._kwargs.update(kwargInfo)
+		self._kwargs_ui.update(kwargInfo_ui)
 
 	def register_inputs(self, kwargs):
 		for key, val in self._kwargs.iteritems():
-			if len(val) > 2:
-				shortName = val[2]
-			else:
-				shortName = None
-			attrVal = variables.kwargs(val[0], val[1], kwargs, shortName=shortName)
-			self.__setattr__('_'+key, attrVal)
+			attrVal = variables.kwargs(val[0], val[1], kwargs, shortName=val[3])
+			setattr(self, '_'+key, attrVal)
 
 	def _add_attr_from_dict(self, attrDict):
 		'''

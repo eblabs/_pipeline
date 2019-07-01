@@ -23,7 +23,7 @@ import ast
 # =================#
 from . import Logger
 
-from config.PROPERTY_ITEMS import PROPERTY_ITEMS 
+import utils.common.config.PROPERTY_ITEMS as PROPERTY_ITEMS
 
 ROLE_VALUE = Qt.UserRole + 1
 ROLE_TYPE = Qt.UserRole + 2

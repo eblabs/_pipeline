@@ -6,6 +6,9 @@
 import sys
 import os
 
+## import inspect
+import inspect
+
 ## import maya packages
 import maya.cmds as cmds
 
@@ -60,16 +63,26 @@ class Builder(object):
 		if not _display:
 			_display = _name
 
+		# get task
+		if inspect.ismethod(_task):
+			# in class method, get method name for ui display
+			_taskName = _task.__name__
+			_taskKwargs = _kwargs
+		else:
+			# imported task, get task object
+			_taskName = _task
+			taskImport, taskFunc = modules.import_module(_task)
+			_task = getattr(taskImport, taskFunc)
+			_taskKwargs = _task()._kwargs
+			for key, item in _kwargs.iteritems():
+				_taskKwargs.update({key: item})
+
 		# add task info to class as attribute
 		_taskInfo = {'Task': _task,
+					 'taskName': _taskName,
 					 'display': _display,
-					 'kwargs': _kwargs,
+					 'kwargs': _taskKwargs,
 					 'parent': _parent}
-		# import module
-		if isinstance(_task, basestring):
-			taskImport, taskFunc = modules.import_module(_task)
-			_Task = getattr(taskImport, taskFunc)
-			_taskInfo['Task'] = _Task
 
 		self._taskInfos.update({_name: _taskInfo})
 
@@ -96,6 +109,7 @@ class Builder(object):
 		taskInfo = self._get_task_info(task)
 		parent = taskInfo['parent']
 		taskInfo_add = {task:{'Task': taskInfo['Task'],
+							  'taskName': taskInfo['taskName'],
 						 	  'display': taskInfo['display'],
 						 	  'kwargs': taskInfo['kwargs'],
 							  'children': []}}

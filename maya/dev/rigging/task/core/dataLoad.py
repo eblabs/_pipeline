@@ -44,7 +44,10 @@ class DataLoad(task.Task):
 
 	def register_kwargs(self):
 		super(DataLoad, self).register_kwargs()
-		self._kwargs.update({'dataPath': {'data', [], 'd'}})
+		self.register_single_kwargs('data', 
+									shortName='d', 
+									attributeName='dataPath', 
+									uiKwargs={'type': 'strPath'})
 
 	def get_load_method(self):
 		if self._dataType == 'json':

@@ -38,5 +38,11 @@ PROPERTY_ITEMS = {'str': {'value': '',
 
 				  'dict': {'value': {},
 						   'template': [],
-						   'widget': QLineEdit}}
+						   'widget': QLineEdit},
+
+				  # common task property type
+				  'strPath': {'value': [],
+				  			  'template': 'str',
+				  			  'widget': QLineEdit},
+				  			  }
 
