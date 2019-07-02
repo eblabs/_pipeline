@@ -25,6 +25,8 @@ except ImportError:
 # import icon
 import icons
 
+# import OrderedDict
+from collections import OrderedDict 
 #=================#
 #   GLOBAL VARS   #
 #=================#
@@ -43,6 +45,8 @@ ICONS_STATUS = [icons.grey, icons.green, icons.yellow, icons.red]
 #=================#
 class TreeWidget(QTreeWidget):
 	"""base class for TreeWidget"""
+	QSignalProgressInit = Signal(int)
+	QSignalDoubleClick = Signal()
 	def __init__(self, *args, **kwargs):
 		super(TreeWidget, self).__init__()
 
@@ -55,7 +59,6 @@ class TreeWidget(QTreeWidget):
 		self._Builder = kwargs.get('builder', None) # builder object
 
 		self.init_widget()
-		self.add_tree_items()
 
 	def init_widget(self):
 		QHeader = QTreeWidgetItem(self._header)
@@ -90,7 +93,7 @@ class TreeWidget(QTreeWidget):
 			QTreeWidgetItem_child = TaskItem()
 			QTreeWidgetItem_child.setText(0, dataInfo['display'])
 			QTreeWidgetItem_child.setData(0, ROLE_TASK_NAME, name)
-			QTreeWidgetItem_child.setData(0, ROLE_TASK_FUNC, dataInfo['taskName'])
+			QTreeWidgetItem_child.setData(0, ROLE_TASK_FUNC_NAME, dataInfo['taskName'])
 			QTreeWidgetItem_child.setData(0, ROLE_TASK_FUNC, dataInfo['Task'])
 			QTreeWidgetItem_child.setData(0, ROLE_TASK_KWARGS, dataInfo['kwargs'])
 			QTreeWidgetItem_child.setData(0, ROLE_TASK_RETURN, 0)
@@ -151,17 +154,10 @@ class TreeWidget(QTreeWidget):
 		return True
 
 	def keyPressEvent(self, event):
-		if event.key() == Qt.Key_Escape:
-			self._stop = True # stop task run
-
-			if event.modifiers() == Qt.NoModifier:
-				self.clearSelection()
-				self.clearFocus()
-				self.setCurrentIndex(QModelIndex())
-
-		elif event.key() == Qt.Key_Space:
-			# pause and resume task run
-			self._pause = not self._pause
+		if event.key() == Qt.Key_Escape and event.modifiers() == Qt.NoModifier:
+			self.clearSelection()
+			self.clearFocus()
+			self.setCurrentIndex(QModelIndex())
 		else:
 			QTreeWidget.keyPressEvent(self, event)
 
@@ -170,12 +166,13 @@ class TreeWidget(QTreeWidget):
 			self.clearSelection()
 			self.clearFocus()
 			self.setCurrentIndex(QModelIndex())
+			
 		super(TreeWidget, self).mousePressEvent(event)
 
 	def mouseDoubleClickEvent(self, event):
 		# double click to run the task
 		if self.indexAt(event.pos()).isValid():
-			self.run_task(item=self.currentItem())
+			self.QSignalDoubleClick.emit()
 
 	def run_task(self, item=None, collect=True):
 		'''
@@ -197,6 +194,10 @@ class TreeWidget(QTreeWidget):
 		# register in itemRunner
 		self._itemRunner._items = items
 		self._itemRunner._ignoreCheck = ignoreCheck
+
+		# shoot signal to progress bar
+		self.QSignalProgressInit.emit(len(items))
+
 		# start run tasks
 		self._itemRunner.start()
 	
@@ -220,6 +221,32 @@ class TreeWidget(QTreeWidget):
 
 		return items
 
+	def _refresh_tasks(self):
+		if self._Builder:
+			self._remove_all_tasks()
+			self.add_tree_items()
+		# refresh progress bar, shoot signal
+		# the range doesn't matter, will re-init when run the task
+		self.QSignalProgressInit.emit(1)
+
+	def _run_tasks(self):
+		self.run_task(item=self.currentItem())
+
+	def _pause_tasks(self):
+		self._pause = not self._pause
+
+	def _stop_tasks(self):
+		self._stop = True
+
+	def _run_all_tasks(self):
+		self.run_task()
+
+	def _remove_all_tasks(self):
+		itemCount = self.topLevelItemCount()
+		for i in range(itemCount):
+			self.takeTopLevelItem(0)
+		
+
 class TaskItem(QTreeWidgetItem):
 	def setData(self, column, role, value):
 		super(TaskItem, self).setData(column, role, value)
@@ -234,7 +261,6 @@ class TaskItem(QTreeWidgetItem):
 			self.setIcon(1, QIcon(ICONS_STATUS[value]))
 
 
-
 class ItemRunner(QThread):
 	"""
 	QThread to run items one by one
@@ -242,8 +268,9 @@ class ItemRunner(QThread):
 	use multi-threading so the ui won't be frozen,
 	and can be stopped anytime
 	"""
-	QSignelProgress = Signal(float) # emit signal to update progress bar
-
+	QSignalProgress = Signal(int) # emit signal to update progress bar
+	QSignalError = Signal() # emit signal for error
+	QSignalPause = Signal() # emiet signal to pause
 	def __init__(self, parent, items=[], ignoreCheck=False):
 		super(ItemRunner, self).__init__(parent)
 		self._parent = parent
@@ -256,23 +283,26 @@ class ItemRunner(QThread):
 	def run_task(self):
 		itemCount = float(len(self._items))
 		for i, item in enumerate(self._items):
+			if self._parent._pause:
+				self.QSignalPause.emit()
 			while self._parent._pause:
 				# in case need to be stopped from pause
 				if self._parent._stop: 
+					self.QSignalError.emit()
+					Logger.warn('Task process is stopped by the user')				
 					break
 				self.sleep(1) # pause the process
 
 			# check if need to be stopped
 			if self._parent._stop:
+				self.QSignalError.emit()
 				Logger.warn('Task process is stopped by the user')
 				break
 			
 			self._run_task_on_single_item(item, ignoreCheck=self._ignoreCheck)
 
-			# get progress percentage
-			progress = (i+1)/itemCount
 			# emit signal
-			self.QSignelProgress.emit(progress)
+			self.QSignalProgress.emit(i+1)
 
 	def _run_task_on_single_item(self, item, ignoreCheck=False):
 		# get attributes from item
@@ -299,6 +329,8 @@ class ItemRunner(QThread):
 				if taskReturn == 3:
 					# error raises
 					item.setData(0, ROLE_TASK_RETURN, 3)
+					# emit error signal
+					self.QSignalError.emit()
 					raise RuntimeError()
 				elif taskReturn == 2:
 					# warning raises
@@ -313,6 +345,8 @@ class ItemRunner(QThread):
 			except:
 				# error raises
 				item.setData(0, ROLE_TASK_RETURN, 3)
+				# emit error signal
+				self.QSignalError.emit()
 				raise RuntimeError()
 
 		else:
@@ -327,6 +361,8 @@ class ItemRunner(QThread):
 				if taskReturn == 3:
 					# error raises
 					item.setData(0, ROLE_TASK_RETURN, 3)
+					# emit error signal
+					self.QSignalError.emit()
 					raise RuntimeError()
 				elif taskReturn == 2:
 					# warning raises
@@ -344,5 +380,7 @@ class ItemRunner(QThread):
 			except:
 				# error raises
 				item.setData(0, ROLE_TASK_RETURN, 3)
+				# emit error signal
+				self.QSignalError.emit()
 				raise RuntimeError()
 		

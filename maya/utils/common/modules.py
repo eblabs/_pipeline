@@ -13,7 +13,7 @@ from . import Logger
 #=================#
 #    FUNCTION     #
 #=================#
-def import_module(path, function=None):
+def import_module(path, **kwargs):
 	'''
 	import module from given path
 

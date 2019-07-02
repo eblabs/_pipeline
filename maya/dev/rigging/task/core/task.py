@@ -78,7 +78,7 @@ class Task(object):
 
 	def register_inputs(self, kwargs):
 		for key, val in self._kwargs.iteritems():
-			attrVal = variables.kwargs(val[0], val[1], kwargs, shortName=val[3])
+			attrVal = variables.kwargs(val[0], val[1], kwargs, shortName=val[2])
 			setattr(self, '_'+key, attrVal)
 
 	def _add_attr_from_dict(self, attrDict):

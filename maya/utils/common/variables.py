@@ -47,22 +47,44 @@ def register_single_kwarg(longName, defaultValue=None, shortName='', attributeNa
 	kwargInfo_ui = {longName: {}}
 
 	if uiKwargs:
+		if 'type' in uiKwargs:
+			attrType = uiKwargs['type']
+		elif 'value' in uiKwargs and uiKwargs['value'] != None:
+			attrType = _get_type_from_value(uiKwargs['value'])
+	elif defaultValue != None:
+		attrType = _get_type_from_value(defaultValue)
+
+	if attrType:
+		kwargInfo_ui[longName].update(PROPERTY_ITEMS[attrType])
+	else:
+		Logger.error('kwarg should at least has defaultValue or value/type in uiKwargs')
+
+	if uiKwargs:
 		kwargInfo_ui[longName].update(uiKwargs)
 	
 	if defaultValue != None:
 		# update kwargs ui value info
 		kwargInfo_ui[longName].update({'value': defaultValue})
-	elif uiKwargs:
-		if 'value' in uiKwargs and uiKwargs['value'] != None:
-			# get default value if set 'value' in uiKwargs
-			defaultValue = uiKwargs['value']
-		elif 'type' in uiKwargs:
-			# get default value from specific type item from PROPERTY_ITEMS
-			itemType = uiKwargs['type']
-			defaultValue = PROPERTY_ITEMS[itemType]
 
 	if not attributeName:
 		attributeName = longName
-	kwargInfo = {attributeName: [longName, defaultValue, shortName]}
+	kwargInfo = {attributeName: [longName, kwargInfo_ui[longName]['value'], shortName]}
 
 	return kwargInfo, kwargInfo_ui
+
+def _get_type_from_value(value):
+	if value in [True, False]:
+		valType = 'bool'
+	elif isinstance(value, float):
+		valType = 'float'
+	elif isinstance(self._value, int):
+		valType = 'int'
+	elif isinstance(self._value, list):
+		valType = 'list'
+	elif isinstance(self._value, dict):
+		valType = 'dict'
+	elif isinstance(self._value, basestring):
+		valType = 'str'
+	else:
+		Logger.error('Can not recogonize value type')
+	return valType

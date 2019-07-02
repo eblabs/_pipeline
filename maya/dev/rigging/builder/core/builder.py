@@ -73,7 +73,7 @@ class Builder(object):
 			_taskName = _task
 			taskImport, taskFunc = modules.import_module(_task)
 			_task = getattr(taskImport, taskFunc)
-			_taskKwargs = _task()._kwargs
+			_taskKwargs = _task()._kwargs_ui
 			for key, item in _kwargs.iteritems():
 				_taskKwargs.update({key: item})
 

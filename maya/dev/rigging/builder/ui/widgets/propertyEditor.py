@@ -23,7 +23,7 @@ import ast
 # =================#
 from . import Logger
 
-import utils.common.config.PROPERTY_ITEMS as PROPERTY_ITEMS
+from utils.common.config.PROPERTY_ITEMS import PROPERTY_ITEMS
 
 ROLE_VALUE = Qt.UserRole + 1
 ROLE_TYPE = Qt.UserRole + 2
@@ -32,19 +32,20 @@ ROLE_MAX = Qt.UserRole + 4
 ROLE_ENUM = Qt.UserRole + 5
 ROLE_TEMPLATE = Qt.UserRole + 6
 
+ROLE_TASK_KWARGS = Qt.UserRole + 4
+
 # =================#
 #      CLASS       #
 # =================#
 
 class PropertyEditor(QTreeView):
 	"""base class for PropertyEditor"""
-	def __init__(self, data):
+	def __init__(self):
 		super(PropertyEditor, self).__init__()
-		self._property = data
+		self._property = []
 		self._size = QSize(20,20)
 
 		self._init_widget()
-		self._set_data()
 
 	def _init_widget(self):
 		# different color each row
@@ -62,19 +63,22 @@ class PropertyEditor(QTreeView):
 
 		# delegate
 		delegate = PropertyDelegate(self)
-		delegate.QSignelUpdateParent.connect(self._update_parent)
-		delegate.QSignelRebuildChild.connect(self._rebuild_child)
+		delegate.QSignalUpdateParent.connect(self._update_parent)
+		delegate.QSignalRebuildChild.connect(self._rebuild_child)
 
 		self.setItemDelegate(delegate)
 
-	def _init_property(self):
+	def _init_property(self, item):
 		'''
 		initialize property
 		'''
-		for propertyInfo in self._property:
-			key = propertyInfo.keys()[0]
-			data = propertyInfo[key]
+		self._refresh()
 
+		data_property = item.data(0, ROLE_TASK_KWARGS)
+
+		for key, data in data_property.iteritems():
+			print key
+			print data
 			# add row item
 			row, template_child = self._add_row_item(key, itemKwargs=data)
 
@@ -136,11 +140,11 @@ class PropertyEditor(QTreeView):
 				index_attr = self._model.index(i, 0, parent=index_parent)
 				index_val = self._model.index(i, 1, parent=index_parent)
 				attr = str(self._model.data(index_attr))
-				val = self._convert_data(self._model.data(index_val))
+				val = convert_data(self._model.data(index_val))
 				if isinstance(value, list):
-					value_collect.append(val)
+					value_collect.append(str(val))
 				else:
-					value_collect.update({attr: val})
+					value_collect.update({attr: str(val)})
 			# assign data
 			if value != value_collect:
 				self._model.setData(index_value, str(value_collect))
@@ -153,7 +157,6 @@ class PropertyEditor(QTreeView):
 		index_attr = self._model.index(item.row(), 0, parent=index_value.parent())
 		# get value
 		value = convert_data(self._model.data(index_value))
-		
 		if isinstance(value, list) or isinstance(value, dict):
 			item_attr = self._model.itemFromIndex(index_attr)
 			# clear out the childs
@@ -171,7 +174,11 @@ class PropertyEditor(QTreeView):
 		column_property.setData(self._size, role=Qt.SizeHintRole)
 
 		# column 2: value
-		column_val = PropertyItem(*val, **itemKwargs)
+		if val != None:
+			itemKwargs.update({'value': val})
+
+		column_val = PropertyItem(**itemKwargs)
+		
 		column_val.setData(self._size, role=Qt.SizeHintRole)
 
 		# get template
@@ -179,21 +186,23 @@ class PropertyEditor(QTreeView):
 
 		return [column_property, column_val], template
 
+	def _refresh(self):
+		self._model.clear()
 
 class PropertyDelegate(QItemDelegate):
 	"""
 	base class for PropertyDelegate
 	PropertyDelegate will create the correct widget base on property type
 	"""
-	QSignelUpdateParent = Signal(QStandardItem)
-	QSignelRebuildChild = Signal(QStandardItem)
+	QSignalUpdateParent = Signal(QStandardItem)
+	QSignalRebuildChild = Signal(QStandardItem)
 
 	def __init__(self, parent=None):
 		super(PropertyDelegate, self).__init__(parent)
 		
 	def createEditor(self, parent, option, index):
 		item = index.model().itemFromIndex(index)
-		attrType = item.data(role=ROLE_TEMPLATE)
+		attrType = item.data(role=ROLE_TYPE)
 
 		value = index.data()
 
@@ -225,7 +234,7 @@ class PropertyDelegate(QItemDelegate):
 		super(PropertyDelegate, self).setEditorData(editor, index)
 
 	def setModelData(self, editor, model, index):
-		item = model().itemFromIndex(index)
+		item = index.model().itemFromIndex(index)
 		# get previous value
 		value = item.text()		
 
@@ -249,22 +258,23 @@ class PropertyDelegate(QItemDelegate):
 			elif isinstance(value_default, list):
 				if isinstance(value_change, list):
 					# shoot signal
-					self.QSignelRebuildChild.emit(item)
-					
+					self.QSignalRebuildChild.emit(item)
+
 				else:
 					# change back to previous
 					item.setText(value)
+
 			# if dict
 			elif isinstance(value_default, dict):
 				if isinstance(value_change, dict):
 					# shoot signal
-					self.QSignelRebuildChild.emit(item)
+					self.QSignalRebuildChild.emit(item)
 				else:
 					# change back to previous
 					item.setText(value)
 
 		# shoot rebuild signal
-		self.QSignelUpdateParent.emit(item)
+		self.QSignalUpdateParent.emit(item)
 
 
 class PropertyItem(QStandardItem):
@@ -275,7 +285,7 @@ class PropertyItem(QStandardItem):
 	espically for list and dictionary, 
 	it hold the template to add items 
 	"""
-	def __init__(self, *args, **kwargs):
+	def __init__(self, **kwargs):
 		super(PropertyItem, self).__init__()
 
 		self._value = kwargs.get('value', None)
@@ -285,9 +295,6 @@ class PropertyItem(QStandardItem):
 		self._max = kwargs.get('max', None)
 		self._template = kwargs.get('template', None)
 		self._hint = kwargs.get('hint', '')
-
-		if args:
-			self._value = args[0]
 		
 		self._set_data()
 
@@ -321,8 +328,6 @@ class PropertyItem(QStandardItem):
 
 		data_info['type'] = self._type
 
-		self._value = str(self._value)
-
 		for attr in ['value', 'min', 'max', 'enum', 'template', 'hint']:
 			if hasattr(self, '_'+attr):
 				data_info[attr] = getattr(self, '_'+attr)
@@ -333,7 +338,7 @@ class PropertyItem(QStandardItem):
 		self.setData(data_info['type'], ROLE_TYPE)
 		self.setData(data_info['min'], ROLE_MIN)
 		self.setData(data_info['max'], ROLE_MAX)
-		self.setData(data_info['enumName'], ROLE_ENUM)
+		self.setData(data_info['enum'], ROLE_ENUM)
 		self.setData(data_info['template'], ROLE_TEMPLATE)
 		if data_info['hint']:
 			self.setData(data_info['hint'], Qt.ToolTipRole)

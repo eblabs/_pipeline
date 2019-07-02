@@ -38,11 +38,16 @@ SC_REFRESH_RUN = 'Ctrl+Shift+r'
 #=================#
 class ButtonShelf(QWidget):
 	"""docstring for ButtonShelf"""
+	QSignalRefresh = Signal()
+	QSignalRun = Signal()
+	QSignalPause = Signal()
+	QSignalStop = Signal()
+	QSignalRunAll = Signal()
 	def __init__(self):
 		super(ButtonShelf, self).__init__()
 		
 		self._pause = True
-		self._run_all = False
+		self._running = False
 
 		self.init_widget()
 
@@ -80,6 +85,7 @@ class ButtonShelf(QWidget):
 		self.button_stop.setEnabled(False)
 
 		# connect signal
+		self.button_refresh.clicked.connect(self.refresh_button_pressed)
 		self.button_run_all.clicked.connect(self.run_all_button_pressed)
 		self.button_run_pause.clicked.connect(self.run_pause_button_pressed)
 		self.button_stop.clicked.connect(self.stop_button_pressed)
@@ -94,10 +100,17 @@ class ButtonShelf(QWidget):
 
 		layout_base.addStretch() # add stretch so the buttons aligened from left
 
+	def refresh_button_pressed(self):
+		self._pause = True
+		self._running = False
+		self.QSignalRefresh.emit()
+
 	def run_all_button_pressed(self):
 		self._pause = False
+		self._running = True
 		self._set_button(refresh=False, run_all=False,
 						 run_pause=False, stop=True, refresh_run=False)
+		self.QSignalRunAll.emit()
 
 	def run_pause_button_pressed(self):
 		self._pause = not self._pause
@@ -105,19 +118,31 @@ class ButtonShelf(QWidget):
 			# show run icon
 			self._set_button(refresh=False, run_all=False,
 							 run_pause=True, stop=True, refresh_run=False)
+			# task still running, just paused
+			self._running = True
+			self.QSignalPause.emit()
 		else:
 			# show pause
 			self._set_button(refresh=False, run_all=False,
 							 run_pause=False, stop=True, refresh_run=False)		
+			# if no task running
+			if not self._running:
+				self._running = True
+				self.QSignalRun.emit()
+			else:
+				self.QSignalPause.emit()
 
 	def stop_button_pressed(self):
 		self._pause = True
 		self._set_button()
+		self.QSignalStop.emit()
 
 	def refresh_run_button_pressed(self):
 		self._pause = False
 		self._set_button(refresh=False, run_all=False,
 						 run_pause=False, stop=True, refresh_run=False)
+		self.QSignalRefresh.emit()
+		self.QSignalRunAll.emit()
 
 	def _set_button(self, refresh=True, run_all=True,
 					run_pause=True, stop=False, refresh_run=True):
@@ -139,6 +164,11 @@ class ButtonShelf(QWidget):
 		# set refresh run
 		self.button_refresh_run.setEnabled(refresh_run)
 
+	def _reset_all(self):
+		self._pause = True
+		self._running = False
+		self._set_button()
+
 class Button(QPushButton):
 	"""docstring for Button"""
 	def __init__(self, layout, icons, shortcut='', toolTip=''):
@@ -151,13 +181,13 @@ class Button(QPushButton):
 
 	def init_widget(self):
 		self.setIcon(QIcon(self._icons[0]))
-		self.setIconSize(QSize(30,30))
-		sizePolicy = QSizePolicy(QSizePolicy.Fixed, 
-								 QSizePolicy.Fixed)
-		sizePolicy.setHorizontalStretch(0)
-		sizePolicy.setVerticalStretch(0)
-		sizePolicy.setHeightForWidth(True)
-		self.setSizePolicy(sizePolicy)
+		self.setIconSize(QSize(23,23))
+		# sizePolicy = QSizePolicy(QSizePolicy.Fixed, 
+		# 						 QSizePolicy.Fixed)
+		# sizePolicy.setHorizontalStretch(0)
+		# sizePolicy.setVerticalStretch(0)
+		# sizePolicy.setHeightForWidth(True)
+		# self.setSizePolicy(sizePolicy)
 
 		if self._shortcut:
 			self.setShortcut(self._shortcut)
