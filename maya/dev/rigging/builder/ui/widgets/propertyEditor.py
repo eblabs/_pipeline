@@ -44,6 +44,7 @@ class PropertyEditor(QTreeView):
 		super(PropertyEditor, self).__init__()
 		self._property = []
 		self._size = QSize(20,20)
+		self._enable = True
 
 		self._init_widget()
 
@@ -77,8 +78,6 @@ class PropertyEditor(QTreeView):
 		data_property = item.data(0, ROLE_TASK_KWARGS)
 
 		for key, data in data_property.iteritems():
-			print key
-			print data
 			# add row item
 			row, template_child = self._add_row_item(key, itemKwargs=data)
 
@@ -187,7 +186,12 @@ class PropertyEditor(QTreeView):
 		return [column_property, column_val], template
 
 	def _refresh(self):
+		self.setEnabled(True)
 		self._model.clear()
+
+	def _enable_widget(self):
+		self._enable = not self._enable
+		self.setEnabled(self._enable)
 
 class PropertyDelegate(QItemDelegate):
 	"""

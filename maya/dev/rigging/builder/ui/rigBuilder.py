@@ -146,7 +146,7 @@ class RigBuilder(uiUtils.BaseWindow):
 		# update progress
 		self._widget_tree._itemRunner.QSignalProgress.connect(self._widget_progress._update_progress)
 		# pause progress
-		self._widget_tree._itemRunner.QSignalPause.connect(self._widget_progress._pause_progress)
+		self._widget_shelf.QSignalPause.connect(self._widget_progress._pause_progress)
 		# stop progress
 		self._widget_tree._itemRunner.QSignalError.connect(self._widget_progress._stop_progress)
 		
@@ -164,6 +164,20 @@ class RigBuilder(uiUtils.BaseWindow):
 		# double click
 		self._widget_tree.QSignalDoubleClick.connect(self._widget_shelf.run_pause_button_pressed)
 		
+		# clear when not select anything
+		self._widget_tree.QSignalClear.connect(self._widget_propertyEditor._refresh)
+		self._widget_tree.QSignalClear.connect(self._widget_taskInfo._refresh)
+
+		# disable/enable widgets
+		self._widget_tree._itemRunner.started.connect(self._widget_rigInfo._enable_widget)
+		self._widget_tree._itemRunner.started.connect(self._widget_taskInfo._enable_widget)
+		self._widget_tree._itemRunner.started.connect(self._widget_propertyEditor._enable_widget)
+		
+		self._widget_tree._itemRunner.finished.connect(self._widget_rigInfo._enable_widget)
+		self._widget_tree._itemRunner.finished.connect(self._widget_taskInfo._enable_widget)
+		self._widget_tree._itemRunner.finished.connect(self._widget_propertyEditor._enable_widget)
+
+
 	def tempLoad(self):
 		path_builder = 'tests.chrTest'
 		module, func = modules.import_module(path_builder)

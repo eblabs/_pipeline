@@ -40,6 +40,11 @@ ROLE_TASK_RETURN = Qt.UserRole + 5
 
 ICONS_STATUS = [icons.grey, icons.green, icons.yellow, icons.red]
 
+SC_REFRESH = 'Ctrl+R'
+SC_RUN_ALL = 'Ctrl+Shift+Space'
+SC_RUN_PAUSE = 'Ctrl+Space'
+SC_REFRESH_RUN = 'Ctrl+Shift+R'
+
 #=================#
 #      CLASS      #
 #=================#
@@ -47,6 +52,7 @@ class TreeWidget(QTreeWidget):
 	"""base class for TreeWidget"""
 	QSignalProgressInit = Signal(int)
 	QSignalDoubleClick = Signal()
+	QSignalClear = Signal()
 	def __init__(self, *args, **kwargs):
 		super(TreeWidget, self).__init__()
 
@@ -77,6 +83,10 @@ class TreeWidget(QTreeWidget):
 		self.setDropIndicatorShown(True)
 
 		self._root = self.invisibleRootItem()
+
+		# right clicked menu
+		self.setContextMenuPolicy(Qt.CustomContextMenu)
+		self.customContextMenuRequested.connect(self.right_clicked_menu)
 		
 	def add_tree_items(self):
 		self._add_child_item(self._root, 
@@ -155,17 +165,13 @@ class TreeWidget(QTreeWidget):
 
 	def keyPressEvent(self, event):
 		if event.key() == Qt.Key_Escape and event.modifiers() == Qt.NoModifier:
-			self.clearSelection()
-			self.clearFocus()
-			self.setCurrentIndex(QModelIndex())
+			self._clear_selection()
 		else:
 			QTreeWidget.keyPressEvent(self, event)
 
 	def mousePressEvent(self, event):
 		if not self.indexAt(event.pos()).isValid():
-			self.clearSelection()
-			self.clearFocus()
-			self.setCurrentIndex(QModelIndex())
+			self._clear_selection()
 			
 		super(TreeWidget, self).mousePressEvent(event)
 
@@ -200,7 +206,86 @@ class TreeWidget(QTreeWidget):
 
 		# start run tasks
 		self._itemRunner.start()
-	
+
+	def right_clicked_menu(self, QPos):
+		menu= QMenu(self)
+		self._action_execute = menu.addAction('Execute\t'+SC_RUN_PAUSE)
+		self._action_execute_single = menu.addAction('Execute Single')
+		self._action_execute_all = menu.addAction('Execute All\t'+SC_RUN_ALL)		
+		self._action_refresh = menu.addAction('Reload\t'+SC_REFRESH)
+		self._action_rebuild = menu.addAction('Rebuild\t'+SC_REFRESH_RUN)
+
+		menu.addSeparator()
+
+		self._action_create = menu.addAction('Create')
+		self._action_create.setShortcut('Ctrl+n')
+		self._action_duplicate = menu.addAction('Duplicate')
+		self._action_duplicate.setShortcut('Ctrl+d')
+		self._action_remove = menu.addAction('Remove')
+		self._action_remove.setShortcut('delete')
+
+		menu.addSeparator()
+
+		self._action_display = menu.addAction('Display Name')
+		self._action_color = menu.addAction('Color')
+		self._action_color_text = menu.addAction('Text Color')
+		self._action_color_reset = menu.addAction('Reset Color')
+
+		# set enable/disable
+		currentItem = self.currentIndex().data()
+		actions = [self._action_execute,
+				   self._action_execute_single,
+				   self._action_execute_all,	
+				   self._action_duplicate,
+				   self._action_remove,
+				   self._action_display,
+				   self._action_color,
+				   self._action_color_text,
+				   self._action_color_reset]
+		if not currentItem:
+			for act in actions:
+				act.setEnabled(False)
+		else:
+			for act in actions:
+				act.setEnabled(True)
+
+		# connect functions
+		self._action_display.triggered.connect(self.set_display_name)
+		self._action_color.triggered.connect(self.set_display_color)
+		self._action_color_text.triggered.connect(self.set_text_color)
+		self._action_color_reset.triggered.connect(self.reset_display_color)
+
+		pos_parent = self.mapToGlobal(QPoint(0, 0))        
+		menu.move(pos_parent + QPos)
+
+		menu.show()
+
+	def set_display_name(self):
+		item = self.currentItem()
+		current_name = item.text(0)
+		text, ok = QInputDialog.getText(self, 'Display Name','Set Display Name', text=current_name)
+		if text and ok:
+			item.setText(0, text)
+
+	def set_display_color(self):
+		item = self.currentItem()
+		background_col = item.background(0).color()
+		col = QColorDialog.getColor(background_col, self, 'Display Color')
+		if col.isValid():
+			item.setBackground(0, col)
+
+	def set_text_color(self):
+		item = self.currentItem()
+		foreground_col = item.foreground(0).color()
+		col = QColorDialog.getColor(foreground_col, self, 'Text Color')
+		if col.isValid():
+			item.setForeground(0, col)
+
+	def reset_display_color(self):
+		item = self.currentItem()
+		item.setData(0, Qt.BackgroundRole, None)
+		item.setData(0, Qt.ForegroundRole, None)
+
 	def _collect_items(self, item=None):
 		'''
 		collect items parented to the item in order [item included]
@@ -245,6 +330,15 @@ class TreeWidget(QTreeWidget):
 		itemCount = self.topLevelItemCount()
 		for i in range(itemCount):
 			self.takeTopLevelItem(0)
+
+	def _clear_selection(self):
+		self.clearSelection()
+		self.clearFocus()
+		self.setCurrentIndex(QModelIndex())
+
+		# shoot clear signal
+		self.QSignalClear.emit()
+
 		
 
 class TaskItem(QTreeWidgetItem):
@@ -281,6 +375,9 @@ class ItemRunner(QThread):
 		self.run_task()
 		
 	def run_task(self):
+		# disable treeWidget when running
+		self._parent.setEnabled(False)
+		
 		itemCount = float(len(self._items))
 		for i, item in enumerate(self._items):
 			if self._parent._pause:
@@ -289,14 +386,14 @@ class ItemRunner(QThread):
 				# in case need to be stopped from pause
 				if self._parent._stop: 
 					self.QSignalError.emit()
-					Logger.warn('Task process is stopped by the user')				
-					break
+					self._parent._pause = False				
 				self.sleep(1) # pause the process
 
 			# check if need to be stopped
 			if self._parent._stop:
 				self.QSignalError.emit()
 				Logger.warn('Task process is stopped by the user')
+				self._parent.setEnabled(True) # enable back widget if error
 				break
 			
 			self._run_task_on_single_item(item, ignoreCheck=self._ignoreCheck)
@@ -304,6 +401,8 @@ class ItemRunner(QThread):
 			# emit signal
 			self.QSignalProgress.emit(i+1)
 
+		self._parent.setEnabled(True) # enable back widget when finished
+				
 	def _run_task_on_single_item(self, item, ignoreCheck=False):
 		# get attributes from item
 		display = item.text(0)
@@ -331,6 +430,7 @@ class ItemRunner(QThread):
 					item.setData(0, ROLE_TASK_RETURN, 3)
 					# emit error signal
 					self.QSignalError.emit()
+					self._parent.setEnabled(True) # enable back widget if error
 					raise RuntimeError()
 				elif taskReturn == 2:
 					# warning raises
@@ -347,6 +447,7 @@ class ItemRunner(QThread):
 				item.setData(0, ROLE_TASK_RETURN, 3)
 				# emit error signal
 				self.QSignalError.emit()
+				self._parent.setEnabled(True) # enable back widget if error
 				raise RuntimeError()
 
 		else:
@@ -363,6 +464,7 @@ class ItemRunner(QThread):
 					item.setData(0, ROLE_TASK_RETURN, 3)
 					# emit error signal
 					self.QSignalError.emit()
+					self._parent.setEnabled(True) # enable back widget if error
 					raise RuntimeError()
 				elif taskReturn == 2:
 					# warning raises
@@ -382,5 +484,6 @@ class ItemRunner(QThread):
 				item.setData(0, ROLE_TASK_RETURN, 3)
 				# emit error signal
 				self.QSignalError.emit()
+				self._parent.setEnabled(True) # enable back widget if error
 				raise RuntimeError()
 		

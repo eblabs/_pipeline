@@ -43,7 +43,7 @@ class TaskInfo(QWidget):
 	"""
 	def __init__(self):
 		super(TaskInfo, self).__init__()
-		
+		self._enable = True
 		self.init_widget()
 
 	def init_widget(self):
@@ -68,8 +68,13 @@ class TaskInfo(QWidget):
 		self.label_type.setText(func_name)
 
 	def _refresh(self):
+		self.setEnabled(True)
 		self.label_name.setText('')
 		self.label_type.setText('')
+
+	def _enable_widget(self):
+		self._enable = not self._enable
+		self.setEnabled(self._enable)
 
 class TaskLabel(QLabel):
 	"""

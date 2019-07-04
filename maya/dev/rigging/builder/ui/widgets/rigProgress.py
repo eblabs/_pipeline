@@ -31,10 +31,7 @@ class RigProgress(QProgressBar):
 	"""ProgressBar widget"""
 	def __init__(self):
 		super(RigProgress, self).__init__()
-		
 		self._pause = False
-		self._error = False
-
 		self.init_widget()
 
 	def init_widget(self):
@@ -50,7 +47,6 @@ class RigProgress(QProgressBar):
 
 	def _init_setting(self, maxNum):
 		self._pause = False
-		self._error = False
 		# set range
 		self.setRange(0, maxNum)
 		# zero progress bar
@@ -75,12 +71,11 @@ class RigProgress(QProgressBar):
 			# run
 			# set color to green
 			self._palette.setColor(QPalette.Highlight, 
-							 	   QColor(0,161,62))
+						 	   QColor(0,161,62))
 			self.setPalette(self._palette)
 
-
 	def _stop_progress(self):
-		self._error = True
+		self._pause = False
 		# set color to red
 		self._palette.setColor(QPalette.Highlight, 
 							   QColor(250, 40, 71))
