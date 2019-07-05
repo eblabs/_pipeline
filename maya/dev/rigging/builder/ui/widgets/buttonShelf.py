@@ -91,13 +91,6 @@ class ButtonShelf(QWidget):
 		self.button_stop.clicked.connect(self.stop_button_pressed)
 		self.button_refresh_run.clicked.connect(self.refresh_run_button_pressed)
 
-		# set shortcut
-		self.button_refresh.setShortcut(SC_REFRESH)
-		self.button_run_all.setShortcut(SC_RUN_ALL)
-		self.button_run_pause.setShortcut(SC_RUN_PAUSE)
-		self.button_stop.setShortcut(SC_STOP)
-		self.button_refresh_run.setShortcut(SC_REFRESH_RUN)
-
 		layout_base.addStretch() # add stretch so the buttons aligened from left
 
 	def refresh_button_pressed(self):

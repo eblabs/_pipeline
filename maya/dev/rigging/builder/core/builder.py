@@ -78,10 +78,10 @@ class Builder(object):
 				_taskKwargs.update({key: item})
 
 		# add task info to class as attribute
-		_taskInfo = {'Task': _task,
+		_taskInfo = {'task': _task,
 					 'taskName': _taskName,
 					 'display': _display,
-					 'kwargs': _taskKwargs,
+					 'taskKwargs': _taskKwargs,
 					 'parent': _parent}
 
 		self._taskInfos.update({_name: _taskInfo})
@@ -108,10 +108,10 @@ class Builder(object):
 	def _add_child(self, hierarchy, task):
 		taskInfo = self._get_task_info(task)
 		parent = taskInfo['parent']
-		taskInfo_add = {task:{'Task': taskInfo['Task'],
+		taskInfo_add = {task:{'task': taskInfo['task'],
 							  'taskName': taskInfo['taskName'],
 						 	  'display': taskInfo['display'],
-						 	  'kwargs': taskInfo['kwargs'],
+						 	  'taskKwargs': taskInfo['taskKwargs'],
 							  'children': []}}
 		if parent:
 			for hieInfo in hierarchy:
