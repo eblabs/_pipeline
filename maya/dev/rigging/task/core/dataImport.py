@@ -64,7 +64,7 @@ class DataImport(task.Task):
 		for f in self._data:
 			cmds.file(f, i=True)
 
-	def run(self):
-		super(DataImport, self).run()
+	def pre_build(self):
+		super(DataImport, self).pre_build()
 		self.get_data()
 		self.import_data()

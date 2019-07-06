@@ -5,7 +5,7 @@
 ## import system packages
 import sys
 import os
-
+import time
 ## import maya packages
 import maya.cmds as cmds
 
@@ -43,6 +43,23 @@ class TestTask(task.Task):
 											  'min': 1,
 											  'max': 10})
 
-	def run(self):
-		super(TestTask, self).run()
-		print '--------- Test Task Run ---------'
+	def pre_build(self):
+		super(TestTask, self).pre_build()
+		print '--------- Test Task Pre Build ---------'
+		for i in range(10):
+			time.sleep(0.1)
+			print i
+
+	def build(self):
+		super(TestTask, self).build()
+		print '--------- Test Task Build ---------'
+		for i in range(10):
+			time.sleep(0.1)
+			print i
+
+	def post_build(self):
+		super(TestTask, self).post_build()
+		print '--------- Test Task Post Build ---------'
+		for i in range(10):
+			time.sleep(0.1)
+			print i

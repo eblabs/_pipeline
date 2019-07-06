@@ -26,7 +26,7 @@ class NewScene(task.Task):
 		super(NewScene, self).__init__()
 		self._task = TASK_PATH+'.newScene'
 
-	def run(self):
-		super(NewScene, self).run()
+	def pre_build(self):
+		super(NewScene, self).pre_build()
 		cmds.file(f=True, new=True)
 

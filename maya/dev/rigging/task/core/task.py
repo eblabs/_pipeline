@@ -48,7 +48,13 @@ class Task(object):
 		self.register_kwargs()
 		self.register_inputs(kwargs)
 
-	def run(self):
+	def pre_build(self):
+		pass
+
+	def build(self):
+		pass
+
+	def post_build(self):
 		pass
 
 	def register_kwargs(self):

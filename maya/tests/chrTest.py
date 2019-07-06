@@ -37,7 +37,8 @@ class ChrTest(builder.Builder):
                            parent='arm')
         self.register_task(name='fk',
                            task=self._error,
-                           parent='arm')
+                           parent='arm',
+                           section='pre')
         self.register_task(name='baseNode',
                            task=self._func,
                            kwargs={'name': {'value': 'register task name',

@@ -36,7 +36,10 @@ ROLE_TASK_NAME = Qt.UserRole + 1
 ROLE_TASK_FUNC_NAME = Qt.UserRole + 2
 ROLE_TASK_FUNC = Qt.UserRole + 3
 ROLE_TASK_KWARGS = Qt.UserRole + 4
-ROLE_TASK_RETURN = Qt.UserRole + 5
+ROLE_TASK_PRE = Qt.UserRole + 5
+ROLE_TASK_RUN = Qt.UserRole + 6
+ROLE_TASK_POST = Qt.UserRole + 7
+ROLE_TASK_SECTION = Qt.UserRole + 8
 
 ICONS_STATUS = [icons.grey, icons.green, icons.yellow, icons.red]
 
@@ -61,9 +64,11 @@ class TreeWidget(QTreeWidget):
 		self._itemRunner = ItemRunner(self)
 		self._stop = False
 		self._pause = False
+		self._displayItems = [] # list of item display name to make sure no same name
+		self._attrItems = [] # list of item attr name to make sure no same name
 		
 		# get kwargs
-		self._header = kwargs.get('header', ['Task', 'Status'])
+		self._header = kwargs.get('header', ['Task', 'Pre', 'Build', 'Post'])
 		self._Builder = kwargs.get('builder', None) # builder object
 
 		self.init_widget()
@@ -77,7 +82,9 @@ class TreeWidget(QTreeWidget):
 		self.setHeaderHidden(True)
 		self.header().setSectionResizeMode(0, QHeaderView.Stretch)
 		self.header().setStretchLastSection(False)
-		self.setColumnWidth(1,40)
+		self.setColumnWidth(1,20)
+		self.setColumnWidth(2,20)
+		self.setColumnWidth(3,20)
 
 		self.setSelectionMode(self.ExtendedSelection)
 		self.setDragDropMode(self.InternalMove)
@@ -106,8 +113,13 @@ class TreeWidget(QTreeWidget):
 			name = d.keys()[0]
 			dataInfo = d[name]
 			dataInfo.update({'attrName': name})
-
 			item = TaskItem(**dataInfo)
+
+			display = item.text(0) # get display name
+			attrName = item.data(0, ROLE_TASK_NAME) # get attr name
+
+			self._displayItems.append(display) # add to list for later check
+			self._attrItems.append(attrName) # add to list for later check
 
 			QItem.addChild(item)
 
@@ -211,7 +223,7 @@ class TreeWidget(QTreeWidget):
 		self._itemRunner._ignoreCheck = ignoreCheck
 
 		# shoot signal to progress bar
-		self.QSignalProgressInit.emit(len(itemsRun))
+		self.QSignalProgressInit.emit(len(itemsRun)*3)
 
 		# start run tasks
 		self._itemRunner.start()
@@ -297,8 +309,9 @@ class TreeWidget(QTreeWidget):
 		item = self.currentItem()
 		current_name = item.text(0)
 		text, ok = QInputDialog.getText(self, 'Display Name','Set Display Name', text=current_name)
-		if text and ok:
-			item.setText(0, text)
+		if text and ok and text != current_name:
+			update_name = self._get_unique_name(current_name, text, self._displayItems)
+			item.setText(0, update_name)
 
 	def _set_display_color(self):
 		items = self.selectedItems()
@@ -343,6 +356,9 @@ class TreeWidget(QTreeWidget):
 		return items
 
 	def _refresh_tasks(self):
+		self._displayItems = []
+		self._attrItems = []
+
 		if self._Builder:
 			self._remove_all_tasks()
 			self.add_tree_items()
@@ -371,13 +387,15 @@ class TreeWidget(QTreeWidget):
 			task = item.data(0, ROLE_TASK_FUNC)
 			taskKwargs = item.data(0, ROLE_TASK_KWARGS)
 			check = item.checkState(0)
+			section = item.data(0, ROLE_TASK_SECTION)
 
 			kwargs = {'display': display+'1',
 					  'attrName': attrName+'1',
 					  'taskName': taskName,
 					  'task': task,
 					  'taskKwargs': taskKwargs,
-					  'check': check}
+					  'check': check,
+					  'section': section}
 
 			self._create_item(**kwargs)
 
@@ -414,7 +432,20 @@ class TreeWidget(QTreeWidget):
 		# shoot clear signal
 		self.QSignalClear.emit()
 
-		
+	def _get_unique_name(self, nameOrig, nameNew, nameList):
+		if nameNew in nameList:
+			i = 1
+			while True:
+				nameNew_add = nameNew+str(i)
+				if nameNew_add not in nameList:
+					nameNew = nameNew_add
+					break
+				else:
+					i+=1
+		nameList.append(nameNew)
+		if nameOrig:
+			nameList.remove(nameOrig)
+		return nameNew		
 
 class TaskItem(QTreeWidgetItem):
 	def __init__(self, **kwargs):
@@ -426,27 +457,48 @@ class TaskItem(QTreeWidgetItem):
 		task = kwargs.get('task', None)
 		taskKwargs = kwargs.get('taskKwargs', {})
 		check = kwargs.get('check', Qt.Checked)
+		section = kwargs.get('section', '')
 
 		self.setText(0, display)
 		self.setData(0, ROLE_TASK_NAME, attrName)
 		self.setData(0, ROLE_TASK_FUNC_NAME, taskName)
 		self.setData(0, ROLE_TASK_FUNC, task)
 		self.setData(0, ROLE_TASK_KWARGS, taskKwargs)
-		self.setData(0, ROLE_TASK_RETURN, 0)
+		self.setData(0, ROLE_TASK_PRE, 0)
+		self.setData(0, ROLE_TASK_RUN, 0)
+		self.setData(0, ROLE_TASK_POST, 0)
+		self.setData(0, ROLE_TASK_SECTION, section)
+
 		self.setFlags(self.flags()|Qt.ItemIsTristate|Qt.ItemIsUserCheckable)
 		self.setCheckState(0, check)
 
 	def setData(self, column, role, value):
 		super(TaskItem, self).setData(column, role, value)
+		# change icons if item is checked/unchecked
 		if role == Qt.CheckStateRole:
 			state = self.checkState(column)
 			if state == Qt.Checked:
-				taskReturn = self.data(0, ROLE_TASK_RETURN)
-				self.setIcon(1, QIcon(ICONS_STATUS[taskReturn]))
+				# checked, go back to the icons previous
+				taskReturn_pre = self.data(0, ROLE_TASK_PRE)
+				taskReturn_run = self.data(0, ROLE_TASK_RUN)
+				taskReturn_post = self.data(0, ROLE_TASK_POST)
+				self.setIcon(1, QIcon(ICONS_STATUS[taskReturn_pre]))
+				self.setIcon(2, QIcon(ICONS_STATUS[taskReturn_run]))
+				self.setIcon(3, QIcon(ICONS_STATUS[taskReturn_post]))
 			else:
+				# unchecked, set icon to uncheck
 				self.setIcon(1, QIcon(icons.unCheck))
-		elif role == ROLE_TASK_RETURN:
+				self.setIcon(2, QIcon(icons.unCheck))
+				self.setIcon(3, QIcon(icons.unCheck))
+		elif role == ROLE_TASK_PRE:
+			# set icon for the pre build
 			self.setIcon(1, QIcon(ICONS_STATUS[value]))
+		elif role == ROLE_TASK_RUN:
+			# set icon for the build
+			self.setIcon(2, QIcon(ICONS_STATUS[value]))
+		elif role == ROLE_TASK_POST:
+			# set icon for the post build
+			self.setIcon(3, QIcon(ICONS_STATUS[value]))
 
 
 class ItemRunner(QThread):
@@ -473,109 +525,121 @@ class ItemRunner(QThread):
 		self._parent.setEnabled(False)
 		
 		itemCount = float(len(self._items))
-		for i, item in enumerate(self._items):
-			if self._parent._pause:
-				self.QSignalPause.emit()
-			while self._parent._pause:
-				# in case need to be stopped from pause
-				if self._parent._stop: 
+		for i, section in enumerate(['pre', 'build', 'post']):
+			for j, item in enumerate(self._items):
+				if self._parent._pause:
+					self.QSignalPause.emit()
+				while self._parent._pause:
+					# in case need to be stopped from pause
+					if self._parent._stop: 
+						self.QSignalError.emit()
+						self._parent._pause = False				
+					self.sleep(1) # pause the process
+
+				# check if need to be stopped
+				if self._parent._stop:
 					self.QSignalError.emit()
-					self._parent._pause = False				
-				self.sleep(1) # pause the process
+					Logger.warn('Task process is stopped by the user')
+					self._parent.setEnabled(True) # enable back widget if error
+					break
+				
+				self._run_task_on_single_item(item, 
+											  ignoreCheck=self._ignoreCheck,
+											  section=section)
 
-			# check if need to be stopped
-			if self._parent._stop:
-				self.QSignalError.emit()
-				Logger.warn('Task process is stopped by the user')
-				self._parent.setEnabled(True) # enable back widget if error
-				break
-			
-			self._run_task_on_single_item(item, ignoreCheck=self._ignoreCheck)
-
-			# emit signal
-			self.QSignalProgress.emit(i+1)
+				# emit signal
+				self.QSignalProgress.emit(itemCount*i + j + 1)
 
 		self._parent.setEnabled(True) # enable back widget when finished
 				
-	def _run_task_on_single_item(self, item, ignoreCheck=False):
+	def _run_task_on_single_item(self, item, ignoreCheck=False, section='pre'):
 		# get attributes from item
 		display = item.text(0)
 		name = item.data(0, ROLE_TASK_NAME)
 		Task = item.data(0, ROLE_TASK_FUNC)
 		kwargs = item.data(0, ROLE_TASK_KWARGS)
-		taskReturn = item.data(0, ROLE_TASK_RETURN) # skip if already run
-		checkState = item.checkState(0)
+		checkState = item.checkState(0)		
 
 		if not ignoreCheck and checkState != Qt.Checked:
 			# skip unchecked task
 			return 
 
+		if section == 'pre':
+			task_method = 'pre_build'
+			role = ROLE_TASK_PRE
+
+		elif section == 'build':
+			task_method = 'build'
+			role = ROLE_TASK_RUN
+
+		else:
+			task_method = 'post_build'
+			role = ROLE_TASK_POST
+		
+		# get section status, if already run, skipped
+		taskReturn = item.data(0, role)
 		if taskReturn > 0:
-			# skip task already runned
+			# skip, task already runned
 			return
 
 		# check if registered function is a method
 		if inspect.ismethod(Task):
-			# try to run function 
-			try:
-				taskReturn = Task(**kwargs)
-				if taskReturn == 3:
+			# get section registered
+			section_init = item.data(0, ROLE_TASK_SECTION)
+			if section != section_init:
+				# skip
+				item.setData(0, role, 1)
+			else:
+				# try to run function 
+				try:
+					taskReturn = Task(**kwargs)
+
+					if taskReturn == 2:
+						# warning raises
+						item.setData(0, role, 2)
+					else:
+						# run succesfully
+						item.setData(0, role, 1)
+
+					# log
+					Logger.info('Run method "{}" succesfully'.format(display))
+				
+				except:
 					# error raises
-					item.setData(0, ROLE_TASK_RETURN, 3)
+					item.setData(0, role, 3)
 					# emit error signal
 					self.QSignalError.emit()
 					self._parent.setEnabled(True) # enable back widget if error
 					raise RuntimeError()
-				elif taskReturn == 2:
-					# warning raises
-					item.setData(0, ROLE_TASK_RETURN, 2)
-				else:
-					# run succesfully
-					item.setData(0, ROLE_TASK_RETURN, 1)
-
-				# log
-				Logger.info('Run method "{}" succesfully'.format(display))
-			
-			except:
-				# error raises
-				item.setData(0, ROLE_TASK_RETURN, 3)
-				# emit error signal
-				self.QSignalError.emit()
-				self._parent.setEnabled(True) # enable back widget if error
-				raise RuntimeError()
 
 		else:
 			# Task is an imported task
 			# try to run task
 			try:
-				# get obj
-				TaskObj = Task(**kwargs)
-				# run task
-				taskReturn = TaskObj.run()
+				# initial task if pre-build
+				if section == 'pre':
+					# get obj
+					TaskObj = Task(**kwargs)
+					# attach to builder
+					setattr(self._parent._Builder, name, TaskObj)
 
-				if taskReturn == 3:
-					# error raises
-					item.setData(0, ROLE_TASK_RETURN, 3)
-					# emit error signal
-					self.QSignalError.emit()
-					self._parent.setEnabled(True) # enable back widget if error
-					raise RuntimeError()
-				elif taskReturn == 2:
+				# run task
+				TaskObj = getattr(self._parent._Builder, name)
+				taskReturn = getattr(TaskObj, task_method)()
+
+				if taskReturn == 2:
 					# warning raises
-					item.setData(0, ROLE_TASK_RETURN, 2)
+					item.setData(0, role, 2)
 				else:
 					# run succesfully
-					item.setData(0, ROLE_TASK_RETURN, 1)
-
-				# attach to builder
-				setattr(self._parent._Builder, name, TaskObj)
+					item.setData(0, role, 1)
 				
 				# log
 				Logger.info('Run task "{}" succesfully'.format(display))
 			
 			except:
 				# error raises
-				item.setData(0, ROLE_TASK_RETURN, 3)
+				item.setData(0, role, 3)
 				# emit error signal
 				self.QSignalError.emit()
 				self._parent.setEnabled(True) # enable back widget if error

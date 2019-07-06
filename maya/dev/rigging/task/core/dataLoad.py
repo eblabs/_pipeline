@@ -65,8 +65,8 @@ class DataLoad(task.Task):
 				if key not in self._data:
 					self._data.update({key: item})
 
-	def run(self):
-		super(DataLoad, self).run()
+	def pre_build(self):
+		super(DataLoad, self).pre_build()
 		self.get_load_method()
 		self.get_data()
 

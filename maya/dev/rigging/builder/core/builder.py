@@ -59,6 +59,13 @@ class Builder(object):
 		_index = variables.kwargs('index', len(self._tasks), kwargs, shortName='i')
 		_parent = variables.kwargs('parent', '', kwargs, shortName='p')
 		_kwargs = variables.kwargs('kwargs', {}, kwargs)
+		_section = variables.kwargs('section', 'post', kwargs)
+		if 'pre' in _section.lower():
+			_section = 'pre'
+		elif 'post' in _section.lower():
+			_section = 'post'
+		else:
+			_section = 'build'
 
 		if not _display:
 			_display = _name
@@ -82,7 +89,8 @@ class Builder(object):
 					 'taskName': _taskName,
 					 'display': _display,
 					 'taskKwargs': _taskKwargs,
-					 'parent': _parent}
+					 'parent': _parent,
+					 'section': _section}
 
 		self._taskInfos.update({_name: _taskInfo})
 
@@ -112,6 +120,7 @@ class Builder(object):
 							  'taskName': taskInfo['taskName'],
 						 	  'display': taskInfo['display'],
 						 	  'taskKwargs': taskInfo['taskKwargs'],
+						 	  'section': taskInfo['section'],
 							  'children': []}}
 		if parent:
 			for hieInfo in hierarchy:
