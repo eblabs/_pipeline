@@ -39,10 +39,10 @@ SC_RELOAD_EXECUTE = 'Ctrl+Shift+R'
 class ButtonShelf(QWidget):
 	"""docstring for ButtonShelf"""
 	QSignalReload = Signal()
-	QSignalExecute = Signal(str)
+	QSignalExecute = Signal(list)
 	QSignalPause = Signal()
 	QSignalStop = Signal()
-	QSignalExecuteAll = Signal(str)
+	QSignalExecuteAll = Signal(list)
 	def __init__(self):
 		super(ButtonShelf, self).__init__()
 		
@@ -61,35 +61,35 @@ class ButtonShelf(QWidget):
 									 [icons.reload, 
 									  icons.reload_disabled],
 									 shortcut=SC_RELOAD,
-									 toolTip='Reload Rig Builder')
+									 toolTip='Reload Rig Builder[{}]'.format(SC_RELOAD))
 		self.button_execute_all = Button(layout_base,
 									 [icons.execute_all, 
 									  icons.execute_all_disabled],
 									  shortcut=SC_EXECUTE_ALL,
-									  toolTip='Execute All Tasks',
+									  toolTip='Execute All Tasks[{}]'.format(SC_EXECUTE_ALL),
 									  subMenu=True)
 		self.button_execute_sel = Button(layout_base,
 									   [icons.execute_select, 
 									    icons.execute_select_disabled],
 									   shortcut=SC_EXECUTE_PAUSE,
-									   toolTip='Execute Selection',
+									   toolTip='Execute Selection[{}]'.format(SC_EXECUTE_PAUSE),
 									   subMenu=True)
 		self.button_reload_execute = Button(layout_base,
 										 [icons.reload_execute, 
 										  icons.reload_execute_disabled],
 										  shortcut=SC_RELOAD_EXECUTE,
-										  toolTip='Reload and Execute All',
+										  toolTip='Reload and Execute All[{}]'.format(SC_RELOAD_EXECUTE),
 										  subMenu=True)
 		self.button_pause_resume = Button(layout_base,
 									   [icons.pause, 
 									    icons.pause_disabled],
 									   shortcut=SC_EXECUTE_PAUSE,
-									   toolTip='Execute Selection')
+									   toolTip='Execute Selection[{}]'.format(SC_EXECUTE_PAUSE))
 		self.button_stop = Button(layout_base,
 								  [icons.stop, 
 								   icons.stop_disabled],
 								   shortcut=SC_STOP,
-								   toolTip='Stop Execution')
+								   toolTip='Stop Execution[{}]'.format(SC_STOP))
 		
 
 		# set stop disabled
@@ -100,19 +100,13 @@ class ButtonShelf(QWidget):
 		self.button_reload.clicked.connect(self.reload_pressed)
 
 		self.button_execute_all.clicked.connect(self.execute_all_pressed)
-		self.button_execute_all.subMenu.preBuild.triggered.connect(self.execute_all_pre_pressed)
-		self.button_execute_all.subMenu.build.triggered.connect(self.execute_all_build_pressed)
-		self.button_execute_all.subMenu.postBuild.triggered.connect(self.execute_all_post_pressed)
+		self.button_execute_all.subMenu.QSignalSection.connect(self.execute_all_pressed)
 
 		self.button_execute_sel.clicked.connect(self.execute_sel_pressed)
-		self.button_execute_sel.subMenu.preBuild.triggered.connect(self.execute_sel_pre_pressed)
-		self.button_execute_sel.subMenu.build.triggered.connect(self.execute_sel_build_pressed)
-		self.button_execute_sel.subMenu.postBuild.triggered.connect(self.execute_sel_post_pressed)
+		self.button_execute_sel.subMenu.QSignalSection.connect(self.execute_sel_pressed)
 
 		self.button_reload_execute.clicked.connect(self.reload_execute_pressed)
-		self.button_reload_execute.subMenu.preBuild.triggered.connect(self.reload_execute_pre_pressed)
-		self.button_reload_execute.subMenu.build.triggered.connect(self.reload_execute_build_pressed)
-		self.button_reload_execute.subMenu.postBuild.triggered.connect(self.reload_execute_post_pressed)
+		self.button_reload_execute.subMenu.QSignalSection.connect(self.reload_execute_pressed)
 
 		self.button_pause_resume.clicked.connect(self.pause_resume_pressed)
 
@@ -126,65 +120,32 @@ class ButtonShelf(QWidget):
 
 	# execute all button functions
 
-	def execute_all_pressed(self):
-		self._execute_all_set()
-
-	def execute_all_pre_pressed(self):
-		self._execute_all_set(section='pre')
-
-	def execute_all_build_pressed(self):
-		self._execute_all_set(section='build')
-
-	def execute_all_post_pressed(self):
-		self._execute_all_set(section='post')
-
-	def _execute_all_set(self, section='all'):
-		self._execute_button_set()
+	def execute_all_pressed(self, section=['pre_build', 
+										'build', 
+										'post_build']):
+		#self.execute_button_set()
 		self.QSignalExecuteAll.emit(section)
 
 	# execute select button functions
-
-	def execute_sel_pressed(self):
-		self._execute_sel_set()
-
-	def execute_sel_pre_pressed(self):
-		self._execute_sel_set(section='pre')
-
-	def execute_sel_build_pressed(self):
-		self._execute_sel_set(section='build')
-
-	def execute_sel_post_pressed(self):
-		self._execute_sel_set(section='post')
-
-	def _execute_sel_set(self, section='all'):
-		self._execute_button_set()
+	def execute_sel_pressed(self, section=['pre_build', 
+										'build', 
+										'post_build']):
+		#self.execute_button_set()
 		self.QSignalExecute.emit(section)
 
 	# reload execute all button function
-
-	def reload_execute_pressed(self):
-		self._reload_execute_set()
-
-	def reload_execute_pre_pressed(self):
-		self._reload_execute_set(section='pre')
-
-	def reload_execute_build_pressed(self):
-		self._reload_execute_set(section='build')
-
-	def reload_execute_post_pressed(self):
-		self._reload_execute_set(section='post')
-
-	def _reload_execute_set(self, section='all'):
-		self._execute_button_set()
+	def reload_execute_pressed(self, section=['pre_build', 
+										   'build', 
+										   'post_build']):
+		#self.execute_button_set()
 		self.QSignalReload.emit()
 		self.QSignalExecuteAll.emit(section)
 
-	def _execute_button_set(self):
+	def execute_button_set(self):
 		self._set_button(reload_val=False, execute_all_val=False,
 					execute_sel_val=False, pause_resume_val=True, 
 					stop_val=True, reload_execute_val=False)
 		self._pause_resume_set(pause_resume_val=False)
-		self.button_pause_resume.setEnabled(True)
 
 	def pause_resume_pressed(self):
 		self._pause = not self._pause
@@ -199,6 +160,10 @@ class ButtonShelf(QWidget):
 		self._set_button()
 		self._pause_resume_set(pause_resume_val=False)
 		self.QSignalStop.emit()
+
+	def reset_all(self):
+		self._pause = False
+		self._set_button()
 
 	def _set_button(self, reload_val=True, execute_all_val=True,
 					execute_sel_val=True, pause_resume_val=False, 
@@ -226,10 +191,6 @@ class ButtonShelf(QWidget):
 			self.button_pause_resume.setIcon(QIcon(icons.resume))
 		else:
 			self.button_pause_resume.setIcon(QIcon(icons.pause))
-
-	def _reset_all(self):
-		self._pause = False
-		self._set_button()
 
 class Button(QPushButton):
 	"""docstring for Button"""
@@ -275,13 +236,31 @@ class Button(QPushButton):
 		self.subMenu.show()
 
 class SubMenu(QMenu):
-	"""sub menu for buttons, include pre-build-post"""
+	"""
+	sub menu for buttons, 
+	include pre-build-post
+	emit custom signal for furthur use
+	"""
+	QSignalSection = Signal(list)
 	def __init__(self):
 		super(SubMenu, self).__init__()
 		
-		self.preBuild = self.addAction('Pre-Build')
+		self.pre = self.addAction('Pre-Build')
 		self.build = self.addAction('Build')
-		self.postBuild = self.addAction('Post-Build')
+		self.post = self.addAction('Post-Build')
+
+		self.pre.triggered.connect(self._pre_triggered)
+		self.build.triggered.connect(self._build_triggered)
+		self.post.triggered.connect(self._post_triggered)
+
+	def _pre_triggered(self):
+		self.QSignalSection.emit(['pre_build'])
+
+	def _build_triggered(self):
+		self.QSignalSection.emit(['build'])
+
+	def _post_triggered(self):
+		self.QSignalSection.emit(['post_build'])
 		
 
 		

@@ -87,29 +87,29 @@ class RigBuilder(uiUtils.BaseWindow):
 
 
 		# widgets
-		self._widget_rigInfo = rigInfo.RigInfo()
-		self._widget_shelf = buttonShelf.ButtonShelf()
-		self._widget_tree = treeWidget.TreeWidget()
-		self._widget_progress = rigProgress.RigProgress()
-		self._widget_taskInfo = taskInfo.TaskInfo()
-		self._widget_propertyEditor = propertyEditor.PropertyEditor()
+		self.widget_rigInfo = rigInfo.RigInfo()
+		self.widget_shelf = buttonShelf.ButtonShelf()
+		self.widget_tree = treeWidget.TreeWidget()
+		self.widget_progress = rigProgress.RigProgress()
+		self.widget_taskInfo = taskInfo.TaskInfo()
+		self.widget_propertyEditor = propertyEditor.PropertyEditor()
 	
 		# attach widget
-		self._attach_rig_widget(self._widget_rigInfo, 'Rig Info', layout_left)
-		self._attach_rig_widget(self._widget_shelf, '', layout_left, noSpace=True)
-		self._attach_rig_widget(self._widget_tree, 'Build Info', layout_left)
-		self._attach_rig_widget(self._widget_progress, '', layout_left)
+		self.attach_rig_widget(self.widget_rigInfo, 'Rig Info', layout_left)
+		self.attach_rig_widget(self.widget_shelf, '', layout_left, noSpace=True)
+		self.attach_rig_widget(self.widget_tree, 'Build Info', layout_left)
+		self.attach_rig_widget(self.widget_progress, '', layout_left)
 
-		self._attach_rig_widget(self._widget_taskInfo, 'Task Info', layout_right)
-		self._attach_rig_widget(self._widget_propertyEditor, 'Property Editor', layout_right)
+		self.attach_rig_widget(self.widget_taskInfo, 'Task Info', layout_right)
+		self.attach_rig_widget(self.widget_propertyEditor, 'Property Editor', layout_right)
 
 		# connect signal
-		self._connect_signals()
+		self.connect_signals()
 
 		# so it won't focus on QLineEidt when startup
 		self.setFocus()
 
-	def _attach_rig_widget(self, widget, title, layout, noSpace=False):
+	def attach_rig_widget(self, widget, title, layout, noSpace=False):
 		groupBox = QGroupBox(title)
 		groupBox.setStyleSheet("""QGroupBox {
 												border: 1px solid gray;
@@ -128,54 +128,59 @@ class RigBuilder(uiUtils.BaseWindow):
 		layout_widget.addWidget(widget)
 		layout.addWidget(groupBox)
 
-	def _connect_signals(self):
+	def connect_signals(self):
 		# hook up buttons
-		self._widget_shelf.QSignalRun.connect(self._widget_tree._run_tasks)
-		self._widget_shelf.QSignalPause.connect(self._widget_tree._pause_tasks)
-		self._widget_shelf.QSignalRunAll.connect(self._widget_tree._run_all_tasks)
-		self._widget_shelf.QSignalStop.connect(self._widget_tree._stop_tasks)
+		self.widget_shelf.QSignalReload.connect(self.tempLoad)
+		self.widget_shelf.QSignalReload.connect(self.widget_propertyEditor.refresh)
+		self.widget_shelf.QSignalReload.connect(self.widget_taskInfo.refresh)
 		
+		self.widget_shelf.QSignalExecute.connect(self.widget_tree.run_sel_tasks)
+		self.widget_shelf.QSignalExecuteAll.connect(self.widget_tree.run_all_tasks)
+		self.widget_shelf.QSignalPause.connect(self.widget_tree.pause_resume_tasks)
+		self.widget_shelf.QSignalStop.connect(self.widget_tree.stop_tasks)
+
 		# reset buttons to initial once task running completed
-		self._widget_tree._itemRunner.finished.connect(self._widget_shelf._reset_all)
+		self.widget_tree.itemRunner.finished.connect(self.widget_shelf.reset_all)
 		# reset buttons to initial if error
-		self._widget_tree._itemRunner.QSignalError.connect(self._widget_shelf._reset_all)
+		self.widget_tree.itemRunner.QSignalError.connect(self.widget_shelf.reset_all)
 		
+		# disable buttons when execute tasks
+		self.widget_tree.QSignalExecute.connect(self.widget_shelf.execute_button_set)
+
 		# progress bar
 		# init progress bar settings
-		self._widget_tree.QSignalProgressInit.connect(self._widget_progress._init_setting)
+		self.widget_tree.QSignalProgressInit.connect(self.widget_progress.init_setting)
 		# update progress
-		self._widget_tree._itemRunner.QSignalProgress.connect(self._widget_progress._update_progress)
+		self.widget_tree.itemRunner.QSignalProgress.connect(self.widget_progress.update_progress)
 		# pause progress
-		self._widget_shelf.QSignalPause.connect(self._widget_progress._pause_progress)
+		self.widget_shelf.QSignalPause.connect(self.widget_progress.pause_progress)
 		# stop progress
-		self._widget_tree._itemRunner.QSignalError.connect(self._widget_progress._stop_progress)
+		self.widget_tree.itemRunner.QSignalError.connect(self.widget_progress.stop_progress)
 		
 		# task info
-		self._widget_tree.itemClicked.connect(self._widget_taskInfo._set_label)
+		self.widget_tree.itemClicked.connect(self.widget_taskInfo.set_label)
+
+		# task info edit attr name
+		self.widget_taskInfo.QSignalAttrName.connect(self.widget_tree.set_attr_name)
+
+		# reset attr name once updated
+		self.widget_tree.QSignalAttrName.connect(self.widget_taskInfo.set_label)
 
 		# property editor
-		self._widget_tree.itemClicked.connect(self._widget_propertyEditor._init_property)
+		self.widget_tree.itemClicked.connect(self.widget_propertyEditor.init_property)
 
-		# refresh
-		self._widget_shelf.QSignalRefresh.connect(self.tempLoad)
-		self._widget_shelf.QSignalRefresh.connect(self._widget_propertyEditor._refresh)
-		self._widget_shelf.QSignalRefresh.connect(self._widget_taskInfo._refresh)
-
-		# double click
-		self._widget_tree.QSignalDoubleClick.connect(self._widget_shelf.run_pause_button_pressed)
-		
 		# clear when not select anything
-		self._widget_tree.QSignalClear.connect(self._widget_propertyEditor._refresh)
-		self._widget_tree.QSignalClear.connect(self._widget_taskInfo._refresh)
+		self.widget_tree.QSignalClear.connect(self.widget_propertyEditor.refresh)
+		self.widget_tree.QSignalClear.connect(self.widget_taskInfo.refresh)
 
 		# disable/enable widgets
-		self._widget_tree._itemRunner.started.connect(self._widget_rigInfo._enable_widget)
-		self._widget_tree._itemRunner.started.connect(self._widget_taskInfo._enable_widget)
-		self._widget_tree._itemRunner.started.connect(self._widget_propertyEditor._enable_widget)
+		self.widget_tree.itemRunner.started.connect(self.widget_rigInfo.enable_widget)
+		self.widget_tree.itemRunner.started.connect(self.widget_taskInfo.enable_widget)
+		self.widget_tree.itemRunner.started.connect(self.widget_propertyEditor.enable_widget)
 		
-		self._widget_tree._itemRunner.finished.connect(self._widget_rigInfo._enable_widget)
-		self._widget_tree._itemRunner.finished.connect(self._widget_taskInfo._enable_widget)
-		self._widget_tree._itemRunner.finished.connect(self._widget_propertyEditor._enable_widget)
+		self.widget_tree.itemRunner.finished.connect(self.widget_rigInfo.enable_widget)
+		self.widget_tree.itemRunner.finished.connect(self.widget_taskInfo.enable_widget)
+		self.widget_tree.itemRunner.finished.connect(self.widget_propertyEditor.enable_widget)
 
 
 	def tempLoad(self):
@@ -184,8 +189,8 @@ class RigBuilder(uiUtils.BaseWindow):
 		reload(module)
 		builder = getattr(module, func)()
 		builder.registertion()
-		self._widget_tree._Builder = builder
-		self._widget_tree._refresh_tasks()
+		self.widget_tree.builder = builder
+		self.widget_tree.reload_tasks()
 
 
 		

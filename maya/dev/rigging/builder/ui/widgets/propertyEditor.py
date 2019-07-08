@@ -46,9 +46,9 @@ class PropertyEditor(QTreeView):
 		self._size = QSize(20,20)
 		self._enable = True
 
-		self._init_widget()
+		self.init_widget()
 
-	def _init_widget(self):
+	def init_widget(self):
 		# different color each row
 		self.setAlternatingRowColors(True) 
 		# show header so user can adjust the first column width
@@ -69,11 +69,16 @@ class PropertyEditor(QTreeView):
 
 		self.setItemDelegate(delegate)
 
-	def _init_property(self, item):
+		self.right_click_menu()
+
+		self.setContextMenuPolicy(Qt.CustomContextMenu)
+		self.customContextMenuRequested.connect(self._show_menu)
+
+	def init_property(self, item):
 		'''
 		initialize property
 		'''
-		self._refresh()
+		self.refresh()
 
 		data_property = item.data(0, ROLE_TASK_KWARGS)
 
@@ -86,6 +91,22 @@ class PropertyEditor(QTreeView):
 
 			# loop downstream
 			self._add_child(row[0], data['value'], template=template_child)
+
+	def refresh(self):
+		self.setEnabled(True)
+		self._model.clear()
+		self._model = QStandardItemModel(0,2)
+		self._model.setHeaderData(0, Qt.Horizontal, 'Properties')
+		self._model.setHeaderData(1, Qt.Horizontal, '')
+		self.setModel(self._model)
+		
+	def enable_widget(self):
+		self._enable = not self._enable
+		self.setEnabled(self._enable)
+
+	def right_click_menu(self):
+		self.menu = QMenu()
+		self.action_edit = self.menu.addAction('Reset Value')
 
 	def _add_child(self, item, data, template=None):
 		if isinstance(data, list):
@@ -185,13 +206,15 @@ class PropertyEditor(QTreeView):
 
 		return [column_property, column_val], template
 
-	def _refresh(self):
-		self.setEnabled(True)
-		self._model.clear()
+	def _show_menu(self, QPos):
+		index = self.currentIndex()
+		item = self._model.itemFromIndex(index)
+		column = item.column()
+		if column > 0:
+			pos = self.viewport().mapToGlobal(QPos)        
+			self.menu.move(pos)
 
-	def _enable_widget(self):
-		self._enable = not self._enable
-		self.setEnabled(self._enable)
+			self.menu.show()
 
 class PropertyDelegate(QItemDelegate):
 	"""
@@ -299,7 +322,7 @@ class PropertyItem(QStandardItem):
 		self._max = kwargs.get('max', None)
 		self._template = kwargs.get('template', None)
 		self._hint = kwargs.get('hint', '')
-		
+
 		self._set_data()
 
 	def _set_data(self):

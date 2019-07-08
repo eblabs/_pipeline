@@ -51,4 +51,5 @@ class ChrTest(builder.Builder):
             print i
 
     def _error(self):
-        raise RuntimeError('Error Test')
+        #raise RuntimeError('Error Test')
+        pass

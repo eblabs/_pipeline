@@ -45,7 +45,7 @@ class RigProgress(QProgressBar):
 						 	   QColor(Qt.black))
 		self.setPalette(self._palette)
 
-	def _init_setting(self, maxNum):
+	def init_setting(self, maxNum):
 		self._pause = False
 		# set range
 		self.setRange(0, maxNum)
@@ -56,10 +56,10 @@ class RigProgress(QProgressBar):
 						 	   QColor(0,161,62))
 		self.setPalette(self._palette)
 
-	def _update_progress(self, value):
+	def update_progress(self, value):
 		self.setValue(value)
 
-	def _pause_progress(self):
+	def pause_progress(self):
 		self._pause = not self._pause
 		if self._pause:
 			# pause
@@ -74,7 +74,7 @@ class RigProgress(QProgressBar):
 						 	   QColor(0,161,62))
 			self.setPalette(self._palette)
 
-	def _stop_progress(self):
+	def stop_progress(self):
 		self._pause = False
 		# set color to red
 		self._palette.setColor(QPalette.Highlight, 

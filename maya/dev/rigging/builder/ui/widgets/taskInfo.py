@@ -41,6 +41,7 @@ class TaskInfo(QWidget):
 	task name
 	task type
 	"""
+	QSignalAttrName = Signal(str)
 	def __init__(self):
 		super(TaskInfo, self).__init__()
 		self._enable = True
@@ -61,20 +62,38 @@ class TaskInfo(QWidget):
 			# add section to base layout
 			layout_base.addWidget(label_section)
 
-	def _set_label(self, item):
+		self.label_name.action_edit.triggered.connect(self.edit_name_widget)
+
+	def set_label(self, item):
 		name = item.data(0, ROLE_TASK_NAME)
 		func_name = item.data(0, ROLE_TASK_FUNC_NAME)
 		self.label_name.setText(name)
 		self.label_type.setText(func_name)
 
-	def _refresh(self):
+	def refresh(self):
 		self.setEnabled(True)
 		self.label_name.setText('')
 		self.label_type.setText('')
 
-	def _enable_widget(self):
+	def enable_widget(self):
 		self._enable = not self._enable
 		self.setEnabled(self._enable)
+
+	def edit_name_widget(self):
+		title = "Change task's attribute name in the builder"
+		text = "This will break all functions call this attribute in the builder, \nare you sure you want to change it?"
+		reply = QMessageBox.warning(self, title, text, 
+							QMessageBox.Ok | QMessageBox.Cancel, 
+							defaultButton=QMessageBox.Cancel)
+		
+		if reply != QMessageBox.Ok:
+			return
+
+		# change the attr name
+		current_name = self.label_name.text()
+		text, ok = QInputDialog.getText(self, 'Attribute Name','Set Attribute Name', text=current_name)
+		if text and ok and text != current_name:
+			self.QSignalAttrName.emit(text)
 
 class TaskLabel(QLabel):
 	"""
@@ -94,5 +113,22 @@ class TaskLabel(QLabel):
 							border-radius: 2px""")
 		if self._toolTip:
 			self.setToolTip(self._toolTip)
+
+		self.right_click_menu()
+
+		self.setContextMenuPolicy(Qt.CustomContextMenu)
+		self.customContextMenuRequested.connect(self._show_menu)
+
+	def right_click_menu(self):
+		self.menu = QMenu()
+		self.action_edit = self.menu.addAction('Edit')
+
+	def _show_menu(self, QPos):
+		if self.text():
+			pos_parent = self.mapToGlobal(QPoint(0, 0))        
+			self.menu.move(pos_parent + QPos)
+
+			self.menu.show()
+
 
 		

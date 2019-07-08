@@ -61,9 +61,9 @@ class Builder(object):
 		_kwargs = variables.kwargs('kwargs', {}, kwargs)
 		_section = variables.kwargs('section', 'post', kwargs)
 		if 'pre' in _section.lower():
-			_section = 'pre'
+			_section = 'pre_build'
 		elif 'post' in _section.lower():
-			_section = 'post'
+			_section = 'post_build'
 		else:
 			_section = 'build'
 

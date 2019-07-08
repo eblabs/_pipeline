@@ -59,7 +59,7 @@ class RigInfo(QWidget):
 		# so it won't focus on QLineEidt when startup
 		self.setFocus()
 
-	def _enable_widget(self):
+	def enable_widget(self):
 		self._enable = not self._enable
 		self.setEnabled(self._enable)
 

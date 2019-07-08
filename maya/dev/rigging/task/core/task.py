@@ -14,7 +14,7 @@ import maya.cmds as cmds
 
 ## import utils
 import utils.common.variables as variables
-
+import dev.rigging.utils.kwargsUtils as kwargsUtils
 #=================#
 #   GLOBAL VARS   #
 #=================#
@@ -76,7 +76,7 @@ class Task(object):
 		attrName = kwargs.get('attributeName', '')
 		uiKwargs = kwargs.get('uiKwargs', {})
 
-		kwargInfo, kwargInfo_ui = variables.register_single_kwarg(longName, defaultValue=defaultVal, 
+		kwargInfo, kwargInfo_ui = kwargsUtils.register_single_kwarg(longName, defaultValue=defaultVal, 
 								  shortName=shortName, attributeName=attrName, uiKwargs=uiKwargs)
 		
 		self._kwargs.update(kwargInfo)
