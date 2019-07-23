@@ -13,7 +13,7 @@ class ChrTest(builder.Builder):
                            display='Model',
                            task='dev.rigging.task.test.testTask')
         self.register_task(name='miscs',
-                           task=self._func)
+                           task='dev.rigging.task.core.callback')
         self.register_task(name='blueprints',
                            task=self._func,
                            index=1)

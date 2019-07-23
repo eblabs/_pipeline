@@ -44,5 +44,8 @@ PROPERTY_ITEMS = {'str': {'value': '',
 				  'strPath': {'value': [],
 				  			  'template': 'str',
 				  			  'widget': QLineEdit},
+
+				  'callback': {'value': '',
+				  			   'widget': QPlainTextEdit}
 				  			  }
 

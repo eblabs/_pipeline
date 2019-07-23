@@ -199,7 +199,7 @@ class PropertyEditor(QTreeView):
 
 		column_val = PropertyItem(**itemKwargs)
 		
-		column_val.setData(self._size, role=Qt.SizeHintRole)
+		#column_val.setData(self._size, role=Qt.SizeHintRole)
 
 		# get template
 		template = column_val.data(role=ROLE_TEMPLATE)
