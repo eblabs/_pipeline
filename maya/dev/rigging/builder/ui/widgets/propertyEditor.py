@@ -103,6 +103,20 @@ class PropertyEditor(QTreeView):
 	def right_click_menu(self):
 		self.menu = QMenu()
 		self.action_edit = self.menu.addAction('Reset Value')
+		self.menu.addSeparator()
+		self.action_setSelect = self.menu.addAction('Set Selection')
+		self.action_addSelect = self.menu.addAction('Add Selection')
+		self.menu.addSeparator()
+		self.action_addElement = self.menu.addAction('Add Element')
+		self.action_delElement = self.menu.addAction('Remove Element')
+		self.action_dupElement = self.menu.addAction('Duplicate Element')
+
+		for action in [self.action_setSelect,
+					   self.action_addSelect,
+					   self.action_addElement,
+					   self.action_delElement,
+					   self.action_dupElement]:
+			action.setEnabled(False)
 
 	def _add_child(self, item, data, template=None):
 		if isinstance(data, list):
@@ -225,6 +239,26 @@ class PropertyEditor(QTreeView):
 		if column > 0:
 			pos = self.viewport().mapToGlobal(QPos)        
 			self.menu.move(pos)
+
+			dataInfo = item.data(role=ROLE_ITEM_KWARGS)
+			print dataInfo
+			if 'select' in dataInfo and dataInfo['select']:
+				self.action_setSelect.setEnabled(True)
+				if 'template' in dataInfo and dataInfo['template'] != None:
+					self.action_addSelect.setEnabled(True)
+				else:
+					self.action_addSelect.setEnabled(False)
+			else:
+				self.action_setSelect.setEnabled(False)
+			
+			if 'template' in dataInfo and dataInfo['template'] != None:
+				self.action_addElement.setEnabled(True)
+				self.action_delElement.setEnabled(True)
+				self.action_dupElement.setEnabled(True)
+			else:
+				self.action_addElement.setEnabled(False)
+				self.action_delElement.setEnabled(False)
+				self.action_dupElement.setEnabled(False)
 
 			self.menu.show()
 

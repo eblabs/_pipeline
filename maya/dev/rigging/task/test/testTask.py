@@ -35,6 +35,10 @@ class TestTask(task.Task):
 								select=False, template='str',
 								hint='load data from following paths')
 
+		self.register_attribute('selection', [], attrName='sel',
+								select=True, template='str',
+								hint='select nodes')
+
 		self.register_attribute('joints', 5, attrName='jntNum', shortName='j',
 								min=1, max=10, hint='joints number')
 

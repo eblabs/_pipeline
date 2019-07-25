@@ -38,7 +38,7 @@ class Task(object):
 		self._name = 'task'
 		self._task = 'dev.rigging.task.core.task'
 
-		self.register_attributes(**kwargs)
+		self.register_attrs(**kwargs)
 
 	@ property
 	def name(self):
@@ -61,7 +61,7 @@ class Task(object):
 	def post_build(self):
 		pass	
 
-	def register_attributes(self, **kwargs):
+	def register_attrs(self, **kwargs):
 		self.register_kwargs()
 		self.register_inputs(**kwargs)
 
@@ -106,7 +106,7 @@ class Task(object):
 			elif isinstance(value, basestring):
 				attrType = 'str'
 
-		kwargInfo_ui = PROPERTY_ITEMS[attrType]
+		kwargInfo_ui = PROPERTY_ITEMS[attrType].copy()
 		kwargInfo_ui.update(kwargs)
 
 		if attrType in ['float', 'int']:
