@@ -23,14 +23,10 @@ import ast
 # =================#
 from . import Logger
 
-from utils.common.config.PROPERTY_ITEMS import PROPERTY_ITEMS
+import dev.rigging.task
+PROPERTY_ITEMS = dev.rigging.task.PROPERTY_ITEMS
 
-ROLE_VALUE = Qt.UserRole + 1
-ROLE_TYPE = Qt.UserRole + 2
-ROLE_MIN = Qt.UserRole + 3
-ROLE_MAX = Qt.UserRole + 4
-ROLE_ENUM = Qt.UserRole + 5
-ROLE_TEMPLATE = Qt.UserRole + 6
+ROLE_ITEM_KWARGS = Qt.UserRole + 1
 
 ROLE_TASK_KWARGS = Qt.UserRole + 4
 
@@ -183,7 +179,11 @@ class PropertyEditor(QTreeView):
 			rows = item_attr.rowCount()
 			item_attr.removeRows(0, rows)
 			# get template
-			template = item_attr.data(role=ROLE_TEMPLATE)
+			itemKwargs = item_attr.data(role=ROLE_ITEM_KWARGS)
+			if itemKwargs and 'template' in itemKwargs:
+				template = itemKwargs['template']
+			else:
+				template = None
 			# rebuild
 			self._add_child(item_attr, value, template=template)
 
@@ -193,16 +193,28 @@ class PropertyEditor(QTreeView):
 		column_property.setEditable(False)
 		column_property.setData(self._size, role=Qt.SizeHintRole)
 
+		# update kwargs
+		if 'type' in itemKwargs:
+			kwargs_add = PROPERTY_ITEMS[itemKwargs['type']]
+			kwargs_add.update(itemKwargs)
+			itemKwargs = kwargs_add
+
 		# column 2: value
 		if val != None:
 			itemKwargs.update({'value': val})
 
-		column_val = PropertyItem(**itemKwargs)
+		column_val = PropertyItem(dataInfo=itemKwargs)
+
+		if 'height' in itemKwargs:
+			size = QSize(self._size.width(), itemKwargs['height'])
 		
-		#column_val.setData(self._size, role=Qt.SizeHintRole)
+			column_property.setData(size, role=Qt.SizeHintRole)
 
 		# get template
-		template = column_val.data(role=ROLE_TEMPLATE)
+		if 'template' in itemKwargs:
+			template = itemKwargs['template']
+		else:
+			template = None
 
 		return [column_property, column_val], template
 
@@ -229,28 +241,26 @@ class PropertyDelegate(QItemDelegate):
 		
 	def createEditor(self, parent, option, index):
 		item = index.model().itemFromIndex(index)
-		attrType = item.data(role=ROLE_TYPE)
+
+		dataInfo = item.data(role=ROLE_ITEM_KWARGS)
 
 		value = index.data()
 
-		widget = PROPERTY_ITEMS[attrType]['widget'](parent)
+		widget = dataInfo['widget'](parent)
 
 		# extra setting
 		if isinstance(widget, QComboBox):
 			# set enum
-			enum = item.data(role=ROLE_ENUM)
-			widget.addItems(enum)
+			widget.addItems(dataInfo['enum'])
 			enumIndex = widget.findText(value, Qt.MatchFixedString)
 			widget.setCurrentIndex(enumIndex)
 
 		elif isinstance(widget, QDoubleSpinBox) or isinstance(widget, QSpinBox):
 			# set range
-			minVal = item.data(role=ROLE_MIN)
-			maxVal = item.data(role=ROLE_MAX)
-			if minVal:
-				widget.setMinimum(minVal)
-			if maxVal:
-				widget.setMaximum(maxVal)
+			if 'min' in dataInfo and dataInfo['min'] != None:
+				widget.setMinimum(dataInfo['min'])
+			if 'max' in dataInfo and dataInfo['max'] != None:
+				widget.setMaximum(dataInfo['max'])
 
 		elif isinstance(widget, QLineEdit):
 			widget.setFrame(False)
@@ -263,7 +273,10 @@ class PropertyDelegate(QItemDelegate):
 	def setModelData(self, editor, model, index):
 		item = index.model().itemFromIndex(index)
 		# get previous value
-		value = item.text()		
+		value = item.text()
+
+		# get data info
+		dataInfo = item.data(role=ROLE_ITEM_KWARGS)	
 
 		# set data
 		super(PropertyDelegate, self).setModelData(editor, model, index)
@@ -271,7 +284,7 @@ class PropertyDelegate(QItemDelegate):
 		# if it's string/list/dict
 		if isinstance(editor, QLineEdit):
 			# get default value
-			value_default = item.data(role=ROLE_VALUE)
+			value_default = dataInfo['value']
 			# get changed value
 			value_change = item.text()
 			# convert value
@@ -312,63 +325,20 @@ class PropertyItem(QStandardItem):
 	espically for list and dictionary, 
 	it hold the template to add items 
 	"""
-	def __init__(self, **kwargs):
+	def __init__(self, dataInfo={}):
 		super(PropertyItem, self).__init__()
 
-		self._value = kwargs.get('value', None)
-		self._type = kwargs.get('type', None)
-		self._enum = kwargs.get('enum', [])
-		self._min = kwargs.get('min', None)
-		self._max = kwargs.get('max', None)
-		self._template = kwargs.get('template', None)
-		self._hint = kwargs.get('hint', '')
+		self._data_info = dataInfo
 
 		self._set_data()
 
 	def _set_data(self):
-		data_info = {'value': None,
-					 'min': None,
-					 'max': None,
-					 'enum': None,
-					 'template': None,
-					 'type': None,
-					 'hint': ''}
-		
-		if not self._type:
-			if self._value in [True, False]:
-				self._type = 'bool'
-				self._enum = ['True', 'False']
-			elif isinstance(self._value, float):
-				self._type = 'float'
-			elif isinstance(self._value, int):
-				self._type = 'int'
-			elif isinstance(self._value, list):
-				self._type = 'list'
-			elif isinstance(self._value, dict):
-				self._type = 'dict'
-			elif isinstance(self._value, basestring):
-				self._type = 'str'
-			else:
-				return
+		self.setText(str(self._data_info['value']))
 
-		data_info.update(PROPERTY_ITEMS[self._type])
+		self.setData(self._data_info, role=ROLE_ITEM_KWARGS)
 
-		data_info['type'] = self._type
-
-		for attr in ['value', 'min', 'max', 'enum', 'template', 'hint']:
-			if hasattr(self, '_'+attr):
-				data_info[attr] = getattr(self, '_'+attr)
-
-		self.setText(str(data_info['value']))
-
-		self.setData(data_info['value'], role=ROLE_VALUE)
-		self.setData(data_info['type'], ROLE_TYPE)
-		self.setData(data_info['min'], ROLE_MIN)
-		self.setData(data_info['max'], ROLE_MAX)
-		self.setData(data_info['enum'], ROLE_ENUM)
-		self.setData(data_info['template'], ROLE_TEMPLATE)
-		if data_info['hint']:
-			self.setData(data_info['hint'], Qt.ToolTipRole)
+		if 'hint' in self._data_info and self._data_info['hint']:
+			self.setData(self._data_info['hint'], Qt.ToolTipRole)
 
 # =================#
 #      FUNCTION    #

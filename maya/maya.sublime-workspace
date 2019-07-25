@@ -4,16 +4,60 @@
 		"selected_items":
 		[
 			[
-				"_add",
-				"_add_attr_from_dict"
+				"kwargs",
+				"kwargs_add"
+			],
+			[
+				"item_",
+				"item_attr"
+			],
+			[
+				"regi",
+				"register_attribute"
 			],
 			[
 				"kw",
-				"kwargInfo"
+				"kwargs_ui"
 			],
 			[
 				"kwa",
-				"kwargInfo"
+				"kwargs_ui"
+			],
+			[
+				"attr",
+				"attrType"
+			],
+			[
+				"P",
+				"PROPERTY_ITEMS"
+			],
+			[
+				"wid",
+				"width"
+			],
+			[
+				"setM",
+				"setMaximum"
+			],
+			[
+				"ROLE",
+				"ROLE_ITEM_KWARGS"
+			],
+			[
+				"data",
+				"data_info"
+			],
+			[
+				"_kw",
+				"_kwargs_ui"
+			],
+			[
+				"_task",
+				"_taskKwargs"
+			],
+			[
+				"_add",
+				"_add_attr_from_dict"
 			],
 			[
 				"range",
@@ -36,10 +80,6 @@
 				"QTreeWidgetItem"
 			],
 			[
-				"wid",
-				"widget_taskInfo"
-			],
-			[
 				"QSig",
 				"QSiganlAttrName"
 			],
@@ -50,10 +90,6 @@
 			[
 				"ROLE_",
 				"ROLE_TASK_NAME"
-			],
-			[
-				"attr",
-				"attribute"
 			],
 			[
 				"att",
@@ -194,10 +230,6 @@
 			[
 				"role",
 				"ROLE_TASK_RUN"
-			],
-			[
-				"ROLE",
-				"ROLE_TASK_PRE"
 			],
 			[
 				"SC_",
@@ -482,38 +514,6 @@
 			[
 				"lineE",
 				"lineEdit_section"
-			],
-			[
-				"label",
-				"label_section"
-			],
-			[
-				"line",
-				"lineEdit_section"
-			],
-			[
-				"Exec",
-				"Execute"
-			],
-			[
-				"short",
-				"shortcut"
-			],
-			[
-				"button_refre",
-				"button_refresh_run"
-			],
-			[
-				"button_run",
-				"button_run_all"
-			],
-			[
-				"ru",
-				"run_all_button_pressed"
-			],
-			[
-				"but",
-				"button_run_all"
 			]
 		]
 	},
@@ -523,7 +523,7 @@
 			"file": "dev/rigging/builder/core/builder.py",
 			"settings":
 			{
-				"buffer_size": 4197,
+				"buffer_size": 4334,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -538,30 +538,92 @@
 			}
 		},
 		{
-			"file": "dev/rigging/task/core/task.py",
+			"file": "dev/rigging/builder/ui/widgets/propertyEditor.py",
 			"settings":
 			{
-				"buffer_size": 5256,
+				"buffer_size": 9337,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "dev/rigging/component/core/base.py",
+			"file": "dev/rigging/task/core/task.py",
 			"settings":
 			{
-				"buffer_size": 9984,
+				"buffer_size": 3966,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"contents": "#=================#\n#   GLOBAL VARS   #\n#=================#\nfrom config.PROPERTY_ITEMS import PROPERTY_ITEMS \n#=================#\n#    FUNCTION     #\n#=================#\n\ndef register_single_kwarg(longName, defaultValue=None, shortName='', attributeName='', uiKwargs={}):\n\t'''\n\tthis function is for class need register kwarg for in-class use and show on the ui\n\n\tArgs:\n\t\tlongName(str): kwarg key name\n\tKwargs:\t\n\t\tshortName(str)['']: kwarg short name\n\t\tdefaultValue[None]: default value\n\t\tattributeName(str)['']: attribute name in class, will use longName if not any\n\t\tuiKwargs(dict)[{}]: kwargs for ui base on PROPERTY_ITEMS.py\n\tReturns:\n\t\tkwargInfo(dict)\n\t\tkwargInfo_ui(dict)\n\t'''\n\tkwargInfo_ui = {longName: {}}\n\n\tif uiKwargs:\n\t\tif 'type' in uiKwargs:\n\t\t\tattrType = uiKwargs['type']\n\t\telif 'value' in uiKwargs and uiKwargs['value'] != None:\n\t\t\tattrType = _get_type_from_value(uiKwargs['value'])\n\telif defaultValue != None:\n\t\tattrType = _get_type_from_value(defaultValue)\n\n\tif attrType:\n\t\tkwargInfo_ui[longName].update(PROPERTY_ITEMS[attrType])\n\telse:\n\t\tLogger.error('kwarg should at least has defaultValue or value/type in uiKwargs')\n\n\tif uiKwargs:\n\t\tkwargInfo_ui[longName].update(uiKwargs)\n\t\n\tif defaultValue != None:\n\t\t# update kwargs ui value info\n\t\tkwargInfo_ui[longName].update({'value': defaultValue})\n\n\t# \n\n\tif not attributeName:\n\t\tattributeName = longName\n\tkwargInfo = {attributeName: [longName, kwargInfo_ui[longName]['value'], shortName]}\n\n\treturn kwargInfo, kwargInfo_ui\n\ndef _get_type_from_value(value):\n\tif value in [True, False]:\n\t\tvalType = 'bool'\n\telif isinstance(value, float):\n\t\tvalType = 'float'\n\telif isinstance(self._value, int):\n\t\tvalType = 'int'\n\telif isinstance(self._value, list):\n\t\tvalType = 'list'\n\telif isinstance(self._value, dict):\n\t\tvalType = 'dict'\n\telif isinstance(self._value, basestring):\n\t\tvalType = 'str'\n\telse:\n\t\tLogger.error('Can not recogonize value type')\n\treturn valType",
+			"file": "dev/rigging/task/__init__.py",
+			"settings":
+			{
+				"buffer_size": 48,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "dev/rigging/task/config/PROPERTY_ITEMS.py",
+			"settings":
+			{
+				"buffer_size": 930,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "dev/rigging/task/base/newScene.py",
+			"settings":
+			{
+				"buffer_size": 672,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "dev/rigging/task/base/dataImport.py",
+			"settings":
+			{
+				"buffer_size": 1790,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "dev/rigging/task/base/dataLoad.py",
+			"settings":
+			{
+				"buffer_size": 1704,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "dev/rigging/task/test/testTask.py",
+			"settings":
+			{
+				"buffer_size": 1356,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "dev/rigging/task/core/callback.py",
+			"settings":
+			{
+				"buffer_size": 1160,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
 			"file": "dev/rigging/utils/kwargsUtils.py",
-			"file_size": 1974,
-			"file_write_time": 132070359014492496,
 			"settings":
 			{
 				"buffer_size": 1913,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
@@ -575,10 +637,10 @@
 			}
 		},
 		{
-			"file": "dev/rigging/task/core/callback.py",
+			"file": "utils/common/logUtils.py",
 			"settings":
 			{
-				"buffer_size": 1646,
+				"buffer_size": 559,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -593,7 +655,10 @@
 			}
 		},
 		{
+			"contents": "# =================#\n# IMPORT PACKAGES  #\n# =================#\n\n# import PySide\ntry:\n\tfrom PySide2.QtWidgets import *\nexcept ImportError:\n\tfrom PySide.QtGui import *\n\n# =================#\n#   GLOBAL VARS    #\n# =================#\n\nPROPERTY_ITEMS = {'str': {'value': '',\n\t\t\t\t\t\t  'widget': QLineEdit},\n\n\t\t\t\t  'float': {'value': 0.0,\n\t\t\t\t\t\t\t'min': None,\n\t\t\t\t\t\t\t'max': None,\n\t\t\t\t\t\t\t'widget': QDoubleSpinBox},\n\n\t\t\t\t  'int': {'value': 0,\n\t\t\t\t\t\t  'min': None,\n\t\t\t\t\t\t  'max': None,\n\t\t\t\t\t\t  'widget': QSpinBox},\n\n\t\t\t\t  'enum': {'value': None,\n\t\t\t\t\t\t   'enum': [],\n\t\t\t\t\t\t   'widget': QComboBox},\n\n\t\t\t\t  'bool': {'value': True,\n\t\t\t\t\t\t   'widget': QComboBox},\n\n\t\t\t\t  'list': {'value': [],\n\t\t\t\t\t\t   'template': '',\n\t\t\t\t\t\t   'widget': QLineEdit},\n\n\t\t\t\t  'dict': {'value': {},\n\t\t\t\t\t\t   'template': [],\n\t\t\t\t\t\t   'widget': QLineEdit},\n\n\t\t\t\t  # common task property type\n\t\t\t\t  'strPath': {'value': [],\n\t\t\t\t  \t\t\t  'template': 'str',\n\t\t\t\t  \t\t\t  'widget': QLineEdit},\n\n\t\t\t\t  'callback': {'value': '',\n\t\t\t\t  \t\t\t   'widget': QPlainTextEdit}\n\t\t\t\t  \t\t\t  }\n\n",
 			"file": "dev/rigging/utils/config/PROPERTY_ITEMS.py",
+			"file_size": 1083,
+			"file_write_time": 132072173080069216,
 			"settings":
 			{
 				"buffer_size": 1032,
@@ -606,15 +671,6 @@
 			"settings":
 			{
 				"buffer_size": 3283,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "dev/rigging/builder/ui/widgets/propertyEditor.py",
-			"settings":
-			{
-				"buffer_size": 10265,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -859,11 +915,8 @@
 		"/C/_pipeline/maya/dev/rigging/component",
 		"/C/_pipeline/maya/dev/rigging/component/core",
 		"/C/_pipeline/maya/dev/rigging/task",
-		"/C/_pipeline/maya/dev/rigging/task/base",
-		"/C/_pipeline/maya/dev/rigging/task/core",
 		"/C/_pipeline/maya/dev/rigging/task/test",
 		"/C/_pipeline/maya/dev/rigging/utils",
-		"/C/_pipeline/maya/dev/rigging/utils/config",
 		"/C/_pipeline/maya/doc",
 		"/C/_pipeline/maya/tests",
 		"/C/_pipeline/maya/utils",
@@ -876,6 +929,9 @@
 	],
 	"file_history":
 	[
+		"/C/_pipeline/maya/dev/rigging/task/base/__init__.py",
+		"/C/_pipeline/maya/dev/rigging/task/core/__init__.py",
+		"/C/_pipeline/maya/dev/rigging/task/test/__init__.py",
 		"/C/_pipeline/maya/dev/rigging/utils/config/PROPERTY_ITEMS.py",
 		"/C/_pipeline/maya/utils/common/config/PROPERTY_ITEMS.py",
 		"/C/_pipeline/maya/tests/highlight.py",
@@ -889,7 +945,6 @@
 		"/C/_pipeline/maya/dev/rigging/task/core/dataLoad.py",
 		"/C/_pipeline/maya/dev/rigging/task/core/dataImport.py",
 		"/C/_pipeline/maya_oldCodes/assets/ui/assetManager.py",
-		"/C/_pipeline/maya/dev/rigging/task/test/__init__.py",
 		"/C/_pipeline/maya/tests/rigBuilder.py",
 		"/C/_pipeline/maya_oldCodes/rigSys/ui/icon/__init__.py",
 		"/C/_pipeline/maya/dev/rigging/builder/ui/widgets/config/PROPERTY_ITEMS.py",
@@ -932,11 +987,9 @@
 		"/C/_pipeline/maya/dev/rigging/task/core/task.py",
 		"/C/_works/maya/BromProject/assets/chrBrom/rig/components/buildScript/componentsInfo.py",
 		"/C/_pipeline/maya/dev/rigging/component/core/base.py",
-		"/C/_pipeline/maya/dev/rigging/task/core/__init__.py",
 		"/C/_pipeline/maya/utils/common/files.py",
 		"/C/_pipeline/maya/tests/callbackTest.py",
 		"/C/_pipeline/maya/tests/methodTest.py",
-		"/C/_pipeline/maya/dev/rigging/task/base/__init__.py",
 		"/C/_pipeline/maya/dev/rigging/builder/core/base.py",
 		"/C/_pipeline/maya_oldCodes/oldCode/riggingAPI/rigBuild/baseCore.py",
 		"/C/_pipeline/maya/dev/rigging/component/core/__init__.py",
@@ -1021,6 +1074,15 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"width",
+			"self._size",
+			"QSize",
+			"PropertyItem",
+			"tip",
+			"ROLE_TASK_KWARGS",
+			"_add_row_item",
+			"PropertyItem",
+			"self._size",
 			"register_attributes",
 			"value",
 			"register_inputs",
@@ -1139,16 +1201,7 @@
 			"_getRigComponentInfo",
 			"_registerAttrs",
 			"_registerAttributes",
-			"_registerAttrs",
-			"__get_control_info",
-			"__add_ctrl_shape",
-			"driver",
-			"drive",
-			"MMatrix",
-			"__add_ctrl_shape",
-			"force",
-			"_check_attr_exists",
-			"cmds.connectAttr"
+			"_registerAttrs"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1279,15 +1332,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4197,
+						"buffer_size": 4334,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3209,
-								3209
+								2269,
+								2269
 							]
 						],
 						"settings":
@@ -1297,10 +1350,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3783.0,
+						"translation.y": 2287.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
@@ -1316,8 +1369,8 @@
 						"selection":
 						[
 							[
-								11148,
-								11148
+								2730,
+								2731
 							]
 						],
 						"settings":
@@ -1327,27 +1380,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 10952.0,
+						"translation.y": 41.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "dev/rigging/task/core/task.py",
+					"file": "dev/rigging/builder/ui/widgets/propertyEditor.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5256,
+						"buffer_size": 9337,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1235,
-								1235
+								6682,
+								6682
 							]
 						],
 						"settings":
@@ -1357,7 +1410,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6507.0,
+						"translation.y": 8047.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1365,19 +1418,19 @@
 				},
 				{
 					"buffer": 3,
-					"file": "dev/rigging/component/core/base.py",
-					"semi_transient": true,
+					"file": "dev/rigging/task/core/task.py",
+					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9984,
+						"buffer_size": 3966,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1879,
-								1851
+								3021,
+								3021
 							]
 						],
 						"settings":
@@ -1387,14 +1440,222 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2743.0,
+						"translation.y": 3808.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "dev/rigging/task/__init__.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 48,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								48,
+								48
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "dev/rigging/task/config/PROPERTY_ITEMS.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 930,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								875,
+								875
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 918.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "dev/rigging/task/base/newScene.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 672,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								365,
+								335
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 102.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "dev/rigging/task/base/dataImport.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1790,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1029,
+								870
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1224.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "dev/rigging/task/base/dataLoad.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1704,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								350,
+								320
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "dev/rigging/task/test/testTask.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1356,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								856,
+								856
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 4.0,
+						"translation.y": 714.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 10,
+					"file": "dev/rigging/task/core/callback.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1160,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								595,
+								595
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 408.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
 					"file": "dev/rigging/utils/kwargsUtils.py",
 					"semi_transient": false,
 					"settings":
@@ -1420,11 +1681,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 12,
 					"file": "utils/common/config/PROPERTY_ITEMS.py",
 					"semi_transient": false,
 					"settings":
@@ -1436,8 +1697,8 @@
 						"selection":
 						[
 							[
-								553,
-								543
+								1016,
+								1002
 							]
 						],
 						"settings":
@@ -1447,44 +1708,43 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 726.0,
+						"translation.y": 1236.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
-					"file": "dev/rigging/task/core/callback.py",
+					"buffer": 13,
+					"file": "utils/common/logUtils.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1646,
+						"buffer_size": 559,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1617,
-								1617
+								559,
+								559
 							]
 						],
 						"settings":
 						{
 							"show_definitions": false,
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
+							"syntax": "Packages/Python/Python.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 935.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 14,
 					"file": "dev/rigging/builder/ui/widgets/buttonShelf.py",
 					"semi_transient": false,
 					"settings":
@@ -1510,11 +1770,11 @@
 						"translation.y": 2964.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 15,
 					"file": "dev/rigging/utils/config/PROPERTY_ITEMS.py",
 					"semi_transient": false,
 					"settings":
@@ -1540,11 +1800,11 @@
 						"translation.y": 918.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 16,
 					"file": "dev/rigging/builder/ui/widgets/taskInfo.py",
 					"semi_transient": false,
 					"settings":
@@ -1569,41 +1829,11 @@
 						"translation.y": 3706.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
-					"file": "dev/rigging/builder/ui/widgets/propertyEditor.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10265,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								997,
-								1001
-							]
-						],
-						"settings":
-						{
-							"show_definitions": false,
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1111.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
-					"type": "text"
-				},
-				{
-					"buffer": 11,
+					"buffer": 17,
 					"file": "dev/rigging/builder/ui/rigBuilder.py",
 					"semi_transient": false,
 					"settings":
@@ -1629,11 +1859,11 @@
 						"translation.y": 1784.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 18,
 					"file": "dev/rigging/utils/kwargs.py",
 					"semi_transient": false,
 					"settings":
@@ -1659,11 +1889,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 19,
 					"file": "dev/rigging/builder/ui/widgets/rigInfo.py",
 					"semi_transient": false,
 					"settings":
@@ -1688,11 +1918,11 @@
 						"translation.y": 1716.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 23,
 					"type": "text"
 				},
 				{
-					"buffer": 14,
+					"buffer": 20,
 					"file": "dev/rigging/builder/ui/widgets/rigProgress.py",
 					"semi_transient": false,
 					"settings":
@@ -1718,11 +1948,11 @@
 						"translation.y": 1937.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 22,
 					"type": "text"
 				},
 				{
-					"buffer": 15,
+					"buffer": 21,
 					"file": "utils/common/modules.py",
 					"semi_transient": false,
 					"settings":
@@ -1748,11 +1978,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
-					"buffer": 16,
+					"buffer": 22,
 					"file": "tests/chrTest.py",
 					"semi_transient": false,
 					"settings":
@@ -1779,11 +2009,11 @@
 						"translation.y": 204.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
-					"buffer": 17,
+					"buffer": 23,
 					"file": "utils/common/uiUtils.py",
 					"semi_transient": false,
 					"settings":
@@ -1808,7 +2038,7 @@
 						"translation.y": 1089.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 20,
 					"type": "text"
 				}
 			]
@@ -1818,7 +2048,7 @@
 			"sheets":
 			[
 				{
-					"buffer": 18,
+					"buffer": 24,
 					"file": "utils/common/variables.py",
 					"semi_transient": false,
 					"settings":
@@ -1840,15 +2070,15 @@
 							"syntax": "Packages/Python/Python.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": 16.0,
-						"translation.y": 816.0,
+						"translation.x": 0.0,
+						"translation.y": 204.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
-					"buffer": 19,
+					"buffer": 25,
 					"file": "tests/dataWidget.py",
 					"semi_transient": false,
 					"settings":
@@ -1874,11 +2104,11 @@
 						"translation.y": 4950.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 26,
+					"stack_index": 32,
 					"type": "text"
 				},
 				{
-					"buffer": 20,
+					"buffer": 26,
 					"file": "/C/_pipeline/maya_oldCodes/rigSys/ui/rigBuilder.py",
 					"semi_transient": false,
 					"settings":
@@ -1904,11 +2134,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 29,
+					"stack_index": 35,
 					"type": "text"
 				},
 				{
-					"buffer": 21,
+					"buffer": 27,
 					"file": "/C/_pipeline/maya_oldCodes/lib/common/uiUtils.py",
 					"semi_transient": false,
 					"settings":
@@ -1934,11 +2164,11 @@
 						"translation.y": 216.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 31,
+					"stack_index": 37,
 					"type": "text"
 				},
 				{
-					"buffer": 22,
+					"buffer": 28,
 					"file": "/C/_pipeline/maya_oldCodes/rigSys/ui/rigBuild/rigBuildInfoTreeWidget.py",
 					"semi_transient": false,
 					"settings":
@@ -1964,11 +2194,11 @@
 						"translation.y": 2396.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 25,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 29,
 					"file": "/C/_pipeline/maya_oldCodes/rigSys/ui/rigBuild/rigBuildWidget.py",
 					"semi_transient": false,
 					"settings":
@@ -1994,11 +2224,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 28,
+					"stack_index": 34,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 30,
 					"file": "/C/_pipeline/maya_oldCodes/rigSys/ui/dataInfo/dataInfoTreeWidget.py",
 					"semi_transient": false,
 					"settings":
@@ -2024,11 +2254,11 @@
 						"translation.y": 792.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 24,
+					"stack_index": 30,
 					"type": "text"
 				},
 				{
-					"buffer": 25,
+					"buffer": 31,
 					"file": "/C/_pipeline/maya_oldCodes/rigSys/ui/dataInfo/dataInfoWidget.py",
 					"semi_transient": false,
 					"settings":
@@ -2054,11 +2284,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 29,
 					"type": "text"
 				},
 				{
-					"buffer": 26,
+					"buffer": 32,
 					"file": "/C/_pipeline/maya_oldCodes/rigSys/ui/rigInfo/createRigDialog.py",
 					"semi_transient": false,
 					"settings":
@@ -2084,11 +2314,11 @@
 						"translation.y": 2154.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 28,
 					"type": "text"
 				},
 				{
-					"buffer": 27,
+					"buffer": 33,
 					"file": "/C/_pipeline/maya_oldCodes/rigSys/ui/rigInfo/rigInfoWidget.py",
 					"semi_transient": false,
 					"settings":
@@ -2114,11 +2344,11 @@
 						"translation.y": 867.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 20,
+					"stack_index": 26,
 					"type": "text"
 				},
 				{
-					"buffer": 28,
+					"buffer": 34,
 					"file": "/C/_pipeline/maya_oldCodes/rigSys/ui/rigInfo/rigInfoLineEdit.py",
 					"semi_transient": false,
 					"settings":
@@ -2144,11 +2374,11 @@
 						"translation.y": 693.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 27,
+					"stack_index": 33,
 					"type": "text"
 				},
 				{
-					"buffer": 29,
+					"buffer": 35,
 					"file": "/C/_pipeline/maya_oldCodes/oldCode/riggingAPI/rigBuilderUI.py",
 					"semi_transient": false,
 					"settings":
@@ -2174,11 +2404,11 @@
 						"translation.y": 270.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 25,
+					"stack_index": 31,
 					"type": "text"
 				},
 				{
-					"buffer": 30,
+					"buffer": 36,
 					"file": "/C/_pipeline/maya_oldCodes/oldCode/UI/assetsManagerUI.py",
 					"semi_transient": false,
 					"settings":
@@ -2204,11 +2434,11 @@
 						"translation.y": 10767.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
-					"buffer": 31,
+					"buffer": 37,
 					"file": "/C/_pipeline/maya_oldCodes/oldCode/UI/saveAssetUI.py",
 					"semi_transient": false,
 					"settings":
@@ -2234,7 +2464,7 @@
 						"translation.y": 3888.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 30,
+					"stack_index": 36,
 					"type": "text"
 				}
 			]
@@ -2268,7 +2498,7 @@
 		"cols":
 		[
 			0.0,
-			0.854031694171,
+			0.769447792397,
 			1.0
 		],
 		"rows":

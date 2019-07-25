@@ -6,72 +6,51 @@
 import sys
 import os
 
-## import maya packages
-import maya.cmds as cmds
+## import OrderedDict
+from collections import OrderedDict
+
+## import PySide widgets
+try:
+	from PySide2.QtWidgets import *
+except ImportError:
+	from PySide.QtGui import *
 
 ## import utils
-import utils.common.files as files
-
-## import task
-import task
+import utils.common.logUtils as logUtils
 
 #=================#
 #   GLOBAL VARS   #
 #=================#
-from . import Logger, TASK_PATH
+logger = logUtils.get_logger()
+
+_kwargs_ui = OrderedDict()
+for section in ['preBuild', 'build', 'postBuild']:
+	_kwargs_ui.update({section: {'value': '',
+							    'select': False,
+							    'hint': 'Execute following code at '+section ,
+							    'height': 100,
+							    'widget': QPlainTextEdit}})
 
 #=================#
-#      CLASS      #
+#     FUNCTION    #
 #=================#
-class Callback(task.Task):
-	"""
-	base class for callback
-	
+def Callback(self, code):
+	'''
+	callback function
+
 	used for tasks need callback
-	
-	self.builder: pass the builder object so the vars can be used
 
-	Kwargs:
-		preBuild(str): pre build section code
-		build(str): build section code
-		postBuild(str): post build section code
+	it will show as QTreeWidgetItem(task) in the ui,
+	but it's the only task not inherit from task class, just a function
 
-	"""
-	def __init__(self, **kwargs):
-		super(Callback, self).__init__(**kwargs)
-		self._task = TASK_PATH+'.callback'
-		self.builder = None
+	Args:
+		self: this function will attached to the builder class, 
+			  so we need self to get vars from builder
+		code(str): the callback code we need to execute 
+	'''
+	if code:
+		exec(code)
 
-	def register_kwargs(self):
-		super(Callback, self).register_kwargs()
-		self.register_single_kwargs('preBuild', 
-									shortName='pre', 
-									attributeName='callback_pre', 
-									uiKwargs={'type': 'callback'})
-
-		self.register_single_kwargs('build',
-									attributeName='callback_build', 
-									uiKwargs={'type': 'callback'})
-
-		self.register_single_kwargs('postBuild', 
-									shortName='post', 
-									attributeName='callback_post', 
-									uiKwargs={'type': 'callback'})
-
-	def pre_build(self):
-		super(Callback, self).pre_build()
-		if self._callback_pre:
-			exec(self._callback_pre)
-
-	def build(self):
-		super(Callback, self).build()
-		if self._callback_build:
-			exec(self._callback_build)
-
-	def post_build(self):
-		super(Callback, self).post_build()
-		if self._callback_post:
-			exec(self._callback_post)
 
 
 

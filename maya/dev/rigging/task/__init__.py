@@ -1,0 +1,1 @@
+from config.PROPERTY_ITEMS import PROPERTY_ITEMS

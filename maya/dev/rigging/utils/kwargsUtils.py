@@ -43,6 +43,8 @@ def register_single_kwarg(longName, defaultValue=None, shortName='', attributeNa
 		# update kwargs ui value info
 		kwargInfo_ui[longName].update({'value': defaultValue})
 
+	# 
+
 	if not attributeName:
 		attributeName = longName
 	kwargInfo = {attributeName: [longName, kwargInfo_ui[longName]['value'], shortName]}

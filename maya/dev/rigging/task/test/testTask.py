@@ -15,7 +15,7 @@ import dev.rigging.task.core.task as task
 #=================#
 #   GLOBAL VARS   #
 #=================#
-from . import Logger, TASK_PATH
+
 
 #=================#
 #      CLASS      #
@@ -27,21 +27,16 @@ class TestTask(task.Task):
 	"""
 	def __init__(self, **kwargs):
 		super(TestTask, self).__init__(**kwargs)
-		self._task = TASK_PATH+'.testTasl'
+		self._task = 'dev.rigging.task.test.testTask'
 
 	def register_kwargs(self):
 		super(TestTask, self).register_kwargs()
-		self.register_single_kwargs('data', 
-									shortName='d', 
-									attributeName='dataPath', 
-									uiKwargs={'type': 'strPath'})
+		self.register_attribute('data', [], attrName='dataPath', shortName='d',
+								select=False, template='str',
+								hint='load data from following paths')
 
-		self.register_single_kwargs('joints', 
-									shortName='j', 
-									attributeName='jntNum', 
-									uiKwargs={'type': 'int',
-											  'min': 1,
-											  'max': 10})
+		self.register_attribute('joints', 5, attrName='jntNum', shortName='j',
+								min=1, max=10, hint='joints number')
 
 	def pre_build(self):
 		super(TestTask, self).pre_build()

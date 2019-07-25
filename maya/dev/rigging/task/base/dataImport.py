@@ -11,14 +11,15 @@ import maya.cmds as cmds
 
 ## import utils
 import utils.common.files as files
+import utils.common.logUtils as logUtils
 
 ## import task
-import task
+import dev.rigging.task.core.task as task
 
 #=================#
 #   GLOBAL VARS   #
 #=================#
-from . import Logger, TASK_PATH
+logger = logUtils.get_logger()
 
 #=================#
 #      CLASS      #
@@ -32,30 +33,35 @@ class DataImport(task.Task):
 	
 	Kwargs:
 		data(list): list of data path
+		type(list): list of data type
 
 	"""
 	def __init__(self, **kwargs):
 		super(DataImport, self).__init__(**kwargs)
-		self._task = TASK_PATH+'.dataImport'
-		self._fileExt = ['ma', 'mb', 'obj']
+		self._task = 'dev.rigging.task.base.dataImport'
 
 	def register_kwargs(self):
 		super(DataImport, self).register_kwargs()
-		self.register_single_kwargs('data', 
-									shortName='d', 
-									attributeName='dataPath', 
-									uiKwargs={'type': 'strPath'})
+
+		self.register_attribute('data', [], attrName='dataPath', shortName='d',
+								select=False, template='str',
+								hint='import data from following paths')
+
+
+		self.register_attribute('type', ['ma', 'mb', 'obj'], attrName='fileExt',
+								select=False, template='str',
+								hint='import following type of data')
 
 	def get_data(self):
 		self._data = []
-		for path in self._dataPath:
+		for path in self.dataPath:
 			if os.path.isfile(path):
 				# check extension
 				ext = os.path.splitext(path)[-1].lower()
-				if ext in self._fileExt and path not in self._data:
+				if ext in self.fileExt and path not in self._data:
 					self._data.append(path)
 			elif os.path.isdir(path):
-				filePaths = files.get_files_from_path(path, extension=self._fileExt)
+				filePaths = files.get_files_from_path(path, extension=self.fileExt)
 				for p in filePaths:
 					if p not in self._data:
 						self._data.append(p)

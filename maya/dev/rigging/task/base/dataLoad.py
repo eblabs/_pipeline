@@ -6,19 +6,17 @@
 import sys
 import os
 
-## import maya packages
-import maya.cmds as cmds
-
 ## import utils
 import utils.common.files as files
+import utils.common.logUtils as logUtils
 
 ## import task
-import task
+import dev.rigging.task.core.task as task
 
 #=================#
 #   GLOBAL VARS   #
 #=================#
-from . import Logger, TASK_PATH
+logger = logUtils.get_logger()
 
 #=================#
 #      CLASS      #
@@ -29,6 +27,8 @@ class DataLoad(task.Task):
 	
 	used for tasks need load data from files
 	(deformers, controlShapes etc)
+
+	all tasks with load data function should inherit from this class
 	
 	self._dataType(str): json/numpy/cPickle
 						 determine which load function to use
@@ -39,15 +39,15 @@ class DataLoad(task.Task):
 	"""
 	def __init__(self, **kwargs):
 		super(DataLoad, self).__init__(**kwargs)
-		self._task = TASK_PATH+'.dataLoad'
+		self._task = 'dev.rigging.task.base.dataLoad'
 		self._dataType = 'json'
 
 	def register_kwargs(self):
 		super(DataLoad, self).register_kwargs()
-		self.register_single_kwargs('data', 
-									shortName='d', 
-									attributeName='dataPath', 
-									uiKwargs={'type': 'strPath'})
+
+		self.register_attribute('data', [], attrName='dataPath', shortName='d',
+								select=False, template='str',
+								hint='load data from following paths')
 
 	def get_load_method(self):
 		if self._dataType == 'json':
@@ -59,7 +59,7 @@ class DataLoad(task.Task):
 
 	def get_data(self):
 		self._data = {}
-		for path in self._dataPath:
+		for path in self.dataPath:
 			dataLoad = self.loadMethod(path)
 			for key, item in dataLoad.iteritems():
 				if key not in self._data:

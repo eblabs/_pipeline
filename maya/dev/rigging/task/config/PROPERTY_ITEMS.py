@@ -40,12 +40,8 @@ PROPERTY_ITEMS = {'str': {'value': '',
 						   'template': [],
 						   'widget': QLineEdit},
 
-				  # common task property type
-				  'strPath': {'value': [],
-				  			  'template': 'str',
-				  			  'widget': QLineEdit},
-
 				  'callback': {'value': '',
+				  			   'height': 100,
 				  			   'widget': QPlainTextEdit}
 				  			  }
 
