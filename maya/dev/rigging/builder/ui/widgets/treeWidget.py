@@ -39,10 +39,11 @@ ROLE_TASK_NAME = Qt.UserRole + 1
 ROLE_TASK_FUNC_NAME = Qt.UserRole + 2
 ROLE_TASK_FUNC = Qt.UserRole + 3
 ROLE_TASK_KWARGS = Qt.UserRole + 4
-ROLE_TASK_PRE = Qt.UserRole + 5
-ROLE_TASK_RUN = Qt.UserRole + 6
-ROLE_TASK_POST = Qt.UserRole + 7
-ROLE_TASK_SECTION = Qt.UserRole + 8
+ROLE_TASK_KWARGS_KEY = Qt.UserRole + 5
+ROLE_TASK_PRE = Qt.UserRole + 6
+ROLE_TASK_RUN = Qt.UserRole + 7
+ROLE_TASK_POST = Qt.UserRole + 8
+ROLE_TASK_SECTION = Qt.UserRole + 9
 
 ICONS_STATUS = [icons.grey, icons.green, icons.yellow, icons.red]
 
@@ -553,6 +554,7 @@ class TaskItem(QTreeWidgetItem):
 		self.setData(0, ROLE_TASK_FUNC_NAME, taskName)
 		self.setData(0, ROLE_TASK_FUNC, task)
 		self.setData(0, ROLE_TASK_KWARGS, taskKwargs)
+		self.setData(0, ROLE_TASK_KWARGS_KEY, taskKwargs.keys())
 		self.setData(0, ROLE_TASK_PRE, 0)
 		self.setData(0, ROLE_TASK_RUN, 0)
 		self.setData(0, ROLE_TASK_POST, 0)
@@ -560,6 +562,8 @@ class TaskItem(QTreeWidgetItem):
 
 		self.setFlags(self.flags()|Qt.ItemIsTristate|Qt.ItemIsUserCheckable)
 		self.setCheckState(0, check)
+
+		kwargsInfo=self.data(0, ROLE_TASK_KWARGS)
 
 	def setData(self, column, role, value):
 		super(TaskItem, self).setData(column, role, value)

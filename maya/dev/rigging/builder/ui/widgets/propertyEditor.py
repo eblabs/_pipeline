@@ -15,8 +15,17 @@ except ImportError:
 	from PySide import __version__
 	from shiboken import wrapInstance
 
+# import json
+import json
+
 # import ast
 import ast
+
+# import OrderedDict
+from collections import OrderedDict 
+
+# import maya
+import maya.cmds as cmds
 
 # =================#
 #   GLOBAL VARS   #
@@ -29,6 +38,7 @@ PROPERTY_ITEMS = dev.rigging.task.PROPERTY_ITEMS
 ROLE_ITEM_KWARGS = Qt.UserRole + 1
 
 ROLE_TASK_KWARGS = Qt.UserRole + 4
+ROLE_TASK_KWARGS_KEY = Qt.UserRole + 5
 
 # =================#
 #      CLASS       #
@@ -77,16 +87,18 @@ class PropertyEditor(QTreeView):
 		self.refresh()
 
 		data_property = item.data(0, ROLE_TASK_KWARGS)
+		data_property_keys = item.data(0, ROLE_TASK_KWARGS_KEY)
 
-		for key, data in data_property.iteritems():
+		for key in data_property_keys:
+			data = data_property[key]
 			# add row item
-			row, template_child = self._add_row_item(key, itemKwargs=data)
+			row, template_child, keyEdit = self._add_row_item(key, itemKwargs=data, keyEdit=False)
 
 			# add row
 			self._model.appendRow(row)
 
 			# loop downstream
-			self._add_child(row[0], data['value'], template=template_child)
+			self._add_child(row[0], data['value'], template=template_child, keyEdit=keyEdit)
 
 	def refresh(self):
 		self.setEnabled(True)
@@ -102,7 +114,7 @@ class PropertyEditor(QTreeView):
 
 	def right_click_menu(self):
 		self.menu = QMenu()
-		self.action_edit = self.menu.addAction('Reset Value')
+		self.action_reset = self.menu.addAction('Reset Value')
 		self.menu.addSeparator()
 		self.action_setSelect = self.menu.addAction('Set Selection')
 		self.action_addSelect = self.menu.addAction('Add Selection')
@@ -118,11 +130,19 @@ class PropertyEditor(QTreeView):
 					   self.action_dupElement]:
 			action.setEnabled(False)
 
-	def _add_child(self, item, data, template=None):
+		# connect function
+		self.action_reset.triggered.connect(self._reset_value)
+		self.action_setSelect.triggered.connect(self._set_selection)
+		self.action_addSelect.triggered.connect(self._add_selection)
+		self.action_addElement.triggered.connect(self._add_element)
+		self.action_delElement.triggered.connect(self._del_element)
+		self.action_dupElement.triggered.connect(self._dup_element)
+
+	def _add_child(self, item, data, template=None, keyEdit=False):
 		if isinstance(data, list):
 			# loop in each item in list	
 			for i, val in enumerate(data):
-				row, template_child = self._add_row_item(str(i), val=val, 
+				row, template_child, keyEdit = self._add_row_item(str(i), val=val, 
 														 itemKwargs={'type':template})
 
 				# add row
@@ -133,20 +153,27 @@ class PropertyEditor(QTreeView):
 
 		elif isinstance(data, dict):
 			for key, val in data.iteritems():
-
-				if template and key in template:
-					attrType = template[key]
+				
+				if template:
+					if isinstance(template, dict):
+						if key in template:
+							attrType = template[key]
+						else:
+							attrType = None
+					else:
+						attrType = template
 				else:
 					attrType = None
 
-				row, template_child = self._add_row_item(key, val=val, 
-														 itemKwargs={'type':attrType})
+				row, template_child, keyEdit = self._add_row_item(key, val=val, 
+														 itemKwargs={'type':attrType},
+														 keyEdit=keyEdit)
 
 				# add row
 				item.appendRow(row)
 
 				# loop downstream
-				self._add_child(row[0], val, template=template_child)
+				self._add_child(row[0], val, template=template_child, keyEdit=keyEdit)
 
 	def _update_parent(self, item):
 		# get item parent
@@ -169,15 +196,15 @@ class PropertyEditor(QTreeView):
 			for i in range(row_childs):
 				index_attr = self._model.index(i, 0, parent=index_parent)
 				index_val = self._model.index(i, 1, parent=index_parent)
-				attr = str(self._model.data(index_attr))
+				attr = convert_data_to_str(self._model.data(index_attr))
 				val = convert_data(self._model.data(index_val))
 				if isinstance(value, list):
-					value_collect.append(str(val))
+					value_collect.append(convert_data_to_str(val))
 				else:
-					value_collect.update({attr: str(val)})
+					value_collect.update({attr: convert_data_to_str(val)})
 			# assign data
 			if value != value_collect:
-				self._model.setData(index_value, str(value_collect))
+				self._model.setData(index_value, convert_data_to_str(value_collect))
 
 			# loop to upper level
 			self._update_parent(self._model.itemFromIndex(index_parent))
@@ -193,22 +220,31 @@ class PropertyEditor(QTreeView):
 			rows = item_attr.rowCount()
 			item_attr.removeRows(0, rows)
 			# get template
-			itemKwargs = item_attr.data(role=ROLE_ITEM_KWARGS)
+			itemKwargs = item.data(role=ROLE_ITEM_KWARGS)
 			if itemKwargs and 'template' in itemKwargs:
 				template = itemKwargs['template']
 			else:
 				template = None
-			# rebuild
-			self._add_child(item_attr, value, template=template)
+			# get keyEdit
+			keyEdit = False
+			if itemKwargs and 'keyEdit' in itemKwargs:
+				keyEdit = itemKwargs['keyEdit']
 
-	def _add_row_item(self, key, val=None, itemKwargs={}):
+			# rebuild
+			self._add_child(item_attr, value, template=template, keyEdit=keyEdit)
+
+	def _add_row_item(self, key, val=None, itemKwargs={}, keyEdit=False):
 		# column 1: property name
 		column_property = QStandardItem(key)
-		column_property.setEditable(False)
+		# key edit
+		if keyEdit:
+			column_property.setEditable(True)
+		else:
+			column_property.setEditable(False)
 		column_property.setData(self._size, role=Qt.SizeHintRole)
 
 		# update kwargs
-		if 'type' in itemKwargs:
+		if 'type' in itemKwargs and itemKwargs['type']:
 			kwargs_add = PROPERTY_ITEMS[itemKwargs['type']]
 			kwargs_add.update(itemKwargs)
 			itemKwargs = kwargs_add
@@ -230,7 +266,12 @@ class PropertyEditor(QTreeView):
 		else:
 			template = None
 
-		return [column_property, column_val], template
+		# get keyEdit
+		keyEdit = False
+		if 'keyEdit' in itemKwargs:
+			keyEdit = itemKwargs['keyEdit']
+
+		return [column_property, column_val], template, keyEdit
 
 	def _show_menu(self, QPos):
 		index = self.currentIndex()
@@ -241,7 +282,7 @@ class PropertyEditor(QTreeView):
 			self.menu.move(pos)
 
 			dataInfo = item.data(role=ROLE_ITEM_KWARGS)
-			print dataInfo
+
 			if 'select' in dataInfo and dataInfo['select']:
 				self.action_setSelect.setEnabled(True)
 				if 'template' in dataInfo and dataInfo['template'] != None:
@@ -250,17 +291,167 @@ class PropertyEditor(QTreeView):
 					self.action_addSelect.setEnabled(False)
 			else:
 				self.action_setSelect.setEnabled(False)
+				self.action_addSelect.setEnabled(False)
 			
 			if 'template' in dataInfo and dataInfo['template'] != None:
 				self.action_addElement.setEnabled(True)
-				self.action_delElement.setEnabled(True)
-				self.action_dupElement.setEnabled(True)
 			else:
 				self.action_addElement.setEnabled(False)
+
+			parent = item.parent()
+			if parent:
+				# get index
+				index_parent = parent.index()
+				# get value index
+				index_value = self._model.index(parent.row(), 1, parent=index_parent.parent())
+				# parent value item
+				item_attr = self._model.itemFromIndex(index_value)
+				dataInfo = item_attr.data(role=ROLE_ITEM_KWARGS)
+				if 'template' in dataInfo and dataInfo['template'] != None:
+					self.action_delElement.setEnabled(True)
+					self.action_dupElement.setEnabled(True)
+				else:
+					self.action_delElement.setEnabled(False)
+					self.action_dupElement.setEnabled(False)
+			else:
 				self.action_delElement.setEnabled(False)
 				self.action_dupElement.setEnabled(False)
-
 			self.menu.show()
+
+	def _reset_value(self):
+		index = self.currentIndex()
+		item = self._model.itemFromIndex(index)
+		dataInfo = item.data(role=ROLE_ITEM_KWARGS)	
+		value = dataInfo['value']
+		item.setText(convert_data_to_str(value))
+		self._rebuild_child(item)
+		self._update_parent(item)
+
+	def _set_selection(self):
+		'''
+		set select node as attr
+		'''
+		index = self.currentIndex()
+		item = self._model.itemFromIndex(index)
+
+		sel = cmds.ls(selection=True)
+
+		if sel:
+			dataInfo = item.data(role=ROLE_ITEM_KWARGS)
+			if 'template' in dataInfo and dataInfo['template'] != None:
+				# item is list
+				item.setText(convert_data_to_str(sel))
+				self._rebuild_child(item)
+			else:
+				item.setText(convert_data_to_str(sel[0]))
+			self._update_parent(item)				
+
+	def _add_selection(self):
+		'''
+		add select node to attr
+		'''
+		index = self.currentIndex()
+		item = self._model.itemFromIndex(index)
+
+		val = item.text()
+		# convert value
+		val = convert_data(val)
+		# get selection
+		sel = cmds.ls(selection=True)
+		# add selection
+		if sel:
+			val += sel
+			val = list(OrderedDict.fromkeys(val))
+			item.setText(convert_data_to_str(val))
+			self._rebuild_child(item)
+			self._update_parent(item)
+
+	def _add_element(self):
+		'''
+		add element to list or dict
+		'''
+		index = self.currentIndex()
+		item = self._model.itemFromIndex(index)
+
+		val = item.text()
+		# convert value
+		val = convert_data(val)
+
+		if isinstance(val, list):
+			'''
+			list attr
+			'''
+			val.append('')
+		else:
+			'''
+			dict attr
+			'''
+			val.update({val.keys()[-1]+'_copy': ''})
+		item.setText(convert_data_to_str(val))
+		self._rebuild_child(item)
+		self._update_parent(item)
+
+	def _dup_element(self):
+		'''
+		duplicate current item
+		'''
+		index = self.currentIndex()
+		item = self._model.itemFromIndex(index)
+
+		val = convert_data(item.text())
+
+		# get parent val
+		parent = item.parent()
+		index_parent = parent.index()
+		# get value index
+		index_value = self._model.index(parent.row(), 1, parent=index_parent.parent())
+		# get parent value item
+		item_parent = self._model.itemFromIndex(index_value)
+		# get value
+		val_parent = convert_data(self._model.data(index_value))
+
+		if isinstance(val_parent, list):
+			val_parent.append(val)
+		else:
+			# get key
+			index_parent = self._model.index(item.row(), 0, parent=index_parent)
+			key = convert_data(self._model.data(index_parent))
+			val_parent.update({key+'_copy': val})
+		item_parent.setText(convert_data_to_str(val_parent))
+		self._rebuild_child(item_parent)
+		self._update_parent(item_parent)
+		self.setCurrentIndex(index)
+
+	def _del_element(self):
+		'''
+		delete current item
+		'''
+		index = self.currentIndex()
+		item = self._model.itemFromIndex(index)
+
+		val = convert_data(item.text())
+
+		# get parent val
+		parent = item.parent()
+		index_parent = parent.index()
+		# get value index
+		index_value = self._model.index(parent.row(), 1, parent=index_parent.parent())
+		# get parent value item
+		item_parent = self._model.itemFromIndex(index_value)
+		# get value
+		val_parent = convert_data(self._model.data(index_value))
+
+		if isinstance(val_parent, list):
+			val_parent.remove(val)
+		else:
+			# get key
+			index_parent = self._model.index(item.row(), 0, parent=index_parent)
+			key = convert_data(self._model.data(index_parent))
+			val_parent.pop(key)
+		item_parent.setText(convert_data_to_str(val_parent))
+		self._rebuild_child(item_parent)
+		self._update_parent(item_parent)
+		self.setCurrentIndex(QModelIndex())
 
 class PropertyDelegate(QItemDelegate):
 	"""
@@ -280,7 +471,10 @@ class PropertyDelegate(QItemDelegate):
 
 		value = index.data()
 
-		widget = dataInfo['widget'](parent)
+		if dataInfo:
+			widget = dataInfo['widget'](parent)
+		else:
+			widget = QLineEdit(parent)
 
 		# extra setting
 		if isinstance(widget, QComboBox):
@@ -315,6 +509,11 @@ class PropertyDelegate(QItemDelegate):
 		# set data
 		super(PropertyDelegate, self).setModelData(editor, model, index)
 		
+		if not dataInfo:
+			# shoot rebuild signal
+			self.QSignalUpdateParent.emit(item)
+			return
+
 		# if it's string/list/dict
 		if isinstance(editor, QLineEdit):
 			# get default value
@@ -367,7 +566,9 @@ class PropertyItem(QStandardItem):
 		self._set_data()
 
 	def _set_data(self):
-		self.setText(str(self._data_info['value']))
+		val = convert_data_to_str(self._data_info['value'])
+		
+		self.setText(val)
 
 		self.setData(self._data_info, role=ROLE_ITEM_KWARGS)
 
@@ -382,4 +583,11 @@ def convert_data(value):
 		value = ast.literal_eval(value)
 	except:
 		pass
+	return value
+
+def convert_data_to_str(value):
+	if isinstance(value, list) or isinstance(value, dict):
+		value = json.dumps(value)
+	else:
+		value = str(value)
 	return value

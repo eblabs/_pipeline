@@ -90,6 +90,7 @@ class Task(object):
 			select(bool): if right click can add/set selection
 			enum(list): enum options
 			template: list/dict childs template
+			keyEdit(bool): if double click can eidt dict key name
 			hint(str): attribute's hint
 		'''
 		if not attrType:

@@ -4,16 +4,72 @@
 		"selected_items":
 		[
 			[
+				"index_",
+				"index_value"
+			],
+			[
+				"conver",
+				"convert_data"
+			],
+			[
+				"val",
+				"val_parent"
+			],
+			[
+				"conv",
+				"convert_data"
+			],
+			[
+				"is",
+				"isinstance"
+			],
+			[
+				"_add",
+				"_add_selection"
+			],
+			[
+				"action_add",
+				"action_addSelect"
+			],
+			[
+				"_set",
+				"_set_selection"
+			],
+			[
+				"_re",
+				"_reset_value"
+			],
+			[
+				"data",
+				"data_property_keys"
+			],
+			[
+				"ROLE",
+				"ROLE_TASK_KWARGS_KEY"
+			],
+			[
+				"iet",
+				"itemKwargs"
+			],
+			[
+				"wid",
+				"widget"
+			],
+			[
+				"key",
+				"keyEdit"
+			],
+			[
+				"col",
+				"column_property"
+			],
+			[
 				"kw",
 				"kwargInfo_ui"
 			],
 			[
 				"kwargI",
 				"kwargInfo_ui"
-			],
-			[
-				"action_add",
-				"action_addElement"
 			],
 			[
 				"setE",
@@ -44,20 +100,8 @@
 				"PROPERTY_ITEMS"
 			],
 			[
-				"wid",
-				"width"
-			],
-			[
 				"setM",
 				"setMaximum"
-			],
-			[
-				"ROLE",
-				"ROLE_ITEM_KWARGS"
-			],
-			[
-				"data",
-				"data_info"
 			],
 			[
 				"_kw",
@@ -66,10 +110,6 @@
 			[
 				"_task",
 				"_taskKwargs"
-			],
-			[
-				"_add",
-				"_add_attr_from_dict"
 			],
 			[
 				"range",
@@ -198,10 +238,6 @@
 			[
 				"_it",
 				"_itemRunner"
-			],
-			[
-				"_re",
-				"_reload_tasks"
 			],
 			[
 				"action_re",
@@ -478,42 +514,6 @@
 			[
 				"spli",
 				"splitter_base"
-			],
-			[
-				"spl",
-				"splitter_base"
-			],
-			[
-				"frame",
-				"frame_right"
-			],
-			[
-				"fram",
-				"frame_right"
-			],
-			[
-				"layou",
-				"layout_base"
-			],
-			[
-				"_ini",
-				"_init_property"
-			],
-			[
-				"_widget_pro",
-				"_widget_propertyEditor"
-			],
-			[
-				"T",
-				"TaskLabel"
-			],
-			[
-				"_widge",
-				"_widget_shelf"
-			],
-			[
-				"layout_",
-				"layout_rigInfo"
 			]
 		]
 	},
@@ -532,7 +532,7 @@
 			"file": "dev/rigging/builder/ui/widgets/treeWidget.py",
 			"settings":
 			{
-				"buffer_size": 22065,
+				"buffer_size": 22208,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -541,7 +541,16 @@
 			"file": "dev/rigging/builder/ui/widgets/propertyEditor.py",
 			"settings":
 			{
-				"buffer_size": 10628,
+				"buffer_size": 16223,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "dev/rigging/task/test/testTask.py",
+			"settings":
+			{
+				"buffer_size": 1634,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -550,7 +559,7 @@
 			"file": "dev/rigging/task/core/task.py",
 			"settings":
 			{
-				"buffer_size": 3963,
+				"buffer_size": 4020,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -596,15 +605,6 @@
 			"settings":
 			{
 				"buffer_size": 1704,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "dev/rigging/task/test/testTask.py",
-			"settings":
-			{
-				"buffer_size": 1482,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -1073,6 +1073,17 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"self._update_parent",
+			"parent",
+			"json.dumps",
+			"str(",
+			"print type",
+			"init_property",
+			"TaskItem",
+			"add_tree_items",
+			"print",
+			"PropertyDelegate",
+			"ROLE_ITEM_KWARGS",
 			"self._kwargs_ui",
 			"_show_menu",
 			"width",
@@ -1189,18 +1200,7 @@
 			"_suffix",
 			"_add_attr_from_dict",
 			"node",
-			"self._nodesLocal",
-			"sub",
-			"self.__sub",
-			"__add_ctrl_shape",
-			"_get_attr_val",
-			"hierarchy.",
-			"Logger.warn",
-			"constraints",
-			"self.controls",
-			"matir",
-			"_getRigComponentInfo",
-			"_registerAttrs"
+			"self._nodesLocal"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1322,7 +1322,7 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 2,
 			"sheets":
 			[
 				{
@@ -1338,8 +1338,8 @@
 						"selection":
 						[
 							[
-								2269,
-								2269
+								2633,
+								2633
 							]
 						],
 						"settings":
@@ -1349,10 +1349,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2389.0,
+						"translation.y": 2695.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -1361,15 +1361,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 22065,
+						"buffer_size": 22208,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6319,
-								6295
+								593,
+								536
 							]
 						],
 						"settings":
@@ -1379,10 +1379,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 7970.0,
+						"translation.y": 477.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -1391,15 +1391,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10628,
+						"buffer_size": 16223,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1862,
-								1862
+								12697,
+								12697
 							]
 						],
 						"settings":
@@ -1409,44 +1409,74 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1298.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "dev/rigging/task/core/task.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3963,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1555,
-								1555
-							]
-						],
-						"settings":
-						{
-							"show_definitions": false,
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 3366.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
+					"buffer": 3,
+					"file": "dev/rigging/task/test/testTask.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1634,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								952,
+								931
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1428.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
 					"buffer": 4,
+					"file": "dev/rigging/task/core/task.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4020,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2159,
+								2159
+							]
+						],
+						"settings":
+						{
+							"show_definitions": false,
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1122.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
 					"file": "dev/rigging/task/__init__.py",
 					"semi_transient": false,
 					"settings":
@@ -1471,11 +1501,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 6,
 					"file": "dev/rigging/task/config/PROPERTY_ITEMS.py",
 					"semi_transient": false,
 					"settings":
@@ -1498,14 +1528,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 713.0,
+						"translation.y": 556.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 7,
 					"file": "dev/rigging/task/base/newScene.py",
 					"semi_transient": false,
 					"settings":
@@ -1530,11 +1560,11 @@
 						"translation.y": 102.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 8,
 					"file": "dev/rigging/task/base/dataImport.py",
 					"semi_transient": false,
 					"settings":
@@ -1560,11 +1590,11 @@
 						"translation.y": 1224.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 9,
 					"file": "dev/rigging/task/base/dataLoad.py",
 					"semi_transient": false,
 					"settings":
@@ -1590,37 +1620,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "dev/rigging/task/test/testTask.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1482,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1009,
-								1009
-							]
-						],
-						"settings":
-						{
-							"show_definitions": false,
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
@@ -1650,7 +1650,7 @@
 						"translation.y": 408.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
@@ -1680,7 +1680,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
@@ -1710,7 +1710,7 @@
 						"translation.y": 1236.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
@@ -1739,7 +1739,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
@@ -1769,7 +1769,7 @@
 						"translation.y": 2964.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
@@ -1799,7 +1799,7 @@
 						"translation.y": 918.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
@@ -1828,7 +1828,7 @@
 						"translation.y": 3706.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
@@ -1844,8 +1844,8 @@
 						"selection":
 						[
 							[
-								5178,
-								5178
+								5123,
+								5123
 							]
 						],
 						"settings":
@@ -1855,10 +1855,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1784.0,
+						"translation.y": 5225.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
@@ -2005,10 +2005,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 204.0,
+						"translation.y": 102.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
@@ -2073,7 +2073,7 @@
 						"translation.y": 204.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
