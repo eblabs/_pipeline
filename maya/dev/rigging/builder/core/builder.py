@@ -70,11 +70,14 @@ class Builder(object):
 		if not _display:
 			_display = _name
 
+		_taskType = None # use to set task icon
+
 		# get task
 		if inspect.ismethod(_task):
 			# in class method, get method name for ui display
 			_taskName = _task.__name__
 			_taskKwargs = _kwargs
+			_taskType = 'method'
 		else:
 			# imported task, get task object
 			_taskName = _task
@@ -83,9 +86,12 @@ class Builder(object):
 			if inspect.isfunction(_task):
 				# function, normally is callback
 				_taskKwargs = taskImport._kwargs_ui
+				_taskType = 'function'
 			else:
 				# task class
-				_taskKwargs = _task()._kwargs_ui
+				taskObj = _task()
+				_taskKwargs = taskObj._kwargs_ui
+				_taskType = taskObj.taskType
 			for key, item in _kwargs.iteritems():
 				_taskKwargs.update({key: item})
 
@@ -95,7 +101,8 @@ class Builder(object):
 					 'display': _display,
 					 'taskKwargs': _taskKwargs,
 					 'parent': _parent,
-					 'section': _section}
+					 'section': _section,
+					 'taskType': _taskType}
 
 		self._taskInfos.update({_name: _taskInfo})
 
@@ -126,7 +133,8 @@ class Builder(object):
 						 	  'display': taskInfo['display'],
 						 	  'taskKwargs': taskInfo['taskKwargs'],
 						 	  'section': taskInfo['section'],
-							  'children': []}}
+							  'children': [],
+							  'taskType': taskInfo['taskType']}}
 		if parent:
 			for hieInfo in hierarchy:
 				key = hieInfo.keys()[0]

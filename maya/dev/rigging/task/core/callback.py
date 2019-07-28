@@ -24,7 +24,7 @@ import utils.common.logUtils as logUtils
 logger = logUtils.get_logger()
 
 _kwargs_ui = OrderedDict()
-for section in ['preBuild', 'build', 'postBuild']:
+for section in ['pre_build', 'build', 'post_build']:
 	_kwargs_ui.update({section: {'value': '',
 							    'select': False,
 							    'hint': 'Execute following code at '+section ,

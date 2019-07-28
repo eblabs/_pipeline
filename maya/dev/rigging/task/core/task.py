@@ -37,6 +37,7 @@ class Task(object):
 		super(Task, self).__init__()
 		self._name = 'task'
 		self._task = 'dev.rigging.task.core.task'
+		self._taskType = 'task'
 
 		self.register_attrs(**kwargs)
 
@@ -48,6 +49,10 @@ class Task(object):
 	def task(self):
 		return self._task
 
+	@ property
+	def taskType(self):
+		return self._taskType
+	
 	@name.setter
 	def name(self, taskName):
 		self._name = taskName
@@ -80,7 +85,7 @@ class Task(object):
 
 		Args:
 			name(str): attribute name in kwargs
-			value: attribute value (function read type by the value, don't use None)
+			value: attribute default value (function read type by the value, don't use None)
 		Kwargs:
 			attrName(str): attribute name in class
 			shortName(str): attribute short name
@@ -122,7 +127,7 @@ class Task(object):
 			if rangeValue[1] != None and rangeValue[1] < value:
 				value = rangeValue[1]
 
-		kwargInfo_ui['value'] = value
+		kwargInfo_ui['default'] = value
 
 		self._register_attr_to_task([name, value, attrName, shortName], kwargInfo_ui)
 

@@ -12,35 +12,35 @@ except ImportError:
 #   GLOBAL VARS    #
 # =================#
 
-PROPERTY_ITEMS = {'str': {'value': '',
+PROPERTY_ITEMS = {'str': {'default': '',
 						  'widget': QLineEdit},
 
-				  'float': {'value': 0.0,
+				  'float': {'default': 0.0,
 							'min': None,
 							'max': None,
 							'widget': QDoubleSpinBox},
 
-				  'int': {'value': 0,
+				  'int': {'default': 0,
 						  'min': None,
 						  'max': None,
 						  'widget': QSpinBox},
 
-				  'enum': {'value': None,
+				  'enum': {'default': None,
 						   'enum': [],
 						   'widget': QComboBox},
 
-				  'bool': {'value': True,
+				  'bool': {'default': True,
 						   'widget': QComboBox},
 
-				  'list': {'value': [],
+				  'list': {'default': [],
 						   'template': '',
 						   'widget': QLineEdit},
 
-				  'dict': {'value': {},
+				  'dict': {'default': {},
 						   'template': [],
 						   'widget': QLineEdit},
 
-				  'callback': {'value': '',
+				  'callback': {'default': '',
 				  			   'height': 100,
 				  			   'widget': QPlainTextEdit}
 				  			  }

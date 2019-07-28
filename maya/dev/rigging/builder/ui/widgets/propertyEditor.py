@@ -39,7 +39,6 @@ ROLE_ITEM_KWARGS = Qt.UserRole + 1
 
 ROLE_TASK_KWARGS = Qt.UserRole + 4
 ROLE_TASK_KWARGS_KEY = Qt.UserRole + 5
-
 # =================#
 #      CLASS       #
 # =================#
@@ -84,6 +83,7 @@ class PropertyEditor(QTreeView):
 		'''
 		initialize property
 		'''
+		self._task = item
 		self.refresh()
 
 		data_property = item.data(0, ROLE_TASK_KWARGS)
@@ -98,7 +98,12 @@ class PropertyEditor(QTreeView):
 			self._model.appendRow(row)
 
 			# loop downstream
-			self._add_child(row[0], data['value'], template=template_child, keyEdit=keyEdit)
+			# get value
+			if 'value' in data and data['value'] != None:
+				val = data['value']
+			else:
+				val = data['default']
+			self._add_child(row[0], val, template=template_child, keyEdit=keyEdit)
 
 	def refresh(self):
 		self.setEnabled(True)
@@ -208,7 +213,19 @@ class PropertyEditor(QTreeView):
 
 			# loop to upper level
 			self._update_parent(self._model.itemFromIndex(index_parent))
-
+		else:
+			index_key = self._model.index(item.row(), 0, parent=item.index().parent())
+			index_value = self._model.index(item.row(), 1, parent=item.index().parent())
+			item_data = self._model.itemFromIndex(index_value)
+			key = self._model.data(index_key)
+			val = convert_data(item_data.text())
+			itemKwargs = item_data.data(role=ROLE_ITEM_KWARGS)
+			itemKwargs.update({'value': val})
+			
+			taskKwargs = self._task.data(0, ROLE_TASK_KWARGS) # get task kwargs
+			taskKwargs[key]['value'] = val
+			self._task.setData(0, ROLE_TASK_KWARGS, taskKwargs) # set back to task
+			
 	def _rebuild_child(self, item):
 		index_value = item.index()
 		index_attr = self._model.index(item.row(), 0, parent=index_value.parent())
@@ -322,7 +339,7 @@ class PropertyEditor(QTreeView):
 		index = self.currentIndex()
 		item = self._model.itemFromIndex(index)
 		dataInfo = item.data(role=ROLE_ITEM_KWARGS)	
-		value = dataInfo['value']
+		value = dataInfo['default']
 		item.setText(convert_data_to_str(value))
 		self._rebuild_child(item)
 		self._update_parent(item)
@@ -517,7 +534,7 @@ class PropertyDelegate(QItemDelegate):
 		# if it's string/list/dict
 		if isinstance(editor, QLineEdit):
 			# get default value
-			value_default = dataInfo['value']
+			value_default = dataInfo['default']
 			# get changed value
 			value_change = item.text()
 			# convert value
@@ -549,7 +566,6 @@ class PropertyDelegate(QItemDelegate):
 		# shoot rebuild signal
 		self.QSignalUpdateParent.emit(item)
 
-
 class PropertyItem(QStandardItem):
 	"""
 	base class for PropertyItem
@@ -566,8 +582,12 @@ class PropertyItem(QStandardItem):
 		self._set_data()
 
 	def _set_data(self):
-		val = convert_data_to_str(self._data_info['value'])
-		
+		if 'value' in self._data_info and self._data_info['value'] != None:
+			val = self._data_info['value']
+		else:
+			val = self._data_info['default']
+		val = convert_data_to_str(val)
+
 		self.setText(val)
 
 		self.setData(self._data_info, role=ROLE_ITEM_KWARGS)

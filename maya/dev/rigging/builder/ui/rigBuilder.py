@@ -158,7 +158,7 @@ class RigBuilder(uiUtils.BaseWindow):
 		self.widget_tree.itemRunner.QSignalError.connect(self.widget_progress.stop_progress)
 		
 		# task info
-		self.widget_tree.itemClicked.connect(self.widget_taskInfo.set_label)
+		self.widget_tree.itemPressed.connect(self.widget_taskInfo.set_label)
 
 		# task info edit attr name
 		self.widget_taskInfo.QSignalAttrName.connect(self.widget_tree.set_attr_name)
@@ -167,7 +167,7 @@ class RigBuilder(uiUtils.BaseWindow):
 		self.widget_tree.QSignalAttrName.connect(self.widget_taskInfo.set_label)
 
 		# property editor
-		self.widget_tree.itemClicked.connect(self.widget_propertyEditor.init_property)
+		self.widget_tree.itemPressed.connect(self.widget_propertyEditor.init_property)
 
 		# clear when not select anything
 		self.widget_tree.QSignalClear.connect(self.widget_propertyEditor.refresh)

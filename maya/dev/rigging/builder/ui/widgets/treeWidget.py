@@ -46,6 +46,9 @@ ROLE_TASK_POST = Qt.UserRole + 8
 ROLE_TASK_SECTION = Qt.UserRole + 9
 
 ICONS_STATUS = [icons.grey, icons.green, icons.yellow, icons.red]
+ICONS_TASK = {'task': icons.task,
+			  'function': icons.function,
+			  'method': icons.method}
 
 SC_RELOAD = 'Ctrl+R'
 SC_RUN_ALL = 'Ctrl+Shift+Space'
@@ -73,7 +76,7 @@ class TreeWidget(QTreeWidget):
 		self._expand = True
 		self._displayItems = [] # list of item display name to make sure no same name
 		self._attrItems = [] # list of item attr name to make sure no same name
-		
+		self._change = False # use to check if mouse is on checkbox or actual task
 		# get kwargs
 		self._header = kwargs.get('header', ['Task', 'Pre', 'Build', 'Post'])
 		self.builder = kwargs.get('builder', None) # builder object
@@ -110,7 +113,10 @@ class TreeWidget(QTreeWidget):
 		QShortcut(QKeySequence(SC_REMOVE), self, self.remove_tasks)
 
 		QShortcut(QKeySequence(SC_EXPAND_COLLAPSE), self, self.expand_collapse)  
-		
+
+		self.itemChanged.connect(self._item_data_changed)
+		self.itemPressed.connect(self._item_data_changed_reset)
+
 	def add_tree_items(self):
 		self._add_child_item(self._root, 
 							 self.builder.tree_hierarchy())
@@ -197,7 +203,8 @@ class TreeWidget(QTreeWidget):
 	def mouseDoubleClickEvent(self, event):
 		# double click to run the task
 		if self.indexAt(event.pos()).isValid():
-			self.run_sel_tasks()
+			if not self._change:
+				self.run_sel_tasks()
 
 	def right_clicked_menu(self):
 		'''
@@ -336,7 +343,9 @@ class TreeWidget(QTreeWidget):
 		col = QColorDialog.getColor(background_col, self, 'Display Color')
 		if col.isValid():
 			for item in items:
-				item.setBackground(0, col)
+				items_collect = self._collect_items(item)
+				for item_setCol in items_collect:
+					item_setCol.setBackground(0, col)
 
 	def set_text_color(self):
 		items = self.selectedItems()
@@ -344,7 +353,9 @@ class TreeWidget(QTreeWidget):
 		col = QColorDialog.getColor(foreground_col, self, 'Text Color')
 		if col.isValid():
 			for item in items:
-				item.setForeground(0, col)
+				items_collect = self._collect_items(item)
+				for item_setCol in items_collect:
+					item_setCol.setForeground(0, col)
 
 	def set_attr_name(self, name):
 		title = "Change task's attribute name in the builder"
@@ -382,8 +393,10 @@ class TreeWidget(QTreeWidget):
 	def reset_display_color(self):
 		items = self.selectedItems()
 		for item in items:
-			item.setData(0, Qt.BackgroundRole, None)
-			item.setData(0, Qt.ForegroundRole, None)
+			items_collect = self._collect_items(item)
+			for item_setCol in items_collect:
+				item_setCol.setData(0, Qt.BackgroundRole, None)
+				item_setCol.setData(0, Qt.ForegroundRole, None)
 
 	def duplicate_tasks(self):
 		items = self.selectedItems()
@@ -453,6 +466,10 @@ class TreeWidget(QTreeWidget):
 		# reset value
 		self._stop = False
 		self._pause = False
+
+		itemsRun = []
+		ignoreCheck = False
+
 		# collect items
 		if isinstance(items, list):
 			itemsRun = []
@@ -535,7 +552,13 @@ class TreeWidget(QTreeWidget):
 		nameList.append(nameNew_add)
 		if nameOrig:
 			nameList.remove(nameOrig)
-		return nameNew_add		
+		return nameNew_add
+
+	def _item_data_changed(self, item):
+		self._change = True
+
+	def _item_data_changed_reset(self, item):
+		self._change = False
 
 class TaskItem(QTreeWidgetItem):
 	def __init__(self, **kwargs):
@@ -548,6 +571,7 @@ class TaskItem(QTreeWidgetItem):
 		taskKwargs = kwargs.get('taskKwargs', {})
 		check = kwargs.get('check', Qt.Checked)
 		section = kwargs.get('section', '')
+		taskType = kwargs.get('taskType', '')
 
 		self.setText(0, display)
 		self.setData(0, ROLE_TASK_NAME, attrName)
@@ -563,7 +587,11 @@ class TaskItem(QTreeWidgetItem):
 		self.setFlags(self.flags()|Qt.ItemIsTristate|Qt.ItemIsUserCheckable)
 		self.setCheckState(0, check)
 
-		kwargsInfo=self.data(0, ROLE_TASK_KWARGS)
+		font = QFont()
+		font.setPointSize(10)
+		self.setFont(0, font)
+
+		self.setIcon(0, QIcon(ICONS_TASK[taskType]))
 
 	def setData(self, column, role, value):
 		super(TaskItem, self).setData(column, role, value)
@@ -592,7 +620,6 @@ class TaskItem(QTreeWidgetItem):
 		elif role == ROLE_TASK_POST:
 			# set icon for the post build
 			self.setIcon(3, QIcon(ICONS_STATUS[value]))
-
 
 class ItemRunner(QThread):
 	"""
@@ -637,7 +664,7 @@ class ItemRunner(QThread):
 				# check if need to be stopped
 				if self._parent._stop:
 					break
-				
+			
 				self._run_task_on_single_item(item, 
 											  ignoreCheck=self._ignoreCheck,
 											  section=section,
@@ -664,6 +691,14 @@ class ItemRunner(QThread):
 		kwargs = item.data(0, ROLE_TASK_KWARGS)
 		checkState = item.checkState(0)	
 
+		kwargs_run = {}
+		for key, data in kwargs.iteritems():
+			if 'value' in data and data['value'] != None:
+				val = data['value']
+			else:
+				val = data['default']
+			kwargs_run.update({key: val})
+
 		if not ignoreCheck and checkState != Qt.Checked:
 			# skip unchecked task
 			return 
@@ -684,26 +719,26 @@ class ItemRunner(QThread):
 			else:
 				# try to run function 
 				try:
-					taskReturn = Task(**kwargs)
+					taskReturn = Task(**kwargs_run)
 
-					if taskReturn == 2:
-						# warning raises
-						item.setData(0, role, 2)
-					else:
-						# run succesfully
-						item.setData(0, role, 1)
+					self._execute_setting(item, taskReturn, 'method', display, role)
 
-					# log
-					Logger.info('Run method "{}" succesfully'.format(display))
-				
 				except Exception as e:
-					# error raises
-					item.setData(0, role, 3)
-					# emit error signal
-					self.QSignalError.emit()
-					self._parent.setEnabled(True) # enable back widget if error
-					Logger.error(e)
-					raise RuntimeError()
+					self._error_setting(item, e, role)
+
+		# check if registered function is a function (mainly for callback)
+		elif inspect.isfunction(Task):
+			# try to run function 
+			try:
+				if kwargs_run[section]:
+					taskReturn = Task(kwargs_run[section])
+				else:
+					taskReturn = 1
+
+				self._execute_setting(item, taskReturn, 'function', display, role)
+
+			except Exception as e:
+				self._error_setting(item, e, role)
 
 		else:
 			# Task is an imported task
@@ -713,7 +748,7 @@ class ItemRunner(QThread):
 				if not hasattr(self._parent.builder, name):
 					# either is pre-build, or skipped the pre-build
 					# get obj
-					TaskObj = Task(**kwargs)
+					TaskObj = Task(**kwargs_run)
 					# attach obj to builder
 					setattr(self._parent.builder, name, TaskObj)
 
@@ -721,24 +756,30 @@ class ItemRunner(QThread):
 				TaskObj = getattr(self._parent.builder, name)
 				taskReturn = getattr(TaskObj, section)()
 
-				if taskReturn == 2:
-					# warning raises
-					item.setData(0, role, 2)
-				else:
-					# run succesfully
-					item.setData(0, role, 1)
-				
-				# log
-				Logger.info('Run task "{}" succesfully'.format(display))
-			
+				self._execute_setting(item, taskReturn, 'task', display, role)
+
 			except Exception as e:
-				# error raises
-				item.setData(0, role, 3)
-				# emit error signal
-				self.QSignalError.emit()
-				self._parent.setEnabled(True) # enable back widget if error
-				Logger.error(e)
-				raise RuntimeError()
+				self._error_setting(item, e, role)
+
+	def _execute_setting(self, item, taskReturn, func, display, role):
+		if taskReturn == 2:
+			# warning raises
+			item.setData(0, role, 2)
+		else:
+			# run succesfully
+			item.setData(0, role, 1)
+		
+		# log
+		Logger.info('Run {} "{}" succesfully'.format(func, display))
+	
+	def _error_setting(self, item, e, role):
+		# error raises
+		item.setData(0, role, 3)
+		# emit error signal
+		self.QSignalError.emit()
+		self._parent.setEnabled(True) # enable back widget if error
+		Logger.error(e)
+		raise RuntimeError()
 		
 class SubMenu(QMenu):
 	"""
