@@ -97,7 +97,7 @@ def read_numpy_file(path):
 	data = numpy.load(path)
 	return data
 
-def get_files_from_path(path, extension=[]):
+def get_files_from_path(path, extension=[], exceptions=[], fullPath=True):
 	'''
 	Get files from the given path
 
@@ -105,6 +105,8 @@ def get_files_from_path(path, extension=[]):
 		path(str): given path
 	Kwargs:
 		extension(list/str): specific extension
+		exceptions(list/str): skip if words in exceptions
+		fullPath(bool)[True]: return full path or just file name
 	return:
 		filePaths(list)
 	'''
@@ -113,6 +115,8 @@ def get_files_from_path(path, extension=[]):
 
 	if isinstance(extension, basestring):
 		extension = [extension]
+	if isinstance(exceptions, basestring):
+		exceptions = [exceptions]
 
 	if files:
 		for f in files:
@@ -120,7 +124,17 @@ def get_files_from_path(path, extension=[]):
 			if os.path.isfile(path_file):
 				ext = os.path.splitext(path_file)[-1].lower()
 				if ext in extension or not extension:
-					filePaths.append(path_file)
+					# check exceptions
+					add = True
+					for exp in exceptions:
+						if exp in f:
+							add = False
+							break
+					if add:
+						if fullPath:
+							filePaths.append(path_file)
+						else:
+							filePaths.append(f)
 
 	return filePaths
 

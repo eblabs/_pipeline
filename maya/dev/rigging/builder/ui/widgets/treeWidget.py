@@ -6,6 +6,10 @@
 import sys
 import os
 
+# import copy_reg, types to fix one pickle problem
+import copy_reg
+import types
+
 # import ast
 import ast
 
@@ -14,26 +18,32 @@ import inspect
 
 # import PySide
 try:
-  from PySide2.QtCore import * 
-  from PySide2.QtGui import * 
-  from PySide2.QtWidgets import *
-  from PySide2 import __version__
-  from shiboken2 import wrapInstance 
+	from PySide2.QtCore import * 
+	from PySide2.QtGui import * 
+	from PySide2.QtWidgets import *
+	from PySide2 import __version__
+	from shiboken2 import wrapInstance 
 except ImportError:
-  from PySide.QtCore import * 
-  from PySide.QtGui import * 
-  from PySide import __version__
-  from shiboken import wrapInstance 
+	from PySide.QtCore import * 
+	from PySide.QtGui import * 
+	from PySide import __version__
+	from shiboken import wrapInstance 
 
 # import icon
 import icons
 
 # import OrderedDict
-from collections import OrderedDict 
+from collections import OrderedDict
+
+## import utils
+import utils.common.logUtils as logUtils
+import utils.common.modules as modules
+# import widget
+import taskCreator
 #=================#
 #   GLOBAL VARS   #
 #=================#
-from . import Logger
+logger = logUtils.get_logger()
 
 ROLE_TASK_NAME = Qt.UserRole + 1
 ROLE_TASK_FUNC_NAME = Qt.UserRole + 2
@@ -44,6 +54,7 @@ ROLE_TASK_PRE = Qt.UserRole + 6
 ROLE_TASK_RUN = Qt.UserRole + 7
 ROLE_TASK_POST = Qt.UserRole + 8
 ROLE_TASK_SECTION = Qt.UserRole + 9
+ROLE_TASK_TYPE = Qt.UserRole + 10
 
 ICONS_STATUS = [icons.grey, icons.green, icons.yellow, icons.red]
 ICONS_TASK = {'task': icons.task,
@@ -80,6 +91,11 @@ class TreeWidget(QTreeWidget):
 		# get kwargs
 		self._header = kwargs.get('header', ['Task', 'Pre', 'Build', 'Post'])
 		self.builder = kwargs.get('builder', None) # builder object
+
+		# task folders
+		self.taskFolders = ['dev.rigging.task.core',
+							'dev.rigging.task.base',
+							'dev.rigging.task.test']
 
 		self.init_widget()
 
@@ -197,7 +213,7 @@ class TreeWidget(QTreeWidget):
 	def mousePressEvent(self, event):
 		if not self.indexAt(event.pos()).isValid():
 			self._clear_selection()
-			
+
 		super(TreeWidget, self).mousePressEvent(event)
 
 	def mouseDoubleClickEvent(self, event):
@@ -282,6 +298,11 @@ class TreeWidget(QTreeWidget):
 
 		self.action_expand.triggered.connect(self.expand_collapse)
 
+		# task creation window
+		self.task_create_window = TaskCreate()
+		self.action_create.triggered.connect(self._task_create_window_open)
+		self.task_create_window.QSignalTaskCreation.connect(self._create_task)
+
 	def show_menu(self, QPos):
 		currentItem = self.currentIndex().data()
 		if not currentItem:
@@ -290,6 +311,12 @@ class TreeWidget(QTreeWidget):
 		else:
 			for widget in self._menu_widgets:
 				widget.setEnabled(True)
+			# disable duplicate and remove for in class method
+			taskType = self.currentItem().data(0, ROLE_TASK_TYPE)
+			if taskType == 'method':
+				self.action_duplicate.setEnabled(False)
+				self.action_remove.setEnabled(False)
+
 		pos_parent = self.mapToGlobal(QPoint(0, 0))        
 		self.menu.move(pos_parent + QPos)
 
@@ -409,41 +436,100 @@ class TreeWidget(QTreeWidget):
 			taskKwargs = item.data(0, ROLE_TASK_KWARGS)
 			check = item.checkState(0)
 			section = item.data(0, ROLE_TASK_SECTION)
+			taskType = item.data(0, ROLE_TASK_TYPE)
 
-			display = self._get_unique_name('', display, self._displayItems)
-			attrName = self._get_unique_name('', attrName, self._attrItems)
+			if taskType != 'method':
 
-			kwargs = {'display': display,
-					  'attrName': attrName,
-					  'taskName': taskName,
-					  'task': task,
-					  'taskKwargs': taskKwargs,
-					  'check': check,
-					  'section': section}
+				display = self._get_unique_name('', display, self._displayItems)
+				attrName = self._get_unique_name('', attrName, self._attrItems)
 
-			self._create_item(**kwargs)
+				kwargs = {'display': display,
+						  'attrName': attrName,
+						  'taskName': taskName,
+						  'task': task,
+						  'taskKwargs': taskKwargs,
+						  'check': check,
+						  'section': section,
+						  'taskType': taskType}
+
+				self._create_item(**kwargs)
 
 	def remove_tasks(self):
 		for item in self.selectedItems():
-			# check if item in ui, 
-			# may delete already by select both parent and child
-			itm_display = item.text(0)
-			if itm_display in self._displayItems: 
-				# get all display and attr name
-				for itm in self._collect_items(item=item):
+			# check type, can't delete in class method
+			taskType = item.data(0, ROLE_TASK_TYPE)
+			if taskType != 'method':				
+				# reparent child if any is method, and get remove list
+				remove_items = self._reparent_childs(item=item)
+				for itm in remove_items:
 					display = itm.text(0)
 					attrName = itm.data(0, ROLE_TASK_NAME)
-					# remove all
+					# remove names from list
 					if display in self._displayItems:
 						self._displayItems.remove(display)
 					if attrName in self._attrItems:
 						self._attrItems.remove(attrName)
+					
+					index = self.indexFromItem(itm)
+					if index.row() >= 0:
+						# index >= 0 means still in ui, remove it
+						parent = itm.parent()
+						if not parent:
+							parent = self._root
+						parent.removeChild(itm) 
 
-				# remove task and children
-				parent = item.parent()
+	def _reparent_childs(self, item):
+		'''
+		re parent childs if upper parent got removed
+		'''
+		item_childs = self._collect_items(item=item)
+		item_hold = []
+		item_remove = [item]
+		for itm in item_childs[1:]:
+			taskType = itm.data(0, ROLE_TASK_TYPE)
+			if taskType == 'method':
+				item_hold.append(itm)
+			else:
+				item_remove.append(itm)
+
+		# check if item_hold parent need to be removed or not
+		for itm in item_hold:
+			print 'hold'
+			print itm.text(0)
+			itm_search = itm
+			i=0
+			while i<10:
+				parent = itm_search.parent()
 				if not parent:
-					parent = self._root
-				parent.removeChild(item)
+					# reach top level
+					index = self.indexFromItem(itm_search)
+					
+					# to add the item to upper level, we need take it out first
+					indexOrig = self.indexFromItem(itm)
+					itm.parent().takeChild(indexOrig.row())
+
+					# add to upper level
+					self.insertTopLevelItem(index.row(), itm)
+					break
+				elif parent not in set(item_remove):
+					# either under method or other task
+					index = self.indexFromItem(itm_search)
+
+					# to add the item to upper level, we need take it out first
+					indexOrig = self.indexFromItem(itm)
+					itm.parent().takeChild(indexOrig.row())
+
+					# add to upper level
+					parent.insertChild(index.row(), itm)
+					break
+				else:
+					itm_search = parent
+
+					i+=1
+
+		return item_remove
+					
+
 
 	def expand_collapse(self):
 		self._expand = not self._expand
@@ -530,6 +616,45 @@ class TreeWidget(QTreeWidget):
 
 		item.addChild(item_create)
 
+	def _create_task(self, taskInfo):
+		attrName = taskInfo[0]
+		display = taskInfo[1] 
+		taskName = taskInfo[2]
+		# imported task, get task object
+		taskImport, taskFunc = modules.import_module(taskName)
+		task = getattr(taskImport, taskFunc)
+		if inspect.isfunction(task):
+			# function, normally is callback
+			taskKwargs = taskImport._kwargs_ui
+			taskType = 'function'
+		else:
+			# task class
+			taskObj = task()
+			taskKwargs = taskObj._kwargs_ui
+			taskType = taskObj.taskType
+
+		attrName = self._get_unique_name('', attrName, self._attrItems)
+		self._attrItems.append(attrName)
+
+		if not display:
+			display = attrName
+		display = self._get_unique_name('', display, self._displayItems)
+		self._displayItems.append(display)
+			
+		kwargs = {'display': display,
+				  'attrName': attrName,
+				  'taskName': taskName,
+				  'task': task,
+				  'taskKwargs': taskKwargs,
+				  'check': Qt.Checked,
+				  'taskType': taskType}
+
+		item = self.selectedItems()
+		if item:
+			item = item[0]
+
+		self._create_item(item=item, **kwargs)
+
 	def _remove_all_tasks(self):
 		itemCount = self.topLevelItemCount()
 		for i in range(itemCount):
@@ -560,6 +685,15 @@ class TreeWidget(QTreeWidget):
 	def _item_data_changed_reset(self, item):
 		self._change = False
 
+	def _task_create_window_open(self):
+		try:
+			self.task_create_window.close()
+		except:
+			pass
+		self.task_create_window.refresh_widgets()
+		self.task_create_window.widget_taskCreation.rebuild_list_model(self.taskFolders)
+		self.task_create_window.show()
+
 class TaskItem(QTreeWidgetItem):
 	def __init__(self, **kwargs):
 		super(TaskItem, self).__init__()
@@ -571,7 +705,7 @@ class TaskItem(QTreeWidgetItem):
 		taskKwargs = kwargs.get('taskKwargs', {})
 		check = kwargs.get('check', Qt.Checked)
 		section = kwargs.get('section', '')
-		taskType = kwargs.get('taskType', '')
+		taskType = kwargs.get('taskType', 'task')
 
 		self.setText(0, display)
 		self.setData(0, ROLE_TASK_NAME, attrName)
@@ -579,6 +713,7 @@ class TaskItem(QTreeWidgetItem):
 		self.setData(0, ROLE_TASK_FUNC, task)
 		self.setData(0, ROLE_TASK_KWARGS, taskKwargs)
 		self.setData(0, ROLE_TASK_KWARGS_KEY, taskKwargs.keys())
+		self.setData(0, ROLE_TASK_TYPE, taskType)
 		self.setData(0, ROLE_TASK_PRE, 0)
 		self.setData(0, ROLE_TASK_RUN, 0)
 		self.setData(0, ROLE_TASK_POST, 0)
@@ -676,7 +811,7 @@ class ItemRunner(QThread):
 			if self._parent._stop:
 				# emit signal if need stop
 				self.QSignalError.emit()
-				Logger.warn('Task process is stopped by the user')
+				logger.warn('Task process is stopped by the user')
 				self._parent.setEnabled(True)# enable back widget if error
 				break
 
@@ -770,7 +905,7 @@ class ItemRunner(QThread):
 			item.setData(0, role, 1)
 		
 		# log
-		Logger.info('Run {} "{}" succesfully'.format(func, display))
+		logger.info('Run {} "{}" succesfully'.format(func, display))
 	
 	def _error_setting(self, item, e, role):
 		# error raises
@@ -778,7 +913,7 @@ class ItemRunner(QThread):
 		# emit error signal
 		self.QSignalError.emit()
 		self._parent.setEnabled(True) # enable back widget if error
-		Logger.error(e)
+		logger.error(e)
 		raise RuntimeError()
 		
 class SubMenu(QMenu):
@@ -814,4 +949,93 @@ class SubMenu(QMenu):
 	def _post_triggered(self):
 		self.QSignalSection.emit(['post_build'])
 
+class TaskCreate(QDialog):
+		"""widget to create task"""
+		QSignalTaskCreation = Signal(list)
+		def __init__(self, parent=None):
+			super(TaskCreate, self).__init__(parent)
+
+			self.setWindowTitle('Create Task')
+			self.setGeometry(100, 100, 250, 300)
+
+			self.init_widget()
+
+		def init_widget(self):
+			layout_base = QVBoxLayout()
+
+			self.setLayout(layout_base)
 		
+			# task name
+			self.task_name = QLineEdit()
+			self.task_name.setPlaceholderText('Task Name...')
+		
+			layout_base.addWidget(self.task_name)
+
+			# task display name
+			self.task_display = QLineEdit()
+			self.task_display.setPlaceholderText('Display Name (Optional)...')
+		
+			layout_base.addWidget(self.task_display)
+
+			# get task creator widget
+			self.widget_taskCreation = taskCreator.TaskCreator()
+			layout_base.addWidget(self.widget_taskCreation)
+
+			# create button
+			self.button_create = QPushButton('Create')
+			self.button_create.setFixedWidth(80)
+			layout_base.addWidget(self.button_create)
+
+			layout_base.setAlignment(self.button_create, Qt.AlignRight)
+
+			self.button_create.clicked.connect(self._get_select_task)
+
+		def refresh_widgets(self):
+			self.task_name.setText('')
+			self.task_display.setText('')
+			self.widget_taskCreation.filter.setText('')
+			self.setFocus()
+
+		def _get_select_task(self):
+			name = self.task_name.text()
+			display = self.task_display.text()
+			task = self.widget_taskCreation.listView.currentIndex().data()
+
+			if name and task:
+				self.QSignalTaskCreation.emit([name, display, task])
+
+			self.close()
+
+#=================#
+#       Fix       #
+#=================#
+'''
+For some reason, when I middle mouse drag the tasks, it freezed the ui,
+and gave me an error when I try to use QWidget.close()
+
+Base on what stack overflow said
+	The problem is that multiprocessing must pickle things to sling them among processes, 
+	and bound methods are not picklable. 
+	The workaround (whether you consider it "easy" or not)
+	is to add the infrastructure to your program to allow such methods to be pickled, 
+	registering it with the copy_reg standard library method
+
+Don't really know what this is, but it seems work well
+'''
+def _pickle_method(method):
+	func_name = method.im_func.__name__
+	obj = method.im_self
+	cls = method.im_class
+	return _unpickle_method, (func_name, obj, cls)
+
+def _unpickle_method(func_name, obj, cls):
+	for cls in cls.mro():
+		try:
+			func = cls.__dict__[func_name]
+		except KeyError:
+			pass
+		else:
+			break
+	return func.__get__(obj, cls)
+
+copy_reg.pickle(types.MethodType, _pickle_method, _unpickle_method)

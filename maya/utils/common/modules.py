@@ -32,7 +32,14 @@ def import_module(path, **kwargs):
 		path = ''
 		for m in modules:
 			path += '{}.'.format(m)
-		module = __import__(path[:-1], fromlist = [modules[-1]])
+		try:
+			module = __import__(path[:-1], fromlist = [modules[-1]])
+		except:
+			# no module in path
+			module = None
 	else:
-		module = __import__(path)
+		try:
+			module = __import__(path)
+		except:
+			module = None
 	return module, func
