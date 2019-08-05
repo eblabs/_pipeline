@@ -1,167 +1,167 @@
-#=================#
-# IMPORT PACKAGES #
-#=================#
+# IMPORT PACKAGES
 
-## import maya packages
+# import maya packages
 import maya.cmds as cmds
 
-## import utils
+# import utils
 import utils.common.naming as naming
 import utils.common.variables as variables
+import utils.common.transforms as transforms
 import utils.common.hierarchy as hierarchy
+import utils.common.logUtils as logUtils
 
-#=================#
-#   GLOBAL VARS   #
-#=================#
-from . import Logger
+# CONSTANT
+logger = logUtils.get_logger(name='joints', level='info')
 
-#=================#
-#      CLASS      #
-#=================#
 
-#=================#
-#    FUNCTION     #
-#=================#
-
+# FUNCTION
 def create(name, **kwargs):
-	'''
-	create single joint
+    """
+    create single joint
 
-	Args:
-		name(str): joint's name
-	Kwargs:
-		rotateOrder(int)[0]: joint's rotate order
-		parent(str): parent joint
-		pos(str/list): match joint's position to given node/transform value
-					   str: match translate and rotate to the given node
-					   [str/None, str/None]: match translate/rotate to the given node
-					   [[x,y,z], [x,y,z]]: match translate/rotate to given values
-		vis(bool)[True]: visibility
-	Returns:
-		joint(str)
-	'''
-	# get vars
-	ro = variables.kwargs('rotateOrder', 0, kwargs, shortName='ro')
-	parent = variables.kwargs('parent', None, kwargs, shortName='p')
-	pos = variables.kwargs('pos', None, kwargs)
-	vis = variables.kwargs('vis', True, kwargs, shortName='v')
+    Args:
+        name(str): joint's name
 
-	# create joint
-	if cmds.objExists(name):
-		Logger.error('{} already exists in the scene'.format(name))
-		return
+    Keyword Args:
+        rotate_order(int): joint's rotate order, default is 0
+        parent(str): parent joint
+        pos(str/list): match joint's position to given node/transform value
+                       str: match translate and rotate to the given node
+                       [str/None, str/None]: match translate/rotate to the given node
+                       [[x,y,z], [x,y,z]]: match translate/rotate to given values
+        vis(bool): visibility, default is True
 
-	jnt = cmds.createNode('joint', name=name)
-	cmds.setAttr(jnt+'.ro', ro)
-	cmds.setAttr(jnt+'.v', vis)
+    Returns:
+        joint(str)
+    """
 
-	# pos
-	# match pos
-	if pos:
-		if isinstance(pos, basestring):
-			cmds.matchTransform(jnt, pos, pos=True, rot=True)
-		else:
-			if isinstance(pos[0], basestring):
-				cmds.matchTransform(jnt, pos[0], pos=True, rot=False)
-			elif isinstance(pos[0], list):
-				cmds.xform(jnt, t=pos[0], ws=True)
-			if isinstance(pos[1], basestring):
-				cmds.matchTransform(jnt, pos[1], pos=False, rot=True)
-			elif isinstance(pos[1], list):
-				cmds.xform(jnt, ro=pos[1], ws=True)
-		cmds.makeIdentity(jnt, apply=True, t=True, r=True, s=True)
-	
-	# parent
-	hierarchy.parent_node(jnt, parent)
+    # get vars
+    ro = variables.kwargs('rotate_order', 0, kwargs, short_name='ro')
+    parent = variables.kwargs('parent', None, kwargs, short_name='p')
+    pos = variables.kwargs('pos', None, kwargs)
+    vis = variables.kwargs('vis', True, kwargs, short_name='v')
 
-	return jnt
+    # create joint
+    if cmds.objExists(name):
+        logger.error('{} already exists in the scene'.format(name))
+        return
+
+    jnt = cmds.createNode('joint', name=name)
+    cmds.setAttr(jnt+'.rotateOrder', ro)
+    cmds.setAttr(jnt+'.visibility', vis)
+
+    # pos
+    # match pos
+    if pos:
+        transforms.set_pos(jnt, pos)
+        cmds.makeIdentity(jnt, apply=True, t=True, r=True, s=True)  # freeze transformation
+
+    # parent
+    hierarchy.parent_node(jnt, parent)
+
+    return jnt
+
 
 def create_on_node(node, search, replace, **kwargs):
-	'''
-	create joint base on given transform node
+    """
+    create joint base on given transform node
 
-	Args:
-		node(str): given transform node
-		search(str/list): search name
-		replace(str/list): replace name
-	Kwargs:	
-		suffix(str): add suffix description
-		rotateOrder(int)[None]: joint's rotate order, 
-								None will copy transform's rotate order
-		parent(str): parent joint
-		vis(bool)[True]: joint visibility
-	Returns:
-		joint(str) 
-	'''
-	# get vars
-	if isinstance(search, basestring):
-		search = [search]
-	if isinstance(replace, basestring):
-		replace = [replace]
+    Args:
+        node(str): given transform node
+        search(str/list): search name
+        replace(str/list): replace name
 
-	suffix = variables.kwargs('suffix', '', kwargs, shortName='sfx')
-	ro = variables.kwargs('rotateOrder', None, kwargs, shortName='ro')
-	parent = variables.kwargs('parent', None, kwargs, shortName='p')
-	vis = variables.kwargs('vis', True, kwargs, shortName='v')
+    Keyword Args:
+        suffix(str): add suffix description
+        rotate_order(int): joint's rotate order,
+                           None will copy transform's rotate order
+        parent(str): parent joint
+        vis(bool): joint's visibility, default is True
 
-	# get joint name
-	jnt = node
-	for s, r in zip(search, replace):
-		jnt = jnt.replace(s, r)
-	Namer = naming.Namer(jnt)
-	Namer.description = Namer.description + suffix
-	jnt = Namer.name
-	# check node exist
-	if not cmds.objExists(node):
-		Logger.error('{} does not exist'.format(node))
-		return
+    Returns:
+        joint(str)
+    """
 
-	# create joint
-	# get ro
-	if ro == None:
-		ro = cmds.getAttr(node+'.ro')
-	# create
-	jnt = create(jnt, rotateOrder=ro, parent=parent, pos=node, vis=vis)
+    # get vars
+    if isinstance(search, basestring):
+        search = [search]
+    if isinstance(replace, basestring):
+        replace = [replace]
 
-	return jnt
+    suffix = variables.kwargs('suffix', '', kwargs, short_name='sfx')
+    ro = variables.kwargs('rotate_order', None, kwargs, short_name='ro')
+    parent = variables.kwargs('parent', None, kwargs, short_name='p')
+    vis = variables.kwargs('vis', True, kwargs, short_name='v')
+
+    # get joint name
+    jnt = node
+    for s, r in zip(search, replace):
+        jnt = jnt.replace(s, r)
+    namer = naming.Namer(jnt)
+    namer.description = namer.description + suffix
+    jnt = namer.name
+
+    # check node exist
+    if not cmds.objExists(node):
+        logger.error('{} does not exist'.format(node))
+        return
+
+    # create joint
+    # get rotate order
+    if ro is None:
+        ro = cmds.getAttr(node+'.rotateOrder')
+
+    # create
+    jnt = create(jnt, rotate_order=ro, parent=parent, pos=node, vis=vis)
+
+    return jnt
+
 
 def create_on_hierarchy(nodes, search, replace, **kwargs):
-	'''
-	create joints base on given hierarchy
+    """
+    create joints base on given hierarchy
 
-	Args:
-		nodes(list): given nodes
-		search(str/list): search 
-		replace(str/list): replace
-	Kwargs:	
-		suffix(str): add suffix description
-		rotateOrder(int)[None]: joint's rotate order, 
-								None will copy transform's rotate order
-		parent(str): parent joint
-		vis(bool)[True]: joint visibility
-		reverse(bool)[False]: reverse parent 
-	Returns:
-		joints(list)
-	'''
-	# get vars
-	suffix = variables.kwargs('suffix', '', kwargs, shortName='sfx')
-	ro = variables.kwargs('rotateOrder', None, kwargs, shortName='ro')
-	parent = variables.kwargs('parent', None, kwargs, shortName='p')
-	vis = variables.kwargs('vis', True, kwargs, shortName='v')
-	reverse = variables.kwargs('reverse', False, kwargs)
-	
-	# parent chain function has opposite reverse direction
-	reverse = not reverse 
+    Args:
+        nodes(list): given nodes
+        search(str/list): search
+        replace(str/list): replace
 
-	# create jnts
-	jntList = []
+    Keyword Args:
+        suffix(str): add suffix description
+        rotate_order(int)[None]: joint's rotate order,
+                                 None will copy transform's rotate order
+        parent(str): parent joint
+        vis(bool): joint's visibility, default is True
+        reverse(bool): reverse parent order, default is False
+                       originally is from root to end,
+                       like node[0]
+                            -- node[1]
+                               -- node[2]
+                                   .....
 
-	for n in nodes:
-		jnt = create_on_node(n, search, replace, suffix=suffix, 
-							 rotateOrder=ro, parent=parent, vis=vis)
-		jntList.append(jnt)
+    Returns:
+        joints(list): list of created joints
+    """
 
-	# connect
-	jntList = hierarchy.parent_chain(jntList, reverse=reverse, parent=parent)
+    # get vars
+    suffix = variables.kwargs('suffix', '', kwargs, short_name='sfx')
+    ro = variables.kwargs('rotate_order', None, kwargs, short_name='ro')
+    parent = variables.kwargs('parent', None, kwargs, short_name='p')
+    vis = variables.kwargs('vis', True, kwargs, short_name='v')
+    reverse = variables.kwargs('reverse', False, kwargs)
 
-	return jntList
+    # parent chain function has opposite reverse direction
+    reverse = not reverse
+
+    # create joints
+    jnt_list = []
+
+    for n in nodes:
+        jnt = create_on_node(n, search, replace, suffix=suffix,
+                             rotate_order=ro, parent=parent, vis=vis)
+        jnt_list.append(jnt)
+
+    # connect
+    jnt_list = hierarchy.parent_chain(jnt_list, reverse=reverse, parent=parent)
+
+    return jnt_list

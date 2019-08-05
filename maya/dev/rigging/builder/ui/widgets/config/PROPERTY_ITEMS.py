@@ -1,48 +1,43 @@
-# =================#
-# IMPORT PACKAGES  #
-# =================#
+# IMPORT PACKAGES
 
 # import PySide
 try:
-	from PySide2.QtWidgets import *
+    from PySide2.QtWidgets import *
 except ImportError:
-	from PySide.QtGui import *
+    from PySide.QtGui import *
 
-# =================#
-#   GLOBAL VARS    #
-# =================#
 
+#  CONSTANT
 PROPERTY_ITEMS = {'str': {'value': '',
-						  'widget': QLineEdit},
+                          'widget': QLineEdit},
 
-				  'float': {'value': 0.0,
-							'min': None,
-							'max': None,
-							'widget': QDoubleSpinBox},
+                  'float': {'value': 0.0,
+                            'min': None,
+                            'max': None,
+                            'widget': QDoubleSpinBox},
 
-				  'int': {'value': 0,
-						  'min': None,
-						  'max': None,
-						  'widget': QSpinBox},
+                  'int': {'value': 0,
+                          'min': None,
+                          'max': None,
+                          'widget': QSpinBox},
 
-				  'enum': {'value': None,
-						   'enum': [],
-						   'widget': QComboBox},
+                  'enum': {'value': None,
+                           'enum': [],
+                           'widget': QComboBox},
 
-				  'bool': {'value': True,
-						   'widget': QComboBox},
+                  'bool': {'value': True,
+                           'widget': QComboBox},
 
-				  'list': {'value': [],
-						   'template': '',
-						   'widget': QLineEdit},
+                  'list': {'value': [],
+                           'template': '',
+                           'widget': QLineEdit},
 
-				  'dict': {'value': {},
-						   'template': [],
-						   'widget': QLineEdit},
+                  'dict': {'value': {},
+                           'template': [],
+                           'widget': QLineEdit},
 
-				  # common task property type
-				  'strPath': {'value': [],
-				  			  'template': 'str',
-				  			  'widget': QLineEdit},
-				  			  }
-
+                  # common task property type
+                  'strPath': {'value': [],
+                              'template': 'str',
+                              'widget': QLineEdit},
+                  }

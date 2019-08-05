@@ -1,966 +1,1028 @@
-#=================#
-# IMPORT PACKAGES #
-#=================#
+# IMPORT PACKAGES
 
-## import maya packages
+# import maya packages
 import maya.cmds as cmds
 
-## import ast
+# import ast
 import ast
 
-## import utils
+# import utils
 import naming
 import attributes
 import variables
-#=================#
-#   GLOBAL VARS   #
-#=================#
-from . import Logger
+import logUtils
 
-#=================#
-#      CLASS      #
-#=================#
+# CONSTANT
+logger = logUtils.get_logger(name='nodeUtils', level='info')
 
-#=================#
-#    FUNCTION     #
-#=================#
+
+# FUNCTION
 def node(**kwargs):
-	'''
-	Create maya node
+    """
+    Create maya node
 
-	Kwargs:
-		name(str): node's name, will create node base on type
-		type(str): node's type (if name given, will follow name)
-		side(str): node's side (if name given, will follow name)
-		description(str): node's description (if name given, will follow name)
-		index(int): node's index (if name given, will follow name)
-		suffix(int): node's suffix (if name given, will follow name)
+    Keyword Args:
+        name(str): node's name, will create node base on type
+        type(str): node's type (if name given, will follow name)
+        side(str): node's side (if name given, will follow name)
+        description(str): node's description (if name given, will follow name)
+        index(int): node's index (if name given, will follow name)
+        suffix(int): node's suffix (if name given, will follow name)
 
-		useExist(bool)[False]: if node already exists, using exist node
-							   Will Error out if node exists and set thie to False
-		autoSuffix(bool)[False]: Automatically suffix node from 1
+        use_exist(bool): if node already exists, using exist node
+                        will Error out if node exists and set this to False
+                        default is False
+        auto_suffix(bool): automatically suffix node from 1, default is False
 
-		setAttrs(dict): set attrs when creating the node
+        set_attrs(dict): set attrs when creating the node
 
-	Returns:
-		name(str): node's name
-	'''
-	# get vars
-	_name = variables.kwargs('name', None, kwargs, shortName='n')
-	_type = variables.kwargs('type', None, kwargs, shortName='t')
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
+    Returns:
+        name(str): node's name
+    """
 
-	_useExist = variables.kwargs('useExist', False, kwargs)
-	_autoSuffix = variables.kwargs('autoSuffix', False, kwargs)
+    # get vars
+    _name = variables.kwargs('name', None, kwargs, short_name='n')
+    _type = variables.kwargs('type', None, kwargs, short_name='t')
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
 
-	_setAttrs = variables.kwargs('setAttrs', {}, kwargs)
+    _use_exist = variables.kwargs('use_exist', False, kwargs)
+    _auto_suffix = variables.kwargs('auto_suffix', False, kwargs)
 
-	if _name:
-		Namer = naming.Namer(_name)
-	else:
-		Namer = naming.Namer(type=_type, side=_side,
-							 description=_des, index=_index,
-							 suffix=_suffix)
+    _set_attrs = variables.kwargs('set_attrs', {}, kwargs)
 
-	# check if node exist
-	if cmds.objExists(Namer.name):
-		if not _useExist:
-			Logger.error('{} node: {} already exists in the scene').format(Namer.type, Namer.name)
-		else:
-			node = Namer.name
-	else:
-		# check if auto suffix
-		if _autoSuffix:
-			nodeExisting = cmds.ls(Namer.name+'_???')
-			Namer.suffix = len(nodeExisting)+1
+    node_name = None
 
-		node = cmds.createNode(Namer.type, name=Namer.name)
-	
-	for attr, val in _setAttrs.iteritems():
-		cmds.setAttr('{}.{}'.format(node, attr), val)
+    if _name:
+        namer = naming.Namer(_name)
+    else:
+        namer = naming.Namer(type=_type, side=_side,
+                             description=_des, index=_index,
+                             suffix=_suffix)
 
-	return node
+    # check if node exist
+    if cmds.objExists(namer.name):
+        if not _use_exist:
+            logger.error('{} node: {} already exists in the scene').format(namer.type, namer.name)
+        else:
+            node_name = namer.name
+    else:
+        # check if auto suffix
+        if _auto_suffix:
+            node_exists = cmds.ls(namer.name+'_???')
+            namer.suffix = len(node_exists) + 1
+
+        node_name = cmds.createNode(namer.type, name=namer.name)
+
+    for attr, val in _set_attrs.iteritems():
+        cmds.setAttr('{}.{}'.format(node, attr), val)
+
+    return node_name
+
 
 def equation(expression, **kwargs):
-	'''
-	Create node connection network base on the expression
-	only works for 1D input
-
-	Symbols:
-		+:  add
-		-:  sub
-		*:  mult
-		/:  divide
-	   **:  power
-		~:  reverse
-
-	Example:
-		equation('(pCube1.tx + pCube2.tx)/2')
-
-	Args:
-		expression(str): given equation to make the connection
-
-	Kwargs:
-		side(str): nodes' side
-		description(str): nodes' description
-		index(int): nodes' index
-		attrs(str/list): connect the equation to given attrs
-		force(bool)[True]: force the connection
-
-	Return:
-		outputAttr(str): output attribute from the equation node network
-	'''
-
-	# get vars
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	# node equation
-	outputAttr = NodeEquation.equation(expression, side=_side,
-									   description=_des, index=_index)
-
-	# connect attrs
-	if _attrs:
-		attributes.connect_attrs(outputAttr, _attrs, force=_force)
-
-	return outputAttr
-
-def plus_minus_average(inputAttrs, **kwargs):
-	'''
-	connect attrs with plusMinusArverage node
-	
-	Args:
-		inputAttrs(list): given attrs, will connect in order
-					      can be 1D/2D/3D inputs
-					      2D/3D attrs must be in list
-					      ('node.t' will not work, 
-					      	have to be ['node.tx', 'node.ty', 'node.tz'])
-	Kwargs:
-		side(str): node's side
-		description(str): node's description
-		index(int): node's index
-		suffix(int): node's suffix
-		operation(int)[1]: plusMinusAvarge node's operation
-						1. add
-						2. sub
-						3. average
-		attrs(str/list): connect the node to given attrs
-		force(bool)[True]: force the connection
- 	Returns:
- 		outputAttr(list): output attribute from the node
-	'''
-	# get vars
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_op = variables.kwargs('operation', 1, kwargs, shortName='op')
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	# create node
-	pmav = node(type=naming.Type.plusMinusAvarge, side=_side,
-				description=_des, index=_index, suffix=_suffix,
-				setAttrs={'operation': _op})
-
-	# check input attr type(1D/2D/3D)
-	if not isinstance(inputAttrs[0], list) and not isinstance(inputAttrs[0], tuple):
-		# 1D
-		for i, inputAttr in enumerate(inputAttrs):
-			if isinstance(inputAttr, basestring):
-				cmds.connectAttr(inputAttr, '{}.input1D[{}]'.format(pmav, i)) 
-			else:
-				cmds.setAttr('{}.input1D[{}]'.format(pmav, i), inputAttr)
-		outputAttr = [pmav+'.output1D']
-	else:
-		# 2D/3D
-		num = len(inputAttrs[0])
-		for i, inputAttr in enumerate(inputAttrs):
-			for inputAttrInfo in zip(inputAttr, ['x', 'y', 'z']):
-				if isinstance(inputAttrInfo[0], basestring):
-					cmds.connectAttr(inputAttrInfo[0],
-									 '{}.input{}D[{}].input{}D{}'.format(pmav, num, i,
-									 							num, inputAttrInfo[1]))
-				else:
-					cmds.setAttr('{}.input{}D[{}].input{}D{}'.format(pmav, num, i,
-											num, inputAttrInfo[1]), inputAttrInfo[0])
-		if num==2:
-			outputAttr = [pmav+'.output2Dx', pmav+'.output2Dy']
-		else:
-			outputAttr = [pmav+'.output3Dx', pmav+'.output3Dy', pmav+'.output3Dz']
-
-	# connect attr
-	if _attrs:
-		if isinstance(_attrs, basestring):
-				_attrs = [_attrs]
-		elif isinstance(_attrs[0], basestring):
-			_attrs = [_attrs]
-		for attr in _attrs:
-			for attrInfo in zip(outputAttr, attr):
-				attributes.connect_attrs(attrInfo[0], attrInfo[1], force=_force)
-
-	# return output attr
-	return outputAttr
-
-def multiply_divide(inputAttr1, inputAttr2, **kwargs):
-	'''
-	connect attrs with multiplyDivide node
-
-	Args:
-		inputAttr1(str/list): input attr 1
-						      maximum 3 attrs (['tx', 'ty', 'tz'])
-		inputAttr2(str/list): input attr 2
-						      maximum 3 attrs (['tx', 'ty', 'tz'])
-	Kwargs:
-		side(str): node's side
-		description(str): node's description
-		index(int): node's index
-		suffix(int): node's suffix
-		operation(int)[1]: multiplyDivide node's operation
-						1. mult
-						2. divide
-						3. power
-		attrs(str/list): connect the node to given attrs
-		force(bool)[True]: force the connection
- 	Returns:
- 		outputAttr(str/list): output attribute from the node
-	'''
-	# get vars
-
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_op = variables.kwargs('operation', 1, kwargs, shortName='op')
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	outputAttr = _create_node_multi_attrs([],[inputAttr1, inputAttr2],
-										  [], ['input1', 'input2'],
-										  ['X', 'Y', 'Z'], 'output',
-										  type=naming.Type.multiplyDivide,
-										  side=_side, description=_des, 
-										  setAttrs={'operation': _op},
-										  attrs=_attrs, force=_force)
-	# return output attr
-	return outputAttr
-
-def condition(firstTerm, secondTerm, ifTrue, ifFalse, **kwargs):
-	'''
-	connect attrs with condition node
-
-	Args:
-		firstTerm(str/float): first term
-		secondTerm(str/float): secondTerm
-		ifTrue(str/float/list): color if True
-		ifFalse(str/float/list): color if False
-
-	Kwargs:
-		side(str): node's side
-		description(str): node's description
-		index(int): node's index
-		suffix(int): node's suffix
-		operation(int/str)[0]: condition node's operation
-								0['=='] equal
-								1['!='] not equal
-								2['>']  greater than
-								3['>='] greater or equal
-								4['<']  less than
-								5['<='] less or equal
-		attrs(str/list): connect the node to given attrs
-		force(bool)[True]: force the connection
- 	Returns:
- 		outputAttr(str/list): output attribute from the node
-	'''
-
-	# get vars
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_op = variables.kwargs('operation', 0, kwargs, shortName='op')
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	# get operation
-	if isinstance(_op, basestring):
-		_op_list = ['==', '!=', '>', '>=', '<', '<=']
-		_op = _op_list.index(_op)
-
-	outputAttr = _create_node_multi_attrs([firstTerm, secondTerm],
-										  [ifTrue, ifFalse],
-										  ['firstTerm', 'secondTerm'], 
-										  ['colorIfTrue', 'colorIfFalse'],
-										  ['R', 'G', 'B'], 'outColor',
-										  type=naming.Type.condition,
-										  side=_side, description=_des, 
-										  setAttrs={'operation': _op},
-										  attrs=_attrs, force=_force)
-
-	# return output attr
-	return outputAttr
-
-def clamp(inputAttr, maxAttr, minAttr, **kwargs):
-	'''
-	connect attrs with clamp node
-
-	Args:
-		inputAttr(str/float/list): clamp's input
-		maxAttr(str/float/list): clamp's max
-		minAttr(str/float/list): clamp's min
-
-	Kwargs:
-		side(str): node's side
-		description(str): node's description
-		index(int): node's index
-		suffix(int): node's suffix
-		attrs(str/list): connect the node to given attrs
-		force(bool)[True]: force the connection
- 	Returns:
- 		outputAttr(list): output attribute from the node
-	'''
-
-	# get vars
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	outputAttr = _create_node_multi_attrs([],[inputAttr, maxAttr, minAttr],
-										  [], ['input', 'max', 'min'],
-										  ['R', 'G', 'B'], 'output',
-										  type=naming.Type.clamp,
-										  side=_side, description=_des, 
-										  attrs=_attrs, force=_force)
-
-	# return output attr
-	return outputAttr
-
-def blend(blender, inputAttr1, inputAttr2, **kwargs):
-	'''
-	connect attrs with blendColor node
-
-	Args:
-		blend(str/float): blendColor's blender
-		inputAttr1(str/float/list): blendColor's color1
-		inputAttr2(str/float/list): blendColor's color2
-
-	Kwargs:
-		side(str): node's side
-		description(str): node's description
-		index(int): node's index
-		suffix(int): node's suffix
-		attrs(str/list): connect the node to given attrs
-		force(bool)[True]: force the connection
- 	Returns:
- 		outputAttr(list): output attribute from the node
-	'''
-
-	# get vars
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	outputAttr = _create_node_multi_attrs([blender],[inputAttr1, inputAttr2],
-										  ['blender'], ['color1', 'color2'],
-										  ['R', 'G', 'B'], 'output',
-										  type=naming.Type.blendColor,
-										  side=_side, description=_des, 
-										  attrs=_attrs, force=_force)
-
-	# return output attr
-	return outputAttr
-
-def remap(inputValue, inputRange, outputRange, **kwargs):
-	'''
-	connect attrs with remapValue node
-
-	Args:
-		inputValue(str/float): remapValue's input
-		inputRange(list): remapValue's input min/max
-		outputRange(list): remapValue's output min/max
-
-	Kwargs:
-		side(str): node's side
-		description(str): node's description
-		index(int): node's index
-		suffix(int): node's suffix
-		setAttrs(dict): set node's attrs
-		attrs(str/list): connect the node to given attrs
-		force(bool)[True]: force the connection
- 	Returns:
- 		outputAttr(str): output attribute from the node
-	'''
-
-	# get vars
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_setAttrs = variables.kwargs('setAttrs', {}, kwargs)
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	# create node
-	remap = node(type=naming.Type.remapValue, side=_side, description=_des,
-				 index=_index, suffix=_suffix, setAttrs=_setAttrs)
-
-	# input connection
-	if isinstance(inputValue, basestring):
-		cmds.connectAttr(inputValue, remap+'.inputValue')
-
-	for rangeValue in zip([inputRange, outputRange], ['input', 'output']):
-		for val in zip(rangeValue[0], ['min', 'max']):
-			if isinstance(val[0], basestring):
-				cmds.connectAttr(val[0], '{}.{}{}'.format(remap, rangeValue[1], val[1].title()))
-			else:
-				cmds.setAttr('{}.{}{}'.format(remap, rangeValue[1], val[1].title()), val[0])
-
-	outputAttr = remap+'.outValue'
-
-	if _attrs:
-		attributes.connect_attrs(outputAttr, _attrs, force=_force)
-
-	return outputAttr
-
-def add_matrix(inputMatrix, **kwargs):
-	'''
-	connect attrs with add matrix node
-
-	Args:
-		inputMatrix(list): list of input matrix
-						   each can be attribute/list
-
-	Kwargs:
-		side(str): node's side
-		description(str): node's description
-		index(int): node's index
-		suffix(int): node's suffix
-		attrs(str/list): connect the node to given attrs
-		force(bool)[True]: force the connection
- 	Returns:
- 		outputAttr: output attribute from the node
-	'''
-
-	# get vars
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	# create node
-	addMatrix = node(type=naming.Type.addMatrix, side=_side,
-					 description=_des, index=_index, suffix=_suffix)
-
-	# input attrs
-	for i, matrix in enumerate(inputMatrix):
-		if isinstance(matrix, basestring):
-			cmds.connectAttr(matrix, '{}.matrixIn[{}]'.format(addMatrix, i))
-		else:
-			cmds.setAttr('{}.matrixIn[{}]'.format(addMatrix, i), matrix, type='matrix')
-
-	outputAttr = addMatrix+'.matrixSum'
-
-	if _attrs:
-		attributes.connect_attrs(outputAttr, _attrs, force=_force)
-
-	# return output attr
-	return outputAttr
-
-def mult_matrix(inputMatrix, **kwargs):
-	'''
-	connect attrs with mult matrix node
-
-	Args:
-		inputMatrix(list): list of input matrix
-						   each can be attribute/list
-
-	Kwargs:
-		side(str): node's side
-		description(str): node's description
-		index(int): node's index
-		suffix(int): node's suffix
-		attrs(str/list): connect the node to given attrs
-		force(bool)[True]: force the connection
- 	Returns:
- 		outputAttr: output attribute from the node
-	'''
-
-	# get vars
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	# create node
-	multMatrix = node(type=naming.Type.multMatrix, side=_side,
-					 description=_des, index=_index, suffix=_suffix)
-
-	# input attrs
-	for i, matrix in enumerate(inputMatrix):
-		if isinstance(matrix, basestring):
-			cmds.connectAttr(matrix, '{}.matrixIn[{}]'.format(multMatrix, i))
-		else:
-			cmds.setAttr('{}.matrixIn[{}]'.format(multMatrix, i), matrix, type='matrix')
-
-	outputAttr = multMatrix+'.matrixSum'
-
-	if _attrs:
-		attributes.connect_attrs(outputAttr, _attrs, force=_force)
-
-	# return output attr
-	return outputAttr
-
-def inverse_matrix(inputMatrix, **kwargs):
-	'''
-	connect attrs with inverse matrix node
-
-	Args:
-		inputMatrix(str): input matrix attr
-
-	Kwargs:
-		side(str): node's side
-		description(str): node's description
-		index(int): node's index
-		suffix(int): node's suffix
-		attrs(str/list): connect the node to given attrs
-		force(bool)[True]: force the connection
- 	Returns:
- 		outputAttr: output attribute from the node
-	'''
-
-	# get vars
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	# create node
-	invMatrix = node(type=naming.Type.inverseMatrix, side=_side,
-					 description=_des, index=_index, suffix=_suffix)
-
-	# input attrs
-	cmds.connectAttr(inputMatrix, invMatrix+'.inputMatrix')
-
-	outputAttr = invMatrix+'.outputMatrix'
-
-	if _attrs:
-		attributes.connect_attrs(outputAttr, _attrs, force=_force)
-
-	# return output attr
-	return outputAttr
-
-def compose_matrix(translate, rotate, scale=[1,1,1], **kwargs):
-	'''
-	connect attrs with compose matrix node
-
-	Args:
-		translate(list): input translate
-						 each can be attribute/float
-		rotate(list): input rotate
-					  each can be attribute/float
-
-	Kwargs:
-		scale(list)[1,1,1]: input scale
-							each can be attribute/float
-		rotateOrder(int)[0]: input rotate order
-		side(str): node's side
-		description(str): node's description
-		index(int): node's index
-		suffix(int): node's suffix
-		attrs(str/list): connect the node to given attrs
-		force(bool)[True]: force the connection
- 	Returns:
- 		outputAttr: output attribute from the node
-	'''
-	# get vars
-	rotateOrder = variables.kwargs('rotateOrder', 0, kwargs, shortName='ro')
-	_side = variables.kwargs('side', None, kwargs, shortName='s')
-	_des = variables.kwargs('description', None, kwargs, shortName='des')
-	_index = variables.kwargs('index', None, kwargs, shortName='i')
-	_suffix = variables.kwargs('suffix', None, kwargs, shortName='sfx')
-	_attrs = variables.kwargs('attrs', [], kwargs)
-	_force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	# node
-	compose = node(type=naming.Type.composeMatrix, side=_side,
-				   description=_des, index=_index, suffix=_suffix)
-	for inputAttrInfo in zip([translate, rotate, scale], ['translate', 'rotate', 'scale']):
-		for inputVal in zip(inputAttrInfo[0], ['X','Y','Z']):
-			if isinstance(inputVal[0], basestring):
-				cmds.connectAttr(inputVal[0], 
-								 '{}.input{}{}'.format(compose, inputAttrInfo[1].title(), inputVal[1]))
-			else:
-				cmds.setAttr('{}.input{}{}'.format(compose, inputAttrInfo[1].title(), inputVal[1]),
-							 inputVal[0])
-	if isinstance(rotateOrder, basestring):
-		cmds.connectAttr(rotateOrder, compose+'.inputRotateOrder')
-	else:
-		cmds.setAttr(compose+'.inputRotateOrder', rotateOrder)
-
-	outputAttr = compose+'.outputMatrix'
-
-	if _attrs:
-		attributes.connect_attrs(outputAttr, _attrs, force=_force)
-
-	#return outputAttr
-	return outputAttr
-
-def twist_extract(inputMatrix, **kwargs):
-	'''
-	extract twist value from input matrix
-
-	Args:
-		inputMatrix(str)
-	Kwargs:
-		attrs(str/list): connect twist value to attrs
-		force(bool)[True]: force the connection
-	Returns:
-		outputAttr(str): output attr
-	'''
-	attrs = variables.kwargs('attrs', [], kwargs)
-	force = variables.kwargs('force', True, kwargs, shortName='f')
-
-	driver = inputMatrix.split('.')[0]
-
-	Namer = naming.Namer(driver)
-
-	Namer.type = naming.Type.decomposeMatrix
-	Namer.description = Namer.description+'TwsitExtract'
-
-	decomposeMatrix = node(name=Namer.name)
-	cmds.connectAttr(inputMatrix, decomposeMatrix+'.inputMatrix')
-
-	Namer.type = naming.Type.quatToEuler
-	quatToEuler = node(name=Namer.name)
-
-	cmds.connectAttr(decomposeMatrix+'.outputQuatX', 
-					 quatToEuler+'.inputQuatX')
-	cmds.connectAttr(decomposeMatrix+'.outputQuatW', 
-					 quatToEuler+'.inputQuatW')
-
-	if attrs:
-		attributes.connect_attrs(quatToEuler+'.outputRotateX', 
-								 attrs, force=force)
-	
-	return quatToEuler+'.outputRotateX'
-
-#=================#
-#  SUB FUNCTION   #
-#=================#
-def _create_node_multi_attrs(inputAttrSingle, inputAttrMult, nodeAttrSingle, 
-			 				 nodeAttrMult, nodeSubAttrs, outputAttr, **kwargs):
-	'''
-	create node with multi attrs (like RGB/XYZ), connect with attrs
-
-	'''
-	# get vars
-	_type = kwargs.get('type', None)
-	_side = kwargs.get('side', None)
-	_des = kwargs.get('description', None)
-	_index = kwargs.get('index', None)
-	_suffix = kwargs.get('suffix', None)
-	_setAttrs = kwargs.get('setAttrs', {})
-	_attrs = kwargs.get('attrs', [])
-	_force = kwargs.get('force', True)
-
-	# create node
-	_node = node(type=_type, side=_side, description=_des, 
-				 index=_index, suffix=_suffix, setAttrs=_setAttrs)
-
-	# connect input
-	for inputAttrInfo in zip(inputAttrSingle, nodeAttrSingle):
-		if isinstance(inputAttrInfo[0], basestring):
-			cmds.connectAttr(inputAttrInfo[0], '{}.{}'.format(_node, inputAttrInfo[1]))
-		else:
-			cmds.setAttr('{}.{}'.format(_node, inputAttrInfo[1]), inputAttrInfo[0])
-
-	inputAttrList = []
-	inputAttrNum = []
-	for inputVal in inputAttrMult:
-		if not isinstance(inputVal, list) and not isinstance(inputVal, tuple):
-			inputVal = [inputVal]
-		inputAttrList.append(inputVal)
-		inputAttrNum.append(len(inputVal))
-	
-	for inputAttrInfo in zip(inputAttrList, nodeAttrMult):
-		for inputVal in zip(inputAttrInfo[0], nodeSubAttrs):
-			if isinstance(inputVal[0], basestring):
-				cmds.connectAttr(inputVal[0], 
-								 '{}.{}{}'.format(_node, inputAttrInfo[1], inputVal[1]))
-			else:
-				cmds.setAttr('{}.{}{}'.format(_node, inputAttrInfo[1], inputVal[1]),
-							 inputVal[0])
-
-	outputNum = min(inputAttrNum)
-
-	outputAttrList=[]
-	for attrInfo in zip(range(outputNum), nodeSubAttrs):
-		outputAttrList.append('{}.{}{}'.format(_node, outputAttr, attrInfo[1]))
-
-	# connect output
-	if _attrs:
-		if isinstance(_attrs, basestring):
-			_attrs = [_attrs]
-		elif isinstance(_attrs[0], basestring):
-			_attrs = [_attrs]
-		for attr in _attrs:
-			for attrInfo in zip(outputAttr, attr):
-				attributes.connect_attrs(attrInfo[0], attrInfo[1], force=_force)
-
-	# return output attr
-	return outputAttrList
+    """
+    Create node connection network base on the expression, only works for 1D input
+
+    Symbols:
+        +:  add
+        -:  sub
+        *:  multiply
+        /:  divide
+       **:  power
+        ~:  reverse
+
+    Example:
+        equation('(pCube1.tx + pCube2.tx)/2')
+
+    Args:
+        expression(str): given equation to make the connection
+
+    Keyword Args:
+        side(str): nodes' side
+        description(str): nodes' description
+        index(int): nodes' index
+        attrs(str/list): connect the equation to given attrs
+        force(bool): force the connection, default is True
+
+    Return:
+        output_attr(str): output attribute from the equation node network
+    """
+
+    # get vars
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    # node equation
+    output_attr = NodeEquation.equation(expression, side=_side,
+                                        description=_des, index=_index)
+
+    # connect attrs
+    if _attrs:
+        attributes.connect_attrs(output_attr, _attrs, force=_force)
+
+    return output_attr
+
+
+def plus_minus_average(input_attrs, **kwargs):
+    """
+    connect attrs with plusMinusAverage node
+
+    Args:
+        input_attrs(list): given attrs, will connect in order
+                           can be 1D/2D/3D inputs
+                           2D/3D attrs must be in list
+                          ('node.t' will not work,
+                            have to be ['node.tx', 'node.ty', 'node.tz'])
+    Keyword Args:
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        operation(int): plusMinusAverage node's operation
+                        1. add
+                        2. sub
+                        3. average
+                        default is 1
+        attrs(str/list): connect the node to given attrs
+        force(bool): force the connection, default is True
+
+    Returns:
+        output_attr(list): output attribute from the node
+    """
+
+    # get vars
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _op = variables.kwargs('operation', 1, kwargs, short_name='op')
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    # create node
+    pmav = node(type=naming.Type.plusMinusAvarge, side=_side,
+                description=_des, index=_index, suffix=_suffix,
+                set_attrs={'operation': _op})
+
+    # check input attr type(1D/2D/3D)
+    if not isinstance(input_attrs[0], list) and not isinstance(input_attrs[0], tuple):
+        # 1D
+        for i, input_attr in enumerate(input_attrs):
+            if isinstance(input_attr, basestring):
+                cmds.connectAttr(input_attr, '{}.input1D[{}]'.format(pmav, i))
+            else:
+                cmds.setAttr('{}.input1D[{}]'.format(pmav, i), input_attr)
+
+        output_attr = [pmav+'.output1D']
+
+    else:
+        # 2D/3D
+        num = len(input_attrs[0])
+
+        for i, input_attr in enumerate(input_attrs):
+            for input_attr_info in zip(input_attr, ['x', 'y', 'z']):
+                if isinstance(input_attr_info[0], basestring):
+                    cmds.connectAttr(input_attr_info[0],
+                                     '{}.input{}D[{}].input{}D{}'.format(pmav, num, i,
+                                                                         num, input_attr_info[1]))
+                else:
+                    cmds.setAttr('{}.input{}D[{}].input{}D{}'.format(pmav, num, i,
+                                                                     num, input_attr_info[1]), input_attr_info[0])
+        if num == 2:
+            output_attr = [pmav+'.output2Dx', pmav+'.output2Dy']
+        else:
+            output_attr = [pmav+'.output3Dx', pmav+'.output3Dy', pmav+'.output3Dz']
+
+    # connect attr
+    if _attrs:
+        if isinstance(_attrs, basestring):
+            _attrs = [_attrs]
+        elif isinstance(_attrs[0], basestring):
+            _attrs = [_attrs]
+        for attr in _attrs:
+            for attrInfo in zip(output_attr, attr):
+                attributes.connect_attrs(attrInfo[0], attrInfo[1], force=_force)
+
+    # return output attr
+    return output_attr
+
+
+def multiply_divide(input_attr1, input_attr2, **kwargs):
+    """
+    connect attrs with multiplyDivide node
+
+    Args:
+        input_attr1(str/list): input attr 1
+                               maximum 3 attrs (['tx', 'ty', 'tz'])
+        input_attr2(str/list): input attr 2
+                               maximum 3 attrs (['tx', 'ty', 'tz'])
+    Keyword Args:
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        operation(int): multiplyDivide node's operation
+                        1. multiply
+                        2. divide
+                        3. power
+                        default is 1
+        attrs(str/list): connect the node to given attrs
+        force(bool): force the connection, default is True
+
+    Returns:
+        output_attr(str/list): output attribute from the node
+    """
+    # get vars
+
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _op = variables.kwargs('operation', 1, kwargs, short_name='op')
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    output_attr = _create_node_multi_attrs([],[input_attr1, input_attr2],
+                                           [], ['input1', 'input2'],
+                                           ['X', 'Y', 'Z'], 'output',
+                                           type=naming.Type.multiplyDivide,
+                                           side=_side, description=_des,
+                                           set_attrs={'operation': _op},
+                                           attrs=_attrs, force=_force)
+    # return output attr
+    return output_attr
+
+
+def condition(first_term, second_term, if_true, if_false, **kwargs):
+    """
+    connect attrs with condition node
+
+    Args:
+        first_term(str/float): first term
+        second_term(str/float): secondTerm
+        if_true(str/float/list): color if True
+        if_false(str/float/list): color if False
+
+    Keyword Args:
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        operation(int/str): condition node's operation
+                            0['=='] equal
+                            1['!='] not equal
+                            2['>']  greater than
+                            3['>='] greater or equal
+                            4['<']  less than
+                            5['<='] less or equal
+                            default is 0
+        attrs(str/list): connect the node to given attrs
+        force(bool): force the connection, default is True
+
+    Returns:
+        output_attr(str/list): output attribute from the node
+    """
+
+    # get vars
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _op = variables.kwargs('operation', 0, kwargs, short_name='op')
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    # get operation
+    if isinstance(_op, basestring):
+        _op_list = ['==', '!=', '>', '>=', '<', '<=']
+        _op = _op_list.index(_op)
+
+    output_attr = _create_node_multi_attrs([first_term, second_term],
+                                           [if_true, if_false],
+                                           ['firstTerm', 'secondTerm'],
+                                           ['colorIfTrue', 'colorIfFalse'],
+                                           ['R', 'G', 'B'], 'outColor',
+                                           type=naming.Type.condition,
+                                           side=_side, description=_des,
+                                           set_attrs={'operation': _op},
+                                           attrs=_attrs, force=_force)
+
+    # return output attr
+    return output_attr
+
+
+def clamp(input_attr, max_attr, min_attr, **kwargs):
+    """
+    connect attrs with clamp node
+
+    Args:
+        input_attr(str/float/list): clamp's input
+        max_attr(str/float/list): clamp's max
+        min_attr(str/float/list): clamp's min
+
+    Keyword Args:
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        attrs(str/list): connect the node to given attrs
+        force(bool): force the connection, default is True
+    Returns:
+        outputAttr(list): output attribute from the node
+    """
+
+    # get vars
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    output_attr = _create_node_multi_attrs([], [input_attr, max_attr, min_attr],
+                                           [], ['input', 'max', 'min'],
+                                           ['R', 'G', 'B'], 'output',
+                                           type=naming.Type.clamp,
+                                           side=_side, description=_des,
+                                           attrs=_attrs, force=_force)
+
+    # return output attr
+    return output_attr
+
+
+def blend(blender, input_attr1, input_attr2, **kwargs):
+    """
+    connect attrs with blendColor node
+
+    Args:
+        blender(str/float): blendColor's blender
+        input_attr1(str/float/list): blendColor's color1
+        input_attr2(str/float/list): blendColor's color2
+
+    Keyword Args:
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        attrs(str/list): connect the node to given attrs
+        force(bool): force the connection, default is True
+
+    Returns:
+        output_attr(list): output attribute from the node
+    """
+
+    # get vars
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    output_attr = _create_node_multi_attrs([blender], [input_attr1, input_attr2],
+                                           ['blender'], ['color1', 'color2'],
+                                           ['R', 'G', 'B'], 'output',
+                                           type=naming.Type.blendColor,
+                                           side=_side, description=_des,
+                                           attrs=_attrs, force=_force)
+
+    # return output attr
+    return output_attr
+
+
+def remap(input_value, input_range, output_range, **kwargs):
+    """
+    connect attrs with remapValue node
+
+    Args:
+        input_value(str/float): remapValue's input
+        input_range(list): remapValue's input min/max
+        output_range(list): remapValue's output min/max
+
+    Keyword Args:
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        set_attrs(dict): set node's attrs
+        attrs(str/list): connect the node to given attrs
+        force(bool): force the connection, default is True
+
+    Returns:
+        output_attr(str): output attribute from the node
+    """
+
+    # get vars
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _set_attrs = variables.kwargs('set_attrs', {}, kwargs)
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    # create node
+    remap_node = node(type=naming.Type.remapValue, side=_side, description=_des,
+                      index=_index, suffix=_suffix, set_attrs=_set_attrs)
+
+    # input connection
+    if isinstance(input_value, basestring):
+        cmds.connectAttr(input_value, remap_node+'.inputValue')
+
+    for range_value in zip([input_range, output_range], ['input', 'output']):
+        for val in zip(range_value[0], ['min', 'max']):
+            if isinstance(val[0], basestring):
+                cmds.connectAttr(val[0], '{}.{}{}'.format(remap, range_value[1], val[1].title()))
+            else:
+                cmds.setAttr('{}.{}{}'.format(remap, range_value[1], val[1].title()), val[0])
+
+    output_attr = remap_node+'.outValue'
+
+    if _attrs:
+        attributes.connect_attrs(output_attr, _attrs, force=_force)
+
+    return output_attr
+
+
+def add_matrix(input_matrix, **kwargs):
+    """
+    connect attrs with add matrix node
+
+    Args:
+        input_matrix(list): list of input matrix
+                            each can be attribute/list
+
+    Keyword Args:
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        attrs(str/list): connect the node to given attrs
+        force(bool): force the connection, default is True
+    Returns:
+        outputAttr: output attribute from the node
+    """
+
+    # get vars
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    # create node
+    add_matrix_node = node(type=naming.Type.addMatrix, side=_side,
+                           description=_des, index=_index, suffix=_suffix)
+
+    # input attrs
+    for i, matrix in enumerate(input_matrix):
+        if isinstance(matrix, basestring):
+            cmds.connectAttr(matrix, '{}.matrixIn[{}]'.format(add_matrix, i))
+        else:
+            cmds.setAttr('{}.matrixIn[{}]'.format(add_matrix, i), matrix, type='matrix')
+
+    output_attr = add_matrix_node+'.matrixSum'
+
+    if _attrs:
+        attributes.connect_attrs(output_attr, _attrs, force=_force)
+
+    # return output attr
+    return output_attr
+
+
+def mult_matrix(input_matrix, **kwargs):
+    """
+    connect attrs with mult matrix node
+
+    Args:
+        input_matrix(list): list of input matrix
+                           each can be attribute/list
+
+    Keyword Args:
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        attrs(str/list): connect the node to given attrs
+        force(bool): force the connection, default is True
+
+    Returns:
+        outputAttr: output attribute from the node
+    """
+
+    # get vars
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    # create node
+    mult_matrix_node = node(type=naming.Type.multMatrix, side=_side,
+                            description=_des, index=_index, suffix=_suffix)
+
+    # input attrs
+    for i, matrix in enumerate(input_matrix):
+        if isinstance(matrix, basestring):
+            cmds.connectAttr(matrix, '{}.matrixIn[{}]'.format(mult_matrix_node, i))
+        else:
+            cmds.setAttr('{}.matrixIn[{}]'.format(mult_matrix_node, i), matrix, type='matrix')
+
+    output_attr = mult_matrix_node+'.matrixSum'
+
+    if _attrs:
+        attributes.connect_attrs(output_attr, _attrs, force=_force)
+
+    # return output attr
+    return output_attr
+
+
+def inverse_matrix(input_matrix, **kwargs):
+    """
+    connect attrs with inverse matrix node
+
+    Args:
+        input_matrix(str): input matrix attr
+
+    Keyword Args:
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        attrs(str/list): connect the node to given attrs
+        force(bool): force the connection, default is True
+
+    Returns:
+        output_attr: output attribute from the node
+    """
+
+    # get vars
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    # create node
+    inverse_matrix_node = node(type=naming.Type.inverseMatrix, side=_side,
+                               description=_des, index=_index, suffix=_suffix)
+
+    # input attrs
+    cmds.connectAttr(input_matrix, inverse_matrix_node+'.inputMatrix')
+
+    output_attr = inverse_matrix_node+'.outputMatrix'
+
+    if _attrs:
+        attributes.connect_attrs(output_attr, _attrs, force=_force)
+
+    # return output attr
+    return output_attr
+
+
+def compose_matrix(translate, rotate, scale=None, **kwargs):
+    """
+    connect attrs with compose matrix node
+
+    Args:
+        translate(list): input translate
+                         each can be attribute/float
+        rotate(list): input rotate
+                      each can be attribute/float
+
+    Keyword Args:
+        scale(list): input scale
+                     each can be attribute/float
+                     default is [1,1,1]
+        rotateOrder(int): input rotate order, default is 0
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        attrs(str/list): connect the node to given attrs
+        force(bool): force the connection, default is True
+
+    Returns:
+        output_attr: output attribute from the node
+    """
+    # get vars
+    rotate_order = variables.kwargs('rotateOrder', 0, kwargs, short_name='ro')
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _attrs = variables.kwargs('attrs', [], kwargs)
+    _force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    if scale is None:
+        scale = [1, 1, 1]
+
+    # node
+    compose = node(type=naming.Type.composeMatrix, side=_side,
+                   description=_des, index=_index, suffix=_suffix)
+    for input_attr_info in zip([translate, rotate, scale], ['translate', 'rotate', 'scale']):
+        for input_val in zip(input_attr_info[0], ['X', 'Y', 'Z']):
+            if isinstance(input_val[0], basestring):
+                cmds.connectAttr(input_val[0],
+                                 '{}.input{}{}'.format(compose, input_attr_info[1].title(), input_val[1]))
+            else:
+                cmds.setAttr('{}.input{}{}'.format(compose, input_attr_info[1].title(), input_val[1]),
+                             input_val[0])
+
+    if isinstance(rotate_order, basestring):
+        cmds.connectAttr(rotate_order, compose+'.inputRotateOrder')
+    else:
+        cmds.setAttr(compose+'.inputRotateOrder', rotate_order)
+
+    output_attr = compose+'.outputMatrix'
+
+    if _attrs:
+        attributes.connect_attrs(output_attr, _attrs, force=_force)
+
+    # return output_attr
+    return output_attr
+
+
+def twist_extraction(input_matrix, **kwargs):
+    """
+    extract twist value from input matrix
+
+    Args:
+        input_matrix(str)
+
+    Keyword Args:
+        attrs(str/list): connect twist value to attrs
+        force(bool): force the connection, default is True
+
+    Returns:
+        output_attr(str): output attr
+    """
+    attrs = variables.kwargs('attrs', [], kwargs)
+    force = variables.kwargs('force', True, kwargs, short_name='f')
+
+    driver = input_matrix.split('.')[0]
+
+    namer = naming.Namer(driver)
+
+    namer.type = naming.Type.decomposeMatrix
+    namer.description = namer.description+'TwistExtract'
+
+    decompose_matrix = node(name=namer.name)
+    cmds.connectAttr(input_matrix, decompose_matrix+'.inputMatrix')
+
+    namer.type = naming.Type.quatToEuler
+    quat_to_euler = node(name=namer.name)
+
+    cmds.connectAttr(decompose_matrix+'.outputQuatX',
+                     quat_to_euler+'.inputQuatX')
+    cmds.connectAttr(decompose_matrix+'.outputQuatW',
+                     quat_to_euler+'.inputQuatW')
+
+    if attrs:
+        attributes.connect_attrs(quat_to_euler+'.outputRotateX',
+                                 attrs, force=force)
+
+    return quat_to_euler+'.outputRotateX'
+
+
+#  SUB FUNCTION
+def _create_node_multi_attrs(input_attr_single, input_attr_multi, node_attr_single,
+                             node_attr_multi, node_sub_attrs, output_attr, **kwargs):
+    """
+    create node with multi attrs (like RGB/XYZ), connect with attrs
+
+    Args:
+        input_attr_single(list): input single channel attr, use [] to skip
+        input_attr_multi(list): input multi channel attr
+        node_attr_single(list): connect input single channel attr to the node's given attr, use [] to skip
+        node_attr_multi(list): connect input multi channel attr to the node's given attr
+                              it should only be the parent attribute, like 'translate', not 'translateX', 'translateY'
+        node_sub_attrs(list): multi channel attr's sub name,
+                             'translate' would be ['X', 'Y, 'Z']
+                             'outColor' would be ['R', 'G', 'B']
+        output_attr(str): node output attr, like 'outColor' or 'output'
+
+    Keyword Args:
+        type(str): node's type
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        set_attrs(dict): node's parameters
+        attrs(list): connect node's output to the given attrs
+        force(bool): force the connection, default is True
+
+    Returns:
+        output_attrs(list): node's output attrs
+
+    """
+
+    # get vars
+    _type = kwargs.get('type', None)
+    _side = kwargs.get('side', None)
+    _des = kwargs.get('description', None)
+    _index = kwargs.get('index', None)
+    _suffix = kwargs.get('suffix', None)
+    _set_attrs = kwargs.get('set_attrs', {})
+    _attrs = kwargs.get('attrs', [])
+    _force = kwargs.get('force', True)
+
+    # create node
+    _node = node(type=_type, side=_side, description=_des,
+                 index=_index, suffix=_suffix, set_attrs=_set_attrs)
+
+    # connect input
+    for input_attr_info in zip(input_attr_single, node_attr_single):
+        if isinstance(input_attr_info[0], basestring):
+            cmds.connectAttr(input_attr_info[0], '{}.{}'.format(_node, input_attr_info[1]))
+        else:
+            cmds.setAttr('{}.{}'.format(_node, input_attr_info[1]), input_attr_info[0])
+
+    input_attr_list = []
+    input_attr_num = []
+    for input_val in input_attr_multi:
+        if not isinstance(input_val, list) and not isinstance(input_val, tuple):
+            input_val = [input_val]
+        input_attr_list.append(input_val)
+        input_attr_num.append(len(input_val))
+
+    for input_attr_info in zip(input_attr_list, node_attr_multi):
+        for input_val in zip(input_attr_info[0], node_sub_attrs):
+            if isinstance(input_val[0], basestring):
+                cmds.connectAttr(input_val[0],
+                                 '{}.{}{}'.format(_node, input_attr_info[1], input_val[1]))
+            else:
+                cmds.setAttr('{}.{}{}'.format(_node, input_attr_info[1], input_val[1]),
+                             input_val[0])
+
+    output_num = min(input_attr_num)
+
+    output_attr_list = []
+    for attr_info in zip(range(output_num), node_sub_attrs):
+        output_attr_list.append('{}.{}{}'.format(_node, output_attr, attr_info[1]))
+
+    # connect output
+    if _attrs:
+        if isinstance(_attrs, basestring):
+            _attrs = [_attrs]
+        elif isinstance(_attrs[0], basestring):
+            _attrs = [_attrs]
+        for attr in _attrs:
+            for attr_info in zip(output_attr, attr):
+                attributes.connect_attrs(attr_info[0], attr_info[1], force=_force)
+
+    # return output attr
+    return output_attr_list
+
+
 # operation functions
 def _add(left, right, **kwargs):
-	'''
-	conenct left and right attr with addDoubleLinear node
+    """
+    connect left and right attr with addDoubleLinear node
+    """
+    side = kwargs.get('side', None)
+    des = kwargs.get('description', None)
+    index = kwargs.get('index', None)
 
-	'''
-	side = kwargs.get('side', None)
-	des = kwargs.get('description', None)
-	index = kwargs.get('index', None)
+    is_str_left = isinstance(left, basestring)
+    is_str_right = isinstance(right, basestring)
 
-	strBool_l = isinstance(left, basestring)
-	strBool_r = isinstance(right, basestring)
+    if is_str_left or is_str_right:
+        add_node = node(type=naming.Type.addDoubleLinear,
+                        side=side, description=des, index=index,
+                        auto_suffix=True)
 
-	if strBool_l or strBool_r:
-		addNode = node(type=naming.Type.addDoubleLinear,
-					   side=side, description=des, index=index,
-					   autoSuffix=True)
-		for attrInfo in zip([left, right], 
-							[strBool_l, strBool_r],
-							['input1', 'input2']):
-			if attrInfo[1]:
-				cmds.connectAttr(attrInfo[0], '{}.{}'.format(addNode, attrInfo[2]))
-			else:
-				cmds.setAttr('{}.{}'.format(addNode, attrInfo[2]), attrInfo[0])
-		
-		return addNode+'.output'
-	else:
-		return left+right
+        for attr_info in zip([left, right],
+                             [is_str_left, is_str_right],
+                             ['input1', 'input2']):
+            if attr_info[1]:
+                cmds.connectAttr(attr_info[0], '{}.{}'.format(add_node, attr_info[2]))
+            else:
+                cmds.setAttr('{}.{}'.format(add_node, attr_info[2]), attr_info[0])
+
+        return add_node+'.output'
+    else:
+        return left+right
+
 
 def _mult(left, right, **kwargs):
-	'''
-	conenct left and right attr with multDoubleLinear node
+    """
+    connect left and right attr with multDoubleLinear node
+    """
+    side = kwargs.get('side', None)
+    des = kwargs.get('description', None)
+    index = kwargs.get('index', None)
 
-	'''
-	side = kwargs.get('side', None)
-	des = kwargs.get('description', None)
-	index = kwargs.get('index', None)
+    is_str_left = isinstance(left, basestring)
+    is_str_right = isinstance(right, basestring)
 
-	strBool_l = isinstance(left, basestring)
-	strBool_r = isinstance(right, basestring)
+    if is_str_left or is_str_right:
+        mult_node = node(type=naming.Type.multDoubleLinear,
+                         side=side, description=des, index=index,
+                         auto_suffix=True)
 
-	if strBool_l or strBool_r:
-		multNode = node(type=naming.Type.multDoubleLinear,
-					   side=side, description=des, index=index,
-					   autoSuffix=True)
-		for attrInfo in zip([left, right], 
-							[strBool_l, strBool_r],
-							['input1', 'input2']):
-			if attrInfo[1]:
-				cmds.connectAttr(attrInfo[0], '{}.{}'.format(multNode, attrInfo[2]))
-			else:
-				cmds.setAttr('{}.{}'.format(multNode, attrInfo[2]), attrInfo[0])
-		
-		return multNode+'.output'
-	else:
-		return left+right
+        for attr_info in zip([left, right],
+                             [is_str_left, is_str_right],
+                             ['input1', 'input2']):
+            if attr_info[1]:
+                cmds.connectAttr(attr_info[0], '{}.{}'.format(mult_node, attr_info[2]))
+            else:
+                cmds.setAttr('{}.{}'.format(mult_node, attr_info[2]), attr_info[0])
+
+        return mult_node+'.output'
+    else:
+        return left+right
+
 
 def _sub(left, right, **kwargs):
-	'''
-	conenct left and right attr doing left-right equation node
+    """
+    connect left and right attr doing left-right equation node
+    """
+    side = kwargs.get('side', None)
+    des = kwargs.get('description', None)
+    index = kwargs.get('index', None)
 
-	'''
-	side = kwargs.get('side', None)
-	des = kwargs.get('description', None)
-	index = kwargs.get('index', None)
+    is_str_left = isinstance(left, basestring)
+    is_str_right = isinstance(right, basestring)
 
-	strBool_l = isinstance(left, basestring)
-	strBool_r = isinstance(right, basestring)
+    if is_str_left or is_str_right:
+        add_node = node(type=naming.Type.addDoubleLinear,
+                        side=side, description=des, index=index,
+                        auto_suffix=True)
 
-	if strBool_l or strBool_r:
-		addNode = node(type=naming.Type.addDoubleLinear,
-					   side=side, description=des, index=index,
-					   autoSuffix=True)
-		if strBool_r:
-			multNode = node(type=naming.Type.multDoubleLinear,
-					   side=side, des=description, index=index,
-					   autoSuffix=True, setAttrs={'input2':-1})
-			cmds.connectAttr(right, multNode+'.input1')
-			cmds.connectAttr(multNode+'.output', addNode+'.input2')
-		else:
-			cmds.setAttr(addNode+'.input2', right)
-		if strBool_l:
-			cmds.connectAttr(left, addNode+'.input1')
-		else:
-			cmds.setAttr(addNode+'.input1', left)
+        if is_str_right:
+            mult_node = node(type=naming.Type.multDoubleLinear,
+                             side=side, des=des, index=index,
+                             auto_suffix=True, set_attrs={'input2': -1})
+            cmds.connectAttr(right, mult_node+'.input1')
+            cmds.connectAttr(mult_node+'.output', add_node+'.input2')
+        else:
+            cmds.setAttr(add_node+'.input2', right)
 
-		return addNode+'.output'
-	else:
-		return left-right
+        if is_str_left:
+            cmds.connectAttr(left, add_node+'.input1')
+        else:
+            cmds.setAttr(add_node+'.input1', left)
+
+        return add_node+'.output'
+    else:
+        return left-right
+
 
 def _divide(left, right, **kwargs):
-	'''
-	conenct left and right attr with multiplyDivide node
-	set operation to divide
+    """
+    connect left and right attr with multiplyDivide node
+    set operation to divide
+    """
+    side = kwargs.get('side', None)
+    des = kwargs.get('description', None)
+    index = kwargs.get('index', None)
 
-	'''
-	side = kwargs.get('side', None)
-	des = kwargs.get('description', None)
-	index = kwargs.get('index', None)
+    is_str_left = isinstance(left, basestring)
+    is_str_right = isinstance(right, basestring)
 
-	strBool_l = isinstance(left, basestring)
-	strBool_r = isinstance(right, basestring)
+    if is_str_left or is_str_right:
+        divide_node = node(type=naming.Type.multiplyDivide,
+                           side=side, description=des, index=index,
+                           auto_suffix=True, set_attrs={'operation': 2})
 
-	if strBool_l or strBool_r:
-		divNode = node(type=naming.Type.multiplyDivide,
-						side=side, description=des, index=index,
-						autoSuffix=True, setAttrs={'operation':2})
-		for attrInfo in zip([left, right], 
-							[strBool_l, strBool_r],
-							['input1X', 'input2X']):
-			if attrInfo[1]:
-				cmds.connectAttr(attrInfo[0], '{}.{}'.format(divNode, attrInfo[2]))
-			else:
-				cmds.setAttr('{}.{}'.format(divNode, attrInfo[2]), attrInfo[0])
-		
-		return divNode+'.outputX'
-	else:
-		return left/float(right)
+        for attr_info in zip([left, right],
+                             [is_str_left, is_str_right],
+                             ['input1X', 'input2X']):
+            if attr_info[1]:
+                cmds.connectAttr(attr_info[0], '{}.{}'.format(divide_node, attr_info[2]))
+            else:
+                cmds.setAttr('{}.{}'.format(divide_node, attr_info[2]), attr_info[0])
+
+        return divide_node+'.outputX'
+    else:
+        return left/float(right)
+
 
 def _pow(left, right, **kwargs):
-	'''
-	conenct left and right attr with multiplyDivide node
-	set operation to power
+    """
+    connect left and right attr with multiplyDivide node
+    set operation to power
+    """
+    side = kwargs.get('side', None)
+    des = kwargs.get('description', None)
+    index = kwargs.get('index', None)
 
-	'''
-	side = kwargs.get('side', None)
-	des = kwargs.get('description', None)
-	index = kwargs.get('index', None)
+    is_str_left = isinstance(left, basestring)
+    is_str_right = isinstance(right, basestring)
 
-	strBool_l = isinstance(left, basestring)
-	strBool_r = isinstance(right, basestring)
+    if is_str_left or is_str_right:
+        pow_node = node(type=naming.Type.multiplyDivide,
+                        side=side, description=des, index=index,
+                        auto_suffix=True, set_attrs={'operation': 3})
 
-	if strBool_l or strBool_r:
-		powNode = node(type=naming.Type.multiplyDivide,
-						side=side, description=des, index=index,
-						autoSuffix=True, setAttrs={'operation':3})
-		for attrInfo in zip([left, right], 
-							[strBool_l, strBool_r],
-							['input1X', 'input2X']):
-			if attrInfo[1]:
-				cmds.connectAttr(attrInfo[0], '{}.{}'.format(powNode, attrInfo[2]))
-			else:
-				cmds.setAttr('{}.{}'.format(powNode, attrInfo[2]), attrInfo[0])
-		
-		return powNode+'.outputX'
-	else:
-		return left**right
+        for attr_info in zip([left, right],
+                             [is_str_left, is_str_right],
+                             ['input1X', 'input2X']):
+
+            if attr_info[1]:
+                cmds.connectAttr(attr_info[0], '{}.{}'.format(pow_node, attr_info[2]))
+            else:
+                cmds.setAttr('{}.{}'.format(pow_node, attr_info[2]), attr_info[0])
+
+        return pow_node+'.outputX'
+    else:
+        return left**right
+
 
 def _reverse(operand, **kwargs):
-	'''
-	conenct operand attr with reverse node
+    """
+    connect operand attr with reverse node
+    """
+    side = kwargs.get('side', None)
+    des = kwargs.get('description', None)
+    index = kwargs.get('index', None)
 
-	'''
-	side = kwargs.get('side', None)
-	des = kwargs.get('description', None)
-	index = kwargs.get('index', None)
+    rvs_node = node(type=naming.Type.reverse,
+                    side=side, description=des, index=index,
+                    auto_suffix=True)
+    cmds.connectAttr(operand, rvs_node+'.inputX')
 
-	rvsNode = node(type=naming.Type.reverse,
-				   side=side, description=des, index=index,
-				   autoSuffix=True)        
-	cmds.connectAttr(operand, rvsNode+'.inputX')
+    return rvs_node+'.outputX'
 
-	return rvsNode+'.outputX'
 
 def _uSub(operand, **kwargs):
-	'''
-	conenct operand attr with multDoubleLinear node
-	set input2 to -1
+    """
+    connect operand attr with multDoubleLinear node
+    set input2 to -1
+    """
+    side = kwargs.get('side', None)
+    des = kwargs.get('description', None)
+    index = kwargs.get('index', None)
 
-	'''
-	side = kwargs.get('side', None)
-	des = kwargs.get('description', None)
-	index = kwargs.get('index', None)
+    is_str = isinstance(operand, basestring)
+    if is_str:
+        mult_node = node(type=naming.Type.multDoubleLinear,
+                         side=side, description=des, index=index,
+                         auto_suffix=True, set_attrs={'input2': -1})
 
-	strBool = isinstance(operand, basestring)
-	if strBool:
-		multNode = node(type=naming.Type.multDoubleLinear,
-						side=side, description=des, index=index,
-						autoSuffix=True, setAttrs={'input2':-1})
-		
-		cmds.connectAttr(operand, multNode+'.input1')
+        cmds.connectAttr(operand, mult_node+'.input1')
 
-		return multNode+'.output'
-	else:
-		return -operand
+        return mult_node+'.output'
+    else:
+        return -operand
 
-#=================#
-#    SUB CLASS    #
-#=================#
+
+#  SUB CLASS
 
 # operation
 _BINOP_MAP = {
-	ast.Add: _add,
-	ast.Sub: _sub,
-	ast.Mult: _mult,
-	ast.Div: _divide,
-	ast.Pow: _pow}
+                ast.Add: _add,
+                ast.Sub: _sub,
+                ast.Mult: _mult,
+                ast.Div: _divide,
+                ast.Pow: _pow}
 
 _UNARYOP_MAP = {
-	ast.USub : _uSub,
-	ast.Invert : _reverse}
+                ast.USub: _uSub,
+                ast.Invert: _reverse}
+
 
 class NodeEquation(ast.NodeVisitor):
 
-	def visit_BinOp(self, node):
-		left = self.visit(node.left)
-		right = self.visit(node.right)
-		return _BINOP_MAP[type(node.op)](left, right,
-										 side=self.side,
-										 description=self.des,
-										 index=self.index)
+    def visit_BinOp(self, node):
+        left = self.visit(node.left)
+        right = self.visit(node.right)
+        return _BINOP_MAP[type(node.op)](left, right,
+                                         side=self.side,
+                                         description=self.des,
+                                         index=self.index)
 
-	def visit_UnaryOp(self, node):
-		operand = self.visit(node.operand)
-		return _UNARYOP_MAP[type(node.op)](operand,
-										   side=self.side,
-										   description=self.des,
-										   index=self.index)
+    def visit_UnaryOp(self, node):
+        operand = self.visit(node.operand)
+        return _UNARYOP_MAP[type(node.op)](operand,
+                                           side=self.side,
+                                           description=self.des,
+                                           index=self.index)
 
-	def visit_Num(self, node):
-		return node.n
+    def visit_Num(self, node):
+        return node.n
 
-	def visit_Expr(self, node):
-		return self.visit(node.value)
+    def visit_Expr(self, node):
+        return self.visit(node.value)
 
-	def visit_Attribute(self, node):
-		return '{}.{}'.format(node.value.id, node.attr)
+    def visit_Attribute(self, node):
+        return '{}.{}'.format(node.value.id, node.attr)
 
-	@classmethod
-	def equation(cls, expression, **kwargs):
-		cls.side = kwargs.get('side', None)
-		cls.des = kwargs.get('description', None)
-		cls.index = kwargs.get('index', None)
+    @classmethod
+    def equation(cls, expression, **kwargs):
+        cls.side = kwargs.get('side', None)
+        cls.des = kwargs.get('description', None)
+        cls.index = kwargs.get('index', None)
 
-		tree = ast.parse(expression)
-		calc = cls()
-		return calc.visit(tree.body[0])
+        tree = ast.parse(expression)
+        calc = cls()
+        return calc.visit(tree.body[0])

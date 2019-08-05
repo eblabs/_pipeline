@@ -1,63 +1,45 @@
-#=================#
-# IMPORT PACKAGES #
-#=================#
+# IMPORT PACKAGES
 
-## import system packages
-import sys
-import os
-
-## import OpenMayaUI
-## maya doesn't have MQtUtil in api 2.0
+# import OpenMayaUI
+# maya doesn't have MQtUtil in api 2.0
 import maya.OpenMayaUI as OpenMayaUI
 
-## import PySide
+# import PySide
 try:
-  from PySide2.QtCore import * 
-  from PySide2.QtGui import * 
-  from PySide2.QtWidgets import *
-  from PySide2 import __version__
-  from shiboken2 import wrapInstance 
+    from PySide2.QtCore import *
+    from PySide2.QtGui import *
+    from PySide2.QtWidgets import *
+    from PySide2 import __version__
+    from shiboken2 import wrapInstance
 except ImportError:
-  from PySide.QtCore import * 
-  from PySide.QtGui import * 
-  from PySide import __version__
-  from shiboken import wrapInstance 
+    from PySide.QtCore import *
+    from PySide.QtGui import *
+    from PySide import __version__
+    from shiboken import wrapInstance
 
-#=================#
-#   GLOBAL VARS   #
-#=================#
-from . import Logger
 
-#=================#
-#      CLASS      #
-#=================#
+#  CLASS
 class BaseWindow(QWidget):
-	"""class for Base Window in maya"""
-	def __init__(self, **kwargs):
-		super(BaseWindow, self).__init__()
-		
-		# get kwargs
-		self._parent = kwargs.get('parent', None)
-		self._title = kwargs.get('title', 'Window')
-		self._geo = kwargs.get('geometry', [100,100,100,100])
-		
-		# initialize UI
-		self.init_UI()	
+    """class for Base Window in maya"""
+    def __init__(self, **kwargs):
+        super(BaseWindow, self).__init__()
 
-	def init_UI(self):
-		# parent widget
-		self.setParent(self._parent)
-		self.setWindowFlags(Qt.Window)
+        # get kwargs
+        self._parent = kwargs.get('parent', None)
+        self._title = kwargs.get('title', 'Window')
+        self._geo = kwargs.get('geometry', [100, 100, 100, 100])
 
-		# set the object name
-		self.setObjectName(self._title.replace(' ', '') + '_uniqueId')
-		self.setWindowTitle(self._title)
-		self.setGeometry(self._geo[0], self._geo[1], self._geo[2], self._geo[3])
+        # parent widget
+        self.setParent(self._parent)
+        self.setWindowFlags(Qt.Window)
+
+        # set the object name
+        self.setObjectName(self._title.replace(' ', '') + '_uniqueId')
+        self.setWindowTitle(self._title)
+        self.setGeometry(self._geo[0], self._geo[1], self._geo[2], self._geo[3])
 
 
-#=================#
-#    FUNCTION     #
-#=================#
+# FUNCTION
 def get_maya_window():
-	ptr = OpenMayaUI.MQtUtil.mainWindow()
-	return wrapInstance(long(ptr), QMainWindow)
+    ptr = OpenMayaUI.MQtUtil.mainWindow()
+    return wrapInstance(long(ptr), QMainWindow)

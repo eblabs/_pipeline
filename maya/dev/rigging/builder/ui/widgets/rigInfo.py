@@ -1,85 +1,68 @@
-#=================#
-# IMPORT PACKAGES #
-#=================#
-
-# import system packages
-import sys
-import os
+# IMPORT PACKAGES
 
 # import PySide
 try:
-  from PySide2.QtCore import * 
-  from PySide2.QtGui import * 
-  from PySide2.QtWidgets import *
-  from PySide2 import __version__
-  from shiboken2 import wrapInstance 
+    from PySide2.QtCore import *
+    from PySide2.QtGui import *
+    from PySide2.QtWidgets import *
+    from PySide2 import __version__
+    from shiboken2 import wrapInstance
 except ImportError:
-  from PySide.QtCore import * 
-  from PySide.QtGui import * 
-  from PySide import __version__
-  from shiboken import wrapInstance 
+    from PySide.QtCore import *
+    from PySide.QtGui import *
+    from PySide import __version__
+    from shiboken import wrapInstance
 
-#=================#
-#   GLOBAL VARS   #
-#=================#
-from . import Logger
+# CONSTANT
 
 TT_PROJECT = 'Set Project'
 TT_ASSET = 'Set Asset'
 TT_RIG = 'Set Rig Type'
 
-#=================#
-#      CLASS      #
-#=================#
+
+# CLASS
 class RigInfo(QWidget):
-	"""
-	class for rig info widget
-	
-	user use this widget to get rig info for building
-	"""
-	def __init__(self):
-		super(RigInfo, self).__init__()
-		self._enable = True
-		self.init_widget()
+    """
+    class for rig info widget
 
-	def init_widget(self):
-		layout_base = QVBoxLayout()
-		self.setLayout(layout_base)
+    users use this widget to get rig info for building
+    """
+    def __init__(self):
+        super(RigInfo, self).__init__()
+        self._enable = True
 
-		for section, tip in zip(['project', 'asset', 'rig'],
-								[TT_PROJECT, TT_ASSET, TT_RIG]):
-			# QLineEdit
-			lineEdit_section = LineEdit(name=section, toolTip=tip)
-			# add obj to class for further use
-			setattr(self, 'lineEdit_'+section, lineEdit_section)
+        layout_base = QVBoxLayout()
+        self.setLayout(layout_base)
 
-			# add section to base layout
-			layout_base.addWidget(lineEdit_section)
+        for section, tip in zip(['project', 'asset', 'rig'],
+                                [TT_PROJECT, TT_ASSET, TT_RIG]):
+            # QLineEdit
+            line_edit_section = LineEdit(name=section, tool_tip=tip)
+            # add obj to class for further use
+            setattr(self, 'lineEdit_'+section, line_edit_section)
 
-		# so it won't focus on QLineEidt when startup
-		self.setFocus()
+            # add section to base layout
+            layout_base.addWidget(line_edit_section)
 
-	def enable_widget(self):
-		self._enable = not self._enable
-		self.setEnabled(self._enable)
+        # so it won't focus on QLineEdit when startup
+        self.setFocus()
 
-		
+    def enable_widget(self):
+        self._enable = not self._enable
+        self.setEnabled(self._enable)
+
+
 class LineEdit(QLineEdit):
-	"""lineEdit for each rig info section"""
-	def __init__(self, name='', toolTip=''):
-		super(LineEdit, self).__init__()
-		
-		self._name = name
-		self._toolTip = toolTip
+    """lineEdit for each rig info section"""
+    def __init__(self, name='', tool_tip=''):
+        super(LineEdit, self).__init__()
 
-		self.init_widget()
+        self._name = name
+        self._tool_tip = tool_tip
 
-	def init_widget(self):
-		self.setFrame(False)
-		self.setAlignment(Qt.AlignCenter)
-		self.setStyleSheet('border-radius: 4px')
-		self.setPlaceholderText(self._name.title())
-		if self._toolTip:
-			self.setToolTip(self._toolTip)
-
-		
+        self.setFrame(False)
+        self.setAlignment(Qt.AlignCenter)
+        self.setStyleSheet('border-radius: 4px')
+        self.setPlaceholderText(self._name.title())
+        if self._tool_tip:
+            self.setToolTip(self._tool_tip)
