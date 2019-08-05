@@ -42,6 +42,8 @@ class Builder(object):
         _kwargs = variables.kwargs('kwargs', {}, kwargs)
         _section = variables.kwargs('section', 'post_build', kwargs)
 
+        _inheritance = check_inheritance()  # check if the task is referenced or created in the class
+
         if not _display:
             _display = _name
 
@@ -61,7 +63,7 @@ class Builder(object):
             if inspect.isfunction(_task):
                 # function, normally is callback
                 _task_kwargs = task_import.kwargs_ui
-                _task_type = 'function'
+                _task_type = 'callback'
             else:
                 # task class
                 task_obj = _task()
@@ -77,7 +79,8 @@ class Builder(object):
                       'task_kwargs': _task_kwargs,
                       'parent': _parent,
                       'section': _section,
-                      'task_type': _task_type}
+                      'task_type': _task_type,
+                      'inheritance': _inheritance}
 
         self._tasks_info.update({_name: _task_info})
 
@@ -109,7 +112,8 @@ class Builder(object):
                                 'task_kwargs': task_info['task_kwargs'],
                                 'section': task_info['section'],
                                 'children': [],
-                                'task_type': task_info['task_type']}}
+                                'task_type': task_info['task_type'],
+                                'inheritance': task_info['inheritance']}}
         if parent:
             for hie_info in hierarchy:
                 key = hie_info.keys()[0]
@@ -140,7 +144,20 @@ class Builder(object):
         setattr(attr_parent, attr_split[-1], ObjectView(attr_dict))
 
 
-#    SUB CLASS
+# SUB FUNCTION
+def check_inheritance():
+    stack = inspect.stack()
+    if len(stack) == 5:
+        # 4 should be called from current class, but we have to reference one more level in ui
+        inheritance = False
+    else:
+        # calling from parent classes
+        inheritance = True
+    del stack  # remove this to be safe
+    return inheritance
+
+
+# SUB CLASS
 class ObjectView(object):
     def __init__(self, kwargs):
         self.__dict__ = kwargs

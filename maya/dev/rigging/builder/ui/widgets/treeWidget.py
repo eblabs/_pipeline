@@ -46,12 +46,18 @@ ROLE_TASK_RUN = Qt.UserRole + 7
 ROLE_TASK_POST = Qt.UserRole + 8
 ROLE_TASK_SECTION = Qt.UserRole + 9
 ROLE_TASK_TYPE = Qt.UserRole + 10
+ROLE_TASK_INHERITANCE = Qt.UserRole + 11
 
 # icons
-ICONS_STATUS = [icons.grey, icons.green, icons.yellow, icons.red]
-ICONS_TASK = {'task': icons.task,
-              'function': icons.function,
-              'method': icons.method}
+ICONS_STATUS = []  # convert icon image to pixel map so we can make it smaller in ui
+for icon in [icons.grey, icons.green, icons.yellow, icons.red]:
+    ICONS_STATUS.append(QIcon(icon).pixmap(QSize(15, 15)))
+
+ICON_UNCHECK = QIcon(icons.unCheck).pixmap(QSize(15, 15))
+
+ICONS_TASK = {'task': [icons.task_new, icons.task_reference],
+              'callback': [icons.callback_new, icons.callback_reference],
+              'method': [icons.method, icons.method]}
 
 # shortcuts
 SC_RELOAD = 'Ctrl+R'
@@ -107,6 +113,8 @@ class TreeWidget(QTreeWidget):
         self.setDragDropMode(self.InternalMove)
         self.setDragEnabled(True)
         self.setDropIndicatorShown(True)
+
+        self.setIconSize(QSize(25, 25))
 
         self._root = self.invisibleRootItem()
 
@@ -274,10 +282,13 @@ class TreeWidget(QTreeWidget):
             for widget in self._menu_widgets:
                 widget.setEnabled(True)
             # disable duplicate and remove for in class method
-            task_type = self.currentItem().data(0, ROLE_TASK_TYPE)
-            if task_type == 'method':
-                self.action_duplicate.setEnabled(False)
+            current_item = self.currentItem()
+            task_type = current_item.data(0, ROLE_TASK_TYPE)
+            inheritance = current_item.data(0, ROLE_TASK_INHERITANCE)
+            if task_type == 'method' or inheritance:
                 self.action_remove.setEnabled(False)
+                if task_type == 'method':
+                    self.action_duplicate.setEnabled(False)
 
         pos_parent = self.mapToGlobal(QPoint(0, 0))
         self.menu.move(pos_parent + pos)  # move menu to right clicked position
@@ -417,16 +428,18 @@ class TreeWidget(QTreeWidget):
                           'task_kwargs': task_kwargs,
                           'check': check,
                           'section': section,
-                          'task_type': task_type}
+                          'task_type': task_type,
+                          'inheritance': False}
 
                 self._create_item(**kwargs)
 
     def remove_tasks(self):
         for item in self.selectedItems():
-            # check type, can't delete in class method
+            # check type, can't delete in class method or task referenced from parented classes
             task_type = item.data(0, ROLE_TASK_TYPE)
+            task_inheritance = item.data(0, ROLE_TASK_INHERITANCE)
 
-            if task_type != 'method':
+            if task_type != 'method' and not task_inheritance:
                 # re-parent child if any is method, and get remove list
                 remove_items = self._re_parent_children(item=item)
 
@@ -483,7 +496,8 @@ class TreeWidget(QTreeWidget):
 
         for itm in item_children[1:]:
             task_type = itm.data(0, ROLE_TASK_TYPE)
-            if task_type == 'method':
+            task_inheritance = itm.data(0, ROLE_TASK_INHERITANCE)
+            if task_type == 'method' or task_inheritance:
                 item_hold.append(itm)
             else:
                 item_remove.append(itm)
@@ -606,7 +620,7 @@ class TreeWidget(QTreeWidget):
         if inspect.isfunction(task):
             # function, normally is callback
             task_kwargs = task_import.kwargs_ui
-            task_type = 'function'
+            task_type = 'callback'
         else:
             # task class
             task_obj = task()
@@ -627,7 +641,8 @@ class TreeWidget(QTreeWidget):
                   'task': task,
                   'task_kwargs': task_kwargs,
                   'check': Qt.Checked,
-                  'task_type': task_type}
+                  'task_type': task_type,
+                  'inheritance': False}
 
         item = self.selectedItems()
         if item:
@@ -686,6 +701,7 @@ class TaskItem(QTreeWidgetItem):
         check = kwargs.get('check', Qt.Checked)
         section = kwargs.get('section', '')
         task_type = kwargs.get('task_type', 'task')
+        inheritance = kwargs.get('inheritance', False)
 
         self.setText(0, display)
         self.setData(0, ROLE_TASK_NAME, attr_name)
@@ -698,15 +714,16 @@ class TaskItem(QTreeWidgetItem):
         self.setData(0, ROLE_TASK_RUN, 0)
         self.setData(0, ROLE_TASK_POST, 0)
         self.setData(0, ROLE_TASK_SECTION, section)
+        self.setData(0, ROLE_TASK_INHERITANCE, inheritance)
 
         self.setFlags(self.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
         self.setCheckState(0, check)
 
         font = QFont()
-        font.setPointSize(10)
+        font.setPointSize(9)
         self.setFont(0, font)
 
-        self.setIcon(0, QIcon(ICONS_TASK[task_type]))
+        self.setIcon(0, QIcon(ICONS_TASK[task_type][inheritance]))
 
     def setData(self, column, role, value):
         super(TaskItem, self).setData(column, role, value)
@@ -718,26 +735,26 @@ class TaskItem(QTreeWidgetItem):
                 task_return_pre = self.data(0, ROLE_TASK_PRE)
                 task_return_run = self.data(0, ROLE_TASK_RUN)
                 task_return_post = self.data(0, ROLE_TASK_POST)
-                self.setIcon(1, QIcon(ICONS_STATUS[task_return_pre]))
-                self.setIcon(2, QIcon(ICONS_STATUS[task_return_run]))
-                self.setIcon(3, QIcon(ICONS_STATUS[task_return_post]))
+                self.setIcon(1, ICONS_STATUS[task_return_pre])
+                self.setIcon(2, ICONS_STATUS[task_return_run])
+                self.setIcon(3, ICONS_STATUS[task_return_post])
             else:
                 # unchecked, set icon to uncheck
-                self.setIcon(1, QIcon(icons.unCheck))
-                self.setIcon(2, QIcon(icons.unCheck))
-                self.setIcon(3, QIcon(icons.unCheck))
+                self.setIcon(1, ICON_UNCHECK)
+                self.setIcon(2, ICON_UNCHECK)
+                self.setIcon(3, ICON_UNCHECK)
 
         elif role == ROLE_TASK_PRE:
             # set icon for the pre build
-            self.setIcon(1, QIcon(ICONS_STATUS[value]))
+            self.setIcon(1, ICONS_STATUS[value])
 
         elif role == ROLE_TASK_RUN:
             # set icon for the build
-            self.setIcon(2, QIcon(ICONS_STATUS[value]))
+            self.setIcon(2, ICONS_STATUS[value])
 
         elif role == ROLE_TASK_POST:
             # set icon for the post build
-            self.setIcon(3, QIcon(ICONS_STATUS[value]))
+            self.setIcon(3, ICONS_STATUS[value])
 
 
 class ItemRunner(QThread):
