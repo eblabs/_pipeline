@@ -156,8 +156,15 @@ class RigBuilder(uiUtils.BaseWindow):
 		# task info edit attr name
 		self.task_info.SIGNAL_ATTR_NAME.connect(self.tree_widget.set_attr_name)
 
+		# task info edit task type
+		self.task_info.SIGNAL_TASK_TYPE.connect(self.tree_widget.task_switch_window_open)
+
 		# reset attr name once updated
 		self.tree_widget.SIGNAL_ATTR_NAME.connect(self.task_info.set_label)
+
+		# reset task type and property once updated
+		self.tree_widget.SIGNAL_TASK_TYPE.connect(self.task_info.set_label)
+		self.tree_widget.SIGNAL_TASK_TYPE.connect(self.property_editor.init_property)
 
 		# property editor
 		self.tree_widget.itemPressed.connect(self.property_editor.init_property)

@@ -47,39 +47,33 @@ class Builder(object):
         if not _display:
             _display = _name
 
-        _task_type = None  # use to set task icon
-
         # get task
         if inspect.ismethod(_task):
             # in class method, get method name for ui display
-            _task_name = _task.__name__
+            _task_path = _task.__name__
             _task_kwargs = _kwargs
-            _task_type = 'method'
         else:
             # imported task, get task object
-            _task_name = _task
+            _task_path = _task
             task_import, task_function = modules.import_module(_task)
             _task = getattr(task_import, task_function)
             if inspect.isfunction(_task):
                 # function, normally is callback
                 _task_kwargs = task_import.kwargs_ui
-                _task_type = 'callback'
             else:
                 # task class
                 task_obj = _task()
                 _task_kwargs = task_obj.kwargs_ui
-                _task_type = task_obj.task_type
             for key, item in _kwargs.iteritems():
                 _task_kwargs.update({key: item})
 
         # add task info to class as attribute
         _task_info = {'task': _task,
-                      'task_name': _task_name,
+                      'task_path': _task_path,
                       'display': _display,
                       'task_kwargs': _task_kwargs,
                       'parent': _parent,
                       'section': _section,
-                      'task_type': _task_type,
                       'inheritance': _inheritance}
 
         self._tasks_info.update({_name: _task_info})
@@ -107,12 +101,11 @@ class Builder(object):
         task_info = self._get_task_info(task)
         parent = task_info['parent']
         task_info_add = {task: {'task': task_info['task'],
-                                'task_name': task_info['task_name'],
+                                'task_path': task_info['task_path'],
                                 'display': task_info['display'],
                                 'task_kwargs': task_info['task_kwargs'],
                                 'section': task_info['section'],
                                 'children': [],
-                                'task_type': task_info['task_type'],
                                 'inheritance': task_info['inheritance']}}
         if parent:
             for hie_info in hierarchy:

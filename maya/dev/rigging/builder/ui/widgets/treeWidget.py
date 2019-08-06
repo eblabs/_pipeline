@@ -37,7 +37,7 @@ import taskCreator
 logger = logUtils.get_logger(name='rig_build', level='info')
 
 ROLE_TASK_NAME = Qt.UserRole + 1
-ROLE_TASK_FUNC_NAME = Qt.UserRole + 2
+ROLE_TASK_PATH = Qt.UserRole + 2
 ROLE_TASK_FUNC = Qt.UserRole + 3
 ROLE_TASK_KWARGS = Qt.UserRole + 4
 ROLE_TASK_KWARGS_KEY = Qt.UserRole + 5
@@ -76,6 +76,7 @@ class TreeWidget(QTreeWidget):
     SIGNAL_CLEAR = Signal()
     SIGNAL_EXECUTE = Signal()
     SIGNAL_ATTR_NAME = Signal(QTreeWidgetItem)
+    SIGNAL_TASK_TYPE = Signal(QTreeWidgetItem)
 
     def __init__(self,  **kwargs):
         super(TreeWidget, self).__init__()
@@ -181,8 +182,12 @@ class TreeWidget(QTreeWidget):
 
         # task creation window
         self.task_create_window = TaskCreate()
-        self.action_create.triggered.connect(self._task_create_window_open)
+        self.action_create.triggered.connect(self.task_create_window_open)
         self.task_create_window.SIGNAL_TASK_CREATION.connect(self._create_task)
+
+        # task switch window
+        self.task_switch_window = TaskSwitch()
+        self.task_switch_window.SIGNAL_TASK_SWITCH.connect(self.set_task_type)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_menu)
@@ -389,12 +394,47 @@ class TreeWidget(QTreeWidget):
                 # set attr name
                 item = self.currentItem()
                 current_name = item.data(0, ROLE_TASK_NAME)
-                item.setData(0, ROLE_TASK_NAME, name)
+                set_item_data(attr_name=current_name)
                 # remove previous name, add new name
                 self._attr_items.remove(current_name)
                 self._attr_items.append(name)
                 # shoot signal to reset task info
                 self.SIGNAL_ATTR_NAME.emit(item)
+
+    def set_task_type(self, task_path):
+        item = self.selectedItems()[0]
+
+        task_path_orig = item.data(0, ROLE_TASK_PATH)
+        # compare if changed
+        if task_path != task_path_orig:
+            # get obj
+            # imported task, get task object
+            task_import, task_function = modules.import_module(task_path)
+            task = getattr(task_import, task_function)
+
+            # kwargs
+            if inspect.isfunction(task):
+                # function, normally is callback
+                task_kwargs = task_import.kwargs_ui.copy()  # get a copy of kwargs
+            else:
+                task_kwargs = task().kwargs_ui.copy()  # get a copy of kwargs
+
+            kwargs_orig = item.data(0, ROLE_TASK_KWARGS)  # get original kwargs to see if any can be swapped
+            for key in kwargs_orig:
+                if key in task_kwargs:
+                    dv_orig = kwargs_orig[key]['default']
+                    dv = task_kwargs[key]['default']
+                    if type(dv_orig) == type(dv):
+                        # same type of input, swap
+                        task_kwargs[key]['default'] = dv_orig
+                        # check if value, if value, swap
+                        if 'value' in kwargs_orig[key]:
+                            task_kwargs[key].update({'value': kwargs_orig[key]['value']})
+
+            set_item_data(item, task_path=task_path, task=task, task_kwargs=task_kwargs)
+
+            # shoot signal to reset task info
+            self.SIGNAL_TASK_TYPE.emit(item)
 
     def reset_display_color(self):
         items = self.selectedItems()
@@ -410,7 +450,7 @@ class TreeWidget(QTreeWidget):
             # get item data
             display = item.text(0)
             attr_name = item.data(0, ROLE_TASK_NAME)
-            task_name = item.data(0, ROLE_TASK_FUNC_NAME)
+            task_path = item.data(0, ROLE_TASK_PATH)
             task = item.data(0, ROLE_TASK_FUNC)
             task_kwargs = item.data(0, ROLE_TASK_KWARGS)
             check = item.checkState(0)
@@ -423,12 +463,11 @@ class TreeWidget(QTreeWidget):
 
                 kwargs = {'display': display,
                           'attr_name': attr_name,
-                          'task_name': task_name,
+                          'task_path': task_path,
                           'task': task,
                           'task_kwargs': task_kwargs,
                           'check': check,
                           'section': section,
-                          'task_type': task_type,
                           'inheritance': False}
 
                 self._create_item(**kwargs)
@@ -620,12 +659,10 @@ class TreeWidget(QTreeWidget):
         if inspect.isfunction(task):
             # function, normally is callback
             task_kwargs = task_import.kwargs_ui
-            task_type = 'callback'
         else:
             # task class
             task_obj = task()
             task_kwargs = task_obj.kwargs_ui
-            task_type = task_obj.task_type
 
         attr_name = self._get_unique_name('', attr_name, self._attr_items)
         self._attr_items.append(attr_name)
@@ -641,7 +678,6 @@ class TreeWidget(QTreeWidget):
                   'task': task,
                   'task_kwargs': task_kwargs,
                   'check': Qt.Checked,
-                  'task_type': task_type,
                   'inheritance': False}
 
         item = self.selectedItems()
@@ -669,12 +705,35 @@ class TreeWidget(QTreeWidget):
     def _item_data_changed_reset(self, *args):
         self._change = False
 
-    def _task_create_window_open(self):
+    def task_create_window_open(self):
         # try close window in case it's opened
         self.task_create_window.close()
         self.task_create_window.refresh_widgets()
         self.task_create_window.widget_task_creation.rebuild_list_model(self.task_folders)
         self.task_create_window.show()
+
+    def task_switch_window_open(self):
+        # try close window in case it's opened
+        self.task_switch_window.close()
+
+        # check if task is referenced or in class method
+        item = self.selectedItems()[0]
+        # check if item is referenced
+        inheritance = item.data(0, ROLE_TASK_INHERITANCE)
+        task_type_orig = item.data(0, ROLE_TASK_TYPE)
+        title = "Change task's type"
+        if task_type_orig == 'method':
+            text = "task is a in-class method, can't switch type"
+            QMessageBox.warning(self, title, text)
+            return
+        elif inheritance:
+            text = "task is inherited from parent class, can't switch type"
+            QMessageBox.warning(self, title, text)
+            return
+        else:
+            self.task_switch_window.refresh_widgets()
+            self.task_switch_window.widget_task_creation.rebuild_list_model(self.task_folders)
+            self.task_switch_window.show()
 
     @staticmethod
     def _get_unique_name(name_orig, name_new, name_list):
@@ -695,26 +754,19 @@ class TaskItem(QTreeWidgetItem):
 
         display = kwargs.get('display', 'task1')
         attr_name = kwargs.get('attr_name', 'task1')
-        task_name = kwargs.get('task_name', '')
+        task_path = kwargs.get('task_path', '')
         task = kwargs.get('task', None)
         task_kwargs = kwargs.get('task_kwargs', {})
         check = kwargs.get('check', Qt.Checked)
         section = kwargs.get('section', '')
-        task_type = kwargs.get('task_type', 'task')
         inheritance = kwargs.get('inheritance', False)
 
-        self.setText(0, display)
-        self.setData(0, ROLE_TASK_NAME, attr_name)
-        self.setData(0, ROLE_TASK_FUNC_NAME, task_name)
-        self.setData(0, ROLE_TASK_FUNC, task)
-        self.setData(0, ROLE_TASK_KWARGS, task_kwargs)
-        self.setData(0, ROLE_TASK_KWARGS_KEY, task_kwargs.keys())
-        self.setData(0, ROLE_TASK_TYPE, task_type)
+        set_item_data(self, display=display, attr_name=attr_name, task_path=task_path, task=task,
+                      task_kwargs=task_kwargs, section=section, inheritance=inheritance)
+
         self.setData(0, ROLE_TASK_PRE, 0)
         self.setData(0, ROLE_TASK_RUN, 0)
         self.setData(0, ROLE_TASK_POST, 0)
-        self.setData(0, ROLE_TASK_SECTION, section)
-        self.setData(0, ROLE_TASK_INHERITANCE, inheritance)
 
         self.setFlags(self.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
         self.setCheckState(0, check)
@@ -722,8 +774,6 @@ class TaskItem(QTreeWidgetItem):
         font = QFont()
         font.setPointSize(9)
         self.setFont(0, font)
-
-        self.setIcon(0, QIcon(ICONS_TASK[task_type][inheritance]))
 
     def setData(self, column, role, value):
         super(TaskItem, self).setData(column, role, value)
@@ -956,43 +1006,14 @@ class SubMenu(QMenu):
         self.SIGNAL_SECTION.emit(['post_build'])
 
 
-class TaskCreate(QDialog):
+class TaskCreate(taskCreator.TaskCreate):
     """widget to create task"""
     SIGNAL_TASK_CREATION = Signal(list)
 
     def __init__(self, parent=None):
-        super(TaskCreate, self).__init__(parent)
+        super(TaskCreate, self).__init__(parent, title='Create Task', button='Create', set_name=True)
 
-        self.setWindowTitle('Create Task')
-        self.setGeometry(100, 100, 250, 300)
-
-        layout_base = QVBoxLayout()
-        self.setLayout(layout_base)
-
-        # task name
-        self.task_name = QLineEdit()
-        self.task_name.setPlaceholderText('Task Name...')
-
-        layout_base.addWidget(self.task_name)
-
-        # task display name
-        self.task_display = QLineEdit()
-        self.task_display.setPlaceholderText('Display Name (Optional)...')
-
-        layout_base.addWidget(self.task_display)
-
-        # get task creator widget
-        self.widget_task_creation = taskCreator.TaskCreator()
-        layout_base.addWidget(self.widget_task_creation)
-
-        # create button
-        self.button_create = QPushButton('Create')
-        self.button_create.setFixedWidth(80)
-        layout_base.addWidget(self.button_create)
-
-        layout_base.setAlignment(self.button_create, Qt.AlignRight)
-
-        self.button_create.clicked.connect(self._get_select_task)
+        self.button.clicked.connect(self._get_select_task)
 
     def refresh_widgets(self):
         self.task_name.setText('')
@@ -1009,6 +1030,88 @@ class TaskCreate(QDialog):
             self.SIGNAL_TASK_CREATION.emit([name, display, task])
 
         self.close()
+
+
+class TaskSwitch(taskCreator.TaskCreate):
+    """widget to switch task type"""
+    SIGNAL_TASK_SWITCH = Signal(str)
+
+    def __init__(self, parent=None):
+        super(TaskSwitch, self).__init__(parent, title='Change Task Type', button='Set', set_name=False)
+
+        self.button.clicked.connect(self._get_select_task)
+
+    def refresh_widgets(self):
+        self.widget_task_creation.filter.setText('')
+        self.setFocus()
+
+    def _get_select_task(self):
+        task = self.widget_task_creation.listView.currentIndex().data()
+
+        if task:
+            self.SIGNAL_TASK_SWITCH.emit(task)
+
+        self.close()
+
+
+# SUB FUNCTION
+def set_item_data(item, **kwargs):
+    """
+    set TaskItem's data
+
+    Args:
+        item(TaskItem): task item object
+
+    Keyword Args:
+        display(str): display name
+        attr_name(str): attr name will be used in the builder
+        task_path(str): task's full path
+        task(object): task
+        task_kwargs(dict): task ui kwargs
+        section(str): register to specific section, normally for in-class method
+        inheritance(bool): if the task is inherited from parent class
+    """
+    display = kwargs.get('display', None)
+    attr_name = kwargs.get('attr_name', None)
+    task_path = kwargs.get('task_path', None)
+    task = kwargs.get('task', None)
+    task_kwargs = kwargs.get('task_kwargs', None)
+    section = kwargs.get('section', None)
+    inheritance = kwargs.get('inheritance', None)
+
+    if display is not None:
+        item.setText(0, display)
+
+    if attr_name is not None:
+        item.setData(0, ROLE_TASK_NAME, attr_name)
+
+    if task_path is not None:
+        item.setData(0, ROLE_TASK_PATH, task_path)
+
+    if section is not None:
+        item.setData(0, ROLE_TASK_SECTION, section)
+
+    if inheritance is not None:
+        item.setData(0, ROLE_TASK_INHERITANCE, inheritance)
+
+    if task is not None:
+        item.setData(0, ROLE_TASK_FUNC, task)
+        if inspect.ismethod(task):
+            item.setData(0, ROLE_TASK_TYPE, 'method')
+        elif inspect.isfunction(task):
+            item.setData(0, ROLE_TASK_TYPE, 'callback')
+        else:
+            item.setData(0, ROLE_TASK_TYPE, task_path)  # normally user will given task_path and task together
+        task_type = item.data(0, ROLE_TASK_TYPE)
+        if task_type not in ICONS_TASK:
+            task_type = 'task'  # in case no specific icon
+        if inheritance is None:
+            inheritance = 0
+        item.setIcon(0, QIcon(ICONS_TASK[task_type][inheritance]))
+
+    if task_kwargs is not None:
+        item.setData(0, ROLE_TASK_KWARGS, task_kwargs)
+        item.setData(0, ROLE_TASK_KWARGS_KEY, task_kwargs.keys())
 
 
 # Fix

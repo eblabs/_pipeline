@@ -113,6 +113,44 @@ class TaskListView(QListView):
         self.setCurrentIndex(QModelIndex())
 
 
+class TaskCreate(QDialog):
+    """widget to create task"""
+
+    def __init__(self, parent=None, title='', button='', set_name=True):
+        super(TaskCreate, self).__init__(parent)
+
+        self.setWindowTitle(title)
+        self.setGeometry(100, 100, 250, 300)
+
+        layout_base = QVBoxLayout()
+        self.setLayout(layout_base)
+
+        if set_name:
+            # add task name and display name widget if set name, (different between task creation / task switch)
+            # task name
+            self.task_name = QLineEdit()
+            self.task_name.setPlaceholderText('Task Name...')
+
+            layout_base.addWidget(self.task_name)
+
+            # task display name
+            self.task_display = QLineEdit()
+            self.task_display.setPlaceholderText('Display Name (Optional)...')
+
+            layout_base.addWidget(self.task_display)
+
+        # get task creator widget
+        self.widget_task_creation = TaskCreator()
+        layout_base.addWidget(self.widget_task_creation)
+
+        # create button
+        self.button = QPushButton(button)
+        self.button.setFixedWidth(80)
+        layout_base.addWidget(self.button)
+
+        layout_base.setAlignment(self.button, Qt.AlignRight)
+
+
 # Function
 def get_tasks_from_folders(task_folders):
     """

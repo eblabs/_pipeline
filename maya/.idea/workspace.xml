@@ -4,11 +4,9 @@
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/function.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/method.png" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/method.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_template.psd" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_template.psd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskCreator.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskCreator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskInfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskInfo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />

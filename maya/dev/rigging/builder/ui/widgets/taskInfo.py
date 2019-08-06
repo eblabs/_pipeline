@@ -18,7 +18,7 @@ TT_TASK_NAME = 'Task Name used in the build script as attribute'
 TT_TASK_TYPE = 'Task function path'
 
 ROLE_TASK_NAME = Qt.UserRole + 1
-ROLE_TASK_FUNC_NAME = Qt.UserRole + 2
+ROLE_TASK_PATH = Qt.UserRole + 2
 
 
 # CLASS
@@ -31,6 +31,7 @@ class TaskInfo(QWidget):
     task type
     """
     SIGNAL_ATTR_NAME = Signal(str)
+    SIGNAL_TASK_TYPE = Signal(str)
 
     def __init__(self):
         super(TaskInfo, self).__init__()
@@ -50,12 +51,13 @@ class TaskInfo(QWidget):
             layout_base.addWidget(label_section)
 
         self.label_name.action_edit.triggered.connect(self.edit_name_widget)
+        self.label_type.action_edit.triggered.connect(self.edit_task_widget)
 
     def set_label(self, item):
         name = item.data(0, ROLE_TASK_NAME)
-        func_name = item.data(0, ROLE_TASK_FUNC_NAME)
+        path = item.data(0, ROLE_TASK_PATH)
         self.label_name.setText(name)
-        self.label_type.setText(func_name)
+        self.label_type.setText(path)
 
     def refresh(self):
         self.setEnabled(True)
@@ -67,6 +69,9 @@ class TaskInfo(QWidget):
         self.setEnabled(self._enable)
 
     def edit_name_widget(self):
+        """
+        change task's attr name in the builder
+        """
         title = "Change task's attribute name in the builder"
         text = "This will break all functions call this attribute in the builder, \nare you sure you want to change it?"
         reply = QMessageBox.warning(self, title, text, QMessageBox.Ok | QMessageBox.Cancel,
@@ -79,11 +84,25 @@ class TaskInfo(QWidget):
             if text and ok and text != current_name:
                 self.SIGNAL_ATTR_NAME.emit(text)
 
+    def edit_task_widget(self):
+        """
+        change task's type
+        """
+        title = "Change task's type"
+        text = "This will change the task's behavior, some kwargs may not switch as expected, " \
+               "\nare you sure you want to change it?"
+        reply = QMessageBox.warning(self, title, text, QMessageBox.Ok | QMessageBox.Cancel,
+                                    defaultButton=QMessageBox.Cancel)
+
+        if reply == QMessageBox.Ok:
+            # shoot the signal to switch the task type
+            current_type = self.label_type.text()
+            self.SIGNAL_TASK_TYPE.emit(current_type)
+
 
 class TaskLabel(QLabel):
     """
     label to show task info for each section
-
     """
     def __init__(self, tool_tip=''):
         super(TaskLabel, self).__init__()
