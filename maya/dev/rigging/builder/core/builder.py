@@ -1,5 +1,8 @@
 # IMPORT PACKAGES
 
+# import os
+import os
+
 # import inspect
 import inspect
 
@@ -15,6 +18,7 @@ class Builder(object):
     """
     def __init__(self):
         super(Builder, self).__init__()
+        self.task_data_paths = []
         self._tasks = []
         self._tasks_info = {}
 
@@ -90,6 +94,20 @@ class Builder(object):
         sub classes register all the tasks to the builder here, using self.register_task()
         """
         pass
+
+    def get_task_data_paths(self):
+        """
+        get task data paths from both current class and parent classes
+        """
+        for cls in inspect.getmro(self.__class__)[:-1]:
+            path_cls = inspect.getfile(cls)
+            path_dirname = os.path.dirname(path_cls)
+            path_task_data = os.path.join(path_dirname, 'task_data.taskinfo')
+            if os.path.exists(path_task_data):
+                self.task_data_paths.append(path_task_data)
+            else:
+                self.task_data_paths.append('')
+        self.task_data_paths.reverse()
 
     def tree_hierarchy(self):
         hierarchy = []
