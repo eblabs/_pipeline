@@ -125,6 +125,11 @@ class TaskCreate(QDialog):
         layout_base = QVBoxLayout()
         self.setLayout(layout_base)
 
+        self.menu_bar = QMenuBar()
+        self.menu_bar.setNativeMenuBar(False)
+        self.add_folder = self.menu_bar.addAction('Edit Folders')
+        layout_base.setMenuBar(self.menu_bar)
+
         if set_name:
             # add task name and display name widget if set name, (different between task creation / task switch)
             # task name
@@ -149,6 +154,10 @@ class TaskCreate(QDialog):
         layout_base.addWidget(self.button)
 
         layout_base.setAlignment(self.button, Qt.AlignRight)
+
+    def edit_folders_open(self):
+        self.edit_folders_window.close()
+        self.edit_folders_window.show()
 
 
 # Function

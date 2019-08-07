@@ -263,9 +263,9 @@ class Button(QPushButton):
         show right click menu at clicked position
         """
         pos_parent = self.mapToGlobal(QPoint(0, 0))
-        self.subMenu.move(pos_parent + pos)
+        self.sub_menu.move(pos_parent + pos)
 
-        self.subMenu.show()
+        self.sub_menu.show()
 
 
 class SubMenu(QMenu):

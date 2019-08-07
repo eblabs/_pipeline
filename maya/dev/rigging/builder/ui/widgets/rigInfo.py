@@ -66,3 +66,16 @@ class LineEdit(QLineEdit):
         self.setPlaceholderText(self._name.title())
         if self._tool_tip:
             self.setToolTip(self._tool_tip)
+
+        self.menu = QMenu()
+        self.create_action = self.menu.addAction('Create')
+        self.remove_action = self.menu.addAction('Remove')
+        self.rename_action = self.menu.addAction('Rename')
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_menu)
+
+    def _show_menu(self, pos):
+        pos = self.mapToGlobal(pos)
+        self.menu.move(pos)
+        self.menu.show()
+
