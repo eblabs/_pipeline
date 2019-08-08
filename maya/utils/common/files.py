@@ -143,24 +143,30 @@ def get_files_from_path(path, extension=None, exceptions=None, full_paths=True):
     return file_paths
 
 
-def get_folders_from_path(path):
+def get_folders_from_path(path, full_path=True):
     """
     get folders from the given path
 
     Args:
         path(str): given path
 
+    Keyword Args:
+        full_path(bool): if return the full path
+
     Returns:
-        folder_paths(list): all folders paths
+        folder(list): all folders/all folders paths
     """
 
-    files = os.listdir(path)
-    folder_paths = []
+    folders = os.listdir(path)
 
-    if files:
-        for f in files:
+    if full_path:
+        folder_paths = []
+
+        for f in folders:
             path_file = os.path.join(path, f)
             if os.path.isdir(path_file):
                 folder_paths.append(path_file)
 
-    return folder_paths
+        return folder_paths
+    else:
+        return folders
