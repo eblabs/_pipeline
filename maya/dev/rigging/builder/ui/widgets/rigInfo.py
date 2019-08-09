@@ -43,10 +43,20 @@ class RigInfo(QWidget):
             # QLineEdit
             line_edit_section = LineEdit(name=section, tool_tip=tip, menu=menu)
             # add obj to class for further use
-            setattr(self, 'lineEdit_'+section, line_edit_section)
+            setattr(self, 'line_edit_'+section, line_edit_section)
 
             # add section to base layout
             layout_base.addWidget(line_edit_section)
+
+        # get all projects
+        projects_list = assets.get_all_projects()
+        self.line_edit_project.completer.setModel(QStringListModel(projects_list))
+
+        # connect signal
+        self.line_edit_project.textChanged.connect(self.assets_completer)
+        self.line_edit_project.textChanged.connect(self.check_project)
+        self.line_edit_asset.textChanged.connect(self.rigs_completer)
+        self.line_edit_rig.customContextMenuRequested.connect(self.show_menu)
 
         # so it won't focus on QLineEdit when startup
         self.setFocus()
@@ -54,6 +64,45 @@ class RigInfo(QWidget):
     def enable_widget(self):
         self._enable = not self._enable
         self.setEnabled(self._enable)
+
+    def assets_completer(self):
+        # remove any input
+        self.line_edit_asset.clear()
+        self.line_edit_rig.clear()
+        # get project
+        project = self.line_edit_project.text()
+        if project:
+            assets_list = assets.get_all_assets_from_project(project)
+            # set completer
+            self.line_edit_asset.completer.setModel(QStringListModel(assets_list))
+
+    def rigs_completer(self):
+        # remove any input
+        self.line_edit_rig.clear()
+        # get project and asset
+        asset = self.line_edit_asset.text()
+        if asset:
+            # get project
+            project = self.line_edit_project.text()
+            rigs_list = assets.get_all_rig_from_asset(asset, project)
+            # set completer
+            self.line_edit_rig.completer.setModel(QStringListModel(rigs_list))
+
+    def check_project(self):
+        project = self.line_edit_project.text()
+        check = assets.get_project_path(project, warning=False)
+        palette = QPalette()
+        if check:
+            palette.setColor(QPalette.Text, Qt.white)
+            self.line_edit_project.setPalette(palette)
+        else:
+            palette.setColor(QPalette.Text, Qt.red)
+            self.line_edit_project.setPalette(palette)
+
+    def show_menu(self, pos):
+        pos = self.line_edit_rig.mapToGlobal(pos)
+        self.line_edit_rig.menu.move(pos)  # move menu to the clicked position
+        self.line_edit_rig.menu.show()
 
 
 class LineEdit(QLineEdit):
@@ -71,12 +120,11 @@ class LineEdit(QLineEdit):
         if self._tool_tip:
             self.setToolTip(self._tool_tip)
 
-        completer = QCompleter()
-        self.setCompleter(completer)
+        self.completer = QCompleter()
+        self.setCompleter(self.completer)
 
         if menu:
             self.menu = QMenu()
             self.create_action = self.menu.addAction('Create')
             self.remove_action = self.menu.addAction('Remove')
             self.setContextMenuPolicy(Qt.CustomContextMenu)
-            self.customContextMenuRequested.connect(self._show_menu)

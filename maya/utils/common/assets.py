@@ -278,10 +278,10 @@ def get_all_assets_from_project(project, full_path=False):
         full_path(str): if return asset folder's full path
 
     Returns:
-        assets(list): assets names, return None if project does not exist
+        assets(list): assets names, return [] if project does not exist
     """
     # check if project exists
-    project_path = get_project_path(project)
+    project_path = get_project_path(project, warning=False)
     if project_path:
         project_path = os.path.join(project_path, 'assets')
         # get all assets
@@ -289,7 +289,7 @@ def get_all_assets_from_project(project, full_path=False):
         return assets
     else:
         # project does not exist
-        return None
+        return []
 
 
 def get_asset_path_from_project(asset, project, warning=True):
@@ -419,9 +419,9 @@ def get_all_rig_from_asset(asset, project, full_path=False):
         full_path(str): if return asset folder's full path
 
     Returns:
-        rig_types(list): rig types names, return None if asset/project does not exist
+        rig_types(list): rig types names, return [] if asset/project does not exist
     """
-    asset_path = get_asset_path_from_project(asset, project)
+    asset_path = get_asset_path_from_project(asset, project, warning=False)
     if asset_path:
         asset_path = os.path.join(asset_path, 'rigs')
         # asset exist
@@ -429,7 +429,7 @@ def get_all_rig_from_asset(asset, project, full_path=False):
         return rig_types
     else:
         # asset/project not exist
-        return None
+        return []
 
 
 def get_rig_path_from_asset(rig_type, asset, project, warning=True):
