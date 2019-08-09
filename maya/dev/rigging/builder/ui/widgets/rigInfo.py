@@ -13,6 +13,9 @@ except ImportError:
     from PySide import __version__
     from shiboken import wrapInstance
 
+# import utils
+import utils.common.assets as assets
+
 # CONSTANT
 
 TT_PROJECT = 'Set Project'
@@ -34,10 +37,11 @@ class RigInfo(QWidget):
         layout_base = QVBoxLayout()
         self.setLayout(layout_base)
 
-        for section, tip in zip(['project', 'asset', 'rig'],
-                                [TT_PROJECT, TT_ASSET, TT_RIG]):
+        for section, tip, menu in zip(['project', 'asset', 'rig'],
+                                [TT_PROJECT, TT_ASSET, TT_RIG],
+                                [False, False, True]):
             # QLineEdit
-            line_edit_section = LineEdit(name=section, tool_tip=tip)
+            line_edit_section = LineEdit(name=section, tool_tip=tip, menu=menu)
             # add obj to class for further use
             setattr(self, 'lineEdit_'+section, line_edit_section)
 
@@ -54,7 +58,7 @@ class RigInfo(QWidget):
 
 class LineEdit(QLineEdit):
     """lineEdit for each rig info section"""
-    def __init__(self, name='', tool_tip=''):
+    def __init__(self, name='', tool_tip='', menu=False):
         super(LineEdit, self).__init__()
 
         self._name = name
@@ -67,15 +71,12 @@ class LineEdit(QLineEdit):
         if self._tool_tip:
             self.setToolTip(self._tool_tip)
 
-        self.menu = QMenu()
-        self.create_action = self.menu.addAction('Create')
-        self.remove_action = self.menu.addAction('Remove')
-        self.rename_action = self.menu.addAction('Rename')
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._show_menu)
+        completer = QCompleter()
+        self.setCompleter(completer)
 
-    def _show_menu(self, pos):
-        pos = self.mapToGlobal(pos)
-        self.menu.move(pos)
-        self.menu.show()
-
+        if menu:
+            self.menu = QMenu()
+            self.create_action = self.menu.addAction('Create')
+            self.remove_action = self.menu.addAction('Remove')
+            self.setContextMenuPolicy(Qt.CustomContextMenu)
+            self.customContextMenuRequested.connect(self._show_menu)
