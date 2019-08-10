@@ -55,6 +55,7 @@ class RigInfo(QWidget):
         self.menu = QMenu()
         self.create_action = self.menu.addAction('Create')
         self.remove_action = self.menu.addAction('Remove')
+        self.build_action = self.menu.addAction('Build Script')
         self.line_edit_rig.setContextMenuPolicy(Qt.CustomContextMenu)
 
         # get all projects
@@ -158,6 +159,7 @@ class RigInfo(QWidget):
             # disable create, enable remove
             self.create_action.setEnabled(False)
             self.remove_action.setEnabled(True)
+            self.build_action.setEnabled(True)
         else:
             # check if text in rig
             rig = self.line_edit_rig.text()
@@ -167,10 +169,17 @@ class RigInfo(QWidget):
             else:
                 self.create_action.setEnabled(False)
             self.remove_action.setEnabled(False)
+            self.build_action.setEnabled(False)
 
         pos = self.line_edit_rig.mapToGlobal(pos)
         self.menu.move(pos)  # move menu to the clicked position
         self.menu.show()
+
+    def get_build_script(self):
+        """
+        get build script from given rig
+        """
+        pass
 
     @staticmethod
     def set_text_color(line_edit, check):
