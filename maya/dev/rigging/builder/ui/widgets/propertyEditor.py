@@ -93,6 +93,9 @@ class PropertyEditor(QTreeView):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_menu)
 
+    def keyPressEvent(self, event):
+        pass
+
     def init_property(self, item):
         """
         initialize property

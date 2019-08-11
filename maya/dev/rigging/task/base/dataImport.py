@@ -7,7 +7,6 @@ import maya.cmds as cmds
 
 # import utils
 import utils.common.files as files
-import utils.common.logUtils as logUtils
 
 # import task
 import dev.rigging.task.core.task as task

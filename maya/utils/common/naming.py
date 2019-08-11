@@ -86,169 +86,169 @@ class Namer(object):
             name(str)
         """
 
-        self.__name = ''
-        self.__type = None
-        self.__side = None
-        self.__resolution = None
-        self.__description = None
-        self.__index = None
-        self.__suffix = None
+        self._name = ''
+        self._type = None
+        self._side = None
+        self._resolution = None
+        self._description = None
+        self._index = None
+        self._suffix = None
 
         if args:
-            self.__decompose_name(args[0])
+            self._decompose_name(args[0])
         else:
             for key_long, key_short in self.shortcuts.iteritems():
                 val = variables.kwargs(key_long, None, kwargs, short_name=key_short)
-                setattr(self, '__'+key_long, val)
+                setattr(self, '_'+key_long, val)
 
-            self.__compose_name()
+            self._compose_name()
 
     # property
     @property
     def type(self):
-        return self.__get_name(self.__type,
-                               'type',
-                               return_type='long')
+        return self._get_name(self._type,
+                              'type',
+                              return_type='long')
 
     @property
     def typ(self):
-        return self.__get_name(self.__type,
-                               'type',
-                               return_type='long')
+        return self._get_name(self._type,
+                              'type',
+                              return_type='long')
 
     @property
     def side(self):
-        return self.__get_name(self.__side,
-                               'side',
-                               return_type='long')
+        return self._get_name(self._side,
+                              'side',
+                              return_type='long')
 
     @property
     def sid(self):
-        return self.__get_name(self.__side,
-                               'side',
-                               return_type='long')
+        return self._get_name(self._side,
+                              'side',
+                              return_type='long')
 
     @property
     def resolution(self):
-        return self.__get_name(self.__resolution,
-                               'resolution',
-                               return_type='long')
+        return self._get_name(self._resolution,
+                              'resolution',
+                              return_type='long')
 
     @property
     def res(self):
-        return self.__get_name(self.__resolution,
-                               'resolution',
-                               return_type='long')
+        return self._get_name(self._resolution,
+                              'resolution',
+                              return_type='long')
 
     @property
     def description(self):
-        return self.__description
+        return self._description
 
     @property
     def des(self):
-        return self.__description
+        return self._description
 
     @property
     def index(self):
-        return self.__index
+        return self._index
 
     @property
     def idx(self):
-        return self.__index
+        return self._index
 
     @property
     def suffix(self):
-        return self.__suffix
+        return self._suffix
 
     @property
     def sfx(self):
-        return self.__suffix
+        return self._suffix
 
     @property
     def name(self):
-        self.__compose_name()
-        return self.__name
+        self._compose_name()
+        return self._name
 
     # set attrs
     @type.setter
     def type(self, key_value):
-        self.__type = self.__get_name(key_value,
-                                      'type',
-                                      return_type='long')
+        self._type = self._get_name(key_value,
+                                    'type',
+                                    return_type='long')
 
     @typ.setter
     def typ(self, key_value):
-        self.__type = self.__get_name(key_value,
-                                      'type',
-                                      return_type='long')
+        self._type = self._get_name(key_value,
+                                    'type',
+                                    return_type='long')
 
     @side.setter
     def side(self, key_value):
-        self.__side = self.__get_name(key_value,
-                                      'side',
-                                      return_type='long')
+        self._side = self._get_name(key_value,
+                                    'side',
+                                    return_type='long')
 
     @sid.setter
     def sid(self, key_value):
-        self.__side = self.__get_name(key_value,
-                                      'side',
-                                      return_type='long')
+        self._side = self._get_name(key_value,
+                                    'side',
+                                    return_type='long')
 
     @resolution.setter
     def resolution(self, key_value):
-        self.__resolution = self.__get_name(key_value,
-                                            'resolution',
-                                            return_type='long')
+        self._resolution = self._get_name(key_value,
+                                          'resolution',
+                                          return_type='long')
 
     @res.setter
     def res(self, key_value):
-        self.__resolution = self.__get_name(key_value,
-                                            'resolution',
-                                            return_type='long')
+        self._resolution = self._get_name(key_value,
+                                          'resolution',
+                                          return_type='long')
 
     @description.setter
     def description(self, key_value):
         if key:
-            self.__description = key_value
+            self._description = key_value
         else:
-            self.__description = None
+            self._description = None
 
     @des.setter
     def des(self, key_value):
         if key:
-            self.__description = key_value
+            self._description = key_value
         else:
-            self.__description = None
+            self._description = None
 
     @index.setter
     def index(self, num):
         if isinstance(num, int) and num >= 0:
-            self.__index = int(num)
+            self._index = int(num)
         else:
-            self.__index = None
+            self._index = None
 
     @idx.setter
     def idx(self, num):
         if isinstance(num, int) and num >= 0:
-            self.__index = int(num)
+            self._index = int(num)
         else:
-            self.__index = None
+            self._index = None
 
     @suffix.setter
     def suffix(self, num):
         if isinstance(num, int) and num >= 0:
-            self.__suffix = int(num)
+            self._suffix = int(num)
         else:
-            self.__suffix = None
+            self._suffix = None
 
     @sfx.setter
     def sfx(self, num):
         if isinstance(num, int) and num >= 0:
-            self.__suffix = int(num)
+            self._suffix = int(num)
         else:
-            self.__suffix = None
+            self._suffix = None
 
-    def __decompose_name(self, name):
+    def _decompose_name(self, name):
         """
         decompose name to get each parts name individually
 
@@ -256,66 +256,66 @@ class Namer(object):
             name(str): name for decompose
 
         Returns:
-            self.__type(str): name's type
-            self.__side(str): name's side
-            self.__resolution(str): name's resolution
-            self.__description(str): name's description
-            self.__index(str): name's index
-            self.__suffix(str): name's suffix
+            self._type(str): name's type
+            self._side(str): name's side
+            self._resolution(str): name's resolution
+            self._description(str): name's description
+            self._index(str): name's index
+            self._suffix(str): name's suffix
         """
-        self.__type = None
-        self.__side = None
-        self.__resolution = None
-        self.__description = None
-        self.__index = None
-        self.__suffix = None
+        self._type = None
+        self._side = None
+        self._resolution = None
+        self._description = None
+        self._index = None
+        self._suffix = None
 
         name_split = name.split('_')  # split name parts by '_'
 
         split_num = len(name_split)  # check how many parts
 
-        self.__type = self.__get_name(name_split[0], 'type', return_type='long')
+        self._type = self._get_name(name_split[0], 'type', return_type='long')
 
-        if not self.__type:
+        if not self._type:
             logger.error('Type is invalid')
 
         if split_num > 2:
-            self.__side = self.__get_name(name_split[1], 'side', return_type='long')
-            if not self.__side:
+            self._side = self._get_name(name_split[1], 'side', return_type='long')
+            if not self._side:
                 logger.error('Side is invalid')
 
             if split_num == 3:
                 # name only contains type side and des
-                self.__description = name_split[2]
+                self._description = name_split[2]
 
             elif split_num == 4:
                 # name contains type side des and res/index
-                self.__resolution = self.__get_name(name_split[2], 'resolution', return_type='long')
-                if self.__resolution:
-                    self.__description = name_split[3]
+                self._resolution = self._get_name(name_split[2], 'resolution', return_type='long')
+                if self._resolution:
+                    self._description = name_split[3]
                 else:
-                    self.__description = name_split[2]
-                    self.__index = int(name_split[3])
+                    self._description = name_split[2]
+                    self._index = int(name_split[3])
 
             elif split_num == 5:
                 # name contains type side des index and res/suffix
-                self.__resolution = self.__get_name(name_split[2], 'resolution', return_type='long')
-                if self.__resolution:
-                    self.__description = name_split[3]
-                    self.__index = int(name_split[4])
+                self._resolution = self._get_name(name_split[2], 'resolution', return_type='long')
+                if self._resolution:
+                    self._description = name_split[3]
+                    self._index = int(name_split[4])
                 else:
-                    self.__description = name_split[2]
-                    self.__index = int(name_split[3])
-                    self.__suffix = int(name_split[4])
+                    self._description = name_split[2]
+                    self._index = int(name_split[3])
+                    self._suffix = int(name_split[4])
 
             elif split_num == 6:
                 # name contains type side res des index and suffix
-                self.__resolution = self.__get_name(name_split[2], 'resolution', return_type='long')
-                if not self.__resolution:
+                self._resolution = self._get_name(name_split[2], 'resolution', return_type='long')
+                if not self._resolution:
                     logger.error('Resolution is invalid')
-                self.__description = name_split[3]
-                self.__index = name_split[4]
-                self.__suffix = name_split[5]
+                self._description = name_split[3]
+                self._index = name_split[4]
+                self._suffix = name_split[5]
 
             else:
                 logger.error('{} is invalid'.format(name))
@@ -323,51 +323,51 @@ class Namer(object):
         elif split_num == 2:
             logger.error('{} is invalid'.format(name))
 
-    def __compose_name(self):
+    def _compose_name(self):
         """
         compose name with given parts
         pattern: type_side_(resolution)_part_index_suffix
 
         Args:
-            self.__type(str): name's type
-            self.__side(str): name's side
-            self.__resolution(str): name's resolution
-            self.__description(str): name's description
-            self.__index(str): name's index
-            self.__suffix(str): name's suffix
+            self._type(str): name's type
+            self._side(str): name's side
+            self._resolution(str): name's resolution
+            self._description(str): name's description
+            self._index(str): name's index
+            self._suffix(str): name's suffix
 
         Returns:
-            self.__name(str): composed name
+            self._name(str): composed name
         """
-        self.__name = ''
+        self._name = ''
 
-        if self.__type:
+        if self._type:
             # check if the name has side and des
-            if self.__side and self.__description:
-                for key_value, key_type in zip([self.__type, self.__side, self.__resolution],
+            if self._side and self._description:
+                for key_value, key_type in zip([self._type, self._side, self._resolution],
                                                ['type', 'side', 'resolution']):
                     if key_value:
-                        key_value = self.__get_name(key_value, key_type, return_type='short')
-                        self.__name += (key_value + '_')
+                        key_value = self._get_name(key_value, key_type, return_type='short')
+                        self._name += (key_value + '_')
 
-                self.__name += (self.__description+'_')
+                self._name += (self._description+'_')
 
-                for i in [self.__index, self.__suffix]:
+                for i in [self._index, self._suffix]:
                     if i is not None:
-                        self.__name += '{:03d}_'.format(int(i))
+                        self._name += '{:03d}_'.format(int(i))
 
-                self.__name = self.__name[:-1]  # remove the last '_'
+                self._name = self._name[:-1]  # remove the last '_'
 
             else:
                 # name only contains type ('master')
-                self.__name = self.__get_name(self.__type, 'type', return_type='short')
+                self._name = self._get_name(self._type, 'type', return_type='short')
 
         else:
             # the name is invalid, should at least has type
             logger.error('Name is invalid, should at least has Type')
 
     @staticmethod
-    def __get_name(key_value, key_type, return_type='short'):
+    def _get_name(key_value, key_type, return_type='short'):
         """
         get the name from the NAME_CONVENTION config file
 

@@ -18,9 +18,24 @@ class Builder(object):
     """
     def __init__(self):
         super(Builder, self).__init__()
+        self._project = None
+        self._asset = None
+        self._rig_type = None
         self.task_data_paths = []
         self._tasks = []
         self._tasks_info = {}
+
+    @property
+    def project(self):
+        return self._project
+
+    @property
+    def asset(self):
+        return self._asset
+
+    @property
+    def rig_type(self):
+        return self._rig_type
 
     def register_task(self, **kwargs):
         """

@@ -2,7 +2,22 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/rigInfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/rigInfo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskInfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskInfo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/base/dataImport.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/base/dataImport.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/task.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/attributes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/config/NAME_CONVENTION.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/config/NAME_CONVENTION.cfg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/files.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/files.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/naming.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/naming.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/transforms.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/transforms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/buildUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/buildUtils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/controls.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/controls.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -25,8 +40,13 @@
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="C:/Program Files/Autodesk/Maya2018/devkit/devkit/other/pymel/extras/completion/py" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/dev/rigging/task/base" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\_pipeline\maya\dev\rigging\task\base" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">

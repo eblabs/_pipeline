@@ -53,6 +53,9 @@ class TaskInfo(QWidget):
         self.label_name.action_edit.triggered.connect(self.edit_name_widget)
         self.label_type.action_edit.triggered.connect(self.edit_task_widget)
 
+    def keyPressEvent(self, event):
+        pass
+
     def set_label(self, item):
         name = item.data(0, ROLE_TASK_NAME)
         path = item.data(0, ROLE_TASK_PATH)

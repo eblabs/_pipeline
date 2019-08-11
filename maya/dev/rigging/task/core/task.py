@@ -23,11 +23,12 @@ logger = logUtils.get_logger(name='task', level='info')
 # CLASS
 class Task(object):
     """base class for Task"""
-    def __init__(self, **kwargs):
+    def __init__(self, builder=None, **kwargs):
         super(Task, self).__init__()
         self._name = 'task'
         self._task = 'dev.rigging.task.core.task'
         self._task_type = 'task'
+        self.builder = builder  # plug builder in to get builder's variables
         self.kwargs_task = {}
         self.kwargs_ui = OrderedDict()
 

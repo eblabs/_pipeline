@@ -1,0 +1,143 @@
+# IMPORT PACKAGES
+
+# import maya packages
+import maya.cmds as cmds
+
+# import utils
+import utils.common.naming as naming
+import utils.common.transforms as transforms
+import utils.common.attributes as attributes
+import utils.rigging.controls as controls
+
+# import task
+import dev.rigging.task.core.task as task
+
+
+# CLASS
+class BaseNode(task.Task):
+    """
+    base class for baseNode
+
+    create base node hierarchy
+
+    master
+        - geometries
+        - components
+        - mover
+        - nodes
+        - skeleton
+    """
+
+    def __init__(self, **kwargs):
+        super(BaseNode, self).__init__(**kwargs)
+        self._task = 'dev.rigging.task.base.baseNode'
+
+        self.master = None
+        self.geometries = None
+        self.components = None
+        self.mover = None
+        self.nodes = None
+        self.skeleton = None
+        self.world_control = None
+        self.layout_control = None
+        self.local_control = None
+
+    def pre_build(self):
+        super(BaseNode, self).pre_build()
+        self.create_hierarchy()
+        self.connect_vis()
+        self.set_rig_info()
+        self.create_controllers()
+
+    def post_build(self):
+        super(BaseNode, self).post_build()
+        self.auto_scale_controls()
+
+    def create_hierarchy(self):
+        namer = naming.Namer(type=naming.Type.master)
+
+        # master
+        self.master = transforms.create(namer.name, lock_hide=attributes.Attr.all)
+
+        # mover
+        namer.type = naming.Type.mover
+        self.mover = transforms.create(namer.name, lock_hide=attributes.Attr.all, parent=self.master)
+
+        # geometries
+        namer.type = naming.Type.geometries
+        self.geometries = transforms.create(namer.name, lock_hide=attributes.Attr.all, parent=self.master)
+
+        # components
+        namer.type = naming.Type.components
+        self.components = transforms.create(namer.name, lock_hide=attributes.Attr.all, parent=self.master)
+
+        # nodes
+        namer.type = naming.Type.nodes
+        self.components = transforms.create(namer.name, lock_hide=attributes.Attr.all, parent=self.master)
+
+        # skeleton
+        namer.type = naming.Type.skeleton
+        self.skeleton = transforms.create(namer.name, lock_hide=attributes.Attr.all, parent=self.master)
+
+    def connect_vis(self):
+        attributes.add_attrs(self.master, 'geometriesDisplayType', attribute_type='enum', keyable=False,
+                             default_value=2, channel_box=True, enum_name=['normal', 'template', 'reference'])
+        attributes.add_attrs(self.master,
+                             ['geometriesVis', 'moverVis', 'controlsVis', 'jointsVis', 'rigNodesVis', 'skeletonVis'],
+                             attribute_type='long', range=[0, 1], default_value=[1, 1, 1, 1, 0, 0], keyable=False,
+                             channel_box=True)
+
+        # connect attrs
+        attributes.connect_attrs([self.master + '.geometriesDisplayType', self.master + '.geometriesVis',
+                                  self.master + '.moverVis', self.master + '.rigNodesVis',
+                                  self.master + '.skeletonVis'],
+                                 [self.geometries + '.displayType', self.geometries + '.visibility',
+                                  self.mover + '.visibility', self.nodes + '.visibility',
+                                  self.skeleton + '.visibility'],
+                                 force=True)
+
+        # set attrs
+        cmds.setAttr(self.geometries + '.overrideEnabled', 1)
+
+    def set_rig_info(self):
+        if self.builder:
+            project = self.builder.project
+            asset = self.builder.asset
+            rig_type = self.builder.rig_type
+
+            attributes.add_attrs(self.master, ['project', 'asset', 'rigType'], attribute_type='string',
+                                 default_value=[project, asset, rig_type], lock=True)
+
+    def create_controllers(self):
+        self.world_control = controls.create('world', side=naming.Side.middle, shape='square', color='yellow',
+                                             parent=self.mover, size=1.1, sub=False)
+        self.layout_control = controls.create('layout', side=naming.Side.middle, shape='crossArrowCircle',
+                                              color='royal heath', parent=self.world_control.output, sub=False)
+        self.local_control = controls.create('local', side=naming.Side.middle, shape='circle', color='royal purple',
+                                             parent=self.layout_control.output, size=0.5, sub=False)
+        # rig scale
+        attributes.add_attrs([self.world_control.name, self.layout_control.name, self.local_control.name],
+                             'rigScale', attribute_type='float', range=[0, None], default_value=1, keyable=True,
+                             channel_box=True)
+        for control in [self.world_control, self.layout_control, self.local_control]:
+            attributes.connect_attrs(control.name+'.rigScale', ['scaleX', 'scaleY', 'scaleZ'], driven=controls.name,
+                                     force=True)
+
+    def auto_scale_controls(self):
+        # get geo bounding box info
+        geo_bbox_min = cmds.getAttr(self.geometries+'.boundingBoxMin')[0]
+        geo_bbox_max = cmds.getAttr(self.geometries + '.boundingBoxMax')[0]
+
+        geo_length = max(geo_bbox_max[0]-geo_bbox_min[0], geo_bbox_max[2]-geo_bbox_min[2])
+
+        # get local control bounding box info
+        local_control_bbox_min = cmds.getAttr(self.local_control.name+'.boundingBoxMin')[0]
+        local_control_bbox_max = cmds.getAttr(self.local_control.name + '.boundingBoxMax')[0]
+
+        # it's square for sure, no need to compare
+        control_length = local_control_bbox_max[0] - local_control_bbox_min[0]
+
+        # get scale multiplier
+        scale_multiplier = geo_length/float(control_length) * 1.2
+        controls.transform_ctrl_shape([self.world_control.control_shape, self.layout_control.control_shape,
+                                       self.local_control.control_shape], scale=scale_multiplier)

@@ -48,7 +48,7 @@ def connect_attrs(driver_attrs, driven_attrs, **kwargs):
 
     Keyword Args:
         driver(str): override the node in driver_attrs
-        driven(str): override the driven_attrs
+        driven(str): override the node in driven_attrs
         force(bool): override the connection/lock status, default is True
     """
     # get vars
@@ -189,7 +189,7 @@ def add_attrs(node, attrs, **kwargs):
 
             # check if attr exists
             if not cmds.attributeQuery(attr, node=n, ex=True):
-                attr_dict.update({'long_name': attr})
+                attr_dict.update({'longName': attr})
                 if val is not None and not isinstance(val, basestring) and not isinstance(val, list):
                     attr_dict.update({'defaultValue': val})
                 if attr_range:
@@ -199,7 +199,7 @@ def add_attrs(node, attrs, **kwargs):
                         attr_dict.update({'maxValue': attr_range[1]})
 
                 if enum_name:
-                    attr_dict.update({'enum_name': enum_name})
+                    attr_dict.update({'enumName': enum_name})
 
                 # add attr
                 cmds.addAttr(n, **attr_dict)

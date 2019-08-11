@@ -88,6 +88,9 @@ class RigBuilder(uiUtils.BaseWindow):
 		# so it won't focus on QLineEdit when startup
 		self.setFocus()
 
+	def keyPressEvent(self, event):
+		pass
+
 	@ staticmethod
 	def attach_rig_widget(widget, title, layout, no_space=False):
 		"""

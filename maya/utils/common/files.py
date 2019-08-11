@@ -21,9 +21,9 @@ def write_json_file(path, data):
         data(dict/list): given data
     """
 
-    with open(path, 'w') as outfile:
-        json.dump(data, outfile, indent=4, sort_keys=True)
-    file.close(outfile)
+    outfile = open(path, 'w')
+    json.dump(data, outfile, indent=4, sort_keys=True)
+    outfile.close()
 
 
 def read_json_file(path):
@@ -37,9 +37,9 @@ def read_json_file(path):
         data(dict/list): data from json file
     """
 
-    with open(path, 'r') as infile:
-        data = json.load(infile)
-    file.close(infile)
+    infile = open(path, 'r')
+    data = json.load(infile)
+    infile.close()
     return data
 
 
@@ -52,8 +52,8 @@ def write_cPickle_file(path, data):
         data(dict/list): given data
     """
 
-    with open(path, 'wb') as outfile:
-        cPickle.dump(data, outfile, cPickle.HIGHEST_PROTOCOL)
+    outfile = open(path, 'wb')
+    cPickle.dump(data, outfile, cPickle.HIGHEST_PROTOCOL)
     outfile.close()
 
 
@@ -68,8 +68,8 @@ def read_cPickle_file(path):
         data(dict/list): data from cPickle file
     """
 
-    with open(path, 'rb') as infile:
-        data = cPickle.load(infile)
+    infile = open(path, 'rb')
+    data = cPickle.load(infile)
     infile.close()
     return data
 

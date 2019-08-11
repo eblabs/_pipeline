@@ -88,6 +88,7 @@ class TreeWidget(QTreeWidget):
         self._display_items = []  # list of item display name to make sure no same name
         self._attr_items = []  # list of item attr name to make sure no same name
         self._change = False  # use to check if mouse is on checkbox or actual task
+        self._pos = None  # save the mouse position when right click, so the task create window will pop up correct
 
         # get kwargs
         self._header = kwargs.get('header', ['Task', 'Pre', 'Build', 'Post'])
@@ -263,8 +264,6 @@ class TreeWidget(QTreeWidget):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape and event.modifiers() == Qt.NoModifier:
             self._clear_selection()
-        else:
-            QTreeWidget.keyPressEvent(self, event)
 
     def mousePressEvent(self, event):
         if not self.indexAt(event.pos()).isValid():
@@ -295,8 +294,8 @@ class TreeWidget(QTreeWidget):
                 if task_type == 'method':
                     self.action_duplicate.setEnabled(False)
 
-        pos_parent = self.mapToGlobal(QPoint(0, 0))
-        self.menu.move(pos_parent + pos)  # move menu to right clicked position
+        self._pos = self.mapToGlobal(pos)
+        self.menu.move(self._pos)  # move menu to right clicked position
 
         self.menu.show()
 
@@ -710,9 +709,10 @@ class TreeWidget(QTreeWidget):
         self.task_create_window.close()
         self.task_create_window.refresh_widgets()
         self.task_create_window.widget_task_creation.rebuild_list_model(self.task_folders)
+        self.task_create_window.move(self._pos)
         self.task_create_window.show()
 
-    def task_switch_window_open(self):
+    def task_switch_window_open(self, pos):
         # try close window in case it's opened
         self.task_switch_window.close()
 
@@ -733,6 +733,7 @@ class TreeWidget(QTreeWidget):
         else:
             self.task_switch_window.refresh_widgets()
             self.task_switch_window.widget_task_creation.rebuild_list_model(self.task_folders)
+            self.task_switch_window.move(pos)
             self.task_switch_window.show()
 
     @staticmethod

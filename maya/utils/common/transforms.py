@@ -21,7 +21,7 @@ def create(name, **kwargs):
         name(str): transform node's name
 
     Keyword Args:
-        lockHide(list): lock and hide transform attrs
+        lock_hide(list): lock and hide transform attrs
         parent(str): where to parent the transform node
         rotate_order(int): transform node's rotate order, default is 0
         vis(bool): transform node's visibility, default is True
@@ -32,7 +32,7 @@ def create(name, **kwargs):
         inheritsTransform(bool): set transform node's inheritance attr, default is True
     """
     # get vars
-    lock_hide = variables.kwargs('lockHide', [], kwargs, short_name='lh')
+    lock_hide = variables.kwargs('lock_hide', [], kwargs, short_name='lh')
     parent = variables.kwargs('parent', None, kwargs, short_name='p')
     rotate_order = variables.kwargs('rotate_order', 0, kwargs, short_name='ro')
     vis = variables.kwargs('vis', True, kwargs, short_name='v')
