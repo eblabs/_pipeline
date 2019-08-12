@@ -39,7 +39,7 @@ def get_builder(rig_type, asset, project, warning=True):
         builder_path = os.path.join(rig_path, 'build', 'builder.py')
         if os.path.exists(builder_path):
             # get python path
-            builder_path = '{}.assets.{}.rigs.{}.build.builder'.format(project, asset, rig_type)
+            builder_path = 'projects.{}.assets.{}.rigs.{}.build.builder'.format(project, asset, rig_type)
             return builder_path
         else:
             # builder not exists
@@ -124,6 +124,40 @@ def generate_builder(rig_type, asset, project, builder_inherit_path):
     logger.info('create builder successfully for {} - {} - {} at {}'.format(project, asset, rig_type, builder_path))
 
     # get builder python path
-    builder_path = '{}.assets.{}.rigs.{}.build.builder'.format(project, asset, rig_type)
+    builder_path = 'projects.{}.assets.{}.rigs.{}.build.builder'.format(project, asset, rig_type)
 
     return builder_path
+
+
+def get_data_path(data_name, rig_type, asset, project, warning=True, check_exist=True):
+    """
+    get given data folder path in the given rig
+
+    Args:
+        data_name(str): data folder's name
+        rig_type(str): rig's type (animationRig, deformationRig, muscleRig, costumeRig etc..)
+        asset(str): asset name
+        project(str): project name
+
+    Keyword Args:
+        warning(bool): will warn if given data folder not exist, default is True
+        check_exist(bool): if False will return the path even the data folder does not exist
+                           (it will still return None if rig does not exist)
+                           default is True
+
+    Returns:
+        data_path(str): data folder's os path, return None if not exist
+    """
+    # get rig path
+    rig_path = assets.get_rig_path_from_asset(rig_type, asset, project, warning=warning)
+    if rig_path:
+        # data folder path
+        data_path = os.path.join(rig_path, 'data', data_name)
+        if check_exist and not os.path.exists(data_path):
+            if warning:
+                logger.warning("asset {}'s rig {} doesn't have given data folder {}".format(asset, rig_type, data_name))
+            return None
+        else:
+            return data_path
+    else:
+        return  None

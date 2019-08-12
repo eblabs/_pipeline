@@ -28,10 +28,11 @@ def import_module(path, **kwargs):
         # get function name is not given, use the module name with first letter in cap
         func = modules[-1][0].upper() + modules[-1][1:]
 
-    try:
-        module = __import__(path, fromlist=[modules[-1]])
-    except ImportError:
-        # no module in path
-        module = None
+    # try:
+    #     module = __import__(path, fromlist=[modules[-1]])
+    # except ImportError:
+    #     # no module in path
+    #     module = None
+    module = __import__(path, fromlist=[modules[-1]])
 
     return module, func

@@ -1,5 +1,9 @@
 # IMPORT PACKAGES
 
+# import maya.utils
+# maya commands are not thread safe, need to use maya.utils.executeInMainThreadWithResult(function) to execute it
+import maya.utils
+
 # import copy_reg, types to fix one pickle problem
 import copy_reg
 import types
@@ -506,6 +510,13 @@ class TreeWidget(QTreeWidget):
         else:
             self.expandAll()
 
+    def reload_builder(self, builder_path):
+        builder_module, builder_function = modules.import_module(builder_path)
+        reload(builder_module)
+        self.builder = getattr(builder_module, builder_function)()
+        self.builder.registration()
+        self.reload_tasks()
+
     def _add_child_item(self, item, data):
         for d in data:
             name = d.keys()[0]
@@ -905,9 +916,9 @@ class ItemRunner(QThread):
             else:
                 # try to run function
                 try:
-                    task_return = task(**kwargs_run)
+                    maya.utils.executeInMainThreadWithResult(task, kwargs_run[section])
 
-                    self._execute_setting(item, task_return, 'method', display, role)
+                    self._execute_setting(item, 1, 'method', display, role, section)
 
                 except Exception as exc:
                     self._error_setting(item, exc, role)
@@ -917,11 +928,9 @@ class ItemRunner(QThread):
             # try to run function
             try:
                 if kwargs_run[section]:
-                    task_return = task(kwargs_run[section])
-                else:
-                    task_return = 1
+                    maya.utils.executeInMainThreadWithResult(task, kwargs_run[section])
 
-                self._execute_setting(item, task_return, 'function', display, role)
+                self._execute_setting(item, 1, 'function', display, role, section)
 
             except Exception as exc:
                 self._error_setting(item, exc, role)
@@ -930,19 +939,25 @@ class ItemRunner(QThread):
             # Task is an imported task
             # try to run task
             try:
-                # check if builder has obj or not
                 if not hasattr(self._parent.builder, name):
-                    # either is pre-build, or skipped the pre-build
+                    # normally because it is just created in ui
                     # get obj
-                    task_obj = task(**kwargs_run)
+                    task_obj = task()
                     # attach obj to builder
                     setattr(self._parent.builder, name, task_obj)
+                else:
+                    task_obj = getattr(self._parent.builder, name)
+
+                if section == 'pre_build':
+                    for key, val in kwargs_run.iteritems():
+                        setattr(task_obj, key, val)
 
                 # run task
-                task_obj = getattr(self._parent.builder, name)
-                task_return = getattr(task_obj, section)()
+                func = getattr(task_obj, section)
+                maya.utils.executeInMainThreadWithResult(func)
+                return_signal = task_obj.signal
 
-                self._execute_setting(item, task_return, 'task', display, role)
+                self._execute_setting(item, return_signal, 'task', display, role, section)
 
             except Exception as exc:
                 self._error_setting(item, exc, role)
@@ -957,7 +972,7 @@ class ItemRunner(QThread):
         raise
 
     @ staticmethod
-    def _execute_setting(item, task_return, function_name, display, role):
+    def _execute_setting(item, task_return, function_name, display, role, section):
         if task_return == 2:
             # warning raises
             item.setData(0, role, 2)
@@ -966,7 +981,7 @@ class ItemRunner(QThread):
             item.setData(0, role, 1)
 
         # log
-        logger.info('Run {} "{}" successfully'.format(function_name, display))
+        logger.info('[{}] -- Run {} "{}" successfully'.format(section, function_name, display))
 
 
 class SubMenu(QMenu):

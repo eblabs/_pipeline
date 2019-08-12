@@ -35,5 +35,9 @@ PROPERTY_ITEMS = {'str': {'default': '',
 
                   'callback': {'default': '',
                                'height': 100,
-                               'widget': QPlainTextEdit}
+                               'widget': QPlainTextEdit},
+
+                  'data': {'default': {},
+                           'template': {'project': '', 'asset': '', 'rig_type': ''},
+                           'widget': QLineEdit}
                   }

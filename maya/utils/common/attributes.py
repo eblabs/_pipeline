@@ -64,17 +64,17 @@ def connect_attrs(driver_attrs, driven_attrs, **kwargs):
 
     # connect each attr
     for attrs in zip(driver_attrs, driven_attrs):
-        __connect_single_attr(attrs[0], attrs[1],
-                              driver=driver, driven=driven,
-                              force=force)
+        _connect_single_attr(attrs[0], attrs[1],
+                             driver=driver, driven=driven,
+                             force=force)
 
     if len(driver_attrs) == 1:
-        if __check_attr_exists(driver_attrs[0], node=driver):
+        if _check_attr_exists(driver_attrs[0], node=driver):
             # connect driver attr to the rest driven attrs
             for attr in driven_attrs[1:]:
-                __connect_single_attr(driven_attrs[0], attr,
-                                      driver=driver, driven=driven,
-                                      force=force)
+                _connect_single_attr(driver_attrs[0], attr,
+                                     driver=driver, driven=driven,
+                                     force=force)
         else:
             pass
 
@@ -250,7 +250,7 @@ def set_attrs(attrs, value, **kwargs):
         value = [value] * attrs_num
 
     for attr, val in zip(attrs, value):
-        attr_compose = __check_attr_exists(attr, node=_node)  # get attr full name
+        attr_compose = _check_attr_exists(attr, node=_node)  # get attr full name
         if attr_compose:
             # check if connected
             connections = cmds.listConnections(attr_compose, source=True,
@@ -301,7 +301,7 @@ def attr_in_channel_box(node, attr):
 
 
 # SUB FUNCTION
-def __check_attr_exists(attr, node=None):
+def _check_attr_exists(attr, node=None):
     """
     check if attr exists
 
@@ -333,7 +333,7 @@ def __check_attr_exists(attr, node=None):
         return None
 
 
-def __connect_single_attr(driver_attr, driven_attr, driver=None, driven=None, force=True):
+def _connect_single_attr(driver_attr, driven_attr, driver=None, driven=None, force=True):
     """
     Args:
         driver_attr(str): source attr
@@ -349,7 +349,7 @@ def __connect_single_attr(driver_attr, driven_attr, driver=None, driven=None, fo
     attr_check = True
     for attr, node in zip([driver_attr, driven_attr],
                           [driver, driven]):
-        attr_check = __check_attr_exists(attr, node=node)
+        attr_check = _check_attr_exists(attr, node=node)
         if not attr_check:
             break
         else:

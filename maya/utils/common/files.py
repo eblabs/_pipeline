@@ -43,6 +43,20 @@ def read_json_file(path):
     return data
 
 
+def write_python_file(path, data):
+    """
+    write data to the given path as python file
+
+    Args:
+        path(str): given path
+        data(dict/list): given data
+    """
+    outfile = open(path, 'w')
+    if data:
+        outfile.write(data)
+    outfile.close()
+
+
 def write_cPickle_file(path, data):
     """
     write data to the given path as cPickle file

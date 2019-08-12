@@ -17,7 +17,7 @@ logger = logUtils.get_logger(name='builder', level='info')
 # INHERIT CLASS
 BUILDER_INHERIT_PATH = TEMP_BUILDER_PATH
 cls, function = modules.import_module(BUILDER_INHERIT_PATH)
-CLASS_INHERIT = cls.function
+CLASS_INHERIT = getattr(cls, function)
 
 # ASSET INFO
 PROJECT = TEMP_PROJECT_NAME
@@ -25,7 +25,7 @@ ASSET = TEMP_ASSET_NAME
 RIG_TYPE = TEMP_RIG_TYPE_NAME
 
 # CLASS
-class Builder(cls.function):
+class Builder(CLASS_INHERIT):
     """
     build script for TEMP_PROJECT_NAME - TEMP_ASSET_NAME - TEMP_RIG_TYPE_NAME
     """
@@ -35,7 +35,7 @@ class Builder(cls.function):
         self._asset = ASSET
         self._rig_type = RIG_TYPE
 
-    def registration(self)
+    def registration(self):
         """
         register all the tasks to the builder here, using self.register_task()
 

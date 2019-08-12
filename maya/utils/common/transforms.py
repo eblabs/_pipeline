@@ -86,8 +86,8 @@ def parent_node(node, parent):
             logger.warning('{} does not exist'.format(n))
         else:
             # check parent
-            p = cmds.listRelatives(n, p=True)
-            if p and p[0] == parent:
+            parent_orig = cmds.listRelatives(n, p=True)
+            if parent_orig and parent_orig[0] == parent:
                 logger.warning('{} is parented to {} already'.format(n, parent))
             else:
                 cmds.parent(n, parent)

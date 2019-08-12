@@ -5,19 +5,19 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/rigInfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/rigInfo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskInfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskInfo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/base/dataImport.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/base/dataImport.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/base/baseNode.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/base/baseNode.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/base/newScene.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/base/newScene.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/config/PROPERTY_ITEMS.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/config/PROPERTY_ITEMS.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/task.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/assets.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/assets.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/common/attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/attributes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/common/config/NAME_CONVENTION.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/config/NAME_CONVENTION.cfg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/common/files.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/files.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/naming.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/naming.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/modules.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/modules.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/common/transforms.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/transforms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/rigging/buildUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/buildUtils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/rigging/controls.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/controls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/config/BUILD_TEMPLATE.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/config/BUILD_TEMPLATE.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

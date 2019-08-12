@@ -126,7 +126,7 @@ class RigBuilder(uiUtils.BaseWindow):
 
 	def connect_signals(self):
 		# hook up buttons
-		self.button_shelf.SIGNAL_RELOAD.connect(self.temp_load)
+		self.button_shelf.SIGNAL_RELOAD.connect(self.rig_info.get_builder)
 		self.button_shelf.SIGNAL_RELOAD.connect(self.property_editor.refresh)
 		self.button_shelf.SIGNAL_RELOAD.connect(self.task_info.refresh)
 		
@@ -134,6 +134,9 @@ class RigBuilder(uiUtils.BaseWindow):
 		self.button_shelf.SIGNAL_EXECUTE_ALL.connect(self.tree_widget.run_all_tasks)
 		self.button_shelf.SIGNAL_PAUSE.connect(self.tree_widget.pause_resume_tasks)
 		self.button_shelf.SIGNAL_STOP.connect(self.tree_widget.stop_tasks)
+
+		# rig info, plug builder path to tree widget
+		self.rig_info.SIGNAL_BUILDER.connect(self.tree_widget.reload_builder)
 
 		# reset buttons to initial once task running completed
 		self.tree_widget.item_runner.finished.connect(self.button_shelf.reset_all)

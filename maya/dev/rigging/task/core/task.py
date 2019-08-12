@@ -23,14 +23,22 @@ logger = logUtils.get_logger(name='task', level='info')
 # CLASS
 class Task(object):
     """base class for Task"""
-    def __init__(self, builder=None, **kwargs):
+    def __init__(self, builder=None, name=None, **kwargs):
         super(Task, self).__init__()
-        self._name = 'task'
+        if not name:
+            name = self.__class__.__name__
+        self._name = name[0].lower() + name[1:]  # make sure task name starts with lowercase
         self._task = 'dev.rigging.task.core.task'
         self._task_type = 'task'
-        self.builder = builder  # plug builder in to get builder's variables
+        self._builder = builder  # plug builder in to get builder's variables
+        self.project = None
+        self.asset = None
+        self.rig_type = None
+
         self.kwargs_task = {}
         self.kwargs_ui = OrderedDict()
+
+        self.signal = 1  # 1 is success, 2 is warning, error will be caught by ui
 
         self.register_attrs(**kwargs)
 
@@ -46,18 +54,30 @@ class Task(object):
     def task_type(self):
         return self._task_type
 
+    @ property
+    def builder(self):
+        return self._builder
+
     @name.setter
     def name(self, task_name):
         self._name = task_name
 
+    @builder.setter
+    def builder(self, builder_obj):
+        self._builder = builder_obj
+        if self._builder:
+            self.project = self._builder.project
+            self.asset = self._builder.asset
+            self.rig_type = self._builder.rig_type
+
     def pre_build(self):
-        pass
+        self.signal = 1  # preset the signal to avoid overwrite
 
     def build(self):
-        pass
+        self.signal = 1  # preset the signal to avoid overwrite
 
     def post_build(self):
-        pass
+        self.signal = 1  # preset the signal to avoid overwrite
 
     def register_attrs(self, **kwargs):
         self.register_kwargs()

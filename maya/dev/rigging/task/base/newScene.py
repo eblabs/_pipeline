@@ -10,8 +10,8 @@ import dev.rigging.task.core.task as task
 # CLASS
 class NewScene(task.Task):
     """create new scene"""
-    def __init__(self):
-        super(NewScene, self).__init__()
+    def __init__(self, **kwargs):
+        super(NewScene, self).__init__(**kwargs)
         self._task = 'dev.rigging.task.base.newScene'
 
     def pre_build(self):

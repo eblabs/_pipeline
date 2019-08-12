@@ -51,6 +51,9 @@ def create_project(name):
             tasks_path = os.path.join(scripts_path, 'tasks')
             os.mkdir(tasks_path)
 
+            # create init files
+            _write_init_file_to_paths([project_path, assets_path, scripts_path, tasks_path])
+
         except OSError as exc:
             logger.error(exc)
             return None
@@ -183,11 +186,15 @@ def create_asset(name, project):
             try:
                 asset_path = os.path.join(project_path, 'assets', name)
                 os.mkdir(asset_path)
+
                 # create models and rigs folder under asset
                 models_path = os.path.join(asset_path, 'models')
                 rigs_path = os.path.join(asset_path, 'rigs')
                 os.mkdir(models_path)
                 os.mkdir(rigs_path)
+
+                # create init files
+                _write_init_file_to_paths([asset_path, models_path, rigs_path])
 
             except OSError as exc:
                 logger.error(exc)
@@ -361,6 +368,9 @@ def create_rig(rig_type, asset, project):
                 os.mkdir(wip_path)
                 os.mkdir(publish_path)
 
+                # create init files
+                _write_init_file_to_paths([rig_path, build_path, data_path, wip_path, publish_path])
+
             except OSError as exc:
                 logger.error(exc)
                 return None
@@ -461,3 +471,16 @@ def get_rig_path_from_asset(rig_type, asset, project, warning=True):
             return None
     else:
         return None
+
+
+# SUB FUNCTION
+def _write_init_file_to_paths(paths):
+    """
+    write __init__.py to given paths
+
+    Args:
+        paths(list): list of given paths
+    """
+    for p in paths:
+        init_path = os.path.join(p, '__init__.py')
+        files.write_python_file(init_path, '')
