@@ -26,9 +26,10 @@ class Builder(object):
         self._tasks = []
         self._tasks_info = {}
 
+        self.tasks_level_list = []
         # task info before load current task info, need this to compare for saving the current task info
-        self._tasks_inheritance = None
-        self._tasks_info_inheritance = None
+        self._tasks_compare = None
+        self._tasks_info_compare = None
 
     @property
     def project(self):
@@ -42,6 +43,24 @@ class Builder(object):
     def rig_type(self):
         return self._rig_type
 
+    def get_task_data_paths(self):
+        """
+        get task data paths from both current class and parent classes, also generate a level list
+        """
+        cls_list = inspect.getmro(self.__class__)[:-1]
+        # create a level list for register tasks later, each level loops in register task first, then task info file
+        self.tasks_level_list = [[] for _ in range(len(cls_list))]
+
+        # get task info file
+        for cls in cls_list:
+            path_cls = inspect.getfile(cls)
+            path_dirname = os.path.dirname(path_cls)
+            path_task_data = os.path.join(path_dirname, 'tasks.tsk')
+            if os.path.exists(path_task_data):
+                self.task_data_paths.append(path_task_data)
+            else:
+                self.task_data_paths.append('')
+
     def register_task(self, **kwargs):
         """
         register task to build script
@@ -52,8 +71,6 @@ class Builder(object):
             task(method): task function
             index(str/int): register task at specific index
                             if given string, it will register after the given task
-                            the orders may get wrong with layers inheritance,
-                            it's recommend to use string unless you want to set at the beginning, which is 0
             parent(str): parent task to the given task
             kwargs(dict): task kwargs
             section(str): register task in specific section (normally for in-class method)
@@ -72,7 +89,13 @@ class Builder(object):
         _inheritance = variables.kwargs('_inheritance', None, kwargs)  # this is not for user, use for loading task info
 
         if _inheritance is None:
-            _inheritance = check_inheritance()  # check if the task is referenced or created in the class
+            _level = check_level()  # check if the task is referenced or created in the class
+            if _level > 0:
+                _inheritance = True
+            else:
+                _inheritance = False
+        else:
+            _level = None  # load from task info file, no need to put in level list
 
         if not _display:
             _display = _name
@@ -113,14 +136,9 @@ class Builder(object):
                       'index': _index}
 
         self._tasks_info.update({_name: _task_info})
-        self._tasks.append(_name)
 
-        # get index
-        # if isinstance(_index, basestring):
-        #     if _index in self._tasks:
-        #         _index = self._tasks.index(_index) + 1
-        #
-        # self._tasks.insert(_index, _name)
+        if _level is not None:
+            self.tasks_level_list[-1-_level].append(_name)
 
     def update_task(self, name, **kwargs):
         """
@@ -143,7 +161,7 @@ class Builder(object):
         _task = variables.kwargs('task', None, kwargs, short_name='tsk')
         _parent = variables.kwargs('parent', '', kwargs, short_name='p')
         _kwargs = variables.kwargs('kwargs', {}, kwargs)
-        _index = variables.kwargs('index', len(self._tasks), kwargs, short_name='i')
+        _index = variables.kwargs('index', None, kwargs, short_name='i')
 
         if _display:
             self._tasks_info[name]['display'] = _display
@@ -189,75 +207,84 @@ class Builder(object):
                 _kwargs_orig.pop('value')
             self._tasks_info[name]['task_kwargs'] = _kwargs_orig
 
-        if _index:
+        if _index is not None:
             self._tasks_info[name]['index'] = _index
 
-    def registration(self):
+    def load_task_data(self):
+        for i, tasks_level in enumerate(self.tasks_level_list[:-1]):
+            # hold the last one for now, will need data before load to compare for saving task info
+            # check task level list to register tasks at level
+            for task in tasks_level:
+                index = self._tasks_info[task]['index']
+                self._order_task(task, index, update=False)
+
+            # load task info file
+            if self.task_data_paths[i]:
+                tasks_data = files.read_json_file(self.task_data_paths[i])
+                self._load_each_task_data(tasks_data)
+
+        # order the final level tasks, those are from the asset's class methods
+        for task in self.tasks_level_list[-1]:
+            index = self._tasks_info[task]['index']
+            self._order_task(task, index, update=False)
+
+        # copy to inheritance list
+        self._tasks_info_compare = self._tasks_info.copy()
+        self._tasks_compare = self._tasks[:]
+
+        # load the last file
+        if self.task_data_paths[-1]:
+            tasks_data = files.read_json_file(self.task_data_paths[-1])
+            self._load_each_task_data(tasks_data)
+
+    def tasks_registration(self):
         """
         sub classes register all the tasks to the builder here, using self.register_task()
         """
         pass
 
-    def get_task_data_paths(self):
+    def registration(self):
         """
-        get task data paths from both current class and parent classes
+        register and order all tasks, both in-class registration and loading task info files
         """
-        for cls in inspect.getmro(self.__class__)[:-1]:
-            path_cls = inspect.getfile(cls)
-            path_dirname = os.path.dirname(path_cls)
-            path_task_data = os.path.join(path_dirname, 'task_data.tsk')
-            if os.path.exists(path_task_data):
-                self.task_data_paths.append(path_task_data)
+        self.get_task_data_paths()
+        self.tasks_registration()
+        self.load_task_data()
+
+    def _order_task(self, task, index, update=False):
+        tasks_num = len(self._tasks)
+        index_pop = None
+        if isinstance(index, basestring):
+            if index in self._tasks:
+                index = self._tasks.index(index) + 1
             else:
-                self.task_data_paths.append('')
+                index = tasks_num
+        elif index is None:
+            index = tasks_num
 
-    def load_task_data(self):
-        for data_path in self.task_data_paths[:-1]:
-            # hold the last one, will need data before load the last for saving
-            if data_path:
-                task_data = files.read_json_file(data_path)
-                self._load_each_task_data(task_data)
+        if update:
+            index_pop = self._tasks.index(task)
+        self._tasks.insert(index, task)
+        if index_pop is not None:
+            self._tasks.pop(index_pop)
 
-        # reorder tasks
-        task_order_copy = self._tasks[:]
-        self._reorder_tasks(task_order_copy)
-
-        # copy to inheritance list
-        self._tasks_info_inheritance = self._tasks_info.copy()
-        self._tasks_inheritance = self._tasks[:]
-
-        # load the last file
-        if self.task_data_paths[-1]:
-            task_data = files.read_json_file(self.task_data_paths[-1])
-            self._load_each_task_data(task_data)
-
-            # reorder the last items
-            tasks = task_data.keys()[:]
-            self._reorder_tasks(tasks)
-
-    def _load_each_task_data(self, task_data):
-        for task_name, task_kwargs in task_data.iteritems():
-            if task_name not in self._tasks_info:
+    def _load_each_task_data(self, tasks_data):
+        for task_info in tasks_data:
+            task = task_info.keys()[0]
+            task_kwargs = task_info[task]
+            if task not in self._tasks_info:
                 # new task, register it
-                task_kwargs.update({'name': task_name,
+                task_kwargs.update({'name': task,
                                     'inheritance': True})
                 self.register_task(**task_kwargs)
+                # order it
+                index = task_kwargs['index']
+                self._order_task(task, index, update=False)
             else:
-                self.update_task(task_name, **task_kwargs)
-
-    def _reorder_tasks(self, tasks):
-        for task in tasks:
-            if 'index' in self._tasks_info[task]:
-                index = self._tasks_info[task]
-                # take out task from list first
-                self._tasks.remove(task)
-                # get index
-                if isinstance(index, basestring):
-                    if index in self._tasks:
-                        index = self._tasks.index(index) + 1
-                        self._tasks.insert(index, task)
-                else:
-                    self._tasks.insert(index, task)
+                self.update_task(task, **task_kwargs)
+                if 'index' in task_kwargs:
+                    index = task_kwargs['index']
+                    self._order_task(task, index, update=True)
 
     def tree_hierarchy(self):
         hierarchy = []
@@ -306,16 +333,12 @@ class Builder(object):
 
 
 # SUB FUNCTION
-def check_inheritance():
+def check_level():
     stack = inspect.stack()
-    if len(stack) == 5:
-        # 4 should be called from current class, but we have to reference one more level in ui
-        inheritance = False
-    else:
-        # calling from parent classes
-        inheritance = True
+    # 4 should be called from current class, but we have to reference two more level in ui, so 6 is the initial
+    level = len(stack) - 6
     del stack  # remove this to be safe
-    return inheritance
+    return level
 
 
 # SUB CLASS
