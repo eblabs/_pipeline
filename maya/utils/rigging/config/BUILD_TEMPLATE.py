@@ -35,7 +35,7 @@ class Builder(CLASS_INHERIT):
         self._asset = ASSET
         self._rig_type = RIG_TYPE
 
-    def registration(self):
+    def tasks_registration(self):
         """
         register all the tasks to the builder here, using self.register_task()
 
@@ -58,5 +58,5 @@ class Builder(CLASS_INHERIT):
             section(str): register task in specific section (normally for in-class method)
                           'pre_build', 'build', 'post_build', default is 'post_build'
         """
-        super(Builder, self).registration()
+        super(Builder, self).tasks_registration()
 '''

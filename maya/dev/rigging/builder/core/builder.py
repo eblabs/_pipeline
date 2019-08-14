@@ -10,6 +10,10 @@ import inspect
 import utils.common.variables as variables
 import utils.common.modules as modules
 import utils.common.files as files
+import utils.common.logUtils as logUtils
+
+# CONSTANT
+logger = logUtils.get_logger('builder', level='info')
 
 
 # CLASS
@@ -61,6 +65,8 @@ class Builder(object):
             else:
                 self.task_data_paths.append('')
 
+        self.task_data_paths.reverse()
+
     def register_task(self, **kwargs):
         """
         register task to build script
@@ -68,7 +74,7 @@ class Builder(object):
         Keyword Args:
             name(str): task name
             display(str): task display name
-            task(method): task function
+            task_path(method): task function
             index(str/int): register task at specific index
                             if given string, it will register after the given task
             parent(str): parent task to the given task
@@ -81,12 +87,12 @@ class Builder(object):
         _name = variables.kwargs('name', '', kwargs, short_name='n')
         _display = variables.kwargs('display', '', kwargs, short_name='dis')
         _index = variables.kwargs('index', None, kwargs, short_name='i')
-        _task = variables.kwargs('task', None, kwargs, short_name='tsk')
+        _task_path = variables.kwargs('task_path', None, kwargs, short_name='tsk')
         _parent = variables.kwargs('parent', '', kwargs, short_name='p')
         _kwargs = variables.kwargs('kwargs', {}, kwargs)
         _section = variables.kwargs('section', 'post_build', kwargs)
 
-        _inheritance = variables.kwargs('_inheritance', None, kwargs)  # this is not for user, use for loading task info
+        _inheritance = variables.kwargs('inheritance', None, kwargs)  # this is not for user, use for loading task info
 
         if _inheritance is None:
             _level = check_level()  # check if the task is referenced or created in the class
@@ -101,14 +107,14 @@ class Builder(object):
             _display = _name
 
         # get task
-        if inspect.ismethod(_task):
+        if inspect.ismethod(_task_path):
             # in class method, get method name for ui display
-            _task_path = _task.__name__
+            _task = _task_path
+            _task_path = _task_path.__name__
             _task_kwargs = _kwargs
         else:
             # imported task, get task object
-            _task_path = _task
-            task_import, task_function = modules.import_module(_task)
+            task_import, task_function = modules.import_module(_task_path)
             _task = getattr(task_import, task_function)
             if inspect.isfunction(_task):
                 # function, normally is callback
@@ -158,7 +164,7 @@ class Builder(object):
         _task_kwargs = {}
         # get kwargs
         _display = variables.kwargs('display', '', kwargs, short_name='dis')
-        _task = variables.kwargs('task', None, kwargs, short_name='tsk')
+        _task_path = variables.kwargs('task_path', None, kwargs, short_name='tsk')
         _parent = variables.kwargs('parent', '', kwargs, short_name='p')
         _kwargs = variables.kwargs('kwargs', {}, kwargs)
         _index = variables.kwargs('index', None, kwargs, short_name='i')
@@ -166,10 +172,9 @@ class Builder(object):
         if _display:
             self._tasks_info[name]['display'] = _display
 
-        if _task:
+        if _task_path:
             # imported task, get task object
-            _task_path = _task
-            task_import, task_function = modules.import_module(_task)
+            task_import, task_function = modules.import_module(_task_path)
             _task = getattr(task_import, task_function)
             if not inspect.isfunction(_task):
                 # task class
@@ -186,26 +191,18 @@ class Builder(object):
         if _parent:
             self._tasks_info[name]['parent'] = _parent
 
-        if _kwargs:
+        if _task_kwargs:
             _kwargs_orig = self._tasks_info[name]['task_kwargs']
-            # swap orig to _task_kwargs preset if task changed
-            if _task_kwargs:
-                for key in _kwargs_orig:
-                    if key in _task_kwargs:
-                        dv_orig = _kwargs_orig[key]['default']
-                        dv = _task_kwargs[key]['default']
-                        if type(dv_orig) == type(dv):
-                            # same type of input, swap
-                            _task_kwargs[key]['default'] = dv_orig
-                            # check if value, if value, swap
-                            if 'value' in _kwargs_orig[key]:
-                                _task_kwargs[key].update({'value': _kwargs_orig[key]['value']})
-                _kwargs_orig = _task_kwargs
-            _kwargs_orig.update(_kwargs)
-            if 'value' in _kwargs_orig and _kwargs_orig['value'] is not None:
-                _kwargs_orig.update({'default': _kwargs_orig['value']})
-                _kwargs_orig.pop('value')
-            self._tasks_info[name]['task_kwargs'] = _kwargs_orig
+            for key, data in _task_kwargs.iteritems():
+                if key in _kwargs:
+                    _task_kwargs[key]['default'] = _kwargs[key]['default']
+                elif key in _kwargs_orig:
+                    default_value = _task_kwargs[key]['default']
+                    orig_value = _kwargs_orig[key]['default']
+                    if type(default_value) == type(orig_value) and default_value != orig_value:
+                        _task_kwargs[key]['default'] = orig_value
+
+            self._tasks_info[name]['task_kwargs'] = _task_kwargs
 
         if _index is not None:
             self._tasks_info[name]['index'] = _index
@@ -221,7 +218,7 @@ class Builder(object):
             # load task info file
             if self.task_data_paths[i]:
                 tasks_data = files.read_json_file(self.task_data_paths[i])
-                self._load_each_task_data(tasks_data)
+                self._load_each_task_data(tasks_data, inheritance=True)
 
         # order the final level tasks, those are from the asset's class methods
         for task in self.tasks_level_list[-1]:
@@ -235,7 +232,7 @@ class Builder(object):
         # load the last file
         if self.task_data_paths[-1]:
             tasks_data = files.read_json_file(self.task_data_paths[-1])
-            self._load_each_task_data(tasks_data)
+            self._load_each_task_data(tasks_data, inheritance=False)
 
     def tasks_registration(self):
         """
@@ -250,6 +247,87 @@ class Builder(object):
         self.get_task_data_paths()
         self.tasks_registration()
         self.load_task_data()
+
+    def tree_hierarchy(self):
+        hierarchy = []
+        for task in self._tasks:
+            self._add_child(hierarchy, task)
+        return hierarchy
+
+    def export_tasks_info(self, tasks_info):
+        """
+        compare the given tasks info with existing one in class, save the differences to the builder's folder
+
+        Args:
+            tasks_info(list): tasks info from ui
+        """
+        tasks_info_export = []  # final export tasks info list
+        index_previous = 0
+        for i, task_info in enumerate(tasks_info):
+            task = task_info.keys()[0]
+            task_data = task_info[task]
+            # reduce task_kwargs
+            if 'task_kwargs' in task_data:
+                task_kwargs_export = {}
+                for key, data in task_data['task_kwargs'].iteritems():
+                    task_kwargs_key = {}
+                    if 'value' in data:
+                        task_kwargs_key.update({'value': data['value']})
+                    elif 'default' in data:
+                        task_kwargs_key.update({'default': data['default']})
+                    if task_kwargs_key:
+                        task_kwargs_export.update({key: task_kwargs_key})
+                task_data['task_kwargs'] = task_kwargs_export
+
+            # check if exist
+            if task not in self._tasks_info_compare:
+                # new task added in ui, save all data
+                task_data.update({'index': index_previous})
+                tasks_info_export.append({task: task_data})
+            else:
+                # task was in class, check differences
+                task_data_update = {}
+                for key in ['display', 'task_path', 'parent']:
+                    if key in task_data and task_data[key] != self._tasks_info_compare[task][key]:
+                        # key value is different, add to save dictionary
+                        task_data_update.update({key: task_data[key]})
+                # ui kwargs
+                task_kwargs_update = {}
+                for key, data in task_data['task_kwargs'].iteritems():
+                    if 'value' in data:
+                        value = data['value']
+                    else:
+                        value = data['default']
+
+                    data_compare = self._tasks_info_compare[task]['task_kwargs']
+                    if key in data_compare and value != data_compare[key]['default']:
+                        task_kwargs_update.update({key: {'default': value}})
+                    elif key not in data_compare:
+                        task_kwargs_update.update({key: {'default': value}})
+                if task_kwargs_update:
+                    task_data_update.update({'task_kwargs': task_kwargs_update})
+
+                # check order
+                index_orig = self._tasks_compare.index(task)  # get original task position
+                if index_orig > 0:
+                    task_previous_orig = self._tasks_compare[index_orig - 1]
+                else:
+                    task_previous_orig = 0
+
+                if index_previous != task_previous_orig:
+                    task_data_update.update({'index': index_previous})
+
+                if task_data_update:
+                    tasks_info_export.append({task: task_data_update})
+            index_previous = task
+
+        # export file
+        if tasks_info_export:
+            cls_path = inspect.getfile(self.__class__)
+            cls_dirname = os.path.dirname(cls_path)
+            task_export_path = os.path.join(cls_dirname, 'tasks.tsk')
+            files.write_json_file(task_export_path, tasks_info_export)
+            logger.info('save builder successfully at {}'.format(task_export_path))
 
     def _order_task(self, task, index, update=False):
         tasks_num = len(self._tasks)
@@ -266,16 +344,18 @@ class Builder(object):
             index_pop = self._tasks.index(task)
         self._tasks.insert(index, task)
         if index_pop is not None:
+            if index_pop > index:
+                index_pop += 1  # because we insert the new item before index_pop, should shift back one
             self._tasks.pop(index_pop)
 
-    def _load_each_task_data(self, tasks_data):
+    def _load_each_task_data(self, tasks_data, inheritance=True):
         for task_info in tasks_data:
             task = task_info.keys()[0]
             task_kwargs = task_info[task]
             if task not in self._tasks_info:
                 # new task, register it
                 task_kwargs.update({'name': task,
-                                    'inheritance': True})
+                                    'inheritance': inheritance})
                 self.register_task(**task_kwargs)
                 # order it
                 index = task_kwargs['index']
@@ -285,12 +365,6 @@ class Builder(object):
                 if 'index' in task_kwargs:
                     index = task_kwargs['index']
                     self._order_task(task, index, update=True)
-
-    def tree_hierarchy(self):
-        hierarchy = []
-        for task in self._tasks:
-            self._add_child(hierarchy, task)
-        return hierarchy
 
     def _add_child(self, hierarchy, task):
         task_info = self._get_task_info(task)
@@ -335,8 +409,17 @@ class Builder(object):
 # SUB FUNCTION
 def check_level():
     stack = inspect.stack()
-    # 4 should be called from current class, but we have to reference two more level in ui, so 6 is the initial
-    level = len(stack) - 6
+    # this is the initial levels went through, if inherited from other builder, it will add more in between
+    # 1. button shelf reload signal emit
+    # 2. tree widget check save signal emit
+    # 3. rig info get builder signal emit
+    # 4. tree widget reload builder
+    # 5. core builder registration
+    # 6. builder tasks registration
+    # --- inherit builders tasks registration
+    # 7. core builder register task
+    # 8. check level
+    level = len(stack) - 8
     del stack  # remove this to be safe
     return level
 

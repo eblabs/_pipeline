@@ -81,6 +81,7 @@ class TreeWidget(QTreeWidget):
     SIGNAL_EXECUTE = Signal()
     SIGNAL_ATTR_NAME = Signal(QTreeWidgetItem)
     SIGNAL_TASK_TYPE = Signal(QTreeWidgetItem)
+    SIGNAL_GET_BUILDER = Signal()
 
     def __init__(self,  **kwargs):
         super(TreeWidget, self).__init__()
@@ -517,6 +518,47 @@ class TreeWidget(QTreeWidget):
         self.builder.registration()
         self.reload_tasks()
 
+    def check_save(self):
+        if self.builder:
+            title = "Saving Check"
+            text = "Reload builder will lose any unsaved data, do you want to save first?"
+            reply = QMessageBox.warning(self, title, text, QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
+                                        defaultButton=QMessageBox.Cancel)
+
+            if reply == QMessageBox.Yes:
+                self.export_current_builder()
+                self.SIGNAL_GET_BUILDER.emit()
+            elif reply == QMessageBox.No:
+                self.SIGNAL_GET_BUILDER.emit()
+        else:
+            self.SIGNAL_GET_BUILDER.emit()
+
+    def export_current_builder(self):
+        if self.builder:
+            items = self._collect_items()
+            export_data = []
+
+            index_previous = 0
+            for item in items:
+                task = item.data(0, ROLE_TASK_NAME)
+                display = item.text(0)
+                task_kwargs = item.data(0, ROLE_TASK_KWARGS)
+                task_path = item.data(0, ROLE_TASK_PATH)
+                parent = item.parent()
+                if parent:
+                    parent = parent.text(0)
+                else:
+                    parent = ''
+                export_data.append({task: {'display': display,
+                                           'task_path': task_path,
+                                           'task_kwargs': task_kwargs,
+                                           'parent': parent,
+                                           'index': index_previous}})
+                index_previous = task
+
+            # save data
+            self.builder.export_tasks_info(export_data)
+
     def _add_child_item(self, item, data):
         for d in data:
             name = d.keys()[0]
@@ -658,12 +700,14 @@ class TreeWidget(QTreeWidget):
         item.addChild(item_create)
 
     def _create_task(self, task_info):
+        print 'task_info'
+        print task_info
         attr_name = task_info[0]
         display = task_info[1]
-        task_name = task_info[2]
+        task_path = task_info[2]
 
         # imported task, get task object
-        task_import, task_function = modules.import_module(task_name)
+        task_import, task_function = modules.import_module(task_path)
         task = getattr(task_import, task_function)
 
         if inspect.isfunction(task):
@@ -684,7 +728,7 @@ class TreeWidget(QTreeWidget):
 
         kwargs = {'display': display,
                   'attr_name': attr_name,
-                  'task_name': task_name,
+                  'task_path': task_path,
                   'task': task,
                   'task_kwargs': task_kwargs,
                   'check': Qt.Checked,

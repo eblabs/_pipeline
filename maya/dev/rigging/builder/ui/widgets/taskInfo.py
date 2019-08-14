@@ -31,7 +31,7 @@ class TaskInfo(QWidget):
     task type
     """
     SIGNAL_ATTR_NAME = Signal(str)
-    SIGNAL_TASK_TYPE = Signal(str)
+    SIGNAL_TASK_TYPE = Signal(QPoint)
 
     def __init__(self):
         super(TaskInfo, self).__init__()
@@ -99,8 +99,7 @@ class TaskInfo(QWidget):
 
         if reply == QMessageBox.Ok:
             # shoot the signal to switch the task type
-            current_type = self.label_type.text()
-            self.SIGNAL_TASK_TYPE.emit(current_type)
+            self.SIGNAL_TASK_TYPE.emit(self.label_type.mouse_pos)
 
 
 class TaskLabel(QLabel):
@@ -112,6 +111,7 @@ class TaskLabel(QLabel):
 
         self._tool_tip = tool_tip
         self.menu = None
+        self.mouse_pos = None
 
         # set stylesheet
         self.setStyleSheet("""border: 1.3px solid black; border-radius: 2px""")
@@ -127,7 +127,7 @@ class TaskLabel(QLabel):
 
     def _show_menu(self, pos):
         if self.text():
-            pos_parent = self.mapToGlobal(QPoint(0, 0))
-            self.menu.move(pos_parent + pos)  # move menu to the clicked position
+            self.mouse_pos = self.mapToGlobal(pos)
+            self.menu.move(self.mouse_pos)  # move menu to the clicked position
 
             self.menu.show()

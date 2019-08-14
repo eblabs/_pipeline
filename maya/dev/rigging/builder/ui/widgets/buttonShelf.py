@@ -22,6 +22,7 @@ SC_EXECUTE_ALL = 'Ctrl+Shift+Space'
 SC_EXECUTE_PAUSE = 'Ctrl+Space'
 SC_STOP = 'ESC'
 SC_RELOAD_EXECUTE = 'Ctrl+Shift+R'
+SC_SAVE = 'Ctrl+S'
 
 
 # CLASS
@@ -47,26 +48,29 @@ class ButtonShelf(QWidget):
         layout_base.setContentsMargins(2, 2, 2, 2)  # remove space between button and layout
 
         self.button_reload = Button(layout_base, [icons.reload, icons.reload_disabled], shortcut=SC_RELOAD,
-                                    tool_tip='Reload Rig Builder[{}]'.format(SC_RELOAD))
+                                    tool_tip='Reload Rig Builder')
 
         self.button_execute_all = Button(layout_base, [icons.execute_all, icons.execute_all_disabled],
                                          shortcut=SC_EXECUTE_ALL,
-                                         tool_tip='Execute All Tasks[{}]'.format(SC_EXECUTE_ALL), sub_menu=True)
+                                         tool_tip='Execute All Tasks', sub_menu=True)
 
         self.button_execute_sel = Button(layout_base, [icons.execute_select, icons.execute_select_disabled],
                                          shortcut=SC_EXECUTE_PAUSE,
-                                         tool_tip='Execute Selection[{}]'.format(SC_EXECUTE_PAUSE), sub_menu=True)
+                                         tool_tip='Execute Selection', sub_menu=True)
 
         self.button_reload_execute = Button(layout_base, [icons.reload_execute, icons.reload_execute_disabled],
                                             shortcut=SC_RELOAD_EXECUTE,
-                                            tool_tip='Reload and Execute All[{}]'.format(SC_RELOAD_EXECUTE),
+                                            tool_tip='Reload and Execute All',
                                             sub_menu=True)
 
         self.button_pause_resume = Button(layout_base, [icons.pause, icons.pause_disabled], shortcut=SC_EXECUTE_PAUSE,
-                                          tool_tip='Execute Selection[{}]'.format(SC_EXECUTE_PAUSE))
+                                          tool_tip='Execute Selection')
 
         self.button_stop = Button(layout_base, [icons.stop, icons.stop_disabled], shortcut=SC_STOP,
-                                  tool_tip='Stop Execution[{}]'.format(SC_STOP))
+                                  tool_tip='Stop Execution')
+
+        self.button_save = Button(layout_base, [icons.save, icons.save_disabled], shortcut=SC_SAVE,
+                                  tool_tip='Save Rig Builder')
 
         # set stop disabled
         self.button_pause_resume.setEnabled(False)
@@ -140,7 +144,7 @@ class ButtonShelf(QWidget):
         """
         self._pause = not self._pause
         self._set_button(reload_val=False, execute_all_val=False, execute_sel_val=False, pause_resume_val=True,
-                         stop_val=True, reload_execute_val=False)
+                         stop_val=True, reload_execute_val=False, save_val=False)
         self._pause_resume_set(pause_resume_val=self._pause)
         self.SIGNAL_PAUSE.emit()
 
@@ -165,11 +169,11 @@ class ButtonShelf(QWidget):
         set buttons when execute tasks, will be connected with signal from other widget
         """
         self._set_button(reload_val=False, execute_all_val=False, execute_sel_val=False, pause_resume_val=True,
-                         stop_val=True, reload_execute_val=False)
+                         stop_val=True, reload_execute_val=False, save_val=False)
         self._pause_resume_set(pause_resume_val=False)
 
     def _set_button(self, reload_val=True, execute_all_val=True, execute_sel_val=True, pause_resume_val=False,
-                    stop_val=False, reload_execute_val=True):
+                    stop_val=False, reload_execute_val=True, save_val=True):
         """
         set buttons enabled/disabled
 
@@ -180,6 +184,7 @@ class ButtonShelf(QWidget):
             pause_resume_val(bool): pause resume button's enabled/disabled value, default is False
             stop_val(bool): stop button's enabled/disabled value, default is False
             reload_execute_val(bool): reload and execute button's enabled/disabled value, default is True
+            save_val(bool): save button's enabled/disabled value, default is True
         """
         # set reload button
         self.button_reload.setEnabled(reload_val)
@@ -198,6 +203,9 @@ class ButtonShelf(QWidget):
 
         # set stop button
         self.button_stop.setEnabled(stop_val)
+
+        # set save button
+        self.button_save.setEnabled(save_val)
 
     def _pause_resume_set(self, pause_resume_val=False):
         """
