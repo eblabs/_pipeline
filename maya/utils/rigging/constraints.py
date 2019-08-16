@@ -12,7 +12,7 @@ import utils.common.mathUtils as mathUtils
 import utils.common.logUtils as logUtils
 
 # CONSTANT
-logger = logUtils.get_logger(name='constraints', level='info')
+logger = logUtils.logger
 
 
 # FUNCTION

@@ -22,7 +22,7 @@ import utils.common.files as files
 import utils.common.modules as modules
 
 # CONSTANT
-logger = logUtils.get_logger(name='task_creation', level='info')
+logger = logUtils.logger
 
 
 # CLASS

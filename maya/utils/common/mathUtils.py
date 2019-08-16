@@ -10,7 +10,7 @@ import numpy
 import logUtils
 
 # CONSTANT
-logger = logUtils.get_logger(name='mathUtils', level='info')
+logger = logUtils.logger
 
 MATRIX_DEFAULT = [1.0, 0.0, 0.0, 0.0,
                   0.0, 1.0, 0.0, 0.0,

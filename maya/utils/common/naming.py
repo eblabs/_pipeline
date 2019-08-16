@@ -18,7 +18,7 @@ DATA_INVERSE = {}
 for key, item in DATA_CONFIG.iteritems():
     DATA_INVERSE.update({key: {v: k for k, v in item.iteritems()}})
 
-logger = logUtils.get_logger(name='naming', level='info')
+logger = logUtils.logger
 
 
 #  CLASS

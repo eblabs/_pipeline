@@ -16,7 +16,7 @@ import utils.common.logUtils as logUtils
 import dev.rigging.task.config.PROPERTY_ITEMS as PROPERTY_ITEMS
 PROPERTY_ITEMS = PROPERTY_ITEMS.PROPERTY_ITEMS
 
-logger = logUtils.get_logger(name='callback', level='info')
+logger = logUtils.logger
 
 # kwargs_ui for further use
 kwargs_ui = OrderedDict()

@@ -17,7 +17,7 @@ import utils.common.logUtils as logUtils
 import dev.rigging.task.config.PROPERTY_ITEMS as PROPERTY_ITEMS
 PROPERTY_ITEMS = PROPERTY_ITEMS.PROPERTY_ITEMS
 
-logger = logUtils.get_logger(name='task', level='info')
+logger = logUtils.logger
 
 
 # CLASS
@@ -39,6 +39,7 @@ class Task(object):
         self.kwargs_ui = OrderedDict()
 
         self.signal = 1  # 1 is success, 2 is warning, error will be caught by ui
+        self.message = ''  # if want to show any specific message to log window when click on status icon
 
         self.register_attrs(**kwargs)
 
@@ -72,12 +73,15 @@ class Task(object):
 
     def pre_build(self):
         self.signal = 1  # preset the signal to avoid overwrite
+        self.message = ''
 
     def build(self):
         self.signal = 1  # preset the signal to avoid overwrite
+        self.message = ''
 
     def post_build(self):
         self.signal = 1  # preset the signal to avoid overwrite
+        self.message = ''
 
     def register_attrs(self, **kwargs):
         self.register_kwargs()

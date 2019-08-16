@@ -38,7 +38,7 @@ import icons
 import taskCreator
 
 # CONSTANT
-logger = logUtils.get_logger(name='rig_build', level='info')
+logger = logUtils.logger
 
 ROLE_TASK_NAME = Qt.UserRole + 1
 ROLE_TASK_PATH = Qt.UserRole + 2
@@ -51,6 +51,9 @@ ROLE_TASK_POST = Qt.UserRole + 8
 ROLE_TASK_SECTION = Qt.UserRole + 9
 ROLE_TASK_TYPE = Qt.UserRole + 10
 ROLE_TASK_INHERITANCE = Qt.UserRole + 11
+ROLE_TASK_STATUS_INFO = Qt.UserRole + 12
+
+CHECK_STATE = [Qt.Unchecked, Qt.Checked]
 
 # icons
 ICONS_STATUS = []  # convert icon image to pixel map so we can make it smaller in ui
@@ -68,7 +71,7 @@ SC_RELOAD = 'Ctrl+R'
 SC_RUN_ALL = 'Ctrl+Shift+Space'
 SC_RUN_PAUSE = 'Ctrl+Space'
 SC_RELOAD_RUN = 'Ctrl+Shift+R'
-SC_REMOVE = 'delete'
+SC_REMOVE = 'Ctrl+delete'
 SC_DUPLICATE = 'Ctrl+D'
 SC_EXPAND_COLLAPSE = 'CTRL+K'
 
@@ -82,6 +85,7 @@ class TreeWidget(QTreeWidget):
     SIGNAL_ATTR_NAME = Signal(QTreeWidgetItem)
     SIGNAL_TASK_TYPE = Signal(QTreeWidgetItem)
     SIGNAL_GET_BUILDER = Signal()
+    SIGNAL_LOG_INFO = Signal(str, str)
 
     def __init__(self,  **kwargs):
         super(TreeWidget, self).__init__()
@@ -103,6 +107,8 @@ class TreeWidget(QTreeWidget):
         self.task_folders = ['dev.rigging.task.core',
                              'dev.rigging.task.base',
                              'dev.rigging.task.test']
+
+        self.setFocusPolicy(Qt.NoFocus)
 
         header_item = QTreeWidgetItem(self._header)
         self.setHeaderItem(header_item)
@@ -205,6 +211,7 @@ class TreeWidget(QTreeWidget):
 
         self.itemChanged.connect(self._item_data_changed)
         self.itemPressed.connect(self._item_data_changed_reset)
+        self.itemClicked.connect(self._show_log_status_info)
 
     def add_tree_items(self):
         self._add_child_item(self._root,
@@ -361,6 +368,7 @@ class TreeWidget(QTreeWidget):
                 items_collect = self._collect_items(item)
                 for item_setCol in items_collect:
                     item_setCol.setBackground(0, col)
+                    print col
 
     def set_text_color(self):
         items = self.selectedItems()
@@ -457,7 +465,6 @@ class TreeWidget(QTreeWidget):
             task_path = item.data(0, ROLE_TASK_PATH)
             task = item.data(0, ROLE_TASK_FUNC)
             task_kwargs = item.data(0, ROLE_TASK_KWARGS)
-            check = item.checkState(0)
             section = item.data(0, ROLE_TASK_SECTION)
             task_type = item.data(0, ROLE_TASK_TYPE)
 
@@ -470,7 +477,7 @@ class TreeWidget(QTreeWidget):
                           'task_path': task_path,
                           'task': task,
                           'task_kwargs': task_kwargs,
-                          'check': check,
+                          'check': 1,
                           'section': section,
                           'inheritance': False}
 
@@ -545,6 +552,29 @@ class TreeWidget(QTreeWidget):
                 task_kwargs = item.data(0, ROLE_TASK_KWARGS)
                 task_path = item.data(0, ROLE_TASK_PATH)
                 parent = item.parent()
+                check = item.checkState(0)
+
+                text_color_role = item.data(0, Qt.ForegroundRole)
+                background_color_role = item.data(0, Qt.BackgroundRole)
+
+                if not text_color_role:
+                    text_color = None
+                else:
+                    text_color = [item.foreground(0).color().red(),
+                                  item.foreground(0).color().green(),
+                                  item.foreground(0).color().blue()]
+
+                if not background_color_role:
+                    background_color = None
+                else:
+                    background_color = [item.background(0).color().red(),
+                                        item.background(0).color().green(),
+                                        item.background(0).color().blue()]
+
+                if check == Qt.Checked:
+                    check = 1
+                else:
+                    check = 0
                 if parent:
                     parent = parent.text(0)
                 else:
@@ -553,7 +583,10 @@ class TreeWidget(QTreeWidget):
                                            'task_path': task_path,
                                            'task_kwargs': task_kwargs,
                                            'parent': parent,
-                                           'index': index_previous}})
+                                           'index': index_previous,
+                                           'check': check,
+                                           'text_color': text_color,
+                                           'background_color': background_color}})
                 index_previous = task
 
             # save data
@@ -700,8 +733,6 @@ class TreeWidget(QTreeWidget):
         item.addChild(item_create)
 
     def _create_task(self, task_info):
-        print 'task_info'
-        print task_info
         attr_name = task_info[0]
         display = task_info[1]
         task_path = task_info[2]
@@ -731,7 +762,7 @@ class TreeWidget(QTreeWidget):
                   'task_path': task_path,
                   'task': task,
                   'task_kwargs': task_kwargs,
-                  'check': Qt.Checked,
+                  'check': 1,
                   'inheritance': False}
 
         item = self.selectedItems()
@@ -758,6 +789,18 @@ class TreeWidget(QTreeWidget):
 
     def _item_data_changed_reset(self, *args):
         self._change = False
+
+    def _show_log_status_info(self, *args):
+        item = self.currentItem()
+        col = self.currentColumn()
+        log_status_info = item.data(0, ROLE_TASK_STATUS_INFO)
+        if col > 0:
+            log_info = log_status_info[col-1]
+            level_index = item.data(0, [ROLE_TASK_PRE, ROLE_TASK_RUN, ROLE_TASK_POST][col-1])
+            level = ['info', 'warning', 'error'][level_index - 1]
+            check = item.checkState(0)
+            if check == Qt.Checked and log_info:
+                self.SIGNAL_LOG_INFO.emit(log_info, level)
 
     def task_create_window_open(self):
         # try close window in case it's opened
@@ -813,19 +856,34 @@ class TaskItem(QTreeWidgetItem):
         task_path = kwargs.get('task_path', '')
         task = kwargs.get('task', None)
         task_kwargs = kwargs.get('task_kwargs', {})
-        check = kwargs.get('check', Qt.Checked)
+        check = kwargs.get('check', 1)
         section = kwargs.get('section', '')
         inheritance = kwargs.get('inheritance', False)
+        background_color = kwargs.get('background_color', None)
+        text_color = kwargs.get('text_color', None)
 
-        set_item_data(self, display=display, attr_name=attr_name, task_path=task_path, task=task,
-                      task_kwargs=task_kwargs, section=section, inheritance=inheritance)
-
+        self.setFlags(self.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
         self.setData(0, ROLE_TASK_PRE, 0)
         self.setData(0, ROLE_TASK_RUN, 0)
         self.setData(0, ROLE_TASK_POST, 0)
+        self.setData(0, ROLE_TASK_STATUS_INFO, ['', '', ''])  # save log info for display
 
-        self.setFlags(self.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
-        self.setCheckState(0, check)
+        set_item_data(self, display=display, attr_name=attr_name, task_path=task_path, task=task,
+                      task_kwargs=task_kwargs, section=section, inheritance=inheritance, check=check)
+
+        if background_color is not None:
+            background_qcolor = QColor()
+            background_qcolor.setRgb(background_color[0], background_color[1], background_color[2])
+            self.setBackground(0, background_qcolor)
+        else:
+            self.setData(0, Qt.BackgroundRole, None)
+
+        if text_color is not None:
+            text_qcolor = QColor()
+            text_qcolor.setRgb(text_color[0], text_color[1], text_color[2])
+            self.setForeground(0, text_qcolor)
+        else:
+            self.setData(0, Qt.ForegroundRole, None)
 
         font = QFont()
         font.setPointSize(9)
@@ -1000,8 +1058,9 @@ class ItemRunner(QThread):
                 func = getattr(task_obj, section)
                 maya.utils.executeInMainThreadWithResult(func)
                 return_signal = task_obj.signal
+                message = task_obj.message
 
-                self._execute_setting(item, return_signal, 'task', display, role, section)
+                self._execute_setting(item, return_signal, 'task', display, role, section, message)
 
             except Exception as exc:
                 self._error_setting(item, exc, role)
@@ -1013,10 +1072,12 @@ class ItemRunner(QThread):
         self.SIGNAL_ERROR.emit()
         self._parent.setEnabled(True)  # enable back widget if error
         logger.error(exc)
+
+        # save log info for display
+        self._save_log_status_info(item, exc, role)
         raise
 
-    @ staticmethod
-    def _execute_setting(item, task_return, function_name, display, role, section):
+    def _execute_setting(self, item, task_return, function_name, display, role, section, message):
         if task_return == 2:
             # warning raises
             item.setData(0, role, 2)
@@ -1024,8 +1085,25 @@ class ItemRunner(QThread):
             # run successfully
             item.setData(0, role, 1)
 
+        if message:
+            # save log info for display
+            self._save_log_status_info(item, message, role)
+
         # log
         logger.info('[{}] -- Run {} "{}" successfully'.format(section, function_name, display))
+
+    @staticmethod
+    def _save_log_status_info(item, message, role):
+        if role == ROLE_TASK_PRE:
+            index = 0
+        elif role == ROLE_TASK_RUN:
+            index = 1
+        else:
+            index = 2
+
+        log_status_info = item.data(0, ROLE_TASK_STATUS_INFO)
+        log_status_info[index] = message
+        item.setData(0, ROLE_TASK_STATUS_INFO, log_status_info)
 
 
 class SubMenu(QMenu):
@@ -1130,6 +1208,7 @@ def set_item_data(item, **kwargs):
         task_kwargs(dict): task ui kwargs
         section(str): register to specific section, normally for in-class method
         inheritance(bool): if the task is inherited from parent class
+        check(int): task check state
     """
     display = kwargs.get('display', None)
     attr_name = kwargs.get('attr_name', None)
@@ -1138,6 +1217,7 @@ def set_item_data(item, **kwargs):
     task_kwargs = kwargs.get('task_kwargs', None)
     section = kwargs.get('section', None)
     inheritance = kwargs.get('inheritance', None)
+    check = kwargs.get('check', None)
 
     if display is not None:
         item.setText(0, display)
@@ -1172,6 +1252,9 @@ def set_item_data(item, **kwargs):
     if task_kwargs is not None:
         item.setData(0, ROLE_TASK_KWARGS, task_kwargs)
         item.setData(0, ROLE_TASK_KWARGS_KEY, task_kwargs.keys())
+
+    if check is not None:
+        item.setCheckState(0, CHECK_STATE[check])
 
 
 # Fix

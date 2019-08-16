@@ -7,7 +7,7 @@ import maya.cmds as cmds
 import logUtils
 
 # CONSTANT
-logger = logUtils.get_logger(name='hierarchy', level='info')
+logger = logUtils.logger
 
 
 # FUNCTION

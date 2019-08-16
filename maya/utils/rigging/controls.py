@@ -30,7 +30,7 @@ SIDE_CONFIG = files.read_json_file(os.path.join(CONFIG_PATH, 'CONTROL_SIDE_COLOR
 
 ASCII = string.ascii_uppercase
 
-logger = logUtils.get_logger(name='controls', level='info')
+logger = logUtils.logger
 
 
 # CLASS

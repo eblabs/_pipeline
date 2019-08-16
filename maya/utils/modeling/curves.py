@@ -12,7 +12,7 @@ import utils.common.hierarchy as hierarchy
 import utils.common.logUtils as logUtils
 
 # CONSTANT
-logger = logUtils.get_logger(name='curves', level='info')
+logger = logUtils.logger
 
 
 #    FUNCTION

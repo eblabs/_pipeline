@@ -13,7 +13,7 @@ infile = open(BUILD_TEMPLATE.__file__, 'r')
 BUILD_TEMPLATE = infile.read()
 infile.close()
 
-logger = logUtils.get_logger(name='assets', level='info')
+logger = logUtils.logger
 
 
 # FUNCTION

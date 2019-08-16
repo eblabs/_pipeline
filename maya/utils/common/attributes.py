@@ -22,7 +22,7 @@ ATTR_CONFIG = {'all': ['translateX', 'translateY', 'translateZ',
                'rotateOrder': ['rotateOrder']}
 
 # logger
-logger = logUtils.get_logger(name='attributes', level='info')
+logger = logUtils.logger
 
 
 #  CLASS

@@ -13,7 +13,7 @@ import variables
 import logUtils
 
 # CONSTANT
-logger = logUtils.get_logger(name='nodeUtils', level='info')
+logger = logUtils.logger
 
 
 # FUNCTION

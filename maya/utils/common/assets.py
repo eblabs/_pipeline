@@ -14,7 +14,7 @@ import logUtils
 import projects
 PROJECTS_ROOT = os.path.dirname(projects.__file__)
 
-logger = logUtils.get_logger(name='assets', level='info')
+logger = logUtils.logger
 
 
 # FUNCTION

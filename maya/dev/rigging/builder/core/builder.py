@@ -13,7 +13,7 @@ import utils.common.files as files
 import utils.common.logUtils as logUtils
 
 # CONSTANT
-logger = logUtils.get_logger('builder', level='info')
+logger = logUtils.logger
 
 
 # CLASS
@@ -81,6 +81,10 @@ class Builder(object):
             kwargs(dict): task kwargs
             section(str): register task in specific section (normally for in-class method)
                           'pre_build', 'build', 'post_build', default is 'post_build'
+            background_color(list): task background color, None will use the default,
+                                    use str 'default' to set back to default
+            text_color(list): task text color, None will use the default
+                              use str 'default' to set back to default
         """
 
         # get kwargs
@@ -91,11 +95,16 @@ class Builder(object):
         _parent = variables.kwargs('parent', '', kwargs, short_name='p')
         _kwargs = variables.kwargs('kwargs', {}, kwargs)
         _section = variables.kwargs('section', 'post_build', kwargs)
+        _background_color = variables.kwargs('background_color', None, kwargs)
+        _text_color = variables.kwargs('text_color', None, kwargs)
 
-        _inheritance = variables.kwargs('inheritance', None, kwargs)  # this is not for user, use for loading task info
+        # kwargs for loading task info only, not for user
+        _inheritance = variables.kwargs('inheritance', None, kwargs)
+        _check = variables.kwargs('check', 1, kwargs)
 
         if _inheritance is None:
             _level = check_level()  # check if the task is referenced or created in the class
+
             if _level > 0:
                 _inheritance = True
             else:
@@ -139,7 +148,10 @@ class Builder(object):
                       'parent': _parent,
                       'section': _section,
                       'inheritance': _inheritance,
-                      'index': _index}
+                      'index': _index,
+                      'check': _check,
+                      'background_color': _background_color,
+                      'text_color': _text_color}
 
         self._tasks_info.update({_name: _task_info})
 
@@ -160,6 +172,11 @@ class Builder(object):
                             if given string, it will register after the given task
             parent(str): parent task to the given task
             kwargs(dict): task kwargs
+            check(int): task check state
+            background_color(list): task background color, None will use the default,
+                                    use str 'default' to set back to default
+            text_color(list): task text color, None will use the default
+                              use str 'default' to set back to default
         """
         _task_kwargs = {}
         # get kwargs
@@ -168,6 +185,9 @@ class Builder(object):
         _parent = variables.kwargs('parent', '', kwargs, short_name='p')
         _kwargs = variables.kwargs('kwargs', {}, kwargs)
         _index = variables.kwargs('index', None, kwargs, short_name='i')
+        _check = variables.kwargs('check', 1, kwargs)
+        _background_color = variables.kwargs('background_color', None, kwargs)
+        _text_color = variables.kwargs('text_color', None, kwargs)
 
         if _display:
             self._tasks_info[name]['display'] = _display
@@ -206,6 +226,19 @@ class Builder(object):
 
         if _index is not None:
             self._tasks_info[name]['index'] = _index
+
+        if _check != self._tasks_info[name]['check']:
+            self._tasks_info[name]['check'] = _check
+
+        if _background_color is not None:
+            if _background_color == 'default':
+                _background_color = None
+            self._tasks_info[name]['background_color'] = _background_color
+
+        if _text_color is not None:
+            if _text_color == 'default':
+                _text_color = None
+            self._tasks_info[name]['text_color'] = _text_color
 
     def load_task_data(self):
         for i, tasks_level in enumerate(self.tasks_level_list[:-1]):
@@ -287,8 +320,11 @@ class Builder(object):
             else:
                 # task was in class, check differences
                 task_data_update = {}
-                for key in ['display', 'task_path', 'parent']:
-                    if key in task_data and task_data[key] != self._tasks_info_compare[task][key]:
+                for key in ['display', 'task_path', 'parent', 'check', 'text_color', 'background_color']:
+                    if key in task_data and key not in self._tasks_info_compare[task]:
+                        # update key
+                        task_data_update.update({key: task_data[key]})
+                    elif key in task_data and task_data[key] != self._tasks_info_compare[task][key]:
                         # key value is different, add to save dictionary
                         task_data_update.update({key: task_data[key]})
                 # ui kwargs
@@ -375,7 +411,10 @@ class Builder(object):
                                 'task_kwargs': task_info['task_kwargs'],
                                 'section': task_info['section'],
                                 'children': [],
-                                'inheritance': task_info['inheritance']}}
+                                'inheritance': task_info['inheritance'],
+                                'check': task_info['check'],
+                                'background_color': task_info['background_color'],
+                                'text_color': task_info['text_color']}}
         if parent:
             for hie_info in hierarchy:
                 key = hie_info.keys()[0]
