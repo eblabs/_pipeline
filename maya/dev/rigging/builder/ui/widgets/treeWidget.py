@@ -316,14 +316,18 @@ class TreeWidget(QTreeWidget):
         if section is None:
             section = ['pre_build', 'build', 'post_build']
         items = self.selectedItems()
-        self._run_task(items=items, section=section)
-        self.SIGNAL_EXECUTE.emit()
+        if items:
+            self._run_task(items=items, section=section)
+            self.SIGNAL_EXECUTE.emit()
 
     def run_all_tasks(self, section=None):
         if section is None:
             section = ['pre_build', 'build', 'post_build']
-        self._run_task(section=section)
-        self.SIGNAL_EXECUTE.emit()
+        top_item_count = self.topLevelItemCount()
+        if top_item_count:
+            # builder loaded
+            self._run_task(section=section)
+            self.SIGNAL_EXECUTE.emit()
 
     def rebuild_tasks(self, section=None):
         if section is None:
@@ -803,10 +807,14 @@ class TreeWidget(QTreeWidget):
                 self.SIGNAL_LOG_INFO.emit(log_info, level)
 
     def task_create_window_open(self):
+        # get task folders
+        task_folders = self.task_folders[:]
+        task_folders.append(self._get_project_task_folder(self.builder))
+
         # try close window in case it's opened
         self.task_create_window.close()
         self.task_create_window.refresh_widgets()
-        self.task_create_window.widget_task_creation.rebuild_list_model(self.task_folders)
+        self.task_create_window.widget_task_creation.rebuild_list_model(task_folders)
         self.task_create_window.move(self._pos)
         self.task_create_window.show()
 
@@ -829,8 +837,12 @@ class TreeWidget(QTreeWidget):
             QMessageBox.warning(self, title, text)
             return
         else:
+            # get task folders
+            task_folders = self.task_folders[:]
+            task_folders.append(self._get_project_task_folder(self.builder))
+
             self.task_switch_window.refresh_widgets()
-            self.task_switch_window.widget_task_creation.rebuild_list_model(self.task_folders)
+            self.task_switch_window.widget_task_creation.rebuild_list_model(task_folders)
             self.task_switch_window.move(pos)
             self.task_switch_window.show()
 
@@ -845,6 +857,11 @@ class TreeWidget(QTreeWidget):
         if name_orig:
             name_list.remove(name_orig)
         return name_new_add
+
+    @staticmethod
+    def _get_project_task_folder(builder):
+        if builder:
+            return 'projects.{}.scripts.tasks'.format(builder.project)
 
 
 class TaskItem(QTreeWidgetItem):

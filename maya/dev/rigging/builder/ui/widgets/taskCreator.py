@@ -86,6 +86,7 @@ class TaskListView(QListView):
     """
     def __init__(self, parent=None):
         super(TaskListView, self).__init__(parent)
+        self.setFocusPolicy(Qt.NoFocus)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape and event.modifiers() == Qt.NoModifier:
@@ -124,11 +125,6 @@ class TaskCreate(QDialog):
 
         layout_base = QVBoxLayout()
         self.setLayout(layout_base)
-
-        self.menu_bar = QMenuBar()
-        self.menu_bar.setNativeMenuBar(False)
-        self.add_folder = self.menu_bar.addAction('Edit Folders')
-        layout_base.setMenuBar(self.menu_bar)
 
         if set_name:
             # add task name and display name widget if set name, (different between task creation / task switch)
