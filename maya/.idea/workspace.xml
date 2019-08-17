@@ -3,26 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskCreator.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskCreator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/callback.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/callback.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/assets.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/assets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/attributes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/hierarchy.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/hierarchy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/logWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/logWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/maya.sublime-workspace" beforeDir="false" afterPath="$PROJECT_DIR$/maya.sublime-workspace" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/common/logUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/logUtils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/mathUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/mathUtils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/naming.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/naming.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/nodeUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/nodeUtils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/transforms.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/transforms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/modeling/curves.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/modeling/curves.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/rigging/buildUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/buildUtils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/rigging/constraints.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/constraints.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/rigging/controls.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/controls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/rigging/joints.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/joints.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

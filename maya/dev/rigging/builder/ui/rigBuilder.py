@@ -203,6 +203,6 @@ class RigBuilder(uiUtils.BaseWindow):
         self.tree_widget.item_runner.finished.connect(self.property_editor.enable_widget)
 
         # log
-        logger.connector.SIGNAL_EMIT.connect(self.log_window.add_log_info)
-        self.button_shelf.SIGNAL_RELOAD.connect(self.log_window.refresh)
-        self.tree_widget.SIGNAL_LOG_INFO.connect(self.log_window.show_status_info)
+        logger.connector.SIGNAL_EMIT.connect(self.log_window.log_info_widget.add_log_info)
+        self.button_shelf.SIGNAL_RELOAD.connect(self.log_window.log_info_widget.refresh)
+        self.tree_widget.SIGNAL_LOG_INFO.connect(self.log_window.log_info_widget.show_status_info)

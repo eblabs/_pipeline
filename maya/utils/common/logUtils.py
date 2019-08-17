@@ -23,6 +23,12 @@ LOG_LEVEL = {'info': logging.INFO,
              'critical': logging.CRITICAL,
              'debug': logging.DEBUG}
 
+LOG_LEVEL_INDEX = {'debug': -1,
+                   'info': 0,
+                   'warning': 1,
+                   'error': 2,
+                   'critical': 3}
+
 logger_debug = logging.getLogger('debug')
 
 
