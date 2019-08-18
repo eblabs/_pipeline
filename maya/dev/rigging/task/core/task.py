@@ -156,6 +156,24 @@ class Task(object):
 
         self._register_attr_to_task([name, value, attr_name, short_name], kwargs_ui)
 
+    def remove_attribute(self, name, attr_name=None):
+        """
+        remove the task attribute
+
+        Args:
+            name(str): attribute name in kwargs
+
+        Keyword Args:
+            attr_name(str): attribute name in class
+        """
+        if attr_name:
+            key = attr_name
+        else:
+            key = name
+
+        self.kwargs_task.pop(key, None)
+        self.kwargs_ui.pop(name, None)
+
     def _register_attr_to_task(self, kwargs_task, kwargs_ui):
         """
         add custom attribute to task

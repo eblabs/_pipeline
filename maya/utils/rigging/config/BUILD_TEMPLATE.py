@@ -57,6 +57,10 @@ class Builder(CLASS_INHERIT):
             kwargs(dict): task kwargs
             section(str): register task in specific section (normally for in-class method)
                           'pre_build', 'build', 'post_build', default is 'post_build'
+            background_color(list): task background color, None will use the default,
+                                    use str 'default' to set back to default
+            text_color(list): task text color, None will use the default
+                              use str 'default' to set back to default
         """
         super(Builder, self).tasks_registration()
 '''
