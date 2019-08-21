@@ -4,6 +4,8 @@ try:
 except ImportError:
     from PySide.QtGui import *
 
+# import OrderedDict
+from collections import OrderedDict
 
 PROPERTY_ITEMS = {'str': {'default': '',
                           'widget': QLineEdit},
@@ -37,7 +39,12 @@ PROPERTY_ITEMS = {'str': {'default': '',
                                'height': 100,
                                'widget': QPlainTextEdit},
 
-                  'data': {'default': {},
-                           'template': {'project': '', 'asset': '', 'rig_type': ''},
-                           'widget': QLineEdit}
+                  'rig_data': {'default': {'project': '', 'asset': '', 'rig_type': ''},
+                               'template': {'project': '', 'asset': '', 'rig_type': ''},
+                               'keys_order': ['project', 'asset', 'rig_type'],
+                               'widget': QLineEdit},
+
+                  'model_data': {'default': {},
+                                 'template': {'project': '', 'asset': '', 'model_type': '', 'resolution': ''},
+                                 'widget': QLineEdit},
                   }

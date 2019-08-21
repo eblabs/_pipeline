@@ -20,13 +20,14 @@ import json
 import ast
 
 # import OrderedDict
-from collections import OrderedDict 
+from collections import OrderedDict
 
 # import maya
 import maya.cmds as cmds
 
 # CONSTANT
 import dev.rigging.task.config.PROPERTY_ITEMS as PROPERTY_ITEMS
+
 PROPERTY_ITEMS = PROPERTY_ITEMS.PROPERTY_ITEMS
 
 ROLE_ITEM_KWARGS = Qt.UserRole + 1
@@ -37,6 +38,7 @@ ROLE_TASK_KWARGS_KEY = Qt.UserRole + 5
 #  CLASS
 class PropertyEditor(QTreeView):
     """base class for PropertyEditor"""
+
     def __init__(self):
         super(PropertyEditor, self).__init__()
         self._property = []
@@ -114,7 +116,7 @@ class PropertyEditor(QTreeView):
         for key in data_property_keys:
             data = data_property[key]
             # add row item
-            row, template_child, key_edit = self._add_row_item(key, item_kwargs=data, key_edit=False)
+            row, template_child, key_edit, keys_order = self._add_row_item(key, item_kwargs=data, key_edit=False)
 
             # add row
             self._model.appendRow(row)
@@ -125,7 +127,7 @@ class PropertyEditor(QTreeView):
                 val = data['value']
             else:
                 val = data['default']
-            self._add_child(row[0], val, template=template_child, key_edit=key_edit)
+            self._add_child(row[0], val, template=template_child, key_edit=key_edit, keys_order=keys_order)
 
     def refresh(self):
         self.setEnabled(True)
@@ -139,31 +141,38 @@ class PropertyEditor(QTreeView):
         self._enable = not self._enable
         self.setEnabled(self._enable)
 
-    def _add_child(self, item, data, template=None, key_edit=False):
+    def _add_child(self, item, data, template=None, key_edit=False, keys_order=None):
         """
         add child items to the given item
 
         Args:
-            item(QStandardItem):
+            item(QStandardItem)
             data: item's value
 
         Keyword Args:
             template(dict): item's template info, used for add item for list/dict item
             key_edit(bool): if key is editable, only used for dict item
+            keys_order(list): if dictionary's keys need to be showed in order
         """
+
         if isinstance(data, list):
+            template_type = check_item_type(template)
             # loop in each item in list
             for i, val in enumerate(data):
-                row, template_child, key_edit = self._add_row_item(str(i), val=val, item_kwargs={'type': template})
+                row, template_child, key_edit, keys_order = self._add_row_item(str(i), val=val,
+                                                                               item_kwargs={'type': template_type})
 
                 # add row
                 item.appendRow(row)
 
                 # loop downstream
-                self._add_child(row[0], val, template=template_child)
+                self._add_child(row[0], val, template=template_child, keys_order=keys_order)
 
         elif isinstance(data, dict):
-            for key, val in data.iteritems():
+            if not keys_order:
+                keys_order = data.keys()
+            for key in keys_order:
+                val = data[key]
                 if template:
                     if isinstance(template, dict):
                         if key in template:
@@ -175,14 +184,16 @@ class PropertyEditor(QTreeView):
                 else:
                     attr_type = None
 
-                row, template_child, key_edit_child = self._add_row_item(key, val=val, item_kwargs={'type': attr_type},
-                                                                   key_edit=key_edit)
+                row, template_child, \
+                    key_edit_child, keys_order_child = self._add_row_item(key, val=val, item_kwargs={'type': attr_type},
+                                                                          key_edit=key_edit)
 
                 # add row
                 item.appendRow(row)
 
                 # loop downstream
-                self._add_child(row[0], val, template=template_child, key_edit=key_edit_child)
+                self._add_child(row[0], val, template=template_child, key_edit=key_edit_child,
+                                keys_order=keys_order_child)
 
     def _update_parent(self, item):
         # get item parent
@@ -213,9 +224,9 @@ class PropertyEditor(QTreeView):
                 attr = convert_data_to_str(self._model.data(index_attr))
                 val = convert_data(self._model.data(index_val))
                 if isinstance(value, list):
-                    value_collect.append(convert_data_to_str(val))
+                    value_collect.append(val)
                 else:
-                    value_collect.update({attr: convert_data_to_str(val)})
+                    value_collect.update({attr: val})
 
             # assign data
             if value != value_collect:
@@ -261,8 +272,13 @@ class PropertyEditor(QTreeView):
             if item_kwargs and 'key_edit' in item_kwargs:
                 key_edit = item_kwargs['key_edit']
 
+            # get keys_order value
+            keys_order = None
+            if item_kwargs and 'keys_order' in item_kwargs:
+                keys_order = item_kwargs['keys_order']
+
             # rebuild
-            self._add_child(item_attr, value, template=template, key_edit=key_edit)
+            self._add_child(item_attr, value, template=template, key_edit=key_edit, keys_order=keys_order)
 
     def _add_row_item(self, key, val=None, item_kwargs=None, key_edit=False):
         if item_kwargs is None:
@@ -280,8 +296,11 @@ class PropertyEditor(QTreeView):
         column_property.setData(self._size, role=Qt.SizeHintRole)
 
         # update kwargs
-        if 'type' in item_kwargs and item_kwargs['type']:
-            kwargs_add = PROPERTY_ITEMS[item_kwargs['type']].copy()  # make a copy so the config won't be changed
+        if 'type' in item_kwargs:
+            item_type = item_kwargs['type']
+            if item_type not in PROPERTY_ITEMS:
+                item_type = check_item_type(item_type)
+            kwargs_add = PROPERTY_ITEMS[item_type].copy()  # make a copy so the config won't be changed
             kwargs_add.update(item_kwargs)
             item_kwargs = kwargs_add
 
@@ -307,7 +326,12 @@ class PropertyEditor(QTreeView):
         if 'key_edit' in item_kwargs:
             key_edit = item_kwargs['key_edit']
 
-        return [column_property, column_val], template, key_edit
+        # get keys_order val
+        keys_order = None
+        if 'keys_order' in item_kwargs:
+            keys_order = item_kwargs['keys_order']
+
+        return [column_property, column_val], template, key_edit, keys_order
 
     def _show_menu(self, pos):
         index = self.currentIndex()
@@ -418,17 +442,33 @@ class PropertyEditor(QTreeView):
         # convert value
         val = convert_data(val)
 
+        # get template
+        kwargs = item.data(role=ROLE_ITEM_KWARGS)
+
         if isinstance(val, list):
+            append_val = ''
+            if 'template' in kwargs and kwargs['template']:
+                template_info = kwargs['template']
+                if template_info is not None:
+                    if not isinstance(template_info, basestring):
+                        append_val = template_info
+                    elif template_info not in PROPERTY_ITEMS:
+                        append_val = template_info
+                    else:
+                        append_val = PROPERTY_ITEMS[template_info]['default']
+
             # list attr
-            val.append('')
+            val.append(append_val)
         else:
             # dict attr
             # check if has key
             if val.keys():
                 key = val.keys()[-1] + '_copy'
+                append_val = val[val.keys()[-1]]
             else:
                 key = 'key'
-            val.update({key: ''})
+                append_val = ''
+            val.update({key: append_val})
 
         item.setText(convert_data_to_str(val))
 
@@ -463,7 +503,7 @@ class PropertyEditor(QTreeView):
             # get key
             index_parent = self._model.index(item.row(), 0, parent=index_parent)
             key = convert_data(self._model.data(index_parent))
-            val_parent.update({key+'_copy': val})
+            val_parent.update({key + '_copy': val})
 
         item_parent.setText(convert_data_to_str(val_parent))
 
@@ -607,6 +647,7 @@ class PropertyItem(QStandardItem):
     especially for list and dictionary,
     it hold the template to add items
     """
+
     def __init__(self, data_info=None):
         super(PropertyItem, self).__init__()
 
@@ -650,3 +691,24 @@ def convert_data_to_str(value):
     else:
         value = str(value)
     return value
+
+
+def check_item_type(item_value):
+    if isinstance(item_value, basestring):
+        if item_value in PROPERTY_ITEMS:
+            item_type = item_value
+        else:
+            item_type = 'str'
+    elif isinstance(item_value, float):
+        item_type = 'float'
+    elif isinstance(item_value, int):
+        item_type = 'int'
+    elif isinstance(item_value, bool):
+        item_type = 'bool'
+    elif isinstance(item_value, list):
+        item_type = 'list'
+    elif isinstance(item_value, dict):
+        item_type = 'dict'
+    else:
+        item_type = None
+    return item_type

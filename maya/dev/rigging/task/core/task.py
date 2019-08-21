@@ -118,6 +118,7 @@ class Task(object):
             enum(list): enum options
             template: list/dict children template
             key_edit(bool): if double click can edit dict key name
+            keys_order(list): if the dictionary's keys need to show by order
             hint(str): attribute's hint
         """
 

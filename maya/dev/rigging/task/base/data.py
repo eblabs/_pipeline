@@ -25,6 +25,7 @@ class Data(task.Task):
     def __init__(self, **kwargs):
         super(Data, self).__init__(**kwargs)
         self._task = 'dev.rigging.task.base.data'
+        self._task_type = 'data'
         self._data = {}
         self.data_path = []
         self.save_data_path = None
@@ -32,7 +33,7 @@ class Data(task.Task):
     def register_kwargs(self):
         super(Data, self).register_kwargs()
 
-        self.register_attribute('data', [], attr_name='data_path', short_name='d', select=False, template='data',
+        self.register_attribute('data', [], attr_name='data_path', short_name='d', select=False, template='rig_data',
                                 hint='load data from following paths')
 
     def pre_build(self):
