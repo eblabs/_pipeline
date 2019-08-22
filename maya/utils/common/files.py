@@ -121,6 +121,8 @@ def get_files_from_path(path, extension=None, exceptions=None, full_paths=True):
 
     Args:
         path(str): given path
+
+    Keyword Args:
         extension(list/str): specific extension
         exceptions(list/str): skip if worlds in exceptions
         full_paths(bool): return full path or just file name, default is True
