@@ -52,6 +52,7 @@ ROLE_TASK_SECTION = Qt.UserRole + 9
 ROLE_TASK_TYPE = Qt.UserRole + 10
 ROLE_TASK_INHERITANCE = Qt.UserRole + 11
 ROLE_TASK_STATUS_INFO = Qt.UserRole + 12
+ROLE_TASK_SAVE = Qt.UserRole + 13
 
 CHECK_STATE = [Qt.Unchecked, Qt.Checked]
 
@@ -150,6 +151,10 @@ class TreeWidget(QTreeWidget):
 
         self.menu.addSeparator()
 
+        self.action_save_data = self.menu.addAction('Save Data')
+
+        self.menu.addSeparator()
+
         self.action_create = self.menu.addAction('Create')
         self.action_create.setShortcut('Ctrl+n')
         self.action_duplicate = self.menu.addAction('Duplicate')
@@ -176,11 +181,15 @@ class TreeWidget(QTreeWidget):
         for widget in self._menu_widgets:
             widget.setEnabled(False)
 
+        self.action_save_data.setEnabled(False)
+
         # connect functions
         self.action_reload.triggered.connect(self.reload_tasks)
         self.menu_execute_sel.SIGNAL_SECTION.connect(self.run_sel_tasks)
         self.menu_execute_all.SIGNAL_SECTION.connect(self.run_all_tasks)
         self.menu_rebuild.SIGNAL_SECTION.connect(self.rebuild_tasks)
+
+        self.action_save_data.triggered.connect(self._save_task_data)
 
         self.action_duplicate.triggered.connect(self.duplicate_tasks)
         self.action_remove.triggered.connect(self.remove_tasks)
@@ -294,6 +303,7 @@ class TreeWidget(QTreeWidget):
         if not current_item:
             for widget in self._menu_widgets:
                 widget.setEnabled(False)
+            self.action_save_data.setEnabled(False)
         else:
             for widget in self._menu_widgets:
                 widget.setEnabled(True)
@@ -305,6 +315,10 @@ class TreeWidget(QTreeWidget):
                 self.action_remove.setEnabled(False)
                 if task_type == 'method':
                     self.action_duplicate.setEnabled(False)
+            # enabled save data if is rigData task
+            save_data = current_item.data(0, ROLE_TASK_SAVE)
+            if save_data:
+                self.action_save_data.setEnabled(True)
 
         self._pos = self.mapToGlobal(pos)
         self.menu.move(self._pos)  # move menu to right clicked position
@@ -372,7 +386,6 @@ class TreeWidget(QTreeWidget):
                 items_collect = self._collect_items(item)
                 for item_setCol in items_collect:
                     item_setCol.setBackground(0, col)
-                    print col
 
     def set_text_color(self):
         items = self.selectedItems()
@@ -471,6 +484,7 @@ class TreeWidget(QTreeWidget):
             task_kwargs = item.data(0, ROLE_TASK_KWARGS)
             section = item.data(0, ROLE_TASK_SECTION)
             task_type = item.data(0, ROLE_TASK_TYPE)
+            save_data = item.data(0, ROLE_TASK_SAVE)
 
             if task_type != 'method':
                 display = self._get_unique_name('', display, self._display_items)
@@ -483,7 +497,8 @@ class TreeWidget(QTreeWidget):
                           'task_kwargs': task_kwargs,
                           'check': 1,
                           'section': section,
-                          'inheritance': False}
+                          'inheritance': False,
+                          'save_data': save_data}
 
                 self._create_item(**kwargs)
 
@@ -601,7 +616,7 @@ class TreeWidget(QTreeWidget):
             name = d.keys()[0]
             data_info = d[name]
             data_info.update({'attr_name': name})
-            task_item = TaskItem(**data_info)
+            task_item = TaskItem(builder=self.builder, **data_info)
 
             display = task_item.text(0)  # get display name
             attr_name = task_item.data(0, ROLE_TASK_NAME)  # get attr name
@@ -732,7 +747,7 @@ class TreeWidget(QTreeWidget):
         if not item:
             item = self._root
 
-        item_create = TaskItem(**kwargs)
+        item_create = TaskItem(builder=self.builder, **kwargs)
 
         item.addChild(item_create)
 
@@ -740,6 +755,8 @@ class TreeWidget(QTreeWidget):
         attr_name = task_info[0]
         display = task_info[1]
         task_path = task_info[2]
+
+        save_data = False
 
         # imported task, get task object
         task_import, task_function = modules.import_module(task_path)
@@ -752,6 +769,7 @@ class TreeWidget(QTreeWidget):
             # task class
             task_obj = task()
             task_kwargs = task_obj.kwargs_ui
+            save_data = task_obj.save
 
         attr_name = self._get_unique_name('', attr_name, self._attr_items)
         self._attr_items.append(attr_name)
@@ -767,7 +785,8 @@ class TreeWidget(QTreeWidget):
                   'task': task,
                   'task_kwargs': task_kwargs,
                   'check': 1,
-                  'inheritance': False}
+                  'inheritance': False,
+                  'save_data': save_data}
 
         item = self.selectedItems()
         if item:
@@ -805,6 +824,13 @@ class TreeWidget(QTreeWidget):
             check = item.checkState(0)
             if check == Qt.Checked and log_info:
                 self.SIGNAL_LOG_INFO.emit(log_info, level)
+
+    def _save_task_data(self, *args):
+        item = self.currentItem()
+        task = item.data(0, ROLE_TASK_FUNC)
+        name = item.data(0, ROLE_TASK_NAME)
+        obj = task(builder=self.builder, name=name)
+        obj.save_data()
 
     def task_create_window_open(self):
         # get task folders
@@ -878,6 +904,7 @@ class TaskItem(QTreeWidgetItem):
         inheritance = kwargs.get('inheritance', False)
         background_color = kwargs.get('background_color', None)
         text_color = kwargs.get('text_color', None)
+        save_data = kwargs.get('save_data', False)
 
         self.setFlags(self.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
         self.setData(0, ROLE_TASK_PRE, 0)
@@ -887,6 +914,8 @@ class TaskItem(QTreeWidgetItem):
 
         set_item_data(self, display=display, attr_name=attr_name, task_path=task_path, task=task,
                       task_kwargs=task_kwargs, section=section, inheritance=inheritance, check=check)
+
+        self.setData(0, ROLE_TASK_SAVE, save_data)
 
         if background_color is not None:
             background_qcolor = QColor()
@@ -1011,7 +1040,8 @@ class ItemRunner(QThread):
                 val = data['value']
             else:
                 val = data['default']
-            kwargs_run.update({key: val})
+            attr_name = data['attr_name']
+            kwargs_run.update({attr_name: val})
 
         if not ignore_check and check_state != Qt.Checked:
             # skip unchecked task
@@ -1061,7 +1091,7 @@ class ItemRunner(QThread):
                 if not hasattr(self._parent.builder, name):
                     # normally because it is just created in ui
                     # get obj
-                    task_obj = task()
+                    task_obj = task(builder=self._parent.builder, name=name)
                     # attach obj to builder
                     setattr(self._parent.builder, name, task_obj)
                 else:
@@ -1259,6 +1289,7 @@ def set_item_data(item, **kwargs):
             item.setData(0, ROLE_TASK_TYPE, 'callback')
         else:
             item.setData(0, ROLE_TASK_TYPE, task_path)  # normally user will given task_path and task together
+
         task_type = item.data(0, ROLE_TASK_TYPE)
         if task_type not in ICONS_TASK:
             task_type = 'task'  # in case no specific icon

@@ -115,6 +115,8 @@ class Builder(object):
         if not _display:
             _display = _name
 
+        _save_data = False
+
         # get task
         if inspect.ismethod(_task_path):
             # in class method, get method name for ui display
@@ -132,6 +134,7 @@ class Builder(object):
                 # task class
                 task_obj = _task()
                 _task_kwargs = task_obj.kwargs_ui
+                _save_data = task_obj.save
                 # add attr
                 setattr(self, _name, task_obj)
             # if value in _kwargs, set value as default
@@ -151,7 +154,8 @@ class Builder(object):
                       'index': _index,
                       'check': _check,
                       'background_color': _background_color,
-                      'text_color': _text_color}
+                      'text_color': _text_color,
+                      'save_data': _save_data}
 
         self._tasks_info.update({_name: _task_info})
 
@@ -414,7 +418,8 @@ class Builder(object):
                                 'inheritance': task_info['inheritance'],
                                 'check': task_info['check'],
                                 'background_color': task_info['background_color'],
-                                'text_color': task_info['text_color']}}
+                                'text_color': task_info['text_color'],
+                                'save_data': task_info['save_data']}}
         if parent:
             for hie_info in hierarchy:
                 key = hie_info.keys()[0]

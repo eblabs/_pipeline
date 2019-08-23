@@ -23,16 +23,18 @@ class RigData(task.Task):
         data(list): list of data path
     """
     def __init__(self, **kwargs):
-        super(Data, self).__init__(**kwargs)
+        super(RigData, self).__init__(**kwargs)
         self._task = 'dev.rigging.task.core.data'
         self._task_type = 'data'
+        self._save = True
         self.data_path = []
         self.save_data_path = None
 
     def register_kwargs(self):
         super(RigData, self).register_kwargs()
 
-        self.register_attribute('data', [], attr_name='data_path', short_name='d', select=False, template='rig_data',
+        self.register_attribute('data', [{'project': '', 'asset': '', 'rig_type': ''}], attr_name='data_path',
+                                short_name='d', select=False, template='rig_data',
                                 hint='load data from following paths')
 
     def pre_build(self):
@@ -70,6 +72,7 @@ class RigData(task.Task):
             if project and asset and rig_type:
                 data_folder = buildUtils.get_data_path(self._name, rig_type, asset, project, warning=False,
                                                        check_exist=True)
+
                 if data_folder:
                     data_folder_path.append(data_folder)
 

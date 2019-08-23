@@ -34,6 +34,11 @@ class Task(object):
         self.project = None
         self.asset = None
         self.rig_type = None
+        if self._builder:
+            self.project = self._builder.project
+            self.asset = self._builder.asset
+            self.rig_type = self._builder.rig_type
+        self._save = False  # attr to check if has save function
 
         self.kwargs_task = {}
         self.kwargs_ui = OrderedDict()
@@ -58,6 +63,10 @@ class Task(object):
     @ property
     def builder(self):
         return self._builder
+
+    @ property
+    def save(self):
+        return self._save
 
     @name.setter
     def name(self, task_name):
@@ -137,8 +146,12 @@ class Task(object):
             elif isinstance(value, basestring):
                 attr_type = 'str'
 
+        if not attr_name:
+            attr_name = name
+
         kwargs_ui = PROPERTY_ITEMS[attr_type].copy()  # get kwargs from PROPERTY_ITEMS, make a copy
         kwargs_ui.update(kwargs)
+        kwargs_ui.update({'attr_name': attr_name})
 
         if attr_type in ['float', 'int']:
             range_value = [kwargs_ui['min'], kwargs_ui['max']]
@@ -179,13 +192,8 @@ class Task(object):
         """
         add custom attribute to task
         """
-        if not kwargs_task[2]:
-            # if not attr name, use name as in class variable's name
-            key = kwargs_task[0]
-        else:
-            key = kwargs_task[2]
 
-        self.kwargs_task.update({key: [kwargs_task[0], kwargs_task[1], kwargs_task[3]]})
+        self.kwargs_task.update({kwargs_task[2]: [kwargs_task[0], kwargs_task[1], kwargs_task[3]]})
 
         self.kwargs_ui.update({kwargs_task[0]: kwargs_ui})
 

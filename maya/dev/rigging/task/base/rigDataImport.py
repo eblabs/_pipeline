@@ -55,22 +55,22 @@ class RigDataImport(rigData.RigData):
         super(RigDataImport, self).get_data()
 
         path_import = []
-
         for path in self.data_path:
-            if self.file_name:
-                for f_name in self.file_name:
-                    if f_name.startswith('.'):
+            if self.filter:
+                for f_name in self.filter:
+                    if f_name in ['.mb', '.ma', '.obj']:
                         # file type
                         files_import = files.get_files_from_path(path, extension=f_name)
                         path_import += files_import
-                    else:
+                    elif not f_name.startswith('.'):
                         # should be file name
                         file_path = os.path.join(path, f_name)
                         if os.path.isfile(file_path) and os.path.exists(file_path):
                             path_import.append(file_path)
             else:
                 # get all
-                files_import = files.get_files_from_path(path)
+                files_import = files.get_files_from_path(path, extension=['.mb', '.ma', '.obj'])
+
                 path_import += files_import
 
         path_import = list(set(path_import))
@@ -80,6 +80,7 @@ class RigDataImport(rigData.RigData):
     def import_data(self):
         for f in self.data_path:
             cmds.file(f, i=True)
+            logger.info("import '{}' successfully".format(f))
 
     def pre_build(self):
         super(RigDataImport, self).pre_build()
@@ -98,19 +99,11 @@ class RigDataImport(rigData.RigData):
             if file_name and ok:
                 file_path = os.path.join(self.save_data_path, file_name)
                 if os.path.isfile(file_path):
-                    if os.path.exists(file_path):
-                        # check if override
-                        title = "File exists"
-                        text = "File: '{}' exists at Path: '{}', are you sure you want to override it?".format(file_name,
-                                                                                                               file_path)
-                        reply = QMessageBox.warning(maya_window, title, text, QMessageBox.Ok | QMessageBox.Cancel,
-                                                    defaultButton=QMessageBox.Cancel)
-
-                        if reply == QMessageBox.Ok:
-                            # override
-                            self.export_file(file_path)
-                    else:
-                        self.export_file(file_path)
+                    self.export_file(file_path)
+                    logger.info("export file '{}' to path '{}' successfully".format(file_name, file_path))
+                elif file_name.endswith('.ma') or file_name.endswith('.mb') or file_name.endswith('.obj'):
+                    self.export_file(file_path)
+                    logger.info("export file '{}' to path '{}' successfully".format(file_name, file_path))
                 else:
                     logger.warning("export path '{}' is invalid".format(file_path))
         else:
@@ -119,12 +112,12 @@ class RigDataImport(rigData.RigData):
     @staticmethod
     def export_file(file_path):
         file_type = os.path.splitext(file_path)[-1]
-        if file_type == 'ma':
+        if file_type == '.ma':
             cmds.file(file_path, exportSelected=True, type='mayaAscii', preserveReferences=True)
-        elif file_type == 'mb':
+        elif file_type == '.mb':
             cmds.file(file_path, exportSelected=True, type='mayaBinary', preserveReferences=True)
-        elif file_type == 'obj':
-            cmds.file(file_path, exportSelected=True, type='OBJ', preserveReferences=True,
+        elif file_type == '.obj':
+            cmds.file(file_path, exportSelected=True, type='OBJexport', preserveReferences=True,
                       options="groups=0; ptgroups=0; materials=0; smoothing=0; normals=0")
         else:
             logger.warning('file type: {} does not supported'.format(file_type))
