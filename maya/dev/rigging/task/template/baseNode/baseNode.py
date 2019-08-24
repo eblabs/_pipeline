@@ -1,16 +1,26 @@
 # IMPORT PACKAGES
 
+# import os
+import os
+
 # import maya packages
 import maya.cmds as cmds
 
 # import utils
 import utils.common.naming as naming
+import utils.common.files as files
 import utils.common.transforms as transforms
 import utils.common.attributes as attributes
+import utils.common.nodeUtils as nodeUtils
 import utils.rigging.controls as controls
 
 # import task
 import dev.rigging.task.core.task as task
+
+# CONSTANT
+import dev.rigging.task.config as config
+SPACE_CONFIG_PATH = os.path.join(os.path.dirname(config.__file__), 'SPACE.cfg')
+SPACE_CONFIG = files.read_json_file(SPACE_CONFIG_PATH)
 
 
 # CLASS
@@ -55,6 +65,7 @@ class BaseNode(task.Task):
     def post_build(self):
         super(BaseNode, self).post_build()
         self.auto_scale_controls()
+        self.check_resolution()
 
     def create_hierarchy(self):
         """
@@ -79,6 +90,13 @@ class BaseNode(task.Task):
         # geometries
         namer.type = naming.Type.geometries
         self.geometries = transforms.create(namer.name, lock_hide=attributes.Attr.all, parent=self.master)
+
+        # create group for each resolution
+        for res in naming.Resolution.all:
+            namer_res = naming.Namer(type=naming.Type.group, side=naming.Side.middle, resolution=res,
+                                     description='geometries')
+            grp_res = transforms.create(namer_res.name, lock_hide=attributes.Attr.all, parent=self.geometries)
+            setattr(self, res, grp_res)  # add resolution group to class as attribute
 
         # components
         namer.type = naming.Type.components
@@ -180,3 +198,28 @@ class BaseNode(task.Task):
             scale_multiplier = geo_length/float(control_length) * 1.2
             controls.transform_ctrl_shape([self.world_control.control_shape, self.layout_control.control_shape,
                                            self.local_control.control_shape], scale=scale_multiplier)
+
+    def check_resolution(self):
+        enum_attr = ''
+        cond_nodes = []
+        default_val = 10  # all resolution space are under 10
+        for res in naming.Resolution.all:
+            grp_res = getattr(self, res)  # get group node
+            meshes = cmds.listRelatives(grp_res, ad=True, type='mesh')  # check if grp has meshes
+            if not meshes:
+                # empty resolution, delete
+                cmds.delete(grp_res)
+                setattr(self, res, None)  # set res attribute to None
+            else:
+                enum_attr += '{}={}:'.format(res, SPACE_CONFIG[res])
+                cond = nodeUtils.condition(0, SPACE_CONFIG[res], 1, 0, side=naming.Side.middle, description=res+'Vis',
+                                           operation=0, attrs=grp_res+'.v', force=True, node_only=True)
+                cond_nodes.append(cond+'.firstTerm')
+                if SPACE_CONFIG[res] < default_val:
+                    default_val = SPACE_CONFIG[res]
+        if enum_attr:
+            # add enum attr
+            attributes.add_attrs(self.master, 'resolution', attribute_type='enum', keyable=False, channel_box=True,
+                                 enum_name=enum_attr, default_value=default_val)
+            # connect with condition nodes
+            attributes.connect_attrs(self.master+'.resolution', cond_nodes)

@@ -45,6 +45,7 @@ for key, item in DATA_CONFIG.iteritems():
     Obj = getattr(sys.modules[__name__], key.title())
     for nameLong, nameShort in item.iteritems():
         setattr(Obj, nameLong, nameShort)
+    setattr(Obj, 'all', item.keys())
 
 
 class Namer(object):

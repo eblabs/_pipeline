@@ -151,9 +151,12 @@ def plus_minus_average(input_attrs, **kwargs):
                         default is 1
         attrs(str/list): connect the node to given attrs
         force(bool): force the connection, default is True
+        node_only(bool): return node name instead of output attributes if True, default is False
 
     Returns:
         output_attr(list): output attribute from the node
+            or
+        node(str): node name
     """
 
     # get vars
@@ -164,6 +167,7 @@ def plus_minus_average(input_attrs, **kwargs):
     _op = variables.kwargs('operation', 1, kwargs, short_name='op')
     _attrs = variables.kwargs('attrs', [], kwargs)
     _force = variables.kwargs('force', True, kwargs, short_name='f')
+    _node_only = variables.kwargs('node_only', False, kwargs)
 
     # create node
     pmav = node(type=naming.Type.plusMinusAvarge, side=_side,
@@ -209,8 +213,11 @@ def plus_minus_average(input_attrs, **kwargs):
             for attrInfo in zip(output_attr, attr):
                 attributes.connect_attrs(attrInfo[0], attrInfo[1], force=_force)
 
-    # return output attr
-    return output_attr
+    # return output attr/node name
+    if not _node_only:
+        return output_attr
+    else:
+        return pmav
 
 
 def multiply_divide(input_attr1, input_attr2, **kwargs):
@@ -234,9 +241,12 @@ def multiply_divide(input_attr1, input_attr2, **kwargs):
                         default is 1
         attrs(str/list): connect the node to given attrs
         force(bool): force the connection, default is True
+        node_only(bool): return node name instead of output attributes if True, default is False
 
     Returns:
         output_attr(str/list): output attribute from the node
+            or
+        node(str): node name
     """
     # get vars
 
@@ -247,16 +257,20 @@ def multiply_divide(input_attr1, input_attr2, **kwargs):
     _op = variables.kwargs('operation', 1, kwargs, short_name='op')
     _attrs = variables.kwargs('attrs', [], kwargs)
     _force = variables.kwargs('force', True, kwargs, short_name='f')
+    _node_only = variables.kwargs('node_only', False, kwargs)
 
-    output_attr = _create_node_multi_attrs([],[input_attr1, input_attr2],
-                                           [], ['input1', 'input2'],
-                                           ['X', 'Y', 'Z'], 'output',
-                                           type=naming.Type.multiplyDivide,
-                                           side=_side, description=_des,
-                                           set_attrs={'operation': _op},
-                                           attrs=_attrs, force=_force)
-    # return output attr
-    return output_attr
+    output_attr, _node = _create_node_multi_attrs([], [input_attr1, input_attr2],
+                                                  [], ['input1', 'input2'],
+                                                  ['X', 'Y', 'Z'], 'output',
+                                                  type=naming.Type.multiplyDivide,
+                                                  side=_side, description=_des,
+                                                  set_attrs={'operation': _op},
+                                                  attrs=_attrs, force=_force)
+    # return output attr/node name
+    if not _node_only:
+        return output_attr
+    else:
+        return _node
 
 
 def condition(first_term, second_term, if_true, if_false, **kwargs):
@@ -284,9 +298,12 @@ def condition(first_term, second_term, if_true, if_false, **kwargs):
                             default is 0
         attrs(str/list): connect the node to given attrs
         force(bool): force the connection, default is True
+        node_only(bool): return node name instead of output attributes if True, default is False
 
     Returns:
         output_attr(str/list): output attribute from the node
+            or
+        node(str): node name
     """
 
     # get vars
@@ -297,24 +314,28 @@ def condition(first_term, second_term, if_true, if_false, **kwargs):
     _op = variables.kwargs('operation', 0, kwargs, short_name='op')
     _attrs = variables.kwargs('attrs', [], kwargs)
     _force = variables.kwargs('force', True, kwargs, short_name='f')
+    _node_only = variables.kwargs('node_only', False, kwargs)
 
     # get operation
     if isinstance(_op, basestring):
         _op_list = ['==', '!=', '>', '>=', '<', '<=']
         _op = _op_list.index(_op)
 
-    output_attr = _create_node_multi_attrs([first_term, second_term],
-                                           [if_true, if_false],
-                                           ['firstTerm', 'secondTerm'],
-                                           ['colorIfTrue', 'colorIfFalse'],
-                                           ['R', 'G', 'B'], 'outColor',
-                                           type=naming.Type.condition,
-                                           side=_side, description=_des,
-                                           set_attrs={'operation': _op},
-                                           attrs=_attrs, force=_force)
+    output_attr, _node = _create_node_multi_attrs([first_term, second_term],
+                                                  [if_true, if_false],
+                                                  ['firstTerm', 'secondTerm'],
+                                                  ['colorIfTrue', 'colorIfFalse'],
+                                                  ['R', 'G', 'B'], 'outColor',
+                                                  type=naming.Type.condition,
+                                                  side=_side, description=_des,
+                                                  set_attrs={'operation': _op},
+                                                  attrs=_attrs, force=_force)
 
-    # return output attr
-    return output_attr
+    # return output attr/node name
+    if not _node_only:
+        return output_attr
+    else:
+        return _node
 
 
 def clamp(input_attr, max_attr, min_attr, **kwargs):
@@ -333,8 +354,11 @@ def clamp(input_attr, max_attr, min_attr, **kwargs):
         suffix(int): node's suffix
         attrs(str/list): connect the node to given attrs
         force(bool): force the connection, default is True
+        node_only(bool): return node name instead of output attributes if True, default is False
     Returns:
         outputAttr(list): output attribute from the node
+            or
+        node(str): node name
     """
 
     # get vars
@@ -344,16 +368,20 @@ def clamp(input_attr, max_attr, min_attr, **kwargs):
     _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
     _attrs = variables.kwargs('attrs', [], kwargs)
     _force = variables.kwargs('force', True, kwargs, short_name='f')
+    _node_only = variables.kwargs('node_only', False, kwargs)
 
-    output_attr = _create_node_multi_attrs([], [input_attr, max_attr, min_attr],
-                                           [], ['input', 'max', 'min'],
-                                           ['R', 'G', 'B'], 'output',
-                                           type=naming.Type.clamp,
-                                           side=_side, description=_des,
-                                           attrs=_attrs, force=_force)
+    output_attr, _node = _create_node_multi_attrs([], [input_attr, max_attr, min_attr],
+                                                  [], ['input', 'max', 'min'],
+                                                  ['R', 'G', 'B'], 'output',
+                                                  type=naming.Type.clamp,
+                                                  side=_side, description=_des,
+                                                  attrs=_attrs, force=_force)
 
-    # return output attr
-    return output_attr
+    # return output attr/node name
+    if not _node_only:
+        return output_attr
+    else:
+        return _node
 
 
 def blend(blender, input_attr1, input_attr2, **kwargs):
@@ -372,9 +400,12 @@ def blend(blender, input_attr1, input_attr2, **kwargs):
         suffix(int): node's suffix
         attrs(str/list): connect the node to given attrs
         force(bool): force the connection, default is True
+        node_only(bool): return node name instead of output attributes if True, default is False
 
     Returns:
         output_attr(list): output attribute from the node
+            or
+        node(str): node name
     """
 
     # get vars
@@ -384,16 +415,20 @@ def blend(blender, input_attr1, input_attr2, **kwargs):
     _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
     _attrs = variables.kwargs('attrs', [], kwargs)
     _force = variables.kwargs('force', True, kwargs, short_name='f')
+    _node_only = variables.kwargs('node_only', False, kwargs)
 
-    output_attr = _create_node_multi_attrs([blender], [input_attr1, input_attr2],
-                                           ['blender'], ['color1', 'color2'],
-                                           ['R', 'G', 'B'], 'output',
-                                           type=naming.Type.blendColor,
-                                           side=_side, description=_des,
-                                           attrs=_attrs, force=_force)
+    output_attr, _node = _create_node_multi_attrs([blender], [input_attr1, input_attr2],
+                                                  ['blender'], ['color1', 'color2'],
+                                                  ['R', 'G', 'B'], 'output',
+                                                  type=naming.Type.blendColor,
+                                                  side=_side, description=_des,
+                                                  attrs=_attrs, force=_force)
 
-    # return output attr
-    return output_attr
+    # return output attr/node name
+    if not _node_only:
+        return output_attr
+    else:
+        return _node
 
 
 def remap(input_value, input_range, output_range, **kwargs):
@@ -413,9 +448,12 @@ def remap(input_value, input_range, output_range, **kwargs):
         set_attrs(dict): set node's attrs
         attrs(str/list): connect the node to given attrs
         force(bool): force the connection, default is True
+        node_only(bool): return node name instead of output attributes if True, default is False
 
     Returns:
         output_attr(str): output attribute from the node
+            or
+        node(str): node name
     """
 
     # get vars
@@ -426,6 +464,7 @@ def remap(input_value, input_range, output_range, **kwargs):
     _set_attrs = variables.kwargs('set_attrs', {}, kwargs)
     _attrs = variables.kwargs('attrs', [], kwargs)
     _force = variables.kwargs('force', True, kwargs, short_name='f')
+    _node_only = variables.kwargs('node_only', False, kwargs)
 
     # create node
     remap_node = node(type=naming.Type.remapValue, side=_side, description=_des,
@@ -447,7 +486,10 @@ def remap(input_value, input_range, output_range, **kwargs):
     if _attrs:
         attributes.connect_attrs(output_attr, _attrs, force=_force)
 
-    return output_attr
+    if not _node_only:
+        return output_attr
+    else:
+        return  remap_node
 
 
 def add_matrix(input_matrix, **kwargs):
@@ -465,8 +507,11 @@ def add_matrix(input_matrix, **kwargs):
         suffix(int): node's suffix
         attrs(str/list): connect the node to given attrs
         force(bool): force the connection, default is True
+        node_only(bool): return node name instead of output attributes if True, default is False
     Returns:
-        outputAttr: output attribute from the node
+        outputAttr(str): output attribute from the node
+            or
+        node(str): node name
     """
 
     # get vars
@@ -476,6 +521,7 @@ def add_matrix(input_matrix, **kwargs):
     _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
     _attrs = variables.kwargs('attrs', [], kwargs)
     _force = variables.kwargs('force', True, kwargs, short_name='f')
+    _node_only = variables.kwargs('node_only', False, kwargs)
 
     # create node
     add_matrix_node = node(type=naming.Type.addMatrix, side=_side,
@@ -493,8 +539,11 @@ def add_matrix(input_matrix, **kwargs):
     if _attrs:
         attributes.connect_attrs(output_attr, _attrs, force=_force)
 
-    # return output attr
-    return output_attr
+    # return output attr/node name
+    if not _node_only:
+        return output_attr
+    else:
+        return add_matrix_node
 
 
 def mult_matrix(input_matrix, **kwargs):
@@ -512,9 +561,12 @@ def mult_matrix(input_matrix, **kwargs):
         suffix(int): node's suffix
         attrs(str/list): connect the node to given attrs
         force(bool): force the connection, default is True
+        node_only(bool): return node name instead of output attributes if True, default is False
 
     Returns:
-        outputAttr: output attribute from the node
+        outputAttr(str): output attribute from the node
+            or
+        node(str): node name
     """
 
     # get vars
@@ -524,6 +576,7 @@ def mult_matrix(input_matrix, **kwargs):
     _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
     _attrs = variables.kwargs('attrs', [], kwargs)
     _force = variables.kwargs('force', True, kwargs, short_name='f')
+    _node_only = variables.kwargs('node_only', False, kwargs)
 
     # create node
     mult_matrix_node = node(type=naming.Type.multMatrix, side=_side,
@@ -541,8 +594,11 @@ def mult_matrix(input_matrix, **kwargs):
     if _attrs:
         attributes.connect_attrs(output_attr, _attrs, force=_force)
 
-    # return output attr
-    return output_attr
+    # return output attr/node name
+    if not _node_only:
+        return output_attr
+    else:
+        return mult_matrix_node
 
 
 def inverse_matrix(input_matrix, **kwargs):
@@ -559,9 +615,12 @@ def inverse_matrix(input_matrix, **kwargs):
         suffix(int): node's suffix
         attrs(str/list): connect the node to given attrs
         force(bool): force the connection, default is True
+        node_only(bool): return node name instead of output attributes if True, default is False
 
     Returns:
-        output_attr: output attribute from the node
+        output_attr(str): output attribute from the node
+            or
+        node(str): node name
     """
 
     # get vars
@@ -571,6 +630,7 @@ def inverse_matrix(input_matrix, **kwargs):
     _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
     _attrs = variables.kwargs('attrs', [], kwargs)
     _force = variables.kwargs('force', True, kwargs, short_name='f')
+    _node_only = variables.kwargs('node_only', False, kwargs)
 
     # create node
     inverse_matrix_node = node(type=naming.Type.inverseMatrix, side=_side,
@@ -584,8 +644,11 @@ def inverse_matrix(input_matrix, **kwargs):
     if _attrs:
         attributes.connect_attrs(output_attr, _attrs, force=_force)
 
-    # return output attr
-    return output_attr
+    # return output attr/node name
+    if not _node_only:
+        return output_attr
+    else:
+        return inverse_matrix_node
 
 
 def compose_matrix(translate, rotate, scale=None, **kwargs):
@@ -609,9 +672,11 @@ def compose_matrix(translate, rotate, scale=None, **kwargs):
         suffix(int): node's suffix
         attrs(str/list): connect the node to given attrs
         force(bool): force the connection, default is True
+        node_only(bool): return node name instead of output attributes if True, default is False
 
     Returns:
-        output_attr: output attribute from the node
+        output_attr(str): output attribute from the node
+        node(str): node name
     """
     # get vars
     rotate_order = variables.kwargs('rotateOrder', 0, kwargs, short_name='ro')
@@ -621,6 +686,7 @@ def compose_matrix(translate, rotate, scale=None, **kwargs):
     _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
     _attrs = variables.kwargs('attrs', [], kwargs)
     _force = variables.kwargs('force', True, kwargs, short_name='f')
+    _node_only = variables.kwargs('node_only', False, kwargs)
 
     if scale is None:
         scale = [1, 1, 1]
@@ -647,8 +713,11 @@ def compose_matrix(translate, rotate, scale=None, **kwargs):
     if _attrs:
         attributes.connect_attrs(output_attr, _attrs, force=_force)
 
-    # return output_attr
-    return output_attr
+    # return output_attr/node name
+    if not _node_only:
+        return output_attr
+    else:
+        return compose
 
 
 def twist_extraction(input_matrix, **kwargs):
@@ -722,6 +791,7 @@ def _create_node_multi_attrs(input_attr_single, input_attr_multi, node_attr_sing
 
     Returns:
         output_attrs(list): node's output attrs
+        node(str): node's name
 
     """
 
@@ -780,7 +850,7 @@ def _create_node_multi_attrs(input_attr_single, input_attr_multi, node_attr_sing
                 attributes.connect_attrs(attr_info[0], attr_info[1], force=_force)
 
     # return output attr
-    return output_attr_list
+    return output_attr_list, _node
 
 
 # operation functions

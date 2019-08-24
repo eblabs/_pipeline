@@ -44,7 +44,8 @@ PROPERTY_ITEMS = {'str': {'default': '',
                                'keys_order': ['project', 'asset', 'rig_type'],
                                'widget': QLineEdit},
 
-                  'model_data': {'default': {},
-                                 'template': {'project': '', 'asset': '', 'model_type': '', 'resolution': ''},
+                  'model_data': {'default': {'model_type': '', 'resolution': []},
+                                 'template': {'model_type': '', 'resolution': []},
+                                 'keys_order': ['model_type', 'resolution'],
                                  'widget': QLineEdit},
                   }
