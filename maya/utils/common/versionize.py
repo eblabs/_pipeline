@@ -54,7 +54,7 @@ def version_up(path, comment=''):
         comment(str): given comment
     """
     # check files in path
-    files_version = files.get_files_from_path(path, full_paths=False)
+    files_version = files.get_files_from_path(path, exceptions=['__init__.py'], full_paths=False)
     # get version folder path
     version_folder_path = os.path.join(path, VERSION_FOLDER)
     if files_version:
