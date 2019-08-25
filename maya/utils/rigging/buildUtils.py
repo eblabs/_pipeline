@@ -22,7 +22,7 @@ def get_builder(rig_type, asset, project, warning=True):
     get build script from given rig
 
     Args:
-        rig_type(str): rig's type (animationRig, deformationRig, muscleRig, costumeRig etc..)
+        rig_type(str): rig's type (puppet, deformation, anatomy, costume etc..)
         asset(str): asset name
         project(str): project name
 
@@ -55,7 +55,7 @@ def get_builder_path(rig_type, asset, project, warning=True):
     get build script path from given rig
 
     Args:
-        rig_type(str): rig's type (animationRig, deformationRig, muscleRig, costumeRig etc..)
+        rig_type(str): rig's type (puppet, deformation, anatomy, costume etc..)
         asset(str): asset name
         project(str): project name
 
@@ -80,7 +80,7 @@ def generate_builder(rig_type, asset, project, builder_inherit_path):
     generate build script for given asset's rig type
 
     Args:
-        rig_type(str): rig's type (animationRig, deformationRig, muscleRig, costumeRig etc..)
+        rig_type(str): rig's type (puppet, deformation, anatomy, costume etc..)
         asset(str): asset name
         project(str): project name
         builder_inherit_path(str): inherited build script's python path
@@ -135,7 +135,7 @@ def get_data_path(data_name, rig_type, asset, project, warning=True, check_exist
 
     Args:
         data_name(str): data folder's name
-        rig_type(str): rig's type (animationRig, deformationRig, muscleRig, costumeRig etc..)
+        rig_type(str): rig's type (puppet, deformation, anatomy, costume etc..)
         asset(str): asset name
         project(str): project name
 

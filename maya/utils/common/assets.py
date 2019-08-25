@@ -330,6 +330,77 @@ def get_asset_path_from_project(asset, project, warning=True):
         return None
 
 
+# model
+def create_model(model_type, asset, project):
+    """
+    create given type of model under asset
+    each model folder should contain 'wip' and 'publish'
+
+    Args:
+        model_type(str): model's type (body, costume, anatomy etc...)
+        asset(str): asset name
+        project(str): project name
+
+    Returns:
+        model_path(str): model type folder's path
+    """
+    model_path = _create_data(model_type, asset, project, data_type='models', sub_folders=['wip', 'publish'])
+    return model_path
+
+
+def remove_model(model_type, asset, project):
+    """
+    remove model type from asset
+
+    Args:
+        model_type(str): model's type (body, costume, anatomy etc...)
+        asset(str): asset name
+        project(str): project name
+
+    Returns:
+        model_remove(bool): True/False
+    """
+    model_remove = _remove_data(model_type, asset, project, data_type='models')
+    return model_remove
+
+
+def get_all_model_from_asset(asset, project, full_path=False):
+    """
+    get all model types names from given asset
+
+    Args:
+        asset(str): asset name
+        project(str): project name
+
+    Keyword Args:
+        full_path(str): if return asset folder's full path
+
+    Returns:
+        model_types(list): model types names, return [] if asset/project does not exist
+    """
+    model_types = _get_all_data_from_asset(asset, project, full_path=full_path, data_type='models')
+    return model_types
+
+
+def get_model_path_from_asset(model_type, asset, project, warning=True):
+    """
+    get model type folder path from asset
+
+    Args:
+        model_type(str): model's type (body, costume, anatomy etc...)
+        asset(str): asset name
+        project(str): project name
+
+    Keyword Args:
+        warning(bool): will warn if model type not exist, default is True
+
+    Returns:
+        model_path(str): model type folder's path, return None if not exist
+    """
+    model_path = _get_data_path_from_asset(model_type, asset, project, warning=warning, data_type='models')
+    return model_path
+
+
 # rig
 def create_rig(rig_type, asset, project):
     """
@@ -337,56 +408,15 @@ def create_rig(rig_type, asset, project):
     each rig type folder should contain 'build', 'data', 'wip' and 'publish'
 
     Args:
-        rig_type(str): rig's type (animationRig, deformationRig, muscleRig, costumeRig etc..)
+        rig_type(str): rig's type (puppet, deformation, anatomy, costume etc..)
         asset(str): asset name
         project(str): project name
 
     Returns:
         rig_path(str): rig type folder's path
     """
-    # check if asset folder exist
-    asset_path = get_asset_path_from_project(asset, project, warning=False)
-    if asset_path:
-        # check if rig type exist
-        rig_path = get_rig_path_from_asset(rig_type, asset, project, warning=False)
-        if rig_path:
-            # exist
-            logger.warning('rig type: {} already exists, skipped'.format(rig_type))
-            return None
-        else:
-            # asset exists, create rig type folder
-            try:
-                rig_path = os.path.join(asset_path, 'rigs', rig_type)
-                os.mkdir(rig_path)
-                # create sub folders under rig type
-                build_path = os.path.join(rig_path, 'build')
-                data_path = os.path.join(rig_path, 'data')
-                wip_path = os.path.join(rig_path, 'wip')
-                publish_path = os.path.join(rig_path, 'publish')
-                os.mkdir(build_path)
-                os.mkdir(data_path)
-                os.mkdir(wip_path)
-                os.mkdir(publish_path)
-
-                # create init files
-                _write_init_file_to_paths([rig_path, build_path, data_path, wip_path, publish_path])
-
-            except OSError as exc:
-                logger.error(exc)
-                return None
-            else:
-                logger.info('rig type: {} has been created successfully at {}'.format(rig_type, rig_path))
-                return rig_path
-    else:
-        # check project path
-        project_path = get_project_path(project, warning=False)
-        if project_path:
-            # asset not exist
-            logger.warning('asset {} does not exist, skipped'.format(asset))
-            return None
-        else:
-            logger.warning('project {} does not exist, skipped'.format(project))
-            return None
+    rig_path = _create_data(rig_type, asset, project, data_type='rigs', sub_folders=['build', 'data', 'wip', 'publish'])
+    return rig_path
 
 
 def remove_rig(rig_type, asset, project):
@@ -394,27 +424,15 @@ def remove_rig(rig_type, asset, project):
     remove rig type from asset
 
     Args:
-        rig_type(str): rig's type (animationRig, deformationRig, muscleRig, costumeRig etc..)
+        rig_type(str): rig's type (puppet, deformation, anatomy, costume etc..)
         asset(str): asset name
         project(str): project name
 
     Returns:
-        True/False
+        rig_remove(bool): True/False
     """
-    # check if rig type exist
-    rig_path = get_rig_path_from_asset(rig_type, asset, project)
-    if rig_path:
-        # rig type exists, remove it
-        try:
-            shutil.rmtree(rig_path)
-        except OSError as exc:
-            logger.error(exc)
-            return False
-        else:
-            logger.info('rig type: {} has been removed successfully'.format(rig_type))
-            return True
-    else:
-        return False
+    rig_remove = _remove_data(rig_type, asset, project, data_type='rigs')
+    return rig_remove
 
 
 def get_all_rig_from_asset(asset, project, full_path=False):
@@ -431,15 +449,8 @@ def get_all_rig_from_asset(asset, project, full_path=False):
     Returns:
         rig_types(list): rig types names, return [] if asset/project does not exist
     """
-    asset_path = get_asset_path_from_project(asset, project, warning=False)
-    if asset_path:
-        asset_path = os.path.join(asset_path, 'rigs')
-        # asset exist
-        rig_types = files.get_folders_from_path(asset_path, full_path=full_path)
-        return rig_types
-    else:
-        # asset/project not exist
-        return []
+    rig_types = _get_all_data_from_asset(asset, project, full_path=full_path, data_type='rigs')
+    return rig_types
 
 
 def get_rig_path_from_asset(rig_type, asset, project, warning=True):
@@ -447,7 +458,7 @@ def get_rig_path_from_asset(rig_type, asset, project, warning=True):
     get rig type folder path from asset
 
     Args:
-        rig_type(str): rig's type (animationRig, deformationRig, muscleRig, costumeRig etc..)
+        rig_type(str): rig's type (puppet, deformation, anatomy, costume etc..)
         asset(str): asset name
         project(str): project name
 
@@ -457,20 +468,8 @@ def get_rig_path_from_asset(rig_type, asset, project, warning=True):
     Returns:
         rig_path(str): rig type folder's path, return None if not exist
     """
-    # check if asset exist
-    asset_path = get_asset_path_from_project(asset, project, warning=warning)
-    if asset_path:
-        # check if rig type exist
-        rig_path = os.path.join(asset_path, 'rigs', rig_type)
-        if os.path.exists(rig_path):
-            return rig_path
-        else:
-            # not exist
-            if warning:
-                logger.warning('rig type {} does not exist'.format(rig_type))
-            return None
-    else:
-        return None
+    rig_path = _get_data_path_from_asset(rig_type, asset, project, warning=warning, data_type='rigs')
+    return rig_path
 
 
 # SUB FUNCTION
@@ -484,3 +483,148 @@ def _write_init_file_to_paths(paths):
     for p in paths:
         init_path = os.path.join(p, '__init__.py')
         files.write_python_file(init_path, '')
+
+
+def _get_data_path_from_asset(data_name, asset, project, warning=True, data_type='models'):
+    """
+    get given rig/model folder path from asset
+
+    Args:
+        data_name(str): rig/model type name
+        asset(str): asset name
+        project(str): project name
+
+    Keyword Args:
+        warning(bool): will warn if rig type not exist, default is True
+        data_type(str): 'models'/'rigs', define is a model or rig'
+
+    Returns:
+        data_path(str): rig/model type folder's path, return None if not exist
+    """
+    # check if asset exist
+    asset_path = get_asset_path_from_project(asset, project, warning=warning)
+    if asset_path:
+        # check if rig type exist
+        data_path = os.path.join(asset_path, data_type, data_name)
+        if os.path.exists(data_path):
+            return data_path
+        else:
+            # not exist
+            if warning:
+                logger.warning('{} type {} does not exist'.format(data_type[:-1], data_type))
+            return None
+    else:
+        return None
+
+
+def _create_data(data_name, asset, project, data_type='models', sub_folders=None):
+    """
+    create given type of model/rig under asset
+    each type folder should contain folders from given sub folders list
+
+    Args:
+        data_name(str): model/rig name
+        asset(str): asset name
+        project(str): project name
+    Keyword Args:
+        data_type(str): 'models'/'rigs', define the type
+        sub_folders(list): sub folders the model/rig should have
+
+    Returns:
+        data_path(str): model/rig type folder's path
+    """
+    # check if asset folder exist
+    asset_path = get_asset_path_from_project(asset, project, warning=False)
+    if asset_path:
+        # check if data name exist
+        data_path = _get_data_path_from_asset(data_name, asset, project, warning=False, data_type=data_type)
+        if data_path:
+            # exist
+            logger.warning('{} type: {} already exists, skipped'.format(data_type[:-1], data_name))
+            return None
+        else:
+            # asset exists, create rig type folder
+            try:
+                data_path = os.path.join(asset_path, data_type, data_name)
+                os.mkdir(data_path)
+                _write_init_file_to_paths([data_path])
+                # create sub folders under rig type
+                if sub_folders:
+                    for sub in sub_folders:
+                        sub_path = os.path.join(data_path, sub)
+                        os.mkdir(sub_path)
+                        _write_init_file_to_paths([sub_path])
+
+            except OSError as exc:
+                logger.error(exc)
+                return None
+            else:
+                logger.info('{} type: {} has been created successfully at {}'.format(data_type[:-1], data_name,
+                                                                                     data_path))
+                return data_path
+    else:
+        # check project path
+        project_path = get_project_path(project, warning=False)
+        if project_path:
+            # asset not exist
+            logger.warning('asset {} does not exist, skipped'.format(asset))
+            return None
+        else:
+            logger.warning('project {} does not exist, skipped'.format(project))
+            return None
+
+
+def _remove_data(data_name, asset, project, data_type='models'):
+    """
+    remove model/rig type from asset
+
+    Args:
+        data_name(str): model/rig's type
+        asset(str): asset name
+        project(str): project name
+    Keyword Args:
+        data_type(str): 'models'/'rigs', define the type
+
+    Returns:
+        True/False
+    """
+    # check if model/rig type exist
+    data_path = _get_data_path_from_asset(data_name, asset, project, warning=True, data_type=data_type)
+    if data_path:
+        # model/rig type exists, remove it
+        try:
+            shutil.rmtree(data_path)
+        except OSError as exc:
+            logger.error(exc)
+            return False
+        else:
+            logger.info('{} type: {} has been removed successfully'.format(data_type[:-1], data_name))
+            return True
+    else:
+        return False
+
+
+def _get_all_data_from_asset(asset, project, full_path=False, data_type='models'):
+    """
+    get all model/rig types names from given asset
+
+    Args:
+        asset(str): asset name
+        project(str): project name
+
+    Keyword Args:
+        full_path(str): if return asset folder's full path
+        data_type(str): 'models'/'rigs', define the type
+
+    Returns:
+        data_types(list): model/rig types names, return [] if asset/project does not exist
+    """
+    asset_path = get_asset_path_from_project(asset, project, warning=False)
+    if asset_path:
+        asset_path = os.path.join(asset_path, data_type)
+        # asset exist
+        data_types = files.get_folders_from_path(asset_path, full_path=full_path)
+        return data_types
+    else:
+        # asset/project not exist
+        return []
