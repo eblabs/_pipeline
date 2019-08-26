@@ -212,6 +212,17 @@ class Task(object):
                 attr_parent = getattr(attr_parent, a)
         setattr(attr_parent, attr_split[-1], ObjectView(attr_dict))
 
+    def _get_obj_attr(self, attr):
+        attr_split = attr.split('.')
+        attr_parent = self
+        for attr_part in attr_split:
+            if hasattr(self, attr_part):
+                attr_parent = getattr(self, attr_part)
+            else:
+                attr_parent = None
+                break
+        return attr_parent
+
 
 #  SUB CLASS
 class ObjectView(object):

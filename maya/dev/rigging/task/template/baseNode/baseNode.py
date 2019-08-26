@@ -65,7 +65,6 @@ class BaseNode(task.Task):
     def post_build(self):
         super(BaseNode, self).post_build()
         self.auto_scale_controls()
-        self.check_resolution()
 
     def create_hierarchy(self):
         """
@@ -92,11 +91,53 @@ class BaseNode(task.Task):
         self.geometries = transforms.create(namer.name, lock_hide=attributes.Attr.all, parent=self.master)
 
         # create group for each resolution
-        for res in naming.Resolution.all:
+        # add compound attr
+        cmds.addAttr(self.master, longName='resolutionGroups', attributeType='compound', multi=True, numberOfChildren=3)
+        cmds.addAttr(self.master, longName='resGroup', attributeType='message', parent='resolutionGroups')
+        cmds.addAttr(self.master, longName='transformGroup', attributeType='message', parent='resolutionGroups')
+        cmds.addAttr(self.master, longName='deformGroup', attributeType='message', parent='resolutionGroups')
+
+        enum_attr = ''
+        cond_nodes = []
+        default_val = 10
+        for i, res in enumerate(naming.Resolution.all):
             namer_res = naming.Namer(type=naming.Type.group, side=naming.Side.middle, resolution=res,
                                      description='geometries')
             grp_res = transforms.create(namer_res.name, lock_hide=attributes.Attr.all, parent=self.geometries)
-            setattr(self, res, grp_res)  # add resolution group to class as attribute
+
+            # transform group
+            namer_res.description = 'transform'
+            grp_trans = transforms.create(namer_res.name, lock_hide=attributes.Attr.all, parent=grp_res)
+            # deformation group
+            namer_res.description = 'deform'
+            grp_deform = transforms.create(namer_res.name, lock_hide=attributes.Attr.all, parent=grp_res)
+
+            # connect to master's compound attr
+            attributes.connect_attrs([grp_res+'.message', grp_trans+'.message', grp_deform+'.message'],
+                                     ['{}.resolutionGroups[{}].resGroup'.format(self.master, i),
+                                      '{}.resolutionGroups[{}].transformGroup'.format(self.master, i),
+                                      '{}.resolutionGroups[{}].deformGroup'.format(self.master, i)])
+
+            # enum attr info
+            enum_attr += '{}={}:'.format(res, SPACE_CONFIG[res])
+            cond = nodeUtils.condition(0, SPACE_CONFIG[res], 1, 0, side=naming.Side.middle, description=res + 'Vis',
+                                       operation=0, attrs=grp_res + '.v', force=True, node_only=True)
+            cond_nodes.append(cond + '.firstTerm')
+
+            if SPACE_CONFIG[res] < default_val:
+                default_val = SPACE_CONFIG[res]
+
+            # add to class as attribute
+            res_grp_info = {'group': grp_res,
+                            'transform': grp_trans,
+                            'deform': grp_deform}
+            self._add_obj_attr(res, res_grp_info)
+
+        # add enum attr for resolution switch
+        attributes.add_attrs(self.master, 'resolution', attribute_type='enum', keyable=False, channel_box=True,
+                             enum_name=enum_attr[:-1], default_value=default_val)
+        # connect with condition nodes
+        attributes.connect_attrs(self.master + '.resolution', cond_nodes)
 
         # components
         namer.type = naming.Type.components
@@ -175,6 +216,42 @@ class BaseNode(task.Task):
             attributes.connect_attrs(control.name+'.rigScale', ['scaleX', 'scaleY', 'scaleZ'], driven=control.name,
                                      force=True)
 
+        # world matrix
+        attributes.add_attrs(self.master, 'matrixWorld', attribute_type='matrix', keyable=False)
+        mult_matrix_world = nodeUtils.mult_matrix([self.local_control.world_matrix_attr,
+                                                   self.layout_control.world_matrix_attr,
+                                                   self.world_control.world_matrix_attr],
+                                                  attrs=self.master+'.matrix_world', side=naming.Side.middle,
+                                                  description='masterWorldMatrix')
+
+        # world translate/rotate/scale
+        decompose_matrix_world = nodeUtils.node(type=naming.Type.decomposeMatrix, side=naming.Side.middle,
+                                                description='masterWorldTransform')
+        cmds.connectAttr(mult_matrix_world+'.matrixSum', decompose_matrix_world+'.inputMatrix')
+
+        transform_attr_info = {'matrix_attr': self.master+'.matrixWorld',
+                               'transform_attr': []}
+
+        for attr in ['translate', 'rotate', 'scale']:
+            world_attr = 'world' + attr.title()
+            cmds.addAttr(self.master, longName=world_attr, attributeType='float3')
+            transform_attr_info['transform_attr'].append('{}.{}'.format(self.master, world_attr))
+            for axis in 'XYZ':
+                cmds.addAttr(self.master, longName=world_attr+axis, attributeType='float', parent=world_attr)
+                cmds.connectAttr('{}.output{}{}'.format(decompose_matrix_world, attr.title(), axis),
+                                 '{}.{}'.format(self.master, world_attr, axis))
+
+        # connect transform attr with res transform group
+        for res in naming.Resolution.all:
+            grp_trans = self._get_obj_attr(res + '.transform')
+            for pos_attr, trans_attr in zip(transform_attr_info['transform_attr'], ['translate', 'rotate', 'scale']):
+                attributes.connect_attrs([pos_attr + 'X', pos_attr + 'Y', pos_attr + 'Z'],
+                                         [trans_attr + 'X', trans_attr + 'Y', trans_attr + 'Z'],
+                                         driven=grp_trans, force=True)
+
+        # add transform attr info to class as attribute
+        self._add_obj_attr('world_pos_attr', transform_attr_info)
+
     def auto_scale_controls(self):
         """
         automatically scale mover controls to fit the geometries' bounding box, will skip if no geo in the group
@@ -198,28 +275,3 @@ class BaseNode(task.Task):
             scale_multiplier = geo_length/float(control_length) * 1.2
             controls.transform_ctrl_shape([self.world_control.control_shape, self.layout_control.control_shape,
                                            self.local_control.control_shape], scale=scale_multiplier)
-
-    def check_resolution(self):
-        enum_attr = ''
-        cond_nodes = []
-        default_val = 10  # all resolution space are under 10
-        for res in naming.Resolution.all:
-            grp_res = getattr(self, res)  # get group node
-            meshes = cmds.listRelatives(grp_res, ad=True, type='mesh')  # check if grp has meshes
-            if not meshes:
-                # empty resolution, delete
-                cmds.delete(grp_res)
-                setattr(self, res, None)  # set res attribute to None
-            else:
-                enum_attr += '{}={}:'.format(res, SPACE_CONFIG[res])
-                cond = nodeUtils.condition(0, SPACE_CONFIG[res], 1, 0, side=naming.Side.middle, description=res+'Vis',
-                                           operation=0, attrs=grp_res+'.v', force=True, node_only=True)
-                cond_nodes.append(cond+'.firstTerm')
-                if SPACE_CONFIG[res] < default_val:
-                    default_val = SPACE_CONFIG[res]
-        if enum_attr:
-            # add enum attr
-            attributes.add_attrs(self.master, 'resolution', attribute_type='enum', keyable=False, channel_box=True,
-                                 enum_name=enum_attr, default_value=default_val)
-            # connect with condition nodes
-            attributes.connect_attrs(self.master+'.resolution', cond_nodes)

@@ -163,8 +163,8 @@ def import_model(model_type, asset, project, resolution=None):
                                                                                               model_type, res))
             return model_grps
         else:
-            logger.error('no publish model found for {} - {} - {}'.format(project, asset, model_type))
-            return None
+            logger.warning('no publish model found for {} - {} - {}'.format(project, asset, model_type))
+            return []
     else:
-        logger.error('model type {} does not exist for {} - {}'.format(model_type, project, asset))
-        return None
+        logger.warning('model type {} does not exist for {} - {}'.format(model_type, project, asset))
+        return []
