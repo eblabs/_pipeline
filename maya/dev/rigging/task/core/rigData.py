@@ -9,6 +9,9 @@ import utils.rigging.buildUtils as buildUtils
 # import task
 import task
 
+# ICON
+import dev.rigging.builder.ui.widgets.icons as icons
+
 
 # CLASS
 class RigData(task.Task):
@@ -29,6 +32,9 @@ class RigData(task.Task):
         self._save = True
         self.data_path = []
         self.save_data_path = None
+
+        self._icon_new = icons.data_new
+        self._icon_ref = icons.data_reference
 
     def register_kwargs(self):
         super(RigData, self).register_kwargs()

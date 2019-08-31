@@ -43,7 +43,6 @@ class PropertyEditor(QTreeView):
         super(PropertyEditor, self).__init__()
         self._property = []
         self._size = QSize(20, 20)
-        self._enable = True
         self._item = None  # store property item for further use
 
         self.setFocusPolicy(Qt.NoFocus)
@@ -136,10 +135,6 @@ class PropertyEditor(QTreeView):
         self._model.setHeaderData(0, Qt.Horizontal, 'Properties')
         self._model.setHeaderData(1, Qt.Horizontal, '')
         self.setModel(self._model)
-
-    def enable_widget(self):
-        self._enable = not self._enable
-        self.setEnabled(self._enable)
 
     def _add_child(self, item, data, template=None, key_edit=False, keys_order=None):
         """
@@ -298,7 +293,7 @@ class PropertyEditor(QTreeView):
         # update kwargs
         if 'type' in item_kwargs:
             item_type = item_kwargs['type']
-            if item_type not in PROPERTY_ITEMS:
+            if not isinstance(item_type, basestring) or item_type not in PROPERTY_ITEMS:
                 item_type = check_item_type(item_type)
             kwargs_add = PROPERTY_ITEMS[item_type].copy()  # make a copy so the config won't be changed
             kwargs_add.update(item_kwargs)

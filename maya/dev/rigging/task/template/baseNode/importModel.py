@@ -39,8 +39,11 @@ class ImportModel(task.Task):
         for model_data in self.model_info:
             model_type = model_data['model_type']
             model_res = model_data['resolution']
-            model_grps = modelUtils.import_model(model_type, self.asset, self.project, resolution=model_res)
-            self.import_model_groups += model_grps
+            if model_type:
+                model_grps = modelUtils.import_model(model_type, self.asset, self.project, resolution=model_res)
+                if model_grps:
+                    for res in model_grps:
+                        self.import_model_groups.append(model_grps[res])
 
     def parent_model_groups(self):
         # get master node
@@ -62,3 +65,4 @@ class ImportModel(task.Task):
                 res = model_namer.resolution
                 if res in trans_grps:
                     cmds.parent(model_grp, trans_grps[res])
+

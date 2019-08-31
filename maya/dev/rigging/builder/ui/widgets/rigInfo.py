@@ -139,7 +139,6 @@ class RigInfo(RigInfoBase):
 
     def __init__(self):
         super(RigInfo, self).__init__()
-        self._enable = True
         self._pos = None
 
         # rig right clicked menu
@@ -164,10 +163,6 @@ class RigInfo(RigInfoBase):
 
     def keyPressEvent(self, event):
         pass
-
-    def enable_widget(self):
-        self._enable = not self._enable
-        self.setEnabled(self._enable)
 
     def create_rig(self):
         rig = self.line_edit_rig.text()

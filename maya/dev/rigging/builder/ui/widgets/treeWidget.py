@@ -1,8 +1,12 @@
 # IMPORT PACKAGES
 
-# import maya.utils
-# maya commands are not thread safe, need to use maya.utils.executeInMainThreadWithResult(function) to execute it
-import maya.utils
+# import os
+import os
+
+# import maya packages
+# use the progress bar to escape from the loop
+import maya.cmds as cmds
+import maya.mel as mel
 
 # import copy_reg, types to fix one pickle problem
 import copy_reg
@@ -30,12 +34,16 @@ except ImportError:
 # import utils
 import utils.common.logUtils as logUtils
 import utils.common.modules as modules
+import utils.common.files as files
 
 # import icon
 import icons
 
 # import widget
 import taskCreator
+
+# import config
+import config
 
 # CONSTANT
 logger = logUtils.logger
@@ -68,32 +76,36 @@ ICONS_TASK = {'task': [icons.task_new, icons.task_reference],
               'method': [icons.method, icons.method]}
 
 # shortcuts
-SC_RELOAD = 'Ctrl+R'
-SC_RUN_ALL = 'Ctrl+Shift+Space'
-SC_RUN_PAUSE = 'Ctrl+Space'
-SC_RELOAD_RUN = 'Ctrl+Shift+R'
-SC_REMOVE = 'Ctrl+delete'
-SC_DUPLICATE = 'Ctrl+D'
-SC_EXPAND_COLLAPSE = 'CTRL+K'
+KEY_CONFIG = os.path.join(os.path.dirname(config.__file__), 'KEY_SHORTCUT.cfg')
+KEY_SHORTCUT = files.read_json_file(KEY_CONFIG)
+
+# shortcuts
+SC_RELOAD = KEY_SHORTCUT['reload']
+SC_RUN_ALL = KEY_SHORTCUT['execute_all']
+SC_RUN = KEY_SHORTCUT['execute']
+SC_RELOAD_RUN = KEY_SHORTCUT['reload_execute']
+SC_REMOVE = KEY_SHORTCUT['remove']
+SC_DUPLICATE = KEY_SHORTCUT['duplicate']
+SC_EXPAND_COLLAPSE = KEY_SHORTCUT['expand_collapse']
 
 
 # CLASS
 class TreeWidget(QTreeWidget):
     """base class for TreeWidget"""
     SIGNAL_PROGRESS_INIT = Signal(int)
+    SIGNAL_PROGRESS = Signal(int)  # emit signal to update progress bar
+    SIGNAL_ERROR = Signal()  # emit signal for error
     SIGNAL_CLEAR = Signal()
     SIGNAL_EXECUTE = Signal()
     SIGNAL_ATTR_NAME = Signal(QTreeWidgetItem)
     SIGNAL_TASK_TYPE = Signal(QTreeWidgetItem)
     SIGNAL_GET_BUILDER = Signal()
     SIGNAL_LOG_INFO = Signal(str, str)
+    SIGNAL_RESET = Signal()  # emit signal to reset buttons
 
     def __init__(self,  **kwargs):
         super(TreeWidget, self).__init__()
 
-        self.item_runner = ItemRunner(self)
-        self.stop = False
-        self.pause = False
         self._expand = True
         self._display_items = []  # list of item display name to make sure no same name
         self._attr_items = []  # list of item attr name to make sure no same name
@@ -135,8 +147,11 @@ class TreeWidget(QTreeWidget):
         # right clicked menu
         self.menu = QMenu(self)
 
+        # maya progress bar, used to escape from loop
+        self.maya_progress_bar = mel.eval('$tmp = $gMainProgressBar')
+
         # execute
-        self.menu_execute_sel = SubMenu('Execute Selection', parent=self.menu, shortcut=SC_RUN_PAUSE)
+        self.menu_execute_sel = SubMenu('Execute Selection', parent=self.menu, shortcut=SC_RUN)
 
         self.menu_execute_all = SubMenu('Execute All', parent=self.menu, shortcut=SC_RUN_ALL)
 
@@ -299,31 +314,34 @@ class TreeWidget(QTreeWidget):
                 self.run_sel_tasks()
 
     def show_menu(self, pos):
-        current_item = self.currentIndex().data()
-        if not current_item:
-            for widget in self._menu_widgets:
-                widget.setEnabled(False)
-            self.action_save_data.setEnabled(False)
-        else:
-            for widget in self._menu_widgets:
-                widget.setEnabled(True)
-            # disable duplicate and remove for in class method
-            current_item = self.currentItem()
-            task_type = current_item.data(0, ROLE_TASK_TYPE)
-            inheritance = current_item.data(0, ROLE_TASK_INHERITANCE)
-            if task_type == 'method' or inheritance:
-                self.action_remove.setEnabled(False)
-                if task_type == 'method':
-                    self.action_duplicate.setEnabled(False)
-            # enabled save data if is rigData task
-            save_data = current_item.data(0, ROLE_TASK_SAVE)
-            if save_data:
-                self.action_save_data.setEnabled(True)
+        top_item_count = self.topLevelItemCount()
+        if top_item_count:
+            # only show right click menu when builder loaded
+            current_item = self.currentIndex().data()
+            if not current_item:
+                for widget in self._menu_widgets:
+                    widget.setEnabled(False)
+                self.action_save_data.setEnabled(False)
+            else:
+                for widget in self._menu_widgets:
+                    widget.setEnabled(True)
+                # disable duplicate and remove for in class method
+                current_item = self.currentItem()
+                task_type = current_item.data(0, ROLE_TASK_TYPE)
+                inheritance = current_item.data(0, ROLE_TASK_INHERITANCE)
+                if task_type == 'method' or inheritance:
+                    self.action_remove.setEnabled(False)
+                    if task_type == 'method':
+                        self.action_duplicate.setEnabled(False)
+                # enabled save data if is rigData task
+                save_data = current_item.data(0, ROLE_TASK_SAVE)
+                if save_data:
+                    self.action_save_data.setEnabled(True)
 
-        self._pos = self.mapToGlobal(pos)
-        self.menu.move(self._pos)  # move menu to right clicked position
+            self._pos = self.mapToGlobal(pos)
+            self.menu.move(self._pos)  # move menu to right clicked position
 
-        self.menu.show()
+            self.menu.show()
 
     # task functions to connect with button and menu
     def run_sel_tasks(self, section=None):
@@ -362,12 +380,6 @@ class TreeWidget(QTreeWidget):
         # refresh progress bar, shoot signal
         # the range doesn't matter, will re-init when run the task
         self.SIGNAL_PROGRESS_INIT.emit(1)
-
-    def pause_resume_tasks(self):
-        self.pause = not self.pause
-
-    def stop_tasks(self):
-        self.stop = True
 
     def set_display_name(self):
         item = self.currentItem()
@@ -611,6 +623,46 @@ class TreeWidget(QTreeWidget):
             # save data
             self.builder.export_tasks_info(export_data)
 
+    def task_create_window_open(self):
+        # get task folders
+        task_folders = self.task_folders[:]
+        task_folders.append(self._get_project_task_folder(self.builder))
+
+        # try close window in case it's opened
+        self.task_create_window.close()
+        self.task_create_window.refresh_widgets()
+        self.task_create_window.widget_task_creation.rebuild_list_model(task_folders)
+        self.task_create_window.move(self._pos)
+        self.task_create_window.show()
+
+    def task_switch_window_open(self, pos):
+        # try close window in case it's opened
+        self.task_switch_window.close()
+
+        # check if task is referenced or in class method
+        item = self.selectedItems()[0]
+        # check if item is referenced
+        inheritance = item.data(0, ROLE_TASK_INHERITANCE)
+        task_type_orig = item.data(0, ROLE_TASK_TYPE)
+        title = "Change task's type"
+        if task_type_orig == 'method':
+            text = "task is a in-class method, can't switch type"
+            QMessageBox.warning(self, title, text)
+            return
+        elif inheritance:
+            text = "task is inherited from parent class, can't switch type"
+            QMessageBox.warning(self, title, text)
+            return
+        else:
+            # get task folders
+            task_folders = self.task_folders[:]
+            task_folders.append(self._get_project_task_folder(self.builder))
+
+            self.task_switch_window.refresh_widgets()
+            self.task_switch_window.widget_task_creation.rebuild_list_model(task_folders)
+            self.task_switch_window.move(pos)
+            self.task_switch_window.show()
+
     def _add_child_item(self, item, data):
         for d in data:
             name = d.keys()[0]
@@ -670,7 +722,7 @@ class TreeWidget(QTreeWidget):
 
         return item_remove
 
-    def _run_task(self, items=None, collect=True, section=None):
+    def _run_task(self, items=None, collect=True, section=None, ignore_check=False):
         """
         run task
 
@@ -679,15 +731,14 @@ class TreeWidget(QTreeWidget):
             collect(bool): loop downstream tasks, default is True
             section(list): run for specific section, None will run for all, default is None
                            ['pre_build', 'build', 'post_build']
+            ignore_check(bool): ignore the item's check state if True, default is False
         """
         if section is None:
             section = ['pre_build', 'build', 'post_build']
 
-        # reset value
-        self.stop = False
-        self.pause = False
-
-        ignore_check = False
+        running_role = {'pre_build': ROLE_TASK_PRE,
+                        'build': ROLE_TASK_RUN,
+                        'post_build': ROLE_TASK_POST}
 
         # collect items
         if isinstance(items, list):
@@ -707,16 +758,170 @@ class TreeWidget(QTreeWidget):
                 items_run = [items]
                 ignore_check = True
 
-        # register in itemRunner
-        self.item_runner.items = items_run
-        self.item_runner.ignore_check = ignore_check
-        self.item_runner.section = section
+        progress_max = len(items_run)*len(section)
+
+        # there seems a maya bug that after cancelled the progress bar with multiple ESC, maya didn't clear the cache
+        # when the progress end, so we have to create/end progress bar one or two times to clear the cache
+        for i in range(10):
+            # I don't want to have infinity loop, normally it should be only one or two times to clear out
+            # create progress bar
+            cmds.progressBar(self.maya_progress_bar, edit=True, beginProgress=True, isInterruptable=True,
+                             status='Tasks Running ...', maxValue=progress_max)
+            # check if still has cache
+            if cmds.progressBar(self.maya_progress_bar, query=True, isCancelled=True):
+                # end progress bar and re loop in
+                cmds.progressBar(self.maya_progress_bar, edit=True, endProgress=True)
+            else:
+                # start the process
+                break
 
         # shoot signal to progress bar
-        self.SIGNAL_PROGRESS_INIT.emit(len(items_run)*len(section))
+        self.SIGNAL_PROGRESS_INIT.emit(len(items_run) * len(section))
 
-        # start run tasks
-        self.item_runner.start()
+        # loop in each task
+        item_count = float(len(items_run))
+        break_checker = False
+        for i, sec in enumerate(section):
+            if break_checker:
+                break
+            role = running_role[sec]
+            for j, item in enumerate(items_run):
+                # get item attributes
+                display = item.text(0)
+                name = item.data(0, ROLE_TASK_NAME)
+                task = item.data(0, ROLE_TASK_FUNC)
+                kwargs = item.data(0, ROLE_TASK_KWARGS)
+                check_state = item.checkState(0)
+
+                kwargs_run = {}  # get kwargs for task
+                for key, data in kwargs.iteritems():
+                    if 'value' in data and data['value'] is not None:
+                        val = data['value']
+                    else:
+                        val = data['default']
+                    attr_name = data['attr_name']
+                    kwargs_run.update({attr_name: val})
+
+                # check if the item is unchecked
+                if check_state == Qt.Checked or ignore_check:
+                    # get task running state, skipped if already run
+                    item_running_state = item.data(0, role)
+                    if item_running_state == 0:
+                        # item haven't run, start running task
+                        cmds.refresh()
+                        # check progress bar
+                        if cmds.progressBar(self.maya_progress_bar, query=True, isCancelled=True):
+                            # escape from loop
+                            self.SIGNAL_ERROR.emit()
+                            logger.warning('Task process is stopped by the user')
+                            break_checker = True
+                            break
+
+                        # check item type
+                        if inspect.ismethod(task):
+                            # get section registered
+                            section_init = item.data(0, ROLE_TASK_SECTION)
+
+                            if sec != section_init:
+                                # skip
+                                item.setData(0, role, 1)
+                            else:
+                                # try to run in class method
+                                try:
+                                    task_return = task(**kwargs_run)
+                                    message = ''
+                                    if isinstance(task_return, basestring) or task_return > 1:
+                                        task_return_state = 2  # warning
+                                        if isinstance(task_return, basestring):
+                                            message = task_return
+                                    else:
+                                        task_return_state = 1  # success
+                                    self._execute_setting(item, task_return_state, 'method', display, role, sec,
+                                                          message)
+                                except Exception as exc:
+                                    self._error_setting(item, exc, role)
+
+                        # check if registered function is a function (mainly for callback)
+                        elif inspect.isfunction(task):
+                            # try to run function
+                            try:
+                                if kwargs_run[sec]:
+                                    task(kwargs_run[sec])
+                                self._execute_setting(item, 1, 'function', display, role, sec, '')
+                            except Exception as exc:
+                                self._error_setting(item, exc, role)
+                        else:
+                            # Task is an imported task
+                            # try to run task
+                            try:
+                                if not hasattr(self.builder, name):
+                                    # normally because it is just created in ui
+                                    # get obj
+                                    task_obj = task(builder=self.builder, name=name)
+                                    # attach obj to builder
+                                    setattr(self.builder, name, task_obj)
+                                else:
+                                    task_obj = getattr(self.builder, name)
+
+                                if sec == 'pre_build':
+                                    for key, val in kwargs_run.iteritems():
+                                        setattr(task_obj, key, val)
+
+                                task_obj.builder = self.builder
+
+                                # run task
+                                func = getattr(task_obj, sec)
+                                func()
+                                return_signal = task_obj.signal
+                                message = task_obj.message
+
+                                self._execute_setting(item, return_signal, 'task', display, role, section, message)
+                            except Exception as exc:
+                                self._error_setting(item, exc, role)
+
+                # progress bar grow
+                cmds.progressBar(self.maya_progress_bar, edit=True, step=1)
+
+                # emit signal
+                self.SIGNAL_PROGRESS.emit(item_count * i + j + 1)
+
+        # end progress bar
+        cmds.progressBar(self.maya_progress_bar, edit=True, endProgress=True)
+
+        # emit reset signal
+        self.SIGNAL_RESET.emit()
+
+    def _error_setting(self, item, exc, role):
+        # error raises
+        item.setData(0, role, 3)
+        # emit error signal
+        self.SIGNAL_ERROR.emit()
+        # emit reset signal
+        self.SIGNAL_RESET.emit()
+        logger.error(exc)
+
+        # save log info for display
+        self._save_log_status_info(item, exc, role)
+
+        # end maya progress bar
+        cmds.progressBar(self.maya_progress_bar, edit=True, endProgress=True)
+
+        raise RuntimeError()
+
+    def _execute_setting(self, item, task_return, function_name, display, role, section, message):
+        if task_return == 2:
+            # warning raises
+            item.setData(0, role, 2)
+        else:
+            # run successfully
+            item.setData(0, role, 1)
+
+        if message:
+            # save log info for display
+            self._save_log_status_info(item, message, role)
+
+        # log
+        logger.info('[{}] -- Run {} "{}" successfully'.format(section, function_name, display))
 
     def _collect_items(self, item=None):
         """
@@ -832,46 +1037,6 @@ class TreeWidget(QTreeWidget):
         obj = task(builder=self.builder, name=name)
         obj.save_data()
 
-    def task_create_window_open(self):
-        # get task folders
-        task_folders = self.task_folders[:]
-        task_folders.append(self._get_project_task_folder(self.builder))
-
-        # try close window in case it's opened
-        self.task_create_window.close()
-        self.task_create_window.refresh_widgets()
-        self.task_create_window.widget_task_creation.rebuild_list_model(task_folders)
-        self.task_create_window.move(self._pos)
-        self.task_create_window.show()
-
-    def task_switch_window_open(self, pos):
-        # try close window in case it's opened
-        self.task_switch_window.close()
-
-        # check if task is referenced or in class method
-        item = self.selectedItems()[0]
-        # check if item is referenced
-        inheritance = item.data(0, ROLE_TASK_INHERITANCE)
-        task_type_orig = item.data(0, ROLE_TASK_TYPE)
-        title = "Change task's type"
-        if task_type_orig == 'method':
-            text = "task is a in-class method, can't switch type"
-            QMessageBox.warning(self, title, text)
-            return
-        elif inheritance:
-            text = "task is inherited from parent class, can't switch type"
-            QMessageBox.warning(self, title, text)
-            return
-        else:
-            # get task folders
-            task_folders = self.task_folders[:]
-            task_folders.append(self._get_project_task_folder(self.builder))
-
-            self.task_switch_window.refresh_widgets()
-            self.task_switch_window.widget_task_creation.rebuild_list_model(task_folders)
-            self.task_switch_window.move(pos)
-            self.task_switch_window.show()
-
     @staticmethod
     def _get_unique_name(name_orig, name_new, name_list):
         i = 1
@@ -888,6 +1053,19 @@ class TreeWidget(QTreeWidget):
     def _get_project_task_folder(builder):
         if builder:
             return 'projects.{}.scripts.tasks'.format(builder.project)
+
+    @staticmethod
+    def _save_log_status_info(item, message, role):
+        if role == ROLE_TASK_PRE:
+            index = 0
+        elif role == ROLE_TASK_RUN:
+            index = 1
+        else:
+            index = 2
+
+        log_status_info = item.data(0, ROLE_TASK_STATUS_INFO)
+        log_status_info[index] = message
+        item.setData(0, ROLE_TASK_STATUS_INFO, log_status_info)
 
 
 class TaskItem(QTreeWidgetItem):
@@ -965,192 +1143,6 @@ class TaskItem(QTreeWidgetItem):
         elif role == ROLE_TASK_POST:
             # set icon for the post build
             self.setIcon(3, ICONS_STATUS[value])
-
-
-class ItemRunner(QThread):
-    """
-    QThread to run items one by one
-
-    use multi-threading so the ui won't be frozen,
-    and can be stopped anytime
-    """
-    SIGNAL_PROGRESS = Signal(int)  # emit signal to update progress bar
-    SIGNAL_ERROR = Signal()  # emit signal for error
-    SIGNAL_PAUSE = Signal()  # emit signal to pause
-
-    def __init__(self, parent):
-        super(ItemRunner, self).__init__(parent)
-        self._parent = parent
-        self.items = []
-        self.ignore_check = False
-        self.section = ['pre_build', 'build', 'post_build']
-        self._roles = {'pre_build': ROLE_TASK_PRE,
-                       'build': ROLE_TASK_RUN,
-                       'post_build': ROLE_TASK_POST}
-
-    def run(self):
-        self.run_task()
-
-    def run_task(self):
-        # disable treeWidget when running
-        self._parent.setEnabled(False)
-
-        item_count = float(len(self.items))
-        for i, section in enumerate(self.section):
-            role = self._roles[section]
-            for j, item in enumerate(self.items):
-                if self._parent.pause:
-                    self.SIGNAL_PAUSE.emit()
-
-                while self._parent.pause:
-                    # in case need to be stopped from pause
-                    if self._parent.stop:
-                        self._parent.pause = False
-                    self.sleep(1)  # pause the process
-
-                # check if need to be stopped
-                if self._parent.stop:
-                    break
-
-                self._run_task_on_single_item(item, ignore_check=self.ignore_check, section=section, role=role)
-
-                # emit signal
-                self.SIGNAL_PROGRESS.emit(item_count*i + j + 1)
-
-            if self._parent.stop:
-                # emit signal if need stop
-                self.SIGNAL_ERROR.emit()
-                logger.warn('Task process is stopped by the user')
-                self._parent.setEnabled(True)  # enable back widget if error
-                break
-
-        self._parent.setEnabled(True)  # enable back widget when finished
-
-    def _run_task_on_single_item(self, item, ignore_check=False, section='pre_build', role=ROLE_TASK_PRE):
-        # get attributes from item
-        display = item.text(0)
-        name = item.data(0, ROLE_TASK_NAME)
-        task = item.data(0, ROLE_TASK_FUNC)
-        kwargs = item.data(0, ROLE_TASK_KWARGS)
-        check_state = item.checkState(0)
-
-        kwargs_run = {}
-        for key, data in kwargs.iteritems():
-            if 'value' in data and data['value'] is not None:
-                val = data['value']
-            else:
-                val = data['default']
-            attr_name = data['attr_name']
-            kwargs_run.update({attr_name: val})
-
-        if not ignore_check and check_state != Qt.Checked:
-            # skip unchecked task
-            return
-
-            # get section status, if already run, skipped
-        task_return = item.data(0, role)
-
-        if task_return > 0:
-            # skip, task already run
-            return
-
-        # check if registered function is a method
-        if inspect.ismethod(task):
-            # get section registered
-            section_init = item.data(0, ROLE_TASK_SECTION)
-
-            if section != section_init:
-                # skip
-                item.setData(0, role, 1)
-            else:
-                # try to run function
-                try:
-                    maya.utils.executeInMainThreadWithResult(task, kwargs_run[section])
-
-                    self._execute_setting(item, 1, 'method', display, role, section)
-
-                except Exception as exc:
-                    self._error_setting(item, exc, role)
-
-        # check if registered function is a function (mainly for callback)
-        elif inspect.isfunction(task):
-            # try to run function
-            try:
-                if kwargs_run[section]:
-                    maya.utils.executeInMainThreadWithResult(task, kwargs_run[section])
-
-                self._execute_setting(item, 1, 'function', display, role, section)
-
-            except Exception as exc:
-                self._error_setting(item, exc, role)
-
-        else:
-            # Task is an imported task
-            # try to run task
-            try:
-                if not hasattr(self._parent.builder, name):
-                    # normally because it is just created in ui
-                    # get obj
-                    task_obj = task(builder=self._parent.builder, name=name)
-                    # attach obj to builder
-                    setattr(self._parent.builder, name, task_obj)
-                else:
-                    task_obj = getattr(self._parent.builder, name)
-
-                if section == 'pre_build':
-                    for key, val in kwargs_run.iteritems():
-                        setattr(task_obj, key, val)
-
-                # run task
-                func = getattr(task_obj, section)
-                maya.utils.executeInMainThreadWithResult(func)
-                return_signal = task_obj.signal
-                message = task_obj.message
-
-                self._execute_setting(item, return_signal, 'task', display, role, section, message)
-
-            except Exception as exc:
-                self._error_setting(item, exc, role)
-
-    def _error_setting(self, item, exc, role):
-        # error raises
-        item.setData(0, role, 3)
-        # emit error signal
-        self.SIGNAL_ERROR.emit()
-        self._parent.setEnabled(True)  # enable back widget if error
-        logger.error(exc)
-
-        # save log info for display
-        self._save_log_status_info(item, exc, role)
-        raise
-
-    def _execute_setting(self, item, task_return, function_name, display, role, section, message):
-        if task_return == 2:
-            # warning raises
-            item.setData(0, role, 2)
-        else:
-            # run successfully
-            item.setData(0, role, 1)
-
-        if message:
-            # save log info for display
-            self._save_log_status_info(item, message, role)
-
-        # log
-        logger.info('[{}] -- Run {} "{}" successfully'.format(section, function_name, display))
-
-    @staticmethod
-    def _save_log_status_info(item, message, role):
-        if role == ROLE_TASK_PRE:
-            index = 0
-        elif role == ROLE_TASK_RUN:
-            index = 1
-        else:
-            index = 2
-
-        log_status_info = item.data(0, ROLE_TASK_STATUS_INFO)
-        log_status_info[index] = message
-        item.setData(0, ROLE_TASK_STATUS_INFO, log_status_info)
 
 
 class SubMenu(QMenu):
@@ -1285,17 +1277,17 @@ def set_item_data(item, **kwargs):
         item.setData(0, ROLE_TASK_FUNC, task)
         if inspect.ismethod(task):
             item.setData(0, ROLE_TASK_TYPE, 'method')
+            task_icons = [icons.method, icons.method]
         elif inspect.isfunction(task):
             item.setData(0, ROLE_TASK_TYPE, 'callback')
+            task_icons = [icons.callback_new, icons.callback_reference]
         else:
             item.setData(0, ROLE_TASK_TYPE, task_path)  # normally user will given task_path and task together
+            task_icons = task().icons
 
-        task_type = item.data(0, ROLE_TASK_TYPE)
-        if task_type not in ICONS_TASK:
-            task_type = 'task'  # in case no specific icon
         if inheritance is None:
             inheritance = 0
-        item.setIcon(0, QIcon(ICONS_TASK[task_type][inheritance]))
+        item.setIcon(0, QIcon(task_icons[inheritance]))
 
     if task_kwargs is not None:
         item.setData(0, ROLE_TASK_KWARGS, task_kwargs)

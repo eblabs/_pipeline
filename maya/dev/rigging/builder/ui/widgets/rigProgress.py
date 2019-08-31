@@ -19,7 +19,6 @@ class RigProgress(QProgressBar):
     """ProgressBar widget"""
     def __init__(self):
         super(RigProgress, self).__init__()
-        self._pause = False
 
         self.setTextVisible(True)
 
@@ -37,7 +36,6 @@ class RigProgress(QProgressBar):
         Args:
             max_num(int): maximum number for the loop
         """
-        self._pause = False
         # set range
         self.setRange(0, max_num)
         # zero progress bar
@@ -49,21 +47,7 @@ class RigProgress(QProgressBar):
     def update_progress(self, value):
         self.setValue(value)
 
-    def pause_progress(self):
-        self._pause = not self._pause
-        if self._pause:
-            # pause
-            # set color to blue
-            self._palette.setColor(QPalette.Highlight, QColor(77, 193, 232))
-            self.setPalette(self._palette)
-        else:
-            # run
-            # set color to green
-            self._palette.setColor(QPalette.Highlight, QColor(0, 161, 62))
-            self.setPalette(self._palette)
-
     def stop_progress(self):
-        self._pause = False
         # set color to red
         self._palette.setColor(QPalette.Highlight, QColor(250, 40, 71))
         self.setPalette(self._palette)

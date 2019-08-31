@@ -140,22 +140,12 @@ class RigBuilder(uiUtils.BaseWindow):
 
         self.button_shelf.SIGNAL_EXECUTE.connect(self.tree_widget.run_sel_tasks)
         self.button_shelf.SIGNAL_EXECUTE_ALL.connect(self.tree_widget.run_all_tasks)
-        self.button_shelf.SIGNAL_PAUSE.connect(self.tree_widget.pause_resume_tasks)
-        self.button_shelf.SIGNAL_STOP.connect(self.tree_widget.stop_tasks)
 
         # get builder
         self.tree_widget.SIGNAL_GET_BUILDER.connect(self.rig_info.get_builder)
 
         # rig info, plug builder path to tree widget
         self.rig_info.SIGNAL_BUILDER.connect(self.tree_widget.reload_builder)
-
-        # reset buttons to initial once task running completed
-        self.tree_widget.item_runner.finished.connect(self.button_shelf.reset_all)
-        # reset buttons to initial if error
-        self.tree_widget.item_runner.SIGNAL_ERROR.connect(self.button_shelf.reset_all)
-
-        # disable buttons when execute tasks
-        self.tree_widget.SIGNAL_EXECUTE.connect(self.button_shelf.execute_button_set)
 
         # save
         self.button_shelf.button_save.clicked.connect(self.tree_widget.export_current_builder)
@@ -164,11 +154,9 @@ class RigBuilder(uiUtils.BaseWindow):
         # init progress bar settings
         self.tree_widget.SIGNAL_PROGRESS_INIT.connect(self.rig_progress.init_setting)
         # update progress
-        self.tree_widget.item_runner.SIGNAL_PROGRESS.connect(self.rig_progress.update_progress)
-        # pause progress
-        self.button_shelf.SIGNAL_PAUSE.connect(self.rig_progress.pause_progress)
+        self.tree_widget.SIGNAL_PROGRESS.connect(self.rig_progress.update_progress)
         # stop progress
-        self.tree_widget.item_runner.SIGNAL_ERROR.connect(self.rig_progress.stop_progress)
+        self.tree_widget.SIGNAL_ERROR.connect(self.rig_progress.stop_progress)
 
         # task info
         self.tree_widget.itemPressed.connect(self.task_info.set_label)
@@ -192,15 +180,6 @@ class RigBuilder(uiUtils.BaseWindow):
         # clear when not select anything
         self.tree_widget.SIGNAL_CLEAR.connect(self.property_editor.refresh)
         self.tree_widget.SIGNAL_CLEAR.connect(self.task_info.refresh)
-
-        # disable/enable widgets
-        self.tree_widget.item_runner.started.connect(self.rig_info.enable_widget)
-        self.tree_widget.item_runner.started.connect(self.task_info.enable_widget)
-        self.tree_widget.item_runner.started.connect(self.property_editor.enable_widget)
-
-        self.tree_widget.item_runner.finished.connect(self.rig_info.enable_widget)
-        self.tree_widget.item_runner.finished.connect(self.task_info.enable_widget)
-        self.tree_widget.item_runner.finished.connect(self.property_editor.enable_widget)
 
         # log
         logger.connector.SIGNAL_EMIT.connect(self.log_window.log_info_widget.add_log_info)

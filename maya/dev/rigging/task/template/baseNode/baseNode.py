@@ -120,7 +120,8 @@ class BaseNode(task.Task):
 
             # enum attr info
             enum_attr += '{}={}:'.format(res, SPACE_CONFIG[res])
-            cond = nodeUtils.condition(0, SPACE_CONFIG[res], 1, 0, side=naming.Side.middle, description=res + 'Vis',
+
+            cond = nodeUtils.condition(0, SPACE_CONFIG[res], 1, 0, side=naming.Side.middle, description=res+'Vis',
                                        operation=0, attrs=grp_res + '.v', force=True, node_only=True)
             cond_nodes.append(cond + '.firstTerm')
 
@@ -204,6 +205,7 @@ class BaseNode(task.Task):
         """
         self.world_control = controls.create('world', side=naming.Side.middle, shape='square', color='yellow',
                                              parent=self.mover, size=1.1, sub=False)
+
         self.layout_control = controls.create('layout', side=naming.Side.middle, shape='crossArrowCircle',
                                               color='royal heath', parent=self.world_control.output, sub=False)
         self.local_control = controls.create('local', side=naming.Side.middle, shape='circle', color='royal purple',
@@ -218,16 +220,16 @@ class BaseNode(task.Task):
 
         # world matrix
         attributes.add_attrs(self.master, 'matrixWorld', attribute_type='matrix', keyable=False)
-        mult_matrix_world = nodeUtils.mult_matrix([self.local_control.world_matrix_attr,
-                                                   self.layout_control.world_matrix_attr,
-                                                   self.world_control.world_matrix_attr],
-                                                  attrs=self.master+'.matrix_world', side=naming.Side.middle,
-                                                  description='masterWorldMatrix')
+        mult_matrix_world_output = nodeUtils.mult_matrix([self.local_control.world_matrix_attr,
+                                                          self.layout_control.world_matrix_attr,
+                                                          self.world_control.world_matrix_attr],
+                                                         attrs=self.master+'.matrixWorld', side=naming.Side.middle,
+                                                         description='masterWorldMatrix')
 
         # world translate/rotate/scale
         decompose_matrix_world = nodeUtils.node(type=naming.Type.decomposeMatrix, side=naming.Side.middle,
                                                 description='masterWorldTransform')
-        cmds.connectAttr(mult_matrix_world+'.matrixSum', decompose_matrix_world+'.inputMatrix')
+        cmds.connectAttr(mult_matrix_world_output, decompose_matrix_world+'.inputMatrix')
 
         transform_attr_info = {'matrix_attr': self.master+'.matrixWorld',
                                'transform_attr': []}
@@ -238,15 +240,17 @@ class BaseNode(task.Task):
             transform_attr_info['transform_attr'].append('{}.{}'.format(self.master, world_attr))
             for axis in 'XYZ':
                 cmds.addAttr(self.master, longName=world_attr+axis, attributeType='float', parent=world_attr)
+            for axis in 'XYZ':
+                # need to loop again because float3 attr won't be added until all axis attrs are added
                 cmds.connectAttr('{}.output{}{}'.format(decompose_matrix_world, attr.title(), axis),
-                                 '{}.{}'.format(self.master, world_attr, axis))
+                                 '{}.{}{}'.format(self.master, world_attr, axis))
 
         # connect transform attr with res transform group
         for res in naming.Resolution.all:
-            grp_trans = self._get_obj_attr(res + '.transform')
+            grp_trans = self._get_obj_attr(res+'.transform')
             for pos_attr, trans_attr in zip(transform_attr_info['transform_attr'], ['translate', 'rotate', 'scale']):
-                attributes.connect_attrs([pos_attr + 'X', pos_attr + 'Y', pos_attr + 'Z'],
-                                         [trans_attr + 'X', trans_attr + 'Y', trans_attr + 'Z'],
+                attributes.connect_attrs([pos_attr+'X', pos_attr+'Y', pos_attr+'Z'],
+                                         [trans_attr+'X', trans_attr+'Y', trans_attr+'Z'],
                                          driven=grp_trans, force=True)
 
         # add transform attr info to class as attribute
@@ -272,6 +276,6 @@ class BaseNode(task.Task):
             control_length = local_control_bbox_max[0] - local_control_bbox_min[0]
 
             # get scale multiplier
-            scale_multiplier = geo_length/float(control_length) * 1.2
+            scale_multiplier = geo_length/float(control_length) * 2
             controls.transform_ctrl_shape([self.world_control.control_shape, self.layout_control.control_shape,
                                            self.local_control.control_shape], scale=scale_multiplier)

@@ -146,7 +146,7 @@ def import_model(model_type, asset, project, resolution=None):
             publish_info = files.read_json_file(publish_info_path)
             if not resolution:
                 resolution = publish_info['resolution']
-            print resolution
+
             for res in resolution:
                 print res
                 if res in publish_info['resolution']:

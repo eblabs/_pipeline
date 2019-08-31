@@ -314,7 +314,6 @@ def _check_attr_exists(attr, node=None):
     Returns:
         attr(str): attribute full name, return None if doesn't exist
     """
-
     attr_split = attr.split('.')
     if not node:
         # get node name from attr
@@ -323,14 +322,13 @@ def _check_attr_exists(attr, node=None):
         attr = attr.replace(attr_split[0]+'.', '')  # override node if given
 
     try:
-        cmds.getAttr('{}.{}'.format(node, attr))
+        cmds.listConnections('{}.{}'.format(node, attr))
         # I found this is the better way to check if attr exist or not
         # attributeQuery doesn't support compound attribute, like worldMatrix[0]
-        # getAttr will error out if the attr does not exist
+        # listConnections will error out if the attr does not exist
         return '{}.{}'.format(node, attr)
     except ValueError:
         logger.warning('{} does not have attr {}'.format(node, attr))
-        return None
 
 
 def _connect_single_attr(driver_attr, driven_attr, driver=None, driven=None, force=True):

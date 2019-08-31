@@ -35,7 +35,6 @@ class TaskInfo(QWidget):
 
     def __init__(self):
         super(TaskInfo, self).__init__()
-        self._enable = True
 
         layout_base = QVBoxLayout()
         self.setLayout(layout_base)
@@ -66,10 +65,6 @@ class TaskInfo(QWidget):
         self.setEnabled(True)
         self.label_name.setText('')
         self.label_type.setText('')
-
-    def enable_widget(self):
-        self._enable = not self._enable
-        self.setEnabled(self._enable)
 
     def edit_name_widget(self):
         """

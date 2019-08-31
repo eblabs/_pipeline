@@ -77,7 +77,7 @@ def node(**kwargs):
         node_name = cmds.createNode(namer.type, name=namer.name)
 
     for attr, val in _set_attrs.iteritems():
-        cmds.setAttr('{}.{}'.format(node, attr), val)
+        cmds.setAttr('{}.{}'.format(node_name, attr), val)
 
     return node_name
 
@@ -845,9 +845,8 @@ def _create_node_multi_attrs(input_attr_single, input_attr_multi, node_attr_sing
             _attrs = [_attrs]
         elif isinstance(_attrs[0], basestring):
             _attrs = [_attrs]
-        for attr in _attrs:
-            for attr_info in zip(output_attr, attr):
-                attributes.connect_attrs(attr_info[0], attr_info[1], force=_force)
+        for attr_info in zip(output_attr_list, _attrs):
+            attributes.connect_attrs(attr_info[0], attr_info[1], force=_force)
 
     # return output attr
     return output_attr_list, _node

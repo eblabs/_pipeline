@@ -13,6 +13,9 @@ except ImportError:
 import utils.common.variables as variables
 import utils.common.logUtils as logUtils
 
+# ICON
+import dev.rigging.builder.ui.widgets.icons as icons
+
 # CONSTANT
 import dev.rigging.task.config.PROPERTY_ITEMS as PROPERTY_ITEMS
 PROPERTY_ITEMS = PROPERTY_ITEMS.PROPERTY_ITEMS
@@ -39,6 +42,10 @@ class Task(object):
             self.asset = self._builder.asset
             self.rig_type = self._builder.rig_type
         self._save = False  # attr to check if has save function
+
+        # icon
+        self._icon_new = icons.task_new
+        self._icon_ref = icons.task_reference
 
         self.kwargs_task = {}
         self.kwargs_ui = OrderedDict()
@@ -67,6 +74,10 @@ class Task(object):
     @ property
     def save(self):
         return self._save
+
+    @ property
+    def icons(self):
+        return [self._icon_new, self._icon_ref]
 
     @name.setter
     def name(self, task_name):
@@ -216,8 +227,8 @@ class Task(object):
         attr_split = attr.split('.')
         attr_parent = self
         for attr_part in attr_split:
-            if hasattr(self, attr_part):
-                attr_parent = getattr(self, attr_part)
+            if hasattr(attr_parent, attr_part):
+                attr_parent = getattr(attr_parent, attr_part)
             else:
                 attr_parent = None
                 break
