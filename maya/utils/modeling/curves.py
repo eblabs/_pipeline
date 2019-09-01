@@ -228,15 +228,15 @@ def export_curves_info(curves, path, name='curvesInfo'):
                                           'shape': shape_info}})
 
     # check if has curves info
-        if curves_info:
-            # compose path
-            curves_info_path = os.path.join(path, name + CURVE_INFO_FORMAT)
-            files.write_json_file(curves_info_path, curves_info)
-            logger.info('export curves info successfully at {}'.format(curves_info_path))
-            return curves_info_path
-        else:
-            logger.warning('nothing to be exported, skipped')
-            return None
+    if curves_info:
+        # compose path
+        curves_info_path = os.path.join(path, name + CURVE_INFO_FORMAT)
+        files.write_json_file(curves_info_path, curves_info)
+        logger.info('export curves info successfully at {}'.format(curves_info_path))
+        return curves_info_path
+    else:
+        logger.warning('nothing to be exported, skipped')
+        return None
 
 
 def build_curves_from_curves_info(curves_info, parent_node=None):
@@ -253,9 +253,10 @@ def build_curves_from_curves_info(curves_info, parent_node=None):
             transform_info = apiUtils.decompose_matrix(crv_info['world_matrix'])
             # create curve
             crv, crv_shape = create_curve(crv_info['shape']['name'], crv_info['shape']['control_vertices'],
-                                          crv_info['shape']['knots'], **crv_info['shape'])
+                                          crv_info['shape']['knots'], degree=crv_info['shape']['degree'],
+                                          form=crv_info['shape']['form'])
             # set pos
-            transforms.set_pos(crv, transform_info)
+            transforms.set_pos(crv, transform_info, set_scale=True)
             # parent node
             hierarchy.parent_node(crv, parent_node)
 

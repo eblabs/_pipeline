@@ -3,11 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/base/rigDataImport.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/base/rigDataImport.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/template/baseNode/importModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/template/baseNode/importModel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/template/baseNode/blueprint.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/template/baseNode/blueprint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/transforms.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/transforms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/modeling/curves.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/modeling/curves.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/rigging/joints.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/joints.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/modeling/meshes.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/modeling/meshes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/modeling/surfaces.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/modeling/surfaces.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

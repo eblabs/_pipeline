@@ -22,13 +22,11 @@ MESH_INFO_FORMAT = '.meshInfo'
 
 
 #    FUNCTION
-def create_mesh(name, num_vertices, num_polygons, points, poly_count, poly_connects, u_values, v_values, **kwargs):
+def create_mesh(name, points, poly_count, poly_connects, u_values, v_values, **kwargs):
     """
     create mesh with given information
     Args:
         name(str): mesh name
-        num_vertices(int): mesh vertex number
-        num_polygons(int): mesh face number
         points(list): vertex array of the mesh
         poly_count(list): array of vertex counts for each polygon
         poly_connects(list): array of vertex connections for each polygon
@@ -54,7 +52,8 @@ def create_mesh(name, num_vertices, num_polygons, points, poly_count, poly_conne
 
     MObj = apiUtils.get_MObj(name)
     MFnMesh = OpenMaya.MFnMesh()
-    MObj = MFnMesh.create(num_vertices, num_polygons, points, poly_count, poly_connects, u_values, v_values, MObj)
+    MObj = MFnMesh.create(OpenMaya.MPointArray(points), poly_count, poly_connects, uValues=u_values, vValues=v_values,
+                          parent=MObj)
 
     if uv_count and uv_ids:
         MFnMesh.assignUVs(uv_count, uv_ids)
@@ -78,8 +77,8 @@ def get_mesh_info(mesh):
 
     Returns:
         mesh_info(dict): mesh shape node information
-                         include: {name, num_vertices, num_polygons, points, poly_count, poly_connects, u_values,
-                                   v_values, uv_count, uv_ids}
+                         include: {name, points, poly_count, poly_connects, u_values,
+                                   v_values, uv_count, uv_ids, normals}
     """
     if cmds.objectType(mesh) == 'transform':
         mesh_shape = cmds.listRelatives(mesh, shapes=True)[0]
@@ -89,8 +88,6 @@ def get_mesh_info(mesh):
 
     MFnMesh = _get_MFnMesh(mesh_shape)  # set MFnMesh to query
 
-    num_vertices = MFnMesh.numVertices
-    num_polygons = MFnMesh.num_polygons()
     MPntArray_points = MFnMesh.getPoints(space=OpenMaya.MSpace.kObject)
     MIntArray_poly_count, MIntArray_poly_connects = MFnMesh.getVertices()
     MFloatArray_u, MFloatArray_v = MFnMesh.getUVs()
@@ -106,8 +103,6 @@ def get_mesh_info(mesh):
     uv_ids = apiUtils.convert_MDoubleArray_to_list(MIntArray_uv_ids)
 
     mesh_info = {'name': mesh,
-                 'num_vertices': num_vertices,
-                 'num_polygons': num_polygons,
                  'points': points,
                  'poly_count': poly_count,
                  'poly_connects': poly_connects,
@@ -149,15 +144,15 @@ def export_meshes_info(meshes, path, name='meshesInfo'):
                                           'shape': shape_info}})
 
     # check if has meshes info
-        if meshes_info:
-            # compose path
-            meshes_info_path = os.path.join(path, name+MESH_INFO_FORMAT)
-            files.write_json_file(meshes_info_path, meshes_info)
-            logger.info('export surfaces info successfully at {}'.format(meshes_info_path))
-            return meshes_info_path
-        else:
-            logger.warning('nothing to be exported, skipped')
-            return None
+    if meshes_info:
+        # compose path
+        meshes_info_path = os.path.join(path, name+MESH_INFO_FORMAT)
+        files.write_json_file(meshes_info_path, meshes_info)
+        logger.info('export surfaces info successfully at {}'.format(meshes_info_path))
+        return meshes_info_path
+    else:
+        logger.warning('nothing to be exported, skipped')
+        return None
 
 
 def build_meshes_from_meshes_info(meshes_info, parent_node=None):
@@ -173,13 +168,12 @@ def build_meshes_from_meshes_info(meshes_info, parent_node=None):
             # decompose matrix
             transform_info = apiUtils.decompose_matrix(msh_info['world_matrix'])
             # create curve
-            msh, msh_shape = create_mesh(msh_info['shape']['name'], msh_info['shape']['num_vertices'],
-                                         msh_info['shape']['num_polygons'], msh_info['shape']['points'],
+            msh, msh_shape = create_mesh(msh_info['shape']['name'], msh_info['shape']['points'],
                                          msh_info['shape']['poly_count'], msh_info['shape']['poly_connects'],
                                          msh_info['shape']['u_values'], msh_info['shape']['v_values'],
-                                         **surf_info['shape'])
+                                         uv_count=msh_info['shape']['uv_count'], uv_ids=msh_info['shape']['uv_ids'])
             # set pos
-            transforms.set_pos(msh, transform_info)
+            transforms.set_pos(msh, transform_info, set_scale=True)
             # parent node
             hierarchy.parent_node(msh, parent_node)
 

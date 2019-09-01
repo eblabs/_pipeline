@@ -25,8 +25,8 @@ def create(name, **kwargs):
         parent(str): where to parent the transform node
         rotate_order(int): transform node's rotate order, default is 0
         vis(bool): transform node's visibility, default is True
-        pos(str/list): match transform's position to given node/transform value
-                       str: match translate and rotate to the given node
+        pos(str/list): match transform node's transformation to given node/transform value
+                       str: match translate,rotateto the given node
                        [str/None, str/None]: match translate/rotate to the given node
                        [[x,y,z], [x,y,z]]: match translate/rotate to given values
         inheritsTransform(bool): set transform node's inheritance attr, default is True
@@ -53,7 +53,7 @@ def create(name, **kwargs):
 
     # match pos
     if pos:
-        set_pos(transform, pos)
+        set_pos(transform, pos, rotate_order=rotate_order)
 
     # parent
     if parent:
@@ -130,19 +130,20 @@ def bounding_box_info(nodes):
     return max_pos, min_pos, center_pos
 
 
-def set_pos(nodes, pos, rotate_order=0):
+def set_pos(nodes, pos, rotate_order=0, set_scale=False):
     """
     set pos for the given transform nodes
 
     Args:
         nodes(str/list): given transform nodes
-        pos(str/list): match transform's position to given node/transform value
-                       str: match translate and rotate to the given node
-                       [str/None, str/None]: match translate/rotate to the given node
-                       [[x,y,z], [x,y,z]]: match translate/rotate to given values
+        pos(str/list): match transform node's transformation to given node/transform value
+                       str: match translate,rotate and scale to the given node
+                       [str/None, str/None, str/None]: match translate/rotate/scale to the given node
+                       [[x,y,z], [x,y,z], [x,y,z]: match translate/rotate/scale to given values
 
     Keyword Args:
         rotate_order(int): rotate order for the input pos
+        set_scale(bool): set scale value to the given node if True, default is False
     """
 
     ro = ['xyz', 'yzx', 'zxy', 'xzy', 'yxz', 'zyx']  # xform rotate order only accept string
@@ -153,18 +154,23 @@ def set_pos(nodes, pos, rotate_order=0):
     for n in nodes:
         if pos:
             if isinstance(pos, basestring):
-                cmds.matchTransform(n, pos, pos=True, rot=True)
+                cmds.matchTransform(n, pos, position=True, rotation=True, scale=set_scale)
             else:
                 if isinstance(pos[0], basestring):
-                    cmds.matchTransform(n, pos[0], pos=True, rot=False)
+                    cmds.matchTransform(n, pos[0], position=True, rotation=False, scale=False)
                 else:
-                    cmds.xform(n, t=pos[0], ws=True)
+                    cmds.xform(n, translation=pos[0], worldSpace=True)
                 if isinstance(pos[1], basestring):
-                    cmds.matchTransform(n, pos[1], pos=False, rot=True)
+                    cmds.matchTransform(n, pos[1], position=False, rotation=True, scale=False)
                 else:
                     # get node's rotate order first
                     ro_node = cmds.getAttr(n+'.rotateOrder')
                     # set rotation with given rotate order
-                    cmds.xform(n, rot=pos[1], ws=True, rotateOrder=ro[rotate_order])
+                    cmds.xform(n, rotation=pos[1], worldSpace=True, rotateOrder=ro[rotate_order])
                     # set back node's rotate order, and preserve overall rotation
                     cmds.xform(n, rotateOrder=ro[ro_node])
+                if set_scale and len(pos) > 2:
+                    if isinstance(pos[2], basestring):
+                        cmds.matchTransform(n, pos[1], position=False, rotation=False, scale=True)
+                    else:
+                        cmds.xform(n, scale=pos[2], worldSpace=True)

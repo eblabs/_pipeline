@@ -34,8 +34,6 @@ def create_surface(name, control_vertices, u_knot_sequences, v_knot_sequences, *
         degree_v(int): degree of second set of basis functions, default is 1
         form_u(int): surface's form u, default is 1
         form_v(int): surface's form v, default is 1
-        uv_count(list): the uv counts for each patch in the surface, default is None
-        uv_ids(list): the uv indices to be mapped to each patch-corner, default is None
         parent(str): parent surface to the given node
 
     Returns:
@@ -59,9 +57,6 @@ def create_surface(name, control_vertices, u_knot_sequences, v_knot_sequences, *
     MFnNurbsSurface = OpenMaya.MFnNurbsSurface()
     MObj = MFnNurbsSurface.create(control_vertices, u_knot_sequences, v_knot_sequences, degree_u, degree_v,
                                   form_u, form_v, True, MObj)
-
-    if uv_count and uv_ids:
-        MFnNurbsSurface.assignUVs(uv_count, uv_ids)
 
     # assign shader
     cmds.sets(name, edit=True, forceElement='initialShadingGroup')
@@ -103,14 +98,12 @@ def get_surface_info(surface):
     form_u = MFnSurface.formInU
     form_v = MFnSurface.formInV
 
-    MIntArray_uv_count, MIntArray_uv_ids = MFnSurface.getAssignedUVs()
-
     control_vertices = apiUtils.convert_MPointArray_to_list(MPntArray_cvs)
     knots_u = apiUtils.convert_MDoubleArray_to_list(MDoubleArray_knots_u)
     knots_v = apiUtils.convert_MDoubleArray_to_list(MDoubleArray_knots_v)
 
-    uv_count = apiUtils.convert_MDoubleArray_to_list(MIntArray_uv_count)
-    uv_ids = apiUtils.convert_MDoubleArray_to_list(MIntArray_uv_ids)
+    # uv_count = apiUtils.convert_MDoubleArray_to_list(MIntArray_uv_count)
+    # uv_ids = apiUtils.convert_MDoubleArray_to_list(MIntArray_uv_ids)
 
     surface_info = {'name': surface,
                     'control_vertices': control_vertices,
@@ -119,9 +112,7 @@ def get_surface_info(surface):
                     'degree_u': degree_u,
                     'degree_v': degree_v,
                     'form_u': form_u,
-                    'form_v': form_v,
-                    'uv_count': uv_count,
-                    'uv_ids': uv_ids}
+                    'form_v': form_v}
 
     return surface_info
 
@@ -156,15 +147,15 @@ def export_surfaces_info(surfaces, path, name='surfacesInfo'):
                                              'shape': shape_info}})
 
     # check if has surfaces info
-        if surfaces_info:
-            # compose path
-            surfaces_info_path = os.path.join(path, name+SURF_INFO_FORMAT)
-            files.write_json_file(surfaces_info_path, surfaces_info)
-            logger.info('export surfaces info successfully at {}'.format(surfaces_info_path))
-            return surfaces_info_path
-        else:
-            logger.warning('nothing to be exported, skipped')
-            return None
+    if surfaces_info:
+        # compose path
+        surfaces_info_path = os.path.join(path, name+SURF_INFO_FORMAT)
+        files.write_json_file(surfaces_info_path, surfaces_info)
+        logger.info('export surfaces info successfully at {}'.format(surfaces_info_path))
+        return surfaces_info_path
+    else:
+        logger.warning('nothing to be exported, skipped')
+        return None
 
 
 def build_surfaces_from_surfaces_info(surfaces_info, parent_node=None):
@@ -182,9 +173,12 @@ def build_surfaces_from_surfaces_info(surfaces_info, parent_node=None):
             # create curve
             surf, surf_shape = create_surface(surf_info['shape']['name'], surf_info['shape']['control_vertices'],
                                               surf_info['shape']['u_knot_sequences'],
-                                              surf_info['shape']['v_knot_sequences'], **surf_info['shape'])
+                                              surf_info['shape']['v_knot_sequences'],
+                                              degree_u=surf_info['shape']['degree_u'],
+                                              degree_v=surf_info['shape']['degree_v'],
+                                              form_u=surf_info['shape']['form_u'], form_v=surf_info['shape']['form_v'])
             # set pos
-            transforms.set_pos(surf, transform_info)
+            transforms.set_pos(surf, transform_info, set_scale=True)
             # parent node
             hierarchy.parent_node(surf, parent_node)
 
