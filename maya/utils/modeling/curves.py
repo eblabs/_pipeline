@@ -4,15 +4,21 @@
 import maya.cmds as cmds
 import maya.api.OpenMaya as OpenMaya
 
+# import os
+import os
+
 # import utils
+import utils.common.files as files
 import utils.common.attributes as attributes
 import utils.common.apiUtils as apiUtils
 import utils.common.variables as variables
+import utils.common.transforms as transforms
 import utils.common.hierarchy as hierarchy
 import utils.common.logUtils as logUtils
 
 # CONSTANT
 logger = logUtils.logger
+CURVE_INFO_FORMAT = '.crvInfo'
 
 
 #    FUNCTION
@@ -28,6 +34,7 @@ def create_curve(name, control_vertices, knots, **kwargs):
     Keyword Args:
         degree(int): curve's degree, default is 1
         form(int): curve's form, default is 1
+        parent(str): parent curve to the given node
 
     Returns:
         transform, shape node
@@ -35,9 +42,12 @@ def create_curve(name, control_vertices, knots, **kwargs):
     # vars
     degree = variables.kwargs('degree', 1, kwargs, short_name='d')
     form = variables.kwargs('form', 1, kwargs)
+    parent = variables.kwargs('parent', None, kwargs, short_name='p')
 
     if not cmds.objExists(name):
         cmds.createNode('transform', name=name)
+
+    hierarchy.parent_node(name, parent)
 
     MObj = apiUtils.get_MObj(name)
     MFnNurbsCurve = OpenMaya.MFnNurbsCurve()
@@ -78,7 +88,7 @@ def create_guide_line(name, attrs, reference=True, parent=None):
         cmds.setAttr(crv_shape+'.overrideDisplayType', 2)
     attributes.lock_hide_attrs(crv, attributes.Attr.all)
 
-    hierarchy.parent_node(crv, parent) # parent curve to the given transform
+    hierarchy.parent_node(crv, parent)  # parent curve to the given transform
 
     # connect curve with given inputs
     attributes.connect_attrs(attrs[0]+attrs[1],
@@ -138,13 +148,19 @@ def get_curve_info(curve):
     get curve shape info
 
     Args:
-        curve: nurbs curve shape node
+        curve: nurbs curve shape node/transform node
 
     Returns:
         curve_info(dict): curve shape node information
                           include: {name, control_vertices, knots, degree, form}
     """
-    MFnCurve = _get_MFnNurbsCurve(curve)
+    if cmds.objectType(curve) == 'transform':
+        curve_shape = cmds.listRelatives(curve, shapes=True)[0]
+    else:
+        curve_shape = curve
+        curve = cmds.listRelatives(curve_shape, parent=True)[0]
+
+    MFnCurve = _get_MFnNurbsCurve(curve_shape)
 
     MPntArray_cvs = MFnCurve.cvPositions(OpenMaya.MSpace.kObject)
     MDoubleArray_knots = MFnCurve.knots()
@@ -180,6 +196,88 @@ def set_curve_points(curve, points):
 
     # set pos
     MFnNurbsCurve.setCVPositions(MPointArray)
+
+
+def export_curves_info(curves, path, name='curvesInfo'):
+    """
+    export curves information to the given path
+    curve information contain curve's name, curve's world matrix and shape info
+
+    Args:
+        curves(list/str): curves need to be exported
+        path(str): given path
+    Keyword Args:
+        name(str): export curves info file name, default is curvesInfo
+    Returns:
+        curves_info_path(str): exported path, return None if nothing to be exported
+    """
+    if isinstance(curves, basestring):
+        curves = [curves]
+
+    curves_info = {}
+
+    for crv in curves:
+        if cmds.objExists(crv):
+            crv_shape = cmds.listRelatives(crv, shapes=True)
+            if crv_shape:
+                crv_shape = crv_shape[0]
+                # get shape info
+                shape_info = get_curve_info(crv_shape)
+                matrix_world = cmds.getAttr(crv+'.worldMatrix[0]')
+                curves_info.update({crv: {'world_matrix': matrix_world,
+                                          'shape': shape_info}})
+
+    # check if has curves info
+        if curves_info:
+            # compose path
+            curves_info_path = os.path.join(path, name + CURVE_INFO_FORMAT)
+            files.write_json_file(curves_info_path, curves_info)
+            logger.info('export curves info successfully at {}'.format(curves_info_path))
+            return curves_info_path
+        else:
+            logger.warning('nothing to be exported, skipped')
+            return None
+
+
+def build_curves_from_curves_info(curves_info, parent_node=None):
+    """
+    build curves base on curves info data in the scene
+
+    Args:
+        curves_info(dict): curves information
+        parent_node(str): parent curves to the given node, default is None
+    """
+    for crv, crv_info in curves_info.iteritems():
+        if not cmds.objExists(crv):
+            # decompose matrix
+            transform_info = apiUtils.decompose_matrix(crv_info['world_matrix'])
+            # create curve
+            crv, crv_shape = create_curve(crv_info['shape']['name'], crv_info['shape']['control_vertices'],
+                                          crv_info['shape']['knots'], **crv_info['shape'])
+            # set pos
+            transforms.set_pos(crv, transform_info)
+            # parent node
+            hierarchy.parent_node(crv, parent_node)
+
+
+def load_curves_info(path, name='curvesInfo', parent_node=None):
+    """
+    load curves information from given path and build the curves in the scene
+    Args:
+        path(str): given curves info file path
+    Keyword Args:
+        name(str): curves info file name, default is curvesInfo
+        parent_node(str): parent curves to the given node, default is None
+    """
+    # get path
+    curves_info_path = os.path.join(path, name+CURVE_INFO_FORMAT)
+    if os.path.exists(curves_info_path):
+        curves_info = files.read_json_file(curves_info_path)
+        build_curves_from_curves_info(curves_info, parent_node=parent_node)
+        # log info
+        logger.info('build curves base on given curves info file: {}'.format(curves_info_path))
+    else:
+        logger.warning('given path: {} does not exist, skipped'.format(curves_info_path))
 
 
 # SUB FUNCTION

@@ -19,7 +19,7 @@ class ImportModel(task.Task):
 
     def __init__(self, **kwargs):
         super(ImportModel, self).__init__(**kwargs)
-        self._task = 'dev.rigging.task.base.baseNode'
+        self._task = 'dev.rigging.task.template.baseNode.importModel'
         self.model_info = []
         self.import_model_groups = []
 

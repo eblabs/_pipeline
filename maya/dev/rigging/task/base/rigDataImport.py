@@ -98,10 +98,7 @@ class RigDataImport(rigData.RigData):
             file_name, ok = QInputDialog.getText(maya_window, 'Export Selection', 'File name:')
             if file_name and ok:
                 file_path = os.path.join(self.save_data_path, file_name)
-                if os.path.isfile(file_path):
-                    self.export_file(file_path)
-                    logger.info("export file '{}' to path '{}' successfully".format(file_name, file_path))
-                elif file_name.endswith('.ma') or file_name.endswith('.mb') or file_name.endswith('.obj'):
+                if file_name.endswith('.ma') or file_name.endswith('.mb') or file_name.endswith('.obj'):
                     self.export_file(file_path)
                     logger.info("export file '{}' to path '{}' successfully".format(file_name, file_path))
                 else:

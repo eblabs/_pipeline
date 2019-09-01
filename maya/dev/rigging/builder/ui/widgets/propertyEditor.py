@@ -77,10 +77,7 @@ class PropertyEditor(QTreeView):
         self.action_del_element = self.menu.addAction('Remove Element')
         self.action_dup_element = self.menu.addAction('Duplicate Element')
 
-        for action in [self.action_set_select,
-                       self.action_add_select,
-                       self.action_add_element,
-                       self.action_del_element,
+        for action in [self.action_set_select, self.action_add_select, self.action_add_element, self.action_del_element,
                        self.action_dup_element]:
             action.setEnabled(False)
 
@@ -107,12 +104,15 @@ class PropertyEditor(QTreeView):
         """
 
         self._item = item  # store the given task item
-        self.refresh()
+        self.refresh()  # refresh the widget
 
+        # get item's ui kwargs
         data_property = item.data(0, ROLE_TASK_KWARGS)
+        # get ui kwargs's key, because dictionary doesn't have order
         data_property_keys = item.data(0, ROLE_TASK_KWARGS_KEY)
 
         for key in data_property_keys:
+            # loop in each key, get parameters for each key
             data = data_property[key]
             # add row item
             row, template_child, key_edit, keys_order = self._add_row_item(key, item_kwargs=data, key_edit=False)
@@ -121,7 +121,7 @@ class PropertyEditor(QTreeView):
             self._model.appendRow(row)
 
             # loop downstream
-            # get value
+            # get value, user edit will be saved in value, use default if no value
             if 'value' in data and data['value'] is not None:
                 val = data['value']
             else:
@@ -138,7 +138,7 @@ class PropertyEditor(QTreeView):
 
     def _add_child(self, item, data, template=None, key_edit=False, keys_order=None):
         """
-        add child items to the given item
+        add child items to the given item, only for list or dictionary data
 
         Args:
             item(QStandardItem)
@@ -151,9 +151,10 @@ class PropertyEditor(QTreeView):
         """
 
         if isinstance(data, list):
-            template_type = check_item_type(template)
+            template_type = check_item_type(template)  # get template's type
             # loop in each item in list
             for i, val in enumerate(data):
+                # add row for each item in list
                 row, template_child, key_edit, keys_order = self._add_row_item(str(i), val=val,
                                                                                item_kwargs={'type': template_type})
 
@@ -165,19 +166,18 @@ class PropertyEditor(QTreeView):
 
         elif isinstance(data, dict):
             if not keys_order:
+                # key order will be dictionary's default key order
                 keys_order = data.keys()
             for key in keys_order:
                 val = data[key]
+                attr_type = None  # check template's attribute type
                 if template:
-                    if isinstance(template, dict):
-                        if key in template:
-                            attr_type = template[key]
-                        else:
-                            attr_type = None
-                    else:
+                    if not isinstance(template, dict):
+                        # all keys have same attribute type
                         attr_type = template
-                else:
-                    attr_type = None
+                    elif isinstance(template, dict) and key in template:
+                        # key has specific attribute type
+                        attr_type = template[key]
 
                 row, template_child, \
                     key_edit_child, keys_order_child = self._add_row_item(key, val=val, item_kwargs={'type': attr_type},
@@ -216,8 +216,8 @@ class PropertyEditor(QTreeView):
             for i in range(row_children):
                 index_attr = self._model.index(i, 0, parent=index_parent)
                 index_val = self._model.index(i, 1, parent=index_parent)
-                attr = convert_data_to_str(self._model.data(index_attr))
-                val = convert_data(self._model.data(index_val))
+                attr = convert_data_to_str(self._model.data(index_attr))  # get key
+                val = convert_data(self._model.data(index_val))  # get value
                 if isinstance(value, list):
                     value_collect.append(val)
                 else:
@@ -230,13 +230,16 @@ class PropertyEditor(QTreeView):
             # loop to upper level
             self._update_parent(self._model.itemFromIndex(index_parent))
         else:
-            index_key = self._model.index(item.row(), 0, parent=item.index().parent())
-            index_value = self._model.index(item.row(), 1, parent=item.index().parent())
-            item_data = self._model.itemFromIndex(index_value)
-            key = self._model.data(index_key)
-            val = convert_data(item_data.text())
-            item_kwargs = item_data.data(role=ROLE_ITEM_KWARGS)
-            item_kwargs.update({'value': val})
+            # no parent item need to update, save the data value to the item
+            index_key = self._model.index(item.row(), 0, parent=item.index().parent())  # current item's key index
+            index_value = self._model.index(item.row(), 1, parent=item.index().parent())  # current item's value index
+            item_data = self._model.itemFromIndex(index_value)  # current item
+            key = self._model.data(index_key)  # key name
+            val = convert_data(item_data.text())  # data value
+
+            item_kwargs = item_data.data(role=ROLE_ITEM_KWARGS)  # get ui kwargs for current item
+            item_kwargs.update({'value': val})  # override ui kwargs's value to the current value
+            item_data.setData(item_kwargs, ROLE_ITEM_KWARGS)  # save ui kwargs
 
             task_kwargs = self._item.data(0, ROLE_TASK_KWARGS)  # get task kwargs
             task_kwargs[key]['value'] = val
@@ -294,6 +297,7 @@ class PropertyEditor(QTreeView):
         if 'type' in item_kwargs:
             item_type = item_kwargs['type']
             if not isinstance(item_type, basestring) or item_type not in PROPERTY_ITEMS:
+                # item type need to be checked
                 item_type = check_item_type(item_type)
             kwargs_add = PROPERTY_ITEMS[item_type].copy()  # make a copy so the config won't be changed
             kwargs_add.update(item_kwargs)
@@ -333,6 +337,7 @@ class PropertyEditor(QTreeView):
         item = self._model.itemFromIndex(index)
         column = item.column()
         if column > 0:
+            # only show menu if mouse on value column
             pos = self.viewport().mapToGlobal(pos)
             self.menu.move(pos)
 
