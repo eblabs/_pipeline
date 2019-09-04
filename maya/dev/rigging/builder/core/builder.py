@@ -99,16 +99,12 @@ class Builder(object):
         _text_color = variables.kwargs('text_color', None, kwargs)
 
         # kwargs for loading task info only, not for user
-        _inheritance = variables.kwargs('inheritance', None, kwargs)
+        _lock = variables.kwargs('lock', True, kwargs)
         _check = variables.kwargs('check', 1, kwargs)
+        _in_class = variables.kwargs('in_class', True, kwargs)
 
-        if _inheritance is None:
+        if _in_class:
             _level = check_level()  # check if the task is referenced or created in the class
-
-            if _level > 0:
-                _inheritance = True
-            else:
-                _inheritance = False
         else:
             _level = None  # load from task info file, no need to put in level list
 
@@ -150,7 +146,7 @@ class Builder(object):
                       'task_kwargs': _task_kwargs,
                       'parent': _parent,
                       'section': _section,
-                      'inheritance': _inheritance,
+                      'lock': _lock,
                       'index': _index,
                       'check': _check,
                       'background_color': _background_color,
@@ -255,7 +251,7 @@ class Builder(object):
             # load task info file
             if self.task_data_paths[i]:
                 tasks_data = files.read_json_file(self.task_data_paths[i])
-                self._load_each_task_data(tasks_data, inheritance=True)
+                self._load_each_task_data(tasks_data, lock=True, in_class=False)
 
         # order the final level tasks, those are from the asset's class methods
         for task in self.tasks_level_list[-1]:
@@ -269,7 +265,7 @@ class Builder(object):
         # load the last file
         if self.task_data_paths[-1]:
             tasks_data = files.read_json_file(self.task_data_paths[-1])
-            self._load_each_task_data(tasks_data, inheritance=False)
+            self._load_each_task_data(tasks_data, lock=False, in_class=False)
 
     def tasks_registration(self):
         """
@@ -388,14 +384,15 @@ class Builder(object):
                 index_pop += 1  # because we insert the new item before index_pop, should shift back one
             self._tasks.pop(index_pop)
 
-    def _load_each_task_data(self, tasks_data, inheritance=True):
+    def _load_each_task_data(self, tasks_data, lock=True, in_class=True):
         for task_info in tasks_data:
             task = task_info.keys()[0]
             task_kwargs = task_info[task]
             if task not in self._tasks_info:
                 # new task, register it
                 task_kwargs.update({'name': task,
-                                    'inheritance': inheritance})
+                                    'lock': lock,
+                                    'in_class': in_class})
                 self.register_task(**task_kwargs)
                 # order it
                 index = task_kwargs['index']
@@ -415,7 +412,7 @@ class Builder(object):
                                 'task_kwargs': task_info['task_kwargs'],
                                 'section': task_info['section'],
                                 'children': [],
-                                'inheritance': task_info['inheritance'],
+                                'lock': task_info['lock'],
                                 'check': task_info['check'],
                                 'background_color': task_info['background_color'],
                                 'text_color': task_info['text_color'],

@@ -58,7 +58,7 @@ ROLE_TASK_RUN = Qt.UserRole + 7
 ROLE_TASK_POST = Qt.UserRole + 8
 ROLE_TASK_SECTION = Qt.UserRole + 9
 ROLE_TASK_TYPE = Qt.UserRole + 10
-ROLE_TASK_INHERITANCE = Qt.UserRole + 11
+ROLE_TASK_LOCK = Qt.UserRole + 11
 ROLE_TASK_STATUS_INFO = Qt.UserRole + 12
 ROLE_TASK_SAVE = Qt.UserRole + 13
 
@@ -328,8 +328,8 @@ class TreeWidget(QTreeWidget):
                 # disable duplicate and remove for in class method
                 current_item = self.currentItem()
                 task_type = current_item.data(0, ROLE_TASK_TYPE)
-                inheritance = current_item.data(0, ROLE_TASK_INHERITANCE)
-                if task_type == 'method' or inheritance:
+                lock = current_item.data(0, ROLE_TASK_LOCK)
+                if task_type == 'method' or lock:
                     self.action_remove.setEnabled(False)
                     if task_type == 'method':
                         self.action_duplicate.setEnabled(False)
@@ -509,7 +509,7 @@ class TreeWidget(QTreeWidget):
                           'task_kwargs': task_kwargs,
                           'check': 1,
                           'section': section,
-                          'inheritance': False,
+                          'lock': False,
                           'save_data': save_data}
 
                 self._create_item(**kwargs)
@@ -518,9 +518,9 @@ class TreeWidget(QTreeWidget):
         for item in self.selectedItems():
             # check type, can't delete in class method or task referenced from parented classes
             task_type = item.data(0, ROLE_TASK_TYPE)
-            task_inheritance = item.data(0, ROLE_TASK_INHERITANCE)
+            task_lock = item.data(0, ROLE_TASK_LOCK)
 
-            if task_type != 'method' and not task_inheritance:
+            if task_type != 'method' and not task_lock:
                 # re-parent child if any is method, and get remove list
                 remove_items = self._re_parent_children(item=item)
 
@@ -557,7 +557,7 @@ class TreeWidget(QTreeWidget):
         self.reload_tasks()
 
     def check_save(self):
-        if self.builder:
+        if self.builder and self.topLevelItemCount():
             title = "Saving Check"
             text = "Reload builder will lose any unsaved data, do you want to save first?"
             reply = QMessageBox.warning(self, title, text, QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
@@ -642,15 +642,15 @@ class TreeWidget(QTreeWidget):
         # check if task is referenced or in class method
         item = self.selectedItems()[0]
         # check if item is referenced
-        inheritance = item.data(0, ROLE_TASK_INHERITANCE)
+        lock = item.data(0, ROLE_TASK_LOCK)
         task_type_orig = item.data(0, ROLE_TASK_TYPE)
         title = "Change task's type"
         if task_type_orig == 'method':
             text = "task is a in-class method, can't switch type"
             QMessageBox.warning(self, title, text)
             return
-        elif inheritance:
-            text = "task is inherited from parent class, can't switch type"
+        elif lock:
+            text = "task is inherited from parent class or registered in class, can't switch type"
             QMessageBox.warning(self, title, text)
             return
         else:
@@ -691,8 +691,8 @@ class TreeWidget(QTreeWidget):
 
         for itm in item_children[1:]:
             task_type = itm.data(0, ROLE_TASK_TYPE)
-            task_inheritance = itm.data(0, ROLE_TASK_INHERITANCE)
-            if task_type == 'method' or task_inheritance:
+            task_lock = itm.data(0, ROLE_TASK_LOCK)
+            if task_type == 'method' or task_lock:
                 item_hold.append(itm)
             else:
                 item_remove.append(itm)
@@ -990,7 +990,7 @@ class TreeWidget(QTreeWidget):
                   'task': task,
                   'task_kwargs': task_kwargs,
                   'check': 1,
-                  'inheritance': False,
+                  'lock': False,
                   'save_data': save_data}
 
         item = self.selectedItems()
@@ -1079,7 +1079,7 @@ class TaskItem(QTreeWidgetItem):
         task_kwargs = kwargs.get('task_kwargs', {})
         check = kwargs.get('check', 1)
         section = kwargs.get('section', '')
-        inheritance = kwargs.get('inheritance', False)
+        lock = kwargs.get('lock', False)
         background_color = kwargs.get('background_color', None)
         text_color = kwargs.get('text_color', None)
         save_data = kwargs.get('save_data', False)
@@ -1091,7 +1091,7 @@ class TaskItem(QTreeWidgetItem):
         self.setData(0, ROLE_TASK_STATUS_INFO, ['', '', ''])  # save log info for display
 
         set_item_data(self, display=display, attr_name=attr_name, task_path=task_path, task=task,
-                      task_kwargs=task_kwargs, section=section, inheritance=inheritance, check=check)
+                      task_kwargs=task_kwargs, section=section, lock=lock, check=check)
 
         self.setData(0, ROLE_TASK_SAVE, save_data)
 
@@ -1246,7 +1246,7 @@ def set_item_data(item, **kwargs):
         task(object): task
         task_kwargs(dict): task ui kwargs
         section(str): register to specific section, normally for in-class method
-        inheritance(bool): if the task is inherited from parent class
+        lock(bool): if the task is locked from parent class
         check(int): task check state
     """
     display = kwargs.get('display', None)
@@ -1255,7 +1255,7 @@ def set_item_data(item, **kwargs):
     task = kwargs.get('task', None)
     task_kwargs = kwargs.get('task_kwargs', None)
     section = kwargs.get('section', None)
-    inheritance = kwargs.get('inheritance', None)
+    lock = kwargs.get('lock', None)
     check = kwargs.get('check', None)
 
     if display is not None:
@@ -1270,8 +1270,8 @@ def set_item_data(item, **kwargs):
     if section is not None:
         item.setData(0, ROLE_TASK_SECTION, section)
 
-    if inheritance is not None:
-        item.setData(0, ROLE_TASK_INHERITANCE, inheritance)
+    if lock is not None:
+        item.setData(0, ROLE_TASK_LOCK, lock)
 
     if task is not None:
         item.setData(0, ROLE_TASK_FUNC, task)
@@ -1285,9 +1285,9 @@ def set_item_data(item, **kwargs):
             item.setData(0, ROLE_TASK_TYPE, task_path)  # normally user will given task_path and task together
             task_icons = task().icons
 
-        if inheritance is None:
-            inheritance = 0
-        item.setIcon(0, QIcon(task_icons[inheritance]))
+        if lock is None:
+            lock = 0
+        item.setIcon(0, QIcon(task_icons[lock]))
 
     if task_kwargs is not None:
         item.setData(0, ROLE_TASK_KWARGS, task_kwargs)

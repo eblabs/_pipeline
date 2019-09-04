@@ -22,6 +22,7 @@ except ImportError:
 import utils.common.files as files
 import utils.common.logUtils as logUtils
 import utils.common.uiUtils as uiUtils
+import utils.rigging.buildUtils as buildUtils
 
 # import task
 import dev.rigging.task.core.rigData as rigData
@@ -48,34 +49,50 @@ class RigDataImport(rigData.RigData):
     def register_kwargs(self):
         super(RigDataImport, self).register_kwargs()
 
-        self.register_attribute('filter', [], attr_name='filter', select=False, template='str',
-                                hint="filter, import either specific files or file types, import all if empty")
+        self.update_attribute('data', default=[{'project': '', 'asset': '', 'rig_type': '', 'filter': ''}],
+                              template='rig_data_import')
+
+        # self.register_attribute('filter', [], attr_name='filter', select=False, template='str',
+        #                         hint="filter, import either specific files or file types, import all if empty")
 
     def get_data(self):
-        super(RigDataImport, self).get_data()
+        data_import_path = []
 
-        path_import = []
-        for path in self.data_path:
-            if self.filter:
-                for f_name in self.filter:
-                    if f_name in ['.mb', '.ma', '.obj']:
-                        # file type
-                        files_import = files.get_files_from_path(path, extension=f_name)
-                        path_import += files_import
-                    elif not f_name.startswith('.'):
-                        # should be file name
-                        file_path = os.path.join(path, f_name)
-                        if os.path.isfile(file_path) and os.path.exists(file_path):
-                            path_import.append(file_path)
-            else:
-                # get all
-                files_import = files.get_files_from_path(path, extension=['.mb', '.ma', '.obj'])
+        for d_info in self.data_info:
+            project = d_info['project']
+            asset = d_info['asset']
+            rig_type = d_info['rig_type']
+            d_filter = d_info['filter']
+            if not project:
+                project = self.project
+            if not asset:
+                asset = self.asset
+            if not rig_type:
+                rig_type = self.rig_type
 
-                path_import += files_import
+            if project and asset and rig_type:
+                data_folder = buildUtils.get_data_path(self._name, rig_type, asset, project, warning=False,
+                                                       check_exist=True)
 
-        path_import = list(set(path_import))
+                if data_folder:
+                    # has path, check filter
+                    if d_filter:
+                        for f_name in d_filter:
+                            if f_name in ['.mb', '.ma', '.obj']:
+                                # file type
+                                files_import = files.get_files_from_path(data_folder, extension=f_name)
+                                data_import_path += files_import
+                            elif not f_name.startswith('.'):
+                                # should be file name
+                                file_path = os.path.join(data_folder, f_name)
+                                if os.path.isfile(file_path):
+                                    data_import_path.append(file_path)
+                    else:
+                        # get all
+                        files_import = files.get_files_from_path(data_folder, extension=['.mb', '.ma', '.obj'])
+                        data_import_path += files_import
 
-        self.data_path = path_import
+        self.data_path = list(set(data_import_path))
 
     def import_data(self):
         for f in self.data_path:

@@ -181,6 +181,26 @@ class Task(object):
 
         self._register_attr_to_task([name, value, attr_name, short_name], kwargs_ui)
 
+    def update_attribute(self, name, **kwargs):
+        """
+        update task's attribute information
+        Args:
+            name(str): attribute name in kwargs
+
+        Keyword Args:
+            default: default value
+            min(float/int): min value
+            max(float/int): max value
+            select(bool): if right click can add/set selection
+            enum(list): enum options
+            template: list/dict children template
+            key_edit(bool): if double click can edit dict key name
+            keys_order(list): if the dictionary's keys need to show by order
+            hint(str): attribute's hint
+        """
+        if name in self.kwargs_ui:
+            self.kwargs_ui[name].update(kwargs)
+
     def remove_attribute(self, name, attr_name=None):
         """
         remove the task attribute

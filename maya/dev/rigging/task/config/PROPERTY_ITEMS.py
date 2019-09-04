@@ -48,4 +48,9 @@ PROPERTY_ITEMS = {'str': {'default': '',
                                  'template': {'model_type': '', 'resolution': []},
                                  'keys_order': ['model_type', 'resolution'],
                                  'widget': QLineEdit},
+
+                  'rig_data_import': {'default': {'project': '', 'asset': '', 'rig_type': '', 'filter': ''},
+                                      'template': {'project': '', 'asset': '', 'rig_type': '', 'filter': ''},
+                                      'keys_order': ['project', 'asset', 'rig_type', 'filter'],
+                                      'widget': QLineEdit},
                   }

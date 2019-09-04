@@ -39,7 +39,7 @@ class RigData(task.Task):
     def register_kwargs(self):
         super(RigData, self).register_kwargs()
 
-        self.register_attribute('data', [{'project': '', 'asset': '', 'rig_type': ''}], attr_name='data_path',
+        self.register_attribute('data', [{'project': '', 'asset': '', 'rig_type': ''}], attr_name='data_info',
                                 short_name='d', select=False, template='rig_data',
                                 hint='load data from following paths')
 
@@ -63,10 +63,10 @@ class RigData(task.Task):
         """
         data_folder_path = []
 
-        for path in self.data_path:
-            project = path['project']
-            asset = path['asset']
-            rig_type = path['rig_type']
+        for d_info in self.data_info:
+            project = d_info['project']
+            asset = d_info['asset']
+            rig_type = d_info['rig_type']
 
             if not project:
                 project = self.project
@@ -82,4 +82,4 @@ class RigData(task.Task):
                 if data_folder:
                     data_folder_path.append(data_folder)
 
-        self.data_path = data_folder_path
+        self.data_path = list(set(data_folder_path))
