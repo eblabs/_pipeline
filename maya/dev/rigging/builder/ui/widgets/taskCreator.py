@@ -169,7 +169,6 @@ def get_tasks_from_folders(task_folders):
         task_paths(list)
     """
     task_paths = []
-
     for folder_path in task_folders:
         # get absolute path by import module
         folder_mod, func = modules.import_module(folder_path)

@@ -43,7 +43,7 @@ class BaseNode(task.Task):
 
     def __init__(self, **kwargs):
         super(BaseNode, self).__init__(**kwargs)
-        self._task = 'dev.rigging.task.template.baseNode.baseNode'
+        self._task = 'dev.rigging.task.template.base.puppet.baseNode'
 
         self.master = None
         self.geometries = None

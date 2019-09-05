@@ -20,6 +20,8 @@ def import_module(path, **kwargs):
         module, function
     """
 
+    path = str(path)  # __import__ module doesn't support unicode
+
     func = variables.kwargs('function', '', kwargs, short_name='func')
 
     modules = path.split('.')  # split into parts to get the last section

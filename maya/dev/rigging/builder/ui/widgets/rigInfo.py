@@ -230,8 +230,8 @@ class RigInfo(RigInfoBase):
 
         # set default inheritance path here, it won't do the check in init for some reason
         self.builder_generator.line_edit_project.setText('template')
-        self.builder_generator.line_edit_asset.setText('baseNode')
-        self.builder_generator.line_edit_rig.setText('animationRig')
+        self.builder_generator.line_edit_asset.setText('base')
+        self.builder_generator.line_edit_rig.setText('puppet')
 
         self.builder_generator.move(self._pos)
         self.builder_generator.show()

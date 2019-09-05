@@ -75,6 +75,10 @@ ICONS_TASK = {'task': [icons.task_new, icons.task_reference],
               'callback': [icons.callback_new, icons.callback_reference],
               'method': [icons.method, icons.method]}
 
+# task folders
+TASK_FOLDERS_CONFIG = os.path.join(os.path.dirname(config.__file__), 'TASK_FOLDERS.cfg')
+TASK_FOLDERS = files.read_json_file(TASK_FOLDERS_CONFIG)
+
 # shortcuts
 KEY_CONFIG = os.path.join(os.path.dirname(config.__file__), 'KEY_SHORTCUT.cfg')
 KEY_SHORTCUT = files.read_json_file(KEY_CONFIG)
@@ -117,9 +121,7 @@ class TreeWidget(QTreeWidget):
         self.builder = kwargs.get('builder', None)  # builder object
 
         # task folders
-        self.task_folders = ['dev.rigging.task.core',
-                             'dev.rigging.task.base',
-                             'dev.rigging.task.test']
+        self.task_folders = TASK_FOLDERS[:]
 
         self.setFocusPolicy(Qt.NoFocus)
 
@@ -386,7 +388,7 @@ class TreeWidget(QTreeWidget):
         current_name = item.text(0)
         text, ok = QInputDialog.getText(self, 'Display Name', 'Set Display Name', text=current_name)
         if text and ok and text != current_name:
-            update_name = self._get_unique_name(current_name, text, self._displayItems)
+            update_name = self._get_unique_name(current_name, text, self._display_items)
             item.setText(0, update_name)
 
     def set_display_color(self):

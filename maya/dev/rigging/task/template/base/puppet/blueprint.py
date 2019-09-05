@@ -30,7 +30,7 @@ class Blueprint(rigData.RigData):
 
     def __init__(self, **kwargs):
         super(Blueprint, self).__init__(**kwargs)
-        self._task = 'dev.rigging.task.template.baseNode.blueprint'
+        self._task = 'dev.rigging.task.template.base.puppet.blueprint'
         self.blueprint_grp = naming.Namer(type=naming.Type.group, side=naming.Side.middle, description='blueprint').name
 
     def pre_build(self):
