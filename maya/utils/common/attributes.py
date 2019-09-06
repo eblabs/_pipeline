@@ -69,7 +69,7 @@ def connect_attrs(driver_attrs, driven_attrs, **kwargs):
                              force=force)
 
     if len(driver_attrs) == 1:
-        if _check_attr_exists(driver_attrs[0], node=driver):
+        if check_attr_exists(driver_attrs[0], node=driver):
             # connect driver attr to the rest driven attrs
             for attr in driven_attrs[1:]:
                 _connect_single_attr(driver_attrs[0], attr,
@@ -250,7 +250,7 @@ def set_attrs(attrs, value, **kwargs):
         value = [value] * attrs_num
 
     for attr, val in zip(attrs, value):
-        attr_compose = _check_attr_exists(attr, node=_node)  # get attr full name
+        attr_compose = check_attr_exists(attr, node=_node)  # get attr full name
         if attr_compose:
             # check if connected
             connections = cmds.listConnections(attr_compose, source=True,
@@ -300,8 +300,7 @@ def attr_in_channel_box(node, attr):
     return check
 
 
-# SUB FUNCTION
-def _check_attr_exists(attr, node=None):
+def check_attr_exists(attr, node=None):
     """
     check if attr exists
 
@@ -329,8 +328,10 @@ def _check_attr_exists(attr, node=None):
         return '{}.{}'.format(node, attr)
     except ValueError:
         logger.warning('{} does not have attr {}'.format(node, attr))
+        return None
 
 
+# SUB FUNCTION
 def _connect_single_attr(driver_attr, driven_attr, driver=None, driven=None, force=True):
     """
     Args:
@@ -347,7 +348,7 @@ def _connect_single_attr(driver_attr, driven_attr, driver=None, driven=None, for
     attr_check = True
     for attr, node in zip([driver_attr, driven_attr],
                           [driver, driven]):
-        attr_check = _check_attr_exists(attr, node=node)
+        attr_check = check_attr_exists(attr, node=node)
         if not attr_check:
             break
         else:

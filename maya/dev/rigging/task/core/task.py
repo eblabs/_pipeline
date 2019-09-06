@@ -3,12 +3,6 @@
 # import OrderedDict
 from collections import OrderedDict 
 
-# import PySide widgets
-try:
-    from PySide2.QtWidgets import *
-except ImportError:
-    from PySide.QtGui import *
-
 # import utils
 import utils.common.variables as variables
 import utils.common.logUtils as logUtils
@@ -26,8 +20,11 @@ logger = logUtils.logger
 # CLASS
 class Task(object):
     """base class for Task"""
-    def __init__(self, builder=None, name=None, **kwargs):
+    def __init__(self, **kwargs):
         super(Task, self).__init__()
+        # get name and builder
+        name = variables.kwargs('name', None, kwargs, short_name='n')
+        builder = variables.kwargs('builder', None, kwargs)
         if not name:
             name = self.__class__.__name__
         self._name = name[0].lower() + name[1:]  # make sure task name starts with lowercase
@@ -134,6 +131,7 @@ class Task(object):
             attr_type(str): if it has more complicate ui info need from PROPERTY_ITEMS
             min(float/int): min value
             max(float/int): max value
+            skippable(bool): if True, will show 'None' if int value is out of range
             select(bool): if right click can add/set selection
             enum(list): enum options
             template: list/dict children template

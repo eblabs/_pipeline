@@ -16,9 +16,10 @@ PROPERTY_ITEMS = {'str': {'value': '',
                             'max': None,
                             'widget': QDoubleSpinBox},
 
-                  'int': {'value': 0,
-                          'min': None,
+                  'int': {'value': -1,
+                          'min': -1,
                           'max': None,
+                          'skippable': False,
                           'widget': QSpinBox},
 
                   'enum': {'value': None,

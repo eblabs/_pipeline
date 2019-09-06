@@ -582,6 +582,8 @@ class PropertyDelegate(QItemDelegate):
                 widget.setMinimum(data_info['min'])
             if 'max' in data_info and data_info['max'] is not None:
                 widget.setMaximum(data_info['max'])
+            if isinstance(widget, QSpinBox) and data_info['skippable']:
+                widget.setSpecialValueText('None')
 
         elif isinstance(widget, QLineEdit):
             widget.setFrame(False)
