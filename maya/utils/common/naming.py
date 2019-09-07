@@ -102,6 +102,12 @@ class Namer(object):
                 val = variables.kwargs(key_long, None, kwargs, short_name=key_short)
                 setattr(self, '_'+key_long, val)
 
+            if not isinstance(self._index, int) or self._index < 0:
+                self._index = None
+
+            if not isinstance(self._suffix, int) or self._suffix < 0:
+                self._suffix = None
+
             self._compose_name()
 
     # property

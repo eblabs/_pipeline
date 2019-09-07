@@ -117,8 +117,8 @@ class Component(task.Task):
         self.register_attribute('description', '', attr_name='description', short_name='des', attr_type='str',
                                 hint="component's description")
 
-        self.register_attribute('index', -1, attr_name='index', short_name='i', attr_type='int', skippable=True,
-                                hint="component's index")
+        self.register_attribute('index', None, attr_name='index', short_name='i', attr_type='int', skippable=True,
+                                min=-1, hint="component's index")
 
         self.register_attribute('blueprint joints', [], attr_name='bp_jnts', attr_type='list', select=True,
                                 hint="component's blueprint joints")
@@ -274,19 +274,23 @@ class Component(task.Task):
         # check if has input connection
         if self.input_connect:
             # check if input connection is an component attribute
-            input_matrix_attr = self._get_obj_attr('builder.'+self.input_connect)
-            if input_matrix_attr and cmds.getAttr(input_matrix_attr, type=True) != 'matrix':
-                # set back input_matrix_attr
-                input_matrix_attr = None
+            input_matrix_attr_obj = self._get_obj_attr('builder.'+self.input_connect)
+            if input_matrix_attr_obj and cmds.getAttr(input_matrix_attr_obj, type=True) == 'matrix':
+                input_matrix_attr = input_matrix_attr_obj
+            else:
+                # check if it's a node in scene
+                attr_split = self.input_connect.split('.')
+                if len(attr_split) > 1 and cmds.objExists(attr_split[0]):
+                    # it's a node attribute and node is in the scene
+                    if attributes.check_attr_exists(attr_split[1:], node=attr_split[0]):
+                        # check if it's matrix
+                        if cmds.getAttr(self.input_connect, type=True) == 'matrix':
+                            input_matrix_attr = self.input_connect
         else:
-            # check if it's a node in scene
-            attr_split = self.input_connect.split('.')
-            if len(attr_split) > 1 and cmds.objExists(attr_split[0]):
-                # it's a node attribute and node is in the scene
-                if attributes.check_attr_exists(attr_split[1:], node=attr_split[0]):
-                    # check if it's matrix
-                    if cmds.getAttr(self.input_connect, type=True) == 'matrix':
-                        input_matrix_attr = self.input_connect
+            # check if base node in the scene, connect to base node
+            input_matrix_attr_obj = self._get_obj_attr('builder.base_node.world_pos_attr.matrix_attr')
+            if input_matrix_attr_obj:
+                input_matrix_attr = input_matrix_attr_obj
 
         if input_matrix_attr:
             # compute matrix if input matrix exist
