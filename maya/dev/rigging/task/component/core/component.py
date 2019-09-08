@@ -30,7 +30,19 @@ class Component(task.Task):
     base class for all component
     """
     def __init__(self, *args, **kwargs):
+        # component variables,
+        # useless, just put here so pyCharm won't keep warn me
+        # kwargs registered at the end of task's initialization, so we need to put these before super
+        self.side = None
+        self.description = None
+        self.index = None
+        self.bp_jnts = None
+        self.ctrl_offsets = None
+        self.ctrl_size = None
+        self.input_connect = None
+
         super(Component, self).__init__(**kwargs)
+
         self._task = 'dev.rigging.task.component.core.component'
         self._task_type = 'component'
 

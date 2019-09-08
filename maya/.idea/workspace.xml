@@ -3,10 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/config/TASK_FOLDERS.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/config/TASK_FOLDERS.cfg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/config/PROPERTY_ITEMS.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/config/PROPERTY_ITEMS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/naming.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/naming.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
