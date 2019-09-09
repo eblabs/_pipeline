@@ -14,17 +14,27 @@ class RotatePlaneIk(component.Component):
     """
     def __init__(self, *args, **kwargs):
         self.bp_ctrls = None
+        self.sc_iks = None
+        self.bp_rvs = None
 
         super(RotatePlaneIk, self).__init__(*args, **kwargs)
 
         self._task = 'dev.rigging.task.component.base.rotatePlaneIk'
         self._jnt_suffix = 'Ik'
         self._iks = []
+        self._rvs_ctrls = []
 
     def register_kwargs(self):
         super(RotatePlaneIk, self).register_kwargs()
-        self.register_attribute('blueprint controls', [], attr_name='bp_ctrls', attr_type='list',
+        self.register_attribute('blueprint controls', [], attr_name='bp_ctrls', attr_type='list', select=True,
                                 hint="ik control blueprint, [root, pole_vector, ik]")
+
+        self.register_attribute('single chain iks', 0, attr_name='sc_iks', attr_type='int', min=0, max=2,
+                                skippable=False, hint="create single chain ik per segment after rotate plane ik")
+
+        self.register_attribute('blueprint reverse controls', [], attr_name='bp_rvs', attr_type='list', select=True,
+                                hint="reverse set-up's controls blueprints, normally for foot or hand\
+                                                structure like [heel, toe, sideInn, sideOut, ball, (tap)]")
 
     def create_component(self):
         super(RotatePlaneIk, self).create_component()
@@ -44,7 +54,9 @@ class RotatePlaneIk(component.Component):
                   'nodes_show_group': self._nodes_show_grp,
                   'nodes_world_group': self._nodes_world_grp,
 
-                  'blueprint_controls': self.bp_ctrls}
+                  'blueprint_controls': self.bp_ctrls,
+                  'single_chain_iks': self.sc_iks,
+                  'blueprint_reverse_controls': self.bp_rvs}
 
         ik_limb = rotatePlaneIkLimb.RotatePlaneIk(**kwargs)
         ik_limb.create()
@@ -53,5 +65,6 @@ class RotatePlaneIk(component.Component):
         self._jnts = ik_limb.jnts
         self._ctrls = ik_limb.ctrls
         self._iks = ik_limb.iks
+        self._rvs_ctrls = ik_limb.rvs_ctrls
         self._nodes_hide = ik_limb.nodes_hide
         self._nodes_show = ik_limb.nodes_show
