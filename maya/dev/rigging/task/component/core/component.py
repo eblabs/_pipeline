@@ -63,6 +63,9 @@ class Component(task.Task):
         # component information
         self._ctrls = []
         self._jnts = []
+        self._nodes_show = []
+        self._nodes_hide = []
+        self._nodes_world = []
         self._input_matrix_attr = None
         self._offset_matrix_attr = None
 
@@ -217,10 +220,10 @@ class Component(task.Task):
         cmds.addAttr(self._component, longName='outputMatrix', attributeType='matrix', multi=True)
 
         # connect attrs
-        attributes.connect_attrs(['controlsVis', 'jointsVis', 'rigNodesVis', 'rigNodesVis'],
-                                 [self._controls_grp+'.visibility', self._joints_grp + '.visibility',
-                                  self._nodes_hide_grp+'.visibility', self._nodes_world_grp+'.visibility'],
-                                 driver=self._component)
+        attributes.connect_attrs(['controlsVis', 'controlsVis', 'jointsVis', 'rigNodesVis', 'rigNodesVis'],
+                                 [self._controls_grp+'.visibility', self._nodes_show_grp+'.visibility',
+                                  self._joints_grp + '.visibility', self._nodes_hide_grp+'.visibility',
+                                  self._nodes_world_grp+'.visibility'], driver=self._component)
 
         # mult input and offset matrix to connect local group
         mult_matrix_attr = nodeUtils.mult_matrix([self._component+'.inputMatrix', self._component+'.offsetMatrix'],

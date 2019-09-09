@@ -4,6 +4,8 @@
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/utils/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/utils/kwargsUtils.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
