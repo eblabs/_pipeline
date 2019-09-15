@@ -3,6 +3,9 @@
 # import maya packages
 import maya.cmds as cmds
 
+# import re
+import re
+
 # import utils
 import variables
 import logUtils
@@ -281,6 +284,21 @@ def set_attrs(attrs, value, **kwargs):
             logger.warning('{} does not exist, skipped'.format(attr_compose))
 
 
+def separator(node, name):
+    """
+    add separator attribute for the given node
+
+    Args:
+        node(str): given maya node
+        name(str): separator name
+    """
+    name_upper = _convert_camel_case(name, format='uppercase_space')
+    cmds.addAttr(node, longName=name+'Separator', niceName='----- {} -----'.format(name_upper), attributeType='enum',
+                 enumName=' ')
+    cmds.setAttr('{}.{}Separator'.format(node, name), channelBox=True)
+    cmds.setAttr('{}.{}Separator'.format(node, name), lock=True)
+
+
 def attr_in_channel_box(node, attr):
     """
     check if given attr is in channel box
@@ -387,3 +405,20 @@ def _connect_single_attr(driver_attr, driven_attr, driver=None, driven=None, for
                 logger.warning('{} is locked, skipped'.format(attr_connect[1]))
             else:
                 pass
+
+
+def _convert_camel_case(name, format='snake_case'):
+    """
+    get function from stackoverflow
+    https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
+    """
+    if format == 'snake_case':
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+        name_convert = re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    elif format == 'lowercase_space':
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1 \2', name)
+        name_convert = re.sub('([a-z0-9])([A-Z])', r'\1 \2', s1).lower()
+    else:
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1 \2', name)
+        name_convert = re.sub('([a-z0-9])([A-Z])', r'\1 \2', s1).upper()
+    return name_convert

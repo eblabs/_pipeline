@@ -281,6 +281,45 @@ def load_curves_info(path, name='curvesInfo', parent_node=None):
         logger.warning('given path: {} does not exist, skipped'.format(curves_info_path))
 
 
+def get_closest_point_on_curve(curve, pos, space='world'):
+    """
+    get closest point on the given curve
+
+    Args:
+        curve(str): nurbs curve
+        pos(str/list): given transform node or position
+        space(str): world/object
+
+    Returns:
+        pos_on_curve(list): closest point position on curve
+        parameter(float): closest point's parameter on curve
+    """
+    if space == 'world':
+        space = OpenMaya.MSpace.kWorld
+    else:
+        space = OpenMaya.MSpace.kObject
+    if isinstance(pos, basestring):
+        pos = cmds.xform(pos, query=True, translate=True, worldSpace=True)
+
+    if cmds.objectType(curve) == 'transform':
+        curve_shape = cmds.listRelatives(curve, shapes=True)[0]
+    else:
+        curve_shape = curve
+
+    MPoint = OpenMaya.MPoint(pos)
+    MFnCurve = _get_MFnNurbsCurve(curve)
+
+    if not MFnCurve.isPointOnCurve(MPoint):
+        # given pos is not on curve
+        # find closest point
+        MPoint, param = MFnCurve.closestPoint(MPoint, space=space)
+    else:
+        param = MFnCurve.getParamAtPoint(MPoint, space=space)
+
+    pos = [MPoint.x, MPoint.y, MPoint.z]
+
+    return pos, param
+
 # SUB FUNCTION
 def _get_MFnNurbsCurve(curve):
     """

@@ -70,19 +70,19 @@ class Namer(object):
         Keyword Args:
             compose name with given parts
 
-            type/typ(str): name's type
-            side/sid(str): name's side
+            type/t(str): name's type
+            side/s(str): name's side
             resolution/res(str): name's resolution
             description/des(str): name's description
-            index/idx(str): name's index
+            index/i(str): name's index
             suffix/sfx(str): name's suffix
 
         Properties:
-            type/typ(str)
-            side/sid(str)
+            type/t(str)
+            side/s(str)
             resolution/res(str)
             description/des(str)
-            index/idx(str)
+            index/i(str)
             suffix/sfx(str)
             name(str)
         """
@@ -118,7 +118,7 @@ class Namer(object):
                               return_type='long')
 
     @property
-    def typ(self):
+    def t(self):
         return self._get_name(self._type,
                               'type',
                               return_type='long')
@@ -130,7 +130,7 @@ class Namer(object):
                               return_type='long')
 
     @property
-    def sid(self):
+    def s(self):
         return self._get_name(self._side,
                               'side',
                               return_type='long')
@@ -160,7 +160,7 @@ class Namer(object):
         return self._index
 
     @property
-    def idx(self):
+    def i(self):
         return self._index
 
     @property
@@ -183,8 +183,8 @@ class Namer(object):
                                     'type',
                                     return_type='long')
 
-    @typ.setter
-    def typ(self, key_value):
+    @t.setter
+    def t(self, key_value):
         self._type = self._get_name(key_value,
                                     'type',
                                     return_type='long')
@@ -195,8 +195,8 @@ class Namer(object):
                                     'side',
                                     return_type='long')
 
-    @sid.setter
-    def sid(self, key_value):
+    @s.setter
+    def s(self, key_value):
         self._side = self._get_name(key_value,
                                     'side',
                                     return_type='long')
@@ -234,8 +234,8 @@ class Namer(object):
         else:
             self._index = None
 
-    @idx.setter
-    def idx(self, num):
+    @i.setter
+    def i(self, num):
         if isinstance(num, int) and num >= 0:
             self._index = int(num)
         else:
@@ -403,3 +403,49 @@ class Namer(object):
             name = long_name
 
         return name
+
+
+# functions
+def update_name(name, **kwargs):
+    """
+    update name's parts
+
+    Args:
+        name(str)
+
+    Keyword Args:
+        type/t(str): name's type
+        side/s(str): name's side
+        resolution/res(str): name's resolution
+        description/des(str): name's description
+        index/i(str): name's index
+        suffix/sfx(str): name's suffix
+
+    Returns:
+        name_update(str)
+    """
+    # because some parts can be removed when setting to None, like resolution and index, we set -1 as default to skip
+    _type = variables.kwargs('type', -1, kwargs, short_name=Namer.shortcuts['type'])
+    _side = variables.kwargs('side', -1, kwargs, short_name=Namer.shortcuts['side'])
+    _res = variables.kwargs('resolution', -1, kwargs, short_name=Namer.shortcuts['resolution'])
+    _des = variables.kwargs('description', -1, kwargs, short_name=Namer.shortcuts['description'])
+    _index = variables.kwargs('index', -1, kwargs, short_name=Namer.shortcuts['index'])
+    _suffix = variables.kwargs('suffix', -1, kwargs, short_name=Namer.shortcuts['suffix'])
+
+    namer = Namer(name)
+
+    # check each part
+    if _type != -1:
+        namer.type = _type
+    if _side != -1:
+        namer.side = _side
+    if _res != -1:
+        namer.resolution = _res
+    if _des != -1:
+        namer.description = _des
+    if _index != -1:
+        namer.index = _index
+    if _suffix != -1:
+        namer._suffix = _suffix
+
+    return namer.name

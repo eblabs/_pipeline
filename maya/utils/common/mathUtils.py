@@ -20,6 +20,47 @@ MATRIX_DEFAULT = [1.0, 0.0, 0.0, 0.0,
 
 # FUNCTION
 
+# value
+def clamp_value(value, clamp_range):
+    """
+    clamp the given value in range
+
+    Args:
+        value(float): given value
+        clamp_range(list): [min, max]
+
+    Returns:
+        clamp_value(float)
+    """
+    if value < clamp_range[0]:
+        value = clamp_range[0]
+    if value > clamp_range[1]:
+        value = clamp_range[1]
+    return value
+
+
+def remap_value(value, input_range, output_range):
+    """
+    remap given value from the input range to output range
+
+    Args:
+        value(float): given value
+        input_range(list): [min, max]
+        output_range(list): [min, max]
+
+    Returns:
+        remap_value(float)
+    """
+    # clamp value
+    value = clamp_value(value, input_range)
+    # get weight
+    weight = (value - input_range[0])/float(input_range[1] - input_range[0])
+    # remap to output range
+    value = (output_range[1] - output_range[0])*weight + output_range[0]
+
+    return value
+
+
 # points
 def distance(pointA, pointB):
     """
