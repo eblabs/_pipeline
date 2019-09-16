@@ -1,6 +1,10 @@
 # IMPORT PACKAGES
 
+# import os
+import os
+
 # import utils
+import utils.common.naming as naming
 import utils.rigging.limb.splineIk as splineIkLimb
 import utils.rigging.buildUtils as buildUtils
 
@@ -22,14 +26,22 @@ class SplineIk(component.Component):
         self.twist_start = None
         self.twist_end = None
         self.twist_interp = None
+        self.inbtw_twist = None
         self.crv_skin_path = None
 
         super(SplineIk, self).__init__(*args, **kwargs)
+
+        self._save = True  # set save to True so can use ui to save the curve's skin data
 
         self._task = 'dev.rigging.task.component.base.splineIk'
         self._jnt_suffix = 'SplineIk'
         self._iks = []
         self._curve = []
+        self._ramp_twist = None
+
+        # get curve name
+        self._crv_name = naming.Namer(type=naming.Type.curve, side=self.side,
+                                      description=self.description + self._jnt_suffix, index=self.index).name
 
     def register_kwargs(self):
         super(SplineIk, self).register_kwargs()
@@ -50,6 +62,8 @@ class SplineIk(component.Component):
         self.register_attribute('twist interpolation', 'linear', attr_name='twist_interp', attr_type='enum',
                                 enum=['linear', 'exponential up', 'exponential down', 'smooth', 'bump', 'spike'],
                                 hint="twist ramp interpolation")
+        self.register_attribute('inbetween twist', True, attr_name='inbtw_twist', attr_type='bool',
+                                hint="add twist attribute to control each segment twist")
         self.register_attribute('curve weights', [{'project': '', 'asset': '', 'rig_type': ''}],
                                 attr_name='crv_skin_path', attr_type='list', select=False, template=None,
                                 hint="curve's skin cluster data to override the auto generate one")
@@ -89,7 +103,9 @@ class SplineIk(component.Component):
                   'twist_start': self.twist_start,
                   'twist_end': self.twist_end,
                   'twist_interpolation': self.twist_interp,
-                  'curve_skin': crv_skin_data}
+                  'inbetween_twist': self.inbtw_twist,
+                  'curve_skin': crv_skin_data,
+                  'curve_name': self._crv_name}
 
         ik_limb = splineIkLimb.SplineIk(**kwargs)
         ik_limb.create()
@@ -100,3 +116,17 @@ class SplineIk(component.Component):
         self._iks = ik_limb.iks
         self._nodes_hide = ik_limb.nodes_hide
         self._curve = ik_limb.curve
+        self._ramp_twist = ik_limb.ramp_twist
+
+    def save_data(self):
+        """
+        save data to current rig's data folder, will automatically create folder if not exist
+        """
+        save_data_path = buildUtils.get_data_path(self._name, self.rig_type, self.asset, self.project,
+                                                  warning=False, check_exist=False)
+        # create folder if not exist
+        if not os.path.exists(save_data_path):
+            os.mkdir(save_data_path)
+
+        # save data
+        # save data function

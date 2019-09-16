@@ -14,6 +14,7 @@ import utils.common.apiUtils as apiUtils
 import utils.common.transforms as transforms
 import utils.common.hierarchy as hierarchy
 import utils.common.logUtils as logUtils
+import utils.modeling.curves as curves
 
 # CONSTANT
 logger = logUtils.logger
@@ -123,6 +124,49 @@ def create_on_node(node, search, replace, **kwargs):
     return jnt
 
 
+def create_on_pos(pos_list, **kwargs):
+    """
+    create joints base on given pos list
+    Args:
+        pos_list(list): pos can be translate/[translate, rotation]/matrix
+    Keyword Args:
+        joint_type(str): joint/blueprint joint
+        side(str)
+        description(str)
+        rotate_order(int): joint's rotate order, default is 0
+        hierarchy(bool): parent as chain, default is False
+
+    Returns:
+        joints(list): list of created joints
+
+    """
+    jnt_type = variables.kwargs('joint_type', 'joint', kwargs)
+    side = variables.kwargs('side', None, kwargs, short_name='s')
+    des = variables.kwargs('description', None, kwargs, short_name='des')
+    ro = variables.kwargs('rotate_order', None, kwargs, short_name='ro')
+    hie = variables.kwargs('hierarchy', False, kwargs)
+
+    jnt_list = []
+    for i, pos in enumerate(pos_list):
+        if len(pos) == 16:
+            # matrix
+            translate, rotate, scale = apiUtils.decompose_matrix(pos, rotate_order=ro)
+        elif len(pos) == 2:
+            # translate and rotate
+            translate = pos[0]
+            rotate = pos[1]
+        else:
+            translate = pos
+            rotate = [0, 0, 0]
+        jnt_name = naming.Namer(type=jnt_type, side=side, description=des, index=i+1).name
+        jnt = create(jnt_name, rotate_order=ro, pos=[translate, rotate])
+        jnt_list.append(jnt)
+
+    if hie:
+        jnt_list = hierarchy.parent_chain(jnt_list, reverse=True, parent=None)
+    return jnt_list
+
+
 def create_on_hierarchy(nodes, search, replace, **kwargs):
     """
     create joints base on given hierarchy
@@ -168,6 +212,70 @@ def create_on_hierarchy(nodes, search, replace, **kwargs):
 
     # connect
     jnt_list = hierarchy.parent_chain(jnt_list, reverse=reverse, parent=parent)
+
+    return jnt_list
+
+
+def create_joints_along_curve(curve, joints_number, **kwargs):
+    """
+    create joints along the given curve
+
+    Args:
+        curve(str)
+        joints_number(int)
+    Keyword Args:
+        joint_type(str): joint/blueprint joint
+        search(str/list): search
+        replace(str/list): replace
+        suffix(str): add suffix description
+        rotate_order(int): joint's rotate order, default is 0
+        aim_vector(list)
+        up_vector(list)
+        up_curve(str): if need nodes to aim along a specific curve
+        rotation_up_vector(list): if no up curve specific, it will take this vector as reference for up direction
+        uniform_type(str): length/parameter, place transforms uniformly based on distance or parameter,
+                           curve's parameter can be stretched in some cases, parameter may not place nodes equally
+        aim_type(str): tangent/next/None, aim type of each point, will be based on curve's tangent, or aim to the next
+                       point, or keep in world orientation
+        flip_check(bool): will automatically fix flipping transform if set to True
+        hierarchy(bool): parent as chain, default is False
+
+    Returns:
+        joints(list): list of created joints
+    """
+    jnt_type = variables.kwargs('joint_type', 'joint', kwargs)
+    search = variables.kwargs('search', None, kwargs)
+    replace = variables.kwargs('replace', None, kwargs)
+    suffix = variables.kwargs('suffix', '', kwargs, short_name='sfx')
+    ro = variables.kwargs('rotate_order', None, kwargs, short_name='ro')
+    aim_vector = variables.kwargs('aim_vector', [1, 0, 0], kwargs, short_name='aim')
+    up_vector = variables.kwargs('up_vector', [0, 1, 0], kwargs, short_name='up')
+    up_curve = variables.kwargs('up_curve', None, kwargs)
+    rotation_up_vector = variables.kwargs('rotation_up_vector', [0, 1, 0], kwargs)
+    uniform_type = variables.kwargs('uniform_type', 'length', kwargs)
+    aim_type = variables.kwargs('aim_type', 'tangent', kwargs)
+    flip_check = variables.kwargs('flip_check', True, kwargs)
+    hie = variables.kwargs('hierarchy', False, kwargs)
+
+    if isinstance(search, basestring):
+        search = [search]
+    if isinstance(replace, basestring):
+        replace = [replace]
+
+    # get matrices
+    matrix_list = curves.get_matrices_along_curve(curve, joints_number, aim_vector=aim_vector, up_vector=up_vector,
+                                                  up_curve=up_curve, rotation_up_vector=rotation_up_vector,
+                                                  uniform_type=uniform_type, aim_type=aim_type, flip_check=flip_check)
+
+    namer = naming.Namer(curve)
+    if search and replace:
+        for s, r in zip(search, replace):
+            namer.description = namer.description.replace(s, r)
+    namer.description = namer.description + suffix
+
+    # create joints
+    jnt_list = create_on_pos(matrix_list, joint_type=jnt_type, side=namer.side, description=namer.description,
+                             rotate_order=ro, hierarchy=hie)
 
     return jnt_list
 

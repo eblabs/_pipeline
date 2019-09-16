@@ -11,6 +11,7 @@ import os
 import utils.common.files as files
 import utils.common.attributes as attributes
 import utils.common.apiUtils as apiUtils
+import utils.common.mathUtils as mathUtils
 import utils.common.variables as variables
 import utils.common.transforms as transforms
 import utils.common.hierarchy as hierarchy
@@ -154,13 +155,10 @@ def get_curve_info(curve):
         curve_info(dict): curve shape node information
                           include: {name, control_vertices, knots, degree, form}
     """
-    if cmds.objectType(curve) == 'transform':
-        curve_shape = cmds.listRelatives(curve, shapes=True)[0]
-    else:
-        curve_shape = curve
-        curve = cmds.listRelatives(curve_shape, parent=True)[0]
+    if cmds.objectType(curve) == 'nurbsCurve':
+        curve = cmds.listRelatives(curve, parent=True)[0]
 
-    MFnCurve = _get_MFnNurbsCurve(curve_shape)
+    MFnCurve = _get_MFnNurbsCurve(curve)
 
     MPntArray_cvs = MFnCurve.cvPositions(OpenMaya.MSpace.kObject)
     MDoubleArray_knots = MFnCurve.knots()
@@ -186,7 +184,7 @@ def set_curve_points(curve, points):
     set curve shape points positions
 
     Args:
-        curve(str): curve shape node
+        curve(str): curve shape node or transform node
         points(list): curve cv positions
     """
     MPointArray = OpenMaya.MPointArray(points)
@@ -288,6 +286,7 @@ def get_closest_point_on_curve(curve, pos, space='world'):
     Args:
         curve(str): nurbs curve
         pos(str/list): given transform node or position
+    Keyword Args:
         space(str): world/object
 
     Returns:
@@ -300,11 +299,6 @@ def get_closest_point_on_curve(curve, pos, space='world'):
         space = OpenMaya.MSpace.kObject
     if isinstance(pos, basestring):
         pos = cmds.xform(pos, query=True, translate=True, worldSpace=True)
-
-    if cmds.objectType(curve) == 'transform':
-        curve_shape = cmds.listRelatives(curve, shapes=True)[0]
-    else:
-        curve_shape = curve
 
     MPoint = OpenMaya.MPoint(pos)
     MFnCurve = _get_MFnNurbsCurve(curve)
@@ -320,6 +314,155 @@ def get_closest_point_on_curve(curve, pos, space='world'):
 
     return pos, param
 
+
+def get_point_on_parameter(curve, parameter, space='world'):
+    """
+    get point position on curve's parameter
+
+    Args:
+        curve(str)
+        parameter(float)
+    Keyword Args:
+        space(str): object/world
+
+    Returns:
+        pos(list)
+    """
+    # get space
+    if space == 'world':
+        space = OpenMaya.MSpace.kWorld
+    else:
+        space = OpenMaya.MSpace.kObject
+
+    # get MFnNurbsCurve object
+    MFnCurve = _get_MFnNurbsCurve(curve)
+    MPoint = MFnCurve.getPointAtParam(parameter)
+
+    return [MPoint.x, MPoint.y, MPoint.z]
+
+
+def get_matrices_along_curve(curve, nodes_number, aim_vector=None, up_vector=None, up_curve=None,
+                             rotation_up_vector=None, uniform_type='length', aim_type='tangent', flip_check=True):
+    """
+    get matrices along the given curve uniformly.
+
+    Args:
+        curve(str): given curve
+        nodes_number(int)
+    Keyword Args:
+        aim_vector(list)
+        up_vector(list)
+        up_curve(str): if need nodes to aim along a specific curve
+        rotation_up_vector(list): if no up curve specific, it will take this vector as reference for up direction
+        uniform_type(str): length/parameter, place transforms uniformly based on distance or parameter,
+                           curve's parameter can be stretched in some cases, parameter may not place nodes equally
+        aim_type(str): tangent/next/None, aim type of each point, will be based on curve's tangent, or aim to the next
+                       point, or keep in world orientation
+        flip_check(bool): will automatically fix flipping transform if set to True
+
+    Returns:
+        matrices(list): list of output matrices
+    """
+    # aim vector
+    if not aim_vector:
+        aim_vector = [1, 0, 0]
+    # up vector
+    if not up_vector:
+        up_vector = [0, 1, 0]
+
+    MFnCurve = _get_MFnNurbsCurve(curve)  # get MFnCurve object
+    # get curve length
+    crv_length = MFnCurve.length()
+    # get curve length per segment
+    segment_length = crv_length/(nodes_number-1)
+    # get curve min and max value
+    min_max_val = MFnCurve.knotDomain
+    # get parameter distance
+    param_dis = min_max_val[1] - min_max_val[0]
+    # get parameter per segment
+    param_segment = param_dis/(nodes_number-1)
+
+    # up curve
+    if up_curve and cmds.objExists(up_curve):
+        # get MFnCurve object for up curve
+        MFnCurve_up = _get_MFnNurbsCurve(up_curve)
+        crv_length_up = MFnCurve_up.length()
+        segment_length_up = crv_length_up/(nodes_number-1)
+        min_max_val_up = MFnCurve_up.knotDomain
+        param_dis_up = min_max_val_up[1] - min_max_val_up[0]
+        param_segment_up = param_dis_up/(nodes_number-1)
+    else:
+        MFnCurve_up = None
+        segment_length_up = None
+        param_segment_up = None
+
+    matrix_list = []  # matrix info for each transform
+    third_vec_previous = []  # hold previous third vector to check flip
+    for i in range(nodes_number):
+        if uniform_type == 'length':
+            # get parameter at length
+            param = MFnCurve.findParamFromLength(i*segment_length)
+            param_next = MFnCurve.findParamFromLength((i+1)*segment_length)
+        else:
+            param = i*param_segment
+            param_next = (i+1)*param_segment
+        # get pos
+        pos = MFnCurve.getPointAtParam(param, space=OpenMaya.MSpace.kWorld)
+        pos_node = [pos.x, pos.y, pos.z]
+        if not aim_type or aim_type == 'None':
+            # no need to calculate rotation
+            matrix = apiUtils.compose_matrix(translate=pos_node)
+            matrix_list.append(matrix)
+        else:
+            # calculate rotation
+            # check aim vector
+            if aim_type == 'tangent':
+                aim_vec_param = MFnCurve.tangent(param)
+            else:
+                if i < nodes_number-1:
+                    # not the end node
+                    # get next point position
+                    pos_next = MFnCurve.getPointAtParam(param_next, space=OpenMaya.MSpace.kWorld)
+                    pos_next = [pos_next.x, pos_next.y, pos_next.z]
+                    aim_vec_param = mathUtils.get_vector_from_points(pos_next, pos_node, normalize=True)
+                else:
+                    aim_vec_param = MFnCurve.tangent(param)  # end node doesn't have next point, use tangent
+
+            # check up vector
+            if up_curve and cmds.objExists(up_curve):
+                # get point on up curve
+                if uniform_type == 'length':
+                    param_up = MFnCurve_up.findParamFromLength(i*segment_length_up)
+                else:
+                    param_up = i*param_segment_up
+                # get pos
+                pos_up = MFnCurve.getPointAtParam(param, space=OpenMaya.MSpace.kWorld)
+                pos_node_up = [pos_up.x, pos_up.y, pos_up.z]
+                aim_vec_up_dir = mathUtils.get_vector_from_points(pos_node_up, pos_node, normalize=True)
+            else:
+                aim_vec_up_dir = rotation_up_vector
+
+            aim_vec_param, up_vec, third_vec = mathUtils.build_coordinate_system(aim_vec_param, aim_vec_up_dir,
+                                                                                 flip_check_vec=third_vec_previous)
+            if flip_check:
+                third_vec_previous = third_vec
+
+            # compose matrix
+            matrix_orient = mathUtils.four_by_four_matrix(aim_vec_param, up_vec, third_vec, pos_node)
+
+            # get aim vector's matrix
+            aim_vec_axis, up_vec_axis, third_vec_axis = mathUtils.build_coordinate_system(aim_vector, up_vector)
+            matrix_aim = mathUtils.four_by_four_matrix(aim_vec_axis, up_vec_axis, third_vec_axis, [0, 0, 0])
+
+            # get node matrix by matrix_aim.inverse * matrix_orient
+            matrix_aim_inverse = mathUtils.inverse_matrix(matrix_aim)
+            matrix_node = mathUtils.mult_matrix([matrix_aim_inverse, matrix_orient])
+
+            matrix_list.append(matrix_node)
+
+    return matrix_list
+
+
 # SUB FUNCTION
 def _get_MFnNurbsCurve(curve):
     """
@@ -331,6 +474,11 @@ def _get_MFnNurbsCurve(curve):
     Returns:
         MFnNurbsCurve
     """
-    MDagPath = apiUtils.get_MDagPath(curve)
+    # get curve shape
+    if cmds.objectType(curve) == 'transform':
+        curve_shape = cmds.listRelatives(curve, shapes=True)[0]
+    else:
+        curve_shape = curve
+    MDagPath = apiUtils.get_MDagPath(curve_shape)
     MFnCurve = OpenMaya.MFnNurbsCurve(MDagPath)
     return MFnCurve

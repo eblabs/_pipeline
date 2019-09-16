@@ -51,7 +51,12 @@ class SplineIk(limb.Limb):
             twist_start(float): twist start position on the curve, value from 0 to 1
             twist_end(float): twist end position on the curve, value from 0 to 1
             twist_interpolation(str): twist ramp interpolation, linear/exponential up/exponential down/smooth/bump/spike
+            inbetween_twist(bool): add twist attribute to control each segment twist
             curve_skin(dict): curve's skin cluster data
+            curve_name(str): ik curve's name when creation
+                            (because in component level, we need curve name to save skin data without running the
+                             function, by passing the name to override, I don't need to hardcoded the curve name
+                             everywhere)
     """
     def __init__(self, **kwargs):
         super(SplineIk, self).__init__(**kwargs)
@@ -63,12 +68,15 @@ class SplineIk(limb.Limb):
         self._twist_start = variables.kwargs('twist_start', 0, kwargs)
         self._twist_end = variables.kwargs('twist_end', 1, kwargs)
         self._twist_interp = variables.kwargs('twist_interpolation', 'linear', kwargs, short_name='interp')
+        self._inbtw_twist = variables.kwargs('inbetween_twist', True, kwargs, short_name='inbtwTwist')
         self._crv_skin = variables.kwargs('curve_skin', None, kwargs)
         self._jnt_suffix = variables.kwargs('joint_suffix', 'SplineIk', kwargs, short_name='jntSfx')
         self._ctrl_shape = variables.kwargs('control_shape', 'cube', kwargs, short_name='shape')
+        self._crv_name = variables.kwargs('curve_name', None, kwargs)
 
         self.iks = []
         self.curve = []
+        self.ramp_twist = None
 
     def create(self):
         super(SplineIk, self).create()
@@ -77,8 +85,11 @@ class SplineIk(limb.Limb):
 
         # create ik curve
         crv_info = curves.get_curve_info(self._bp_crv)
-        crv_ik = naming.Namer(type=naming.Type.curve, side=self._side, description=self._des+self._jnt_suffix,
-                              index=self._index).name
+        if self._crv_name:
+            crv_ik = self._crv_name
+        else:
+            crv_ik = naming.Namer(type=naming.Type.curve, side=self._side, description=self._des+self._jnt_suffix,
+                                  index=self._index).name
         crv_ik, crv_ik_shape = curves.create_curve(crv_ik, crv_info['control_vertices'], crv_info['knots'],
                                                    degree=crv_info['degree'], form=crv_info['form'],
                                                    parent=self._nodes_world_grp)
@@ -131,7 +142,10 @@ class SplineIk(limb.Limb):
         # create joints if no joints are given
         if not self._bp_jnts:
             # build joints chain
-            pass
+            self.jnts = joints.create_joints_along_curve(crv_ik, self._jnt_num, aim_vector=[1, 0, 0],
+                                                         up_vector=[0, 1, 0], rotation_up_vector=self._up_vector,
+                                                         uniform_type='length', aim_type='next', flip_check=True,
+                                                         hierarchy=True)
 
         # create spline ik
         ik_handle = naming.update_name(crv_ik, type=naming.Type.ikHandle)
@@ -181,6 +195,7 @@ class SplineIk(limb.Limb):
         # add attrs for start and end controls
         attributes.separator(ctrl_objs[-1], 'twist')
         ctrl_objs[-1].add_attrs('twist', attribute_type='float', keyable=False, channel_box=False)
+        ctrl_objs[-1].add_attrs('twistOffset', attribute_type='float', keyable=True, channel_box=True)
         ctrl_objs[-1].add_attrs('twistStart', attribute_type='float', keyable=True, range=[0, 1],
                                 default_value=param_end)
 
@@ -201,6 +216,7 @@ class SplineIk(limb.Limb):
 
         attributes.separator(ctrl_objs[0], 'twist')
         ctrl_objs[0].add_attrs('twist', attribute_type='float', keyable=False, channel_box=False)
+        ctrl_objs[0].add_attrs('twistOffset', attribute_type='float', keyable=True, channel_box=True)
         ctrl_objs[0].add_attrs('twistStart', attribute_type='float', keyable=True, range=[0, 1],
                                default_value=param_start)
 
@@ -210,9 +226,8 @@ class SplineIk(limb.Limb):
             jnt_matrix = cmds.getAttr(jnt+'.worldMatrix[0]')
             # get ctrl matrix
             ctrl_matrix = ctrl.world_matrix
-            # get jnt local matrix under joint
-            ctrl_matrix_inverse = mathUtils.inverse_matrix(ctrl_matrix)
-            jnt_matrix_local = mathUtils.mult_matrix([jnt_matrix, ctrl_matrix_inverse])
+            # get jnt local matrix under ctrl
+            jnt_matrix_local = mathUtils.get_local_matrix(jnt_matrix, ctrl_matrix)
 
             # get jnt world matrix inverse
             jnt_matrix_inverse = mathUtils.inverse_matrix(jnt_matrix)
@@ -221,17 +236,58 @@ class SplineIk(limb.Limb):
             mult_matrix_attr = nodeUtils.mult_matrix([jnt_matrix_local, ctrl.world_matrix_attr, jnt_matrix_inverse],
                                                      side=ctrl.side, description=ctrl.description+'.Twist',
                                                      index=ctrl.index)
-            nodeUtils.twist_extraction(mult_matrix_attr, attrs=ctrl.name+'.twist')
+            twist_extract = nodeUtils.twist_extraction(mult_matrix_attr)
+            nodeUtils.equation('{}+{}.twistOffset'.format(twist_extract, ctrl.name), side=ctrl.side,
+                               description=ctrl.description+'TwistSum', index=ctrl.index, attrs=ctrl.name+'.twist')
 
+        remap_param = []
         for i, ctrl in enumerate([ctrl_objs[0], ctrl_objs[-1]]):
             # create remap value node to remap twist start
-            nodeUtils.remap(ctrl.name+'.twistStart', [0, 1], [param_min, 1], side=ctrl.side,
-                            description=ctrl.description+'TwistRoot', index=ctrl.index,
-                            attrs='{}.colorEntryList[{}].position'.format(ramp_twist, i))
+            remap_node = nodeUtils.remap(ctrl.name+'.twistStart', [0, 1], [param_min, 1], side=ctrl.side,
+                                         description=ctrl.description+'Twist', index=ctrl.index,
+                                         attrs='{}.colorEntryList[{}].position'.format(ramp_twist, i))
+            remap_param.append(remap_node)
+
             # connect twist value
             attributes.connect_attrs(ctrl.name+'.twist', ['{}.colorEntryList[{}].colorR'.format(ramp_twist, i),
                                                           '{}.colorEntryList[{}].colorG'.format(ramp_twist, i),
                                                           '{}.colorEntryList[{}].colorB'.format(ramp_twist, i)])
+
+        # in-between twist control
+        ctrl_num = len(ctrl_objs)
+        if ctrl_num > 2 and self._inbtw_twist:
+            param_dis_attr = nodeUtils.equation('{}-{}'.format(remap_param[1], remap_param[0]), side=self._side,
+                                                description='{}{}TwistRampDis'.format(self._des, self._jnt_suffix),
+                                                index=self._index)  # get the param by end-start
+            param_dis = cmds.getAttr(param_dis_attr)
+
+            twist_attr = nodeUtils.equation('{}-{}'.format(ctrl_objs[-1]+'.twist', ctrl_objs[0]+'.twist'),
+                                            side=self._side,
+                                            description='{}{}TwistVal'.format(self._des, self._jnt_suffix),
+                                            index=self._index)  # get the twist by end-start
+
+            for i, ctrl in enumerate(ctrl_objs[1:ctrl_num-1]):
+                # loop in each in-between control
+                # get parameter on curve
+                pos, param = curves.get_closest_point_on_curve(crv_ik, ctrl.name)
+                # add twist offset
+                ctrl.add_attrs('twistOffset', attribute_type='float', keyable=True, channel_box=True)
+                # get parameter weight base on parameter distance
+                weight = (param - param_min)/param_dis
+                # connect twist offset with distance change
+                # parameter = param_dis_attr*weight + param_min
+                nodeUtils.equation('{} * {} + {}'.format(param_dis_attr, weight, param_min), side=ctrl.side,
+                                   description=ctrl.description+'TwistParam', index=ctrl.index,
+                                   attrs='{}.colorEntryList[{}].position'.format(ramp_twist, i+2))
+
+                # connect twist value to ramp
+                nodeUtils.equation('{} * {} + {}.twistOffset'.format(twist_attr, weight, ctrl.name), side=ctrl.side,
+                                   description=ctrl.description+'TwistVal', index=ctrl.index,
+                                   attrs=['{}.colorEntryList[{}].colorR'.format(ramp_twist, i+2),
+                                          '{}.colorEntryList[{}].colorG'.format(ramp_twist, i+2),
+                                          '{}.colorEntryList[{}].colorB'.format(ramp_twist, i+2)])
+
         # pass info
         self.iks = [ik_handle]
         self.curve = [crv_ik]
+        self.ramp_twist = ramp_twist
