@@ -10,6 +10,7 @@ import utils.common.attributes as attributes
 import utils.common.transforms as transforms
 import utils.common.nodeUtils as nodeUtils
 import utils.common.mathUtils as mathUtils
+import utils.common.hierarchy as hierarchy
 import utils.rigging.controls as controls
 import utils.rigging.joints as joints
 import utils.rigging.constraints as constraints
@@ -50,8 +51,9 @@ class SplineIk(limb.Limb):
             auto_twist_range(bool): auto set twist start and end base on controls position
             twist_start(float): twist start position on the curve, value from 0 to 1
             twist_end(float): twist end position on the curve, value from 0 to 1
-            twist_interpolation(str): twist ramp interpolation, linear/exponential up/exponential down/smooth/bump/spike
+            twist_interpolation(str): twist ramp interpolation, linear/smooth/spline
             inbetween_twist(bool): add twist attribute to control each segment twist
+            inbetween_twist_interpolation(str): inbetween twist ramp interpolation, linear/smooth/spline
             curve_skin(dict): curve's skin cluster data
             curve_name(str): ik curve's name when creation
                             (because in component level, we need curve name to save skin data without running the
@@ -69,6 +71,8 @@ class SplineIk(limb.Limb):
         self._twist_end = variables.kwargs('twist_end', 1, kwargs)
         self._twist_interp = variables.kwargs('twist_interpolation', 'linear', kwargs, short_name='interp')
         self._inbtw_twist = variables.kwargs('inbetween_twist', True, kwargs, short_name='inbtwTwist')
+        self._inbtw_twist_interp = variables.kwargs('inbetween_twist_interpolation', 'linear', kwargs,
+                                                    short_name='inbtwInterp')
         self._crv_skin = variables.kwargs('curve_skin', None, kwargs)
         self._jnt_suffix = variables.kwargs('joint_suffix', 'SplineIk', kwargs, short_name='jntSfx')
         self._ctrl_shape = variables.kwargs('control_shape', 'cube', kwargs, short_name='shape')
@@ -137,7 +141,7 @@ class SplineIk(limb.Limb):
         spans = cmds.getAttr(crv_ik_shape+'.spans')
         # rebuild curve
         cmds.rebuildCurve(crv_ik, replaceOriginal=True, rebuildType=0, endKnots=1, keepRange=0, keepControlPoints=0,
-                          keepEndPoints=1, keepTangents=0, span=spans, degree=3)
+                          keepEndPoints=1, keepTangents=0, spans=spans, degree=3)
 
         # create joints if no joints are given
         if not self._bp_jnts:
@@ -151,55 +155,102 @@ class SplineIk(limb.Limb):
         ik_handle = naming.update_name(crv_ik, type=naming.Type.ikHandle)
         cmds.ikHandle(startJoint=self.jnts[0], endEffector=self.jnts[-1], solver='ikSplineSolver', createCurve=False,
                       simplifyCurve=False, curve=crv_ik, parentCurve=False, name=ik_handle)
-        cmds.parent(ik_handle, self._nodes_world_grp)
+
+        hierarchy.parent_node(ik_handle, self._nodes_world_grp)
 
         # zero out joints offsets
         cmds.makeIdentity(self.jnts[0], apply=True, translate=True, rotate=True, scale=True, jointOrient=False)
 
-        # set up twist
-        # root twist mode
-        cmds.setAttr(ik_handle+'.rootTwistMode', 1)
-        # advance twist
-        cmds.setAttr(ik_handle+'.dTwistControlEnable', 1)
-        cmds.setAttr(ik_handle+'.dWorldUpType', 3)  # object rotation up
-        # create transform as up vector reference
-        trans_up = naming.update_name(crv_ik, type=naming.Type.transform,
-                                      description='{}{}UpVec'.format(self._des, self._jnt_suffix))
-        trans_up = transforms.create(trans_up, lock_hide=attributes.Attr.all, vis=False, pos=self.jnts[0],
-                                     parent=self._nodes_hide_grp)
-        # connect up vector to ik handle
-        cmds.connectAttr(trans_up+'.worldMatrix[0]', ik_handle+'.dWorldUpMatrix')
-        # twist set to ramp
-        cmds.setAttr(ik_handle+'.dTwistValueType', 2)
-        cmds.setAttr(ik_handle+'.dTwistRampMult', 1)
+        # create twist joints
+        jnts_num = len(self.jnts)
+        jnts_twist = []
+        for jnt in self.jnts:
+            jnt_twist = joints.create_on_node(jnt, None, None, suffix='Twist', parent=jnt)
+            jnts_twist.append(jnt_twist)
 
-        # connect ramp
-        ramp_twist = naming.update_name(crv_ik, type=naming.Type.ramp,
-                                        description='{}{}Twist'.format(self._des, self._jnt_suffix))
-        ramp_twist = nodeUtils.node(name=ramp_twist)
-        cmds.connectAttr(ramp_twist+'.outColor', ik_handle+'.dTwistRamp')
-
-        # get the second joint's parameter on curve
-        pos, param_min = curves.get_closest_point_on_curve(crv_ik, self.jnts[1])
         # auto set twist range
-        if self._auto_twist_range:
-            pos, param_start = curves.get_closest_point_on_curve(crv_ik, ctrl_objs[0].name)
-            pos, param_end = curves.get_closest_point_on_curve(crv_ik, ctrl_objs[-1].name)
-        else:
+        pos, param_start = curves.get_closest_point_on_curve(crv_ik, ctrl_objs[0].name)
+        tangent_start = curves.get_tangent_at_param(crv_ik, param_start)
+        pos, param_end = curves.get_closest_point_on_curve(crv_ik, ctrl_objs[-1].name)
+        tangent_end = curves.get_tangent_at_param(crv_ik, param_end)
+        if not self._auto_twist_range:
             param_start = self._twist_start
             param_end = self._twist_end
-        # remap from [param_min, 1] to [0, 1]
-        param_start = mathUtils.remap_value(param_start, [param_min, 1], [0, 1])
-        param_end = mathUtils.remap_value(param_end, [param_min, 1], [0, 1])
 
-        # add attrs for start and end controls
-        attributes.separator(ctrl_objs[-1], 'twist')
-        ctrl_objs[-1].add_attrs('twist', attribute_type='float', keyable=False, channel_box=False)
-        ctrl_objs[-1].add_attrs('twistOffset', attribute_type='float', keyable=True, channel_box=True)
-        ctrl_objs[-1].add_attrs('twistStart', attribute_type='float', keyable=True, range=[0, 1],
-                                default_value=param_end)
+        # get third vector to check flip
+        if self._bp_jnts:
+            pos_a = cmds.xform(self._bp_jnts[0], query=True, translation=True, worldSpace=True)
+            pos_b = cmds.xform(self._bp_jnts[1], query=True, translation=True, worldSpace=True)
+            tangent_zero = mathUtils.get_vector_from_points(pos_b, pos_a)
+        else:
+            tangent_zero = curves.get_tangent_at_param(crv_ik, 0)
+        z_vec = mathUtils.cross_product(tangent_zero, self._up_vector)
 
-        twist_interpolations = ['linear', 'exponential up', 'exponential down', 'smooth', 'bump', 'spike']
+        mash_distribute_nodes = []
+        mash_breakout_nodes = []
+        for ctrl, param, tangent in zip([ctrl_objs[0], ctrl_objs[-1]], [param_start, param_end],
+                                        [tangent_start, tangent_end]):
+            # add twist attrs for start and end controls
+            attributes.separator(ctrl.name, 'twist')
+            ctrl.add_attrs('twist', attribute_type='float', keyable=False, channel_box=False)
+            ctrl.add_attrs('twistOffset', attribute_type='float', keyable=True, channel_box=True)
+            ctrl.add_attrs('twistStart', attribute_type='float', keyable=True, range=[0, 1], default_value=param)
+
+            # get coordinate_system
+            vec_x_offset, vec_y_offset, vec_z_offset = mathUtils.build_coordinate_system(tangent, self._up_vector,
+                                                                                         flip_check_vec=z_vec)
+            # get offset matrix
+            ctrl_pos = cmds.xform(ctrl.name, query=True, translation=True, worldSpace=True)
+            matrix_offset = mathUtils.four_by_four_matrix(vec_x_offset, vec_y_offset, vec_z_offset, ctrl_pos)
+            matrix_offset_local = mathUtils.get_local_matrix(matrix_offset, ctrl.world_matrix)
+            matrix_offset_inverse = mathUtils.inverse_matrix(matrix_offset)
+
+            # twist extraction
+            mult_matrix_attr = nodeUtils.mult_matrix([matrix_offset_local, ctrl.world_matrix_attr,
+                                                      matrix_offset_inverse], side=ctrl.side,
+                                                     description=ctrl.description+'Twist', index=ctrl.index)
+            twist_extract_attr = nodeUtils.twist_extraction(mult_matrix_attr)
+
+            # connect to twist
+            nodeUtils.equation('{}+{}.twistOffset'.format(twist_extract_attr, ctrl.name), side=ctrl.side,
+                               description=ctrl.description+'TwistSum', index=ctrl.index, attrs=ctrl.name+'.twist')
+
+            # create mash node
+            mash_distribute = naming.update_name(ctrl.name, type=naming.Type.MASH_Distribute,
+                                                 description=ctrl.description+'Twist')
+            mash_distribute = nodeUtils.node(name=mash_distribute, set_attrs={'pointCount': jnts_num})
+
+            # remove extra ramp point, mash ramp created with three remap points
+            cmds.removeMultiInstance('{}.rotationRamp[2]'.format(mash_distribute), b=True)
+
+            # connect twist with mash
+            cmds.connectAttr(ctrl.name+'.twist', mash_distribute+'.rotateX')
+
+            # mash breakout node
+            mash_breakout = naming.update_name(mash_distribute, type=naming.Type.MASH_Breakout)
+            mash_breakout = nodeUtils.node(name=mash_breakout)
+            cmds.connectAttr(mash_distribute+'.outputPoints', mash_breakout+'.inputPoints')
+
+            # add to list
+            mash_distribute_nodes.append(mash_distribute)
+            mash_breakout_nodes.append(mash_breakout)
+
+        # connect start mash node
+        attributes.connect_attrs([ctrl_objs[0].name+'.twistStart', ctrl_objs[-1].name+'.twistStart',
+                                  ctrl_objs[0].name+'.twistStart', ctrl_objs[-1].name+'.twistStart'],
+                                 ['{}.rotationRamp[0].rotationRamp_Position'.format(mash_distribute_nodes[0]),
+                                  '{}.rotationRamp[1].rotationRamp_Position'.format(mash_distribute_nodes[0]),
+                                  '{}.rotationRamp[0].rotationRamp_Position'.format(mash_distribute_nodes[1]),
+                                  '{}.rotationRamp[1].rotationRamp_Position'.format(mash_distribute_nodes[1])],
+                                 force=True)
+        attributes.set_attrs(['{}.rotationRamp[0].rotationRamp_FloatValue'.format(mash_distribute_nodes[0]),
+                              '{}.rotationRamp[1].rotationRamp_FloatValue'.format(mash_distribute_nodes[0]),
+                              '{}.rotationRamp[0].rotationRamp_FloatValue'.format(mash_distribute_nodes[1]),
+                              '{}.rotationRamp[1].rotationRamp_FloatValue'.format(mash_distribute_nodes[1])],
+                             [1, 0, 0, 1], force=True)
+
+        # add attr for twist interp
+        twist_interpolations = ['linear', 'smooth', 'spline']
         if self._twist_interp.lower() in twist_interpolations:
             twist_interp = twist_interpolations.index(self._twist_interp.lower()) + 1
         else:
@@ -208,64 +259,32 @@ class SplineIk(limb.Limb):
         enum_name = ''
         for i in range(len(twist_interpolations)):
             # because ramp type starts with None, linear is 1
-            enum_name += '{}={}:'.format(twist_interpolations[i].title, i+1)
+            enum_name += '{}={}:'.format(twist_interpolations[i].title(), i + 1)
 
         ctrl_objs[-1].add_attrs('twistInterp', attribute_type='enum', keyable=True, default_value=twist_interp,
-                                enum=enum_name[:-1])
-        cmds.connectAttr(ctrl_objs[-1].name+'.twistInterp', ramp_twist+'.interpolation')
-
-        attributes.separator(ctrl_objs[0], 'twist')
-        ctrl_objs[0].add_attrs('twist', attribute_type='float', keyable=False, channel_box=False)
-        ctrl_objs[0].add_attrs('twistOffset', attribute_type='float', keyable=True, channel_box=True)
-        ctrl_objs[0].add_attrs('twistStart', attribute_type='float', keyable=True, range=[0, 1],
-                               default_value=param_start)
-
-        # extract twist
-        for ctrl, jnt in zip([ctrl_objs[0], ctrl_objs[-1]], [self.jnts[0], self.jnts[-1]]):
-            # get jnt world matrix
-            jnt_matrix = cmds.getAttr(jnt+'.worldMatrix[0]')
-            # get ctrl matrix
-            ctrl_matrix = ctrl.world_matrix
-            # get jnt local matrix under ctrl
-            jnt_matrix_local = mathUtils.get_local_matrix(jnt_matrix, ctrl_matrix)
-
-            # get jnt world matrix inverse
-            jnt_matrix_inverse = mathUtils.inverse_matrix(jnt_matrix)
-
-            # mult matrix node
-            mult_matrix_attr = nodeUtils.mult_matrix([jnt_matrix_local, ctrl.world_matrix_attr, jnt_matrix_inverse],
-                                                     side=ctrl.side, description=ctrl.description+'.Twist',
-                                                     index=ctrl.index)
-            twist_extract = nodeUtils.twist_extraction(mult_matrix_attr)
-            nodeUtils.equation('{}+{}.twistOffset'.format(twist_extract, ctrl.name), side=ctrl.side,
-                               description=ctrl.description+'TwistSum', index=ctrl.index, attrs=ctrl.name+'.twist')
-
-        remap_param = []
-        for i, ctrl in enumerate([ctrl_objs[0], ctrl_objs[-1]]):
-            # create remap value node to remap twist start
-            remap_node = nodeUtils.remap(ctrl.name+'.twistStart', [0, 1], [param_min, 1], side=ctrl.side,
-                                         description=ctrl.description+'Twist', index=ctrl.index,
-                                         attrs='{}.colorEntryList[{}].position'.format(ramp_twist, i))
-            remap_param.append(remap_node)
-
-            # connect twist value
-            attributes.connect_attrs(ctrl.name+'.twist', ['{}.colorEntryList[{}].colorR'.format(ramp_twist, i),
-                                                          '{}.colorEntryList[{}].colorG'.format(ramp_twist, i),
-                                                          '{}.colorEntryList[{}].colorB'.format(ramp_twist, i)])
+                                enum_name=enum_name[:-1])
+        attributes.connect_attrs([ctrl_objs[-1].name+'.twistInterp', ctrl_objs[-1].name+'.twistInterp'],
+                                 ['{}.rotationRamp[0].rotationRamp_Interp'.format(mash_distribute_nodes[0]),
+                                  '{}.rotationRamp[0].rotationRamp_Interp'.format(mash_distribute_nodes[1])],
+                                 force=True)
 
         # in-between twist control
         ctrl_num = len(ctrl_objs)
         if ctrl_num > 2 and self._inbtw_twist:
-            param_dis_attr = nodeUtils.equation('{}-{}'.format(remap_param[1], remap_param[0]), side=self._side,
-                                                description='{}{}TwistRampDis'.format(self._des, self._jnt_suffix),
-                                                index=self._index)  # get the param by end-start
-            param_dis = cmds.getAttr(param_dis_attr)
+            # create inbetween twist interp
+            if self._inbtw_twist_interp.lower() in twist_interpolations:
+                twist_interp = twist_interpolations.index(self._inbtw_twist_interp.lower()) + 1
+            else:
+                twist_interp = 1
 
-            twist_attr = nodeUtils.equation('{}-{}'.format(ctrl_objs[-1]+'.twist', ctrl_objs[0]+'.twist'),
-                                            side=self._side,
-                                            description='{}{}TwistVal'.format(self._des, self._jnt_suffix),
-                                            index=self._index)  # get the twist by end-start
+            ctrl_objs[-1].add_attrs('inbtwTwistInterp', attribute_type='enum', keyable=True,
+                                    default_value=twist_interp, enum_name=enum_name[:-1])
 
+            # get parameter distance
+            param_dis = param_end - param_start
+            # in-between fall off is from previous point to param to next point
+            param_pre = ctrl_objs[0].name+'.twistStart'
+            mash_dis_pre = None
             for i, ctrl in enumerate(ctrl_objs[1:ctrl_num-1]):
                 # loop in each in-between control
                 # get parameter on curve
@@ -273,21 +292,66 @@ class SplineIk(limb.Limb):
                 # add twist offset
                 ctrl.add_attrs('twistOffset', attribute_type='float', keyable=True, channel_box=True)
                 # get parameter weight base on parameter distance
-                weight = (param - param_min)/param_dis
-                # connect twist offset with distance change
-                # parameter = param_dis_attr*weight + param_min
-                nodeUtils.equation('{} * {} + {}'.format(param_dis_attr, weight, param_min), side=ctrl.side,
-                                   description=ctrl.description+'TwistParam', index=ctrl.index,
-                                   attrs='{}.colorEntryList[{}].position'.format(ramp_twist, i+2))
+                weight = (param - param_start)/param_dis
+                # get parameter connect with start and end
+                param_attr = nodeUtils.equation('{}*{}.twistStart+{}*{}.twistStart'.format(weight, ctrl_objs[-1].name,
+                                                                                           1-weight, ctrl_objs[0].name),
+                                                side=ctrl.side, description=ctrl.description+'ParamOffset',
+                                                index=ctrl.index)
 
-                # connect twist value to ramp
-                nodeUtils.equation('{} * {} + {}.twistOffset'.format(twist_attr, weight, ctrl.name), side=ctrl.side,
-                                   description=ctrl.description+'TwistVal', index=ctrl.index,
-                                   attrs=['{}.colorEntryList[{}].colorR'.format(ramp_twist, i+2),
-                                          '{}.colorEntryList[{}].colorG'.format(ramp_twist, i+2),
-                                          '{}.colorEntryList[{}].colorB'.format(ramp_twist, i+2)])
+                # create mash node
+                mash_distribute = naming.update_name(ctrl.name, type=naming.Type.MASH_Distribute,
+                                                     description=ctrl.description+'Twist')
+                mash_distribute = nodeUtils.node(name=mash_distribute, set_attrs={'pointCount': jnts_num})
+
+                # connect attrs
+                attributes.connect_attrs([param_pre, param_attr, ctrl_objs[-1].name+'.inbtwTwistInterp',
+                                          ctrl_objs[-1].name+'.inbtwTwistInterp', ctrl.name+'.twistOffset'],
+                                         ['{}.rotationRamp[0].rotationRamp_Position'.format(mash_distribute),
+                                          '{}.rotationRamp[1].rotationRamp_Position'.format(mash_distribute),
+                                          '{}.rotationRamp[0].rotationRamp_Interp'.format(mash_distribute),
+                                          '{}.rotationRamp[1].rotationRamp_Interp'.format(mash_distribute),
+                                          mash_distribute+'.rotateX'],
+                                         force=True)
+                if mash_dis_pre:
+                    cmds.connectAttr(param_attr, '{}.rotationRamp[2].rotationRamp_Position'.format(mash_dis_pre))
+
+                # set attrs
+                attributes.set_attrs(['{}.rotationRamp[0].rotationRamp_FloatValue'.format(mash_distribute),
+                                      '{}.rotationRamp[1].rotationRamp_FloatValue'.format(mash_distribute),
+                                      '{}.rotationRamp[2].rotationRamp_FloatValue'.format(mash_distribute)],
+                                     [0, 1, 0], force=True)
+
+                # mash breakout
+                mash_breakout = naming.update_name(mash_distribute, type=naming.Type.MASH_Breakout)
+                mash_breakout = nodeUtils.node(name=mash_breakout)
+                cmds.connectAttr(mash_distribute + '.outputPoints', mash_breakout + '.inputPoints')
+
+                # add to list
+                mash_breakout_nodes.append(mash_breakout)
+                mash_dis_pre = mash_distribute
+                param_pre = param_attr
+
+            # add end ctrl param to last mash
+            cmds.connectAttr(ctrl_objs[-1].name+'.twistStart',
+                             '{}.rotationRamp[2].rotationRamp_Position'.format(mash_dis_pre))
+
+        # connect mash node to twist joints
+        for i, jnt in enumerate(jnts_twist):
+            # get jnt namer
+            namer = naming.Namer(jnt)
+            # create plusMinusAverage node
+            pmav = nodeUtils.node(type=naming.Type.plusMinusAverage, side=namer.side,
+                                  description=namer.description+'Sum', index=namer.index)
+            # loop in each breakout node to connect
+            # mash breakout need to connect the parent attr to be evaluated properly
+            for j, mash_breakout in enumerate(mash_breakout_nodes):
+                cmds.connectAttr('{}.outputs[{}].rotate'.format(mash_breakout, i),
+                                 '{}.input3D[{}]'.format(pmav, j))
+            # connect to jnt
+            cmds.connectAttr(pmav+'.output3Dx', jnt+'.rx')
 
         # pass info
         self.iks = [ik_handle]
         self.curve = [crv_ik]
-        self.ramp_twist = ramp_twist
+        self.jnts = jnts_twist

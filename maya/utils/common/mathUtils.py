@@ -136,7 +136,7 @@ def get_unit_vector(vector):
 
     vector = numpy.array(vector)
     scalar = numpy.linalg.norm(vector)
-    vector /= scalar
+    vector = vector/scalar
 
     return vector.tolist()
 

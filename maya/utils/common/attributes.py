@@ -293,7 +293,7 @@ def separator(node, name):
         name(str): separator name
     """
     name_upper = _convert_camel_case(name, format='uppercase_space')
-    cmds.addAttr(node, longName=name+'Separator', niceName='----- {} -----'.format(name_upper), attributeType='enum',
+    cmds.addAttr(node, longName=name+'Separator', niceName='{} ----------'.format(name_upper), attributeType='enum',
                  enumName=' ')
     cmds.setAttr('{}.{}Separator'.format(node, name), channelBox=True)
     cmds.setAttr('{}.{}Separator'.format(node, name), lock=True)

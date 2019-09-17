@@ -475,11 +475,11 @@ def remap(input_value, input_range, output_range, **kwargs):
         cmds.connectAttr(input_value, remap_node+'.inputValue')
 
     for range_value in zip([input_range, output_range], ['input', 'output']):
-        for val in zip(range_value[0], ['min', 'max']):
+        for val in zip(range_value[0], ['Min', 'Max']):
             if isinstance(val[0], basestring):
-                cmds.connectAttr(val[0], '{}.{}{}'.format(remap, range_value[1], val[1].title()))
+                cmds.connectAttr(val[0], '{}.{}{}'.format(remap_node, range_value[1], val[1]))
             else:
-                cmds.setAttr('{}.{}{}'.format(remap, range_value[1], val[1].title()), val[0])
+                cmds.setAttr('{}.{}{}'.format(remap_node, range_value[1], val[1]), val[0])
 
     output_attr = remap_node+'.outValue'
 

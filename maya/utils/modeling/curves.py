@@ -298,7 +298,7 @@ def get_closest_point_on_curve(curve, pos, space='world'):
     else:
         space = OpenMaya.MSpace.kObject
     if isinstance(pos, basestring):
-        pos = cmds.xform(pos, query=True, translate=True, worldSpace=True)
+        pos = cmds.xform(pos, query=True, translation=True, worldSpace=True)
 
     MPoint = OpenMaya.MPoint(pos)
     MFnCurve = _get_MFnNurbsCurve(curve)
@@ -313,6 +313,22 @@ def get_closest_point_on_curve(curve, pos, space='world'):
     pos = [MPoint.x, MPoint.y, MPoint.z]
 
     return pos, param
+
+
+def get_tangent_at_param(curve, param):
+    """
+    get tangent vector at given parameter
+
+    Args:
+        curve(str): nurbs curve
+        param(float): curve's parameter
+
+    Returns:
+        tangent(list)
+    """
+    MFnCurve = _get_MFnNurbsCurve(curve)
+    tangent = MFnCurve.tangent(param)
+    return tangent
 
 
 def get_point_on_parameter(curve, parameter, space='world'):

@@ -102,8 +102,9 @@ def create_on_node(node, search, replace, **kwargs):
 
     # get joint name
     jnt = node
-    for s, r in zip(search, replace):
-        jnt = jnt.replace(s, r)
+    if search and replace:
+        for s, r in zip(search, replace):
+            jnt = jnt.replace(s, r)
     namer = naming.Namer(jnt)
     namer.description = namer.description + suffix
     jnt = namer.name
@@ -143,7 +144,7 @@ def create_on_pos(pos_list, **kwargs):
     jnt_type = variables.kwargs('joint_type', 'joint', kwargs)
     side = variables.kwargs('side', None, kwargs, short_name='s')
     des = variables.kwargs('description', None, kwargs, short_name='des')
-    ro = variables.kwargs('rotate_order', None, kwargs, short_name='ro')
+    ro = variables.kwargs('rotate_order', 0, kwargs, short_name='ro')
     hie = variables.kwargs('hierarchy', False, kwargs)
 
     jnt_list = []
@@ -247,7 +248,7 @@ def create_joints_along_curve(curve, joints_number, **kwargs):
     search = variables.kwargs('search', None, kwargs)
     replace = variables.kwargs('replace', None, kwargs)
     suffix = variables.kwargs('suffix', '', kwargs, short_name='sfx')
-    ro = variables.kwargs('rotate_order', None, kwargs, short_name='ro')
+    ro = variables.kwargs('rotate_order', 0, kwargs, short_name='ro')
     aim_vector = variables.kwargs('aim_vector', [1, 0, 0], kwargs, short_name='aim')
     up_vector = variables.kwargs('up_vector', [0, 1, 0], kwargs, short_name='up')
     up_curve = variables.kwargs('up_curve', None, kwargs)

@@ -33,7 +33,7 @@ class Limb(object):
         self._side = variables.kwargs('side', 'middle', kwargs, short_name='s')
         self._des = variables.kwargs('description', '', kwargs, short_name='des')
         self._index = variables.kwargs('index', None, kwargs, short_name='i')
-        self._bp_jnts = variables.kwargs('blueprint_joints', [], kwargs, short_name=naming.Type.blueprintJoints)
+        self._bp_jnts = variables.kwargs('blueprint_joints', [], kwargs, short_name=naming.Type.blueprintJoint)
         self._jnt_suffix = variables.kwargs('joint_suffix', '', kwargs, short_name='jntSfx')
         self._create_jnts = variables.kwargs('create_joints', True, kwargs)
 
