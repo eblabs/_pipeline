@@ -762,6 +762,76 @@ def twist_extraction(input_matrix, **kwargs):
     return quat_to_euler+'.outputRotateX'
 
 
+def mash_distribute(input_attr, nodes_number, affect_attr, **kwargs):
+    """
+    create mash distribute node and mash breakout node to achieve remap array
+    Args:
+        input_attr(str): input drive attribute
+        nodes_number(int): output nodes number
+        affect_attr(str): which attribute input_attr should connect to,
+                                ['distanceX', 'distanceY', 'distanceZ',
+                                 'rotateX', 'rotateY', 'rotateZ',
+                                 'scaleX', 'scaleY', 'scaleZ']
+    Keyword Args:
+        side(str): node's side
+        description(str): node's description
+        index(int): node's index
+        suffix(int): node's suffix
+        ramp_position(list): ramp points positions
+        ramp_values(list): ramp_points values
+        ramp_interpolation(int/str): ramp interpolation
+
+    Returns:
+        mash_distribute(str): mash distribute node
+        mash_breakout(str): mash breakout node
+    """
+    # get vars
+    _side = variables.kwargs('side', None, kwargs, short_name='s')
+    _des = variables.kwargs('description', None, kwargs, short_name='des')
+    _index = variables.kwargs('index', None, kwargs, short_name='i')
+    _suffix = variables.kwargs('suffix', None, kwargs, short_name='sfx')
+    _ramp_pos = variables.kwargs('ramp_position', None, kwargs)
+    _ramp_val = variables.kwargs('ramp_values', None, kwargs)
+    _ramp_interp = variables.kwargs('ramp_interpolation', 1, kwargs)
+
+    # create mash_distribute node
+    mash_distribute_node = node(type=naming.Type.MASH_Distribute, side=_side, description=_des, index=_index,
+                                suffix=_suffix, set_attrs={'pointCount': nodes_number})
+    cmds.connectAttr(input_attr, '{}.{}'.format(mash_distribute_node, affect_attr))
+
+    # get ramp
+    if affect_attr.startswith('t'):
+        ramp_attr = 'biasRamp'
+    elif affect_attr.startswith('r'):
+        ramp_attr = 'rotationRamp'
+    else:
+        ramp_attr = 'scaleRamp'
+
+    # remove extra ramp point
+    cmds.removeMultiInstance('{}.{}[2]'.format(mash_distribute_node, ramp_attr), b=True)
+
+    # set ramp value
+    # interpolation
+    if isinstance(_ramp_interp, basestring):
+        if _ramp_interp.lower() in ['linear', 'smooth', 'spline']:
+            _ramp_interp = ['linear', 'smooth', 'spline'].index(_ramp_interp.lower())
+        else:
+            _ramp_interp = 1
+    i = 0
+    for pos, val in zip(_ramp_pos, _ramp_val):
+        cmds.setAttr('{}.rotationRamp[{}].rotationRamp_Position'.format(mash_distribute_node, i), pos)
+        cmds.setAttr('{}.rotationRamp[{}].rotationRamp_FloatValue'.format(mash_distribute_node, i), val)
+        cmds.setAttr('{}.rotationRamp[{}].rotationRamp_Interp'.format(mash_distribute_node, i), _ramp_interp)
+        i += 1
+
+    # mash breakout
+    mash_breakout_node = node(type=naming.Type.MASH_Breakout, side=_side, description=_des, index=_index,
+                              suffix=_suffix)
+    cmds.connectAttr(mash_distribute_node+'.outputPoints', mash_breakout_node+'.inputPoints')
+
+    return mash_distribute_node, mash_breakout_node
+
+
 #  SUB FUNCTION
 def _create_node_multi_attrs(input_attr_single, input_attr_multi, node_attr_single,
                              node_attr_multi, node_sub_attrs, output_attr, **kwargs):

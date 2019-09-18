@@ -21,12 +21,13 @@ class SplineIk(component.Component):
         self.bp_crv = None
         self.bp_ctrls = None
         self.jnts_num = None
-        self.up_vector = None
+        self.rot_up_vector = None
         self.auto_twist_range = None
         self.twist_start = None
         self.twist_end = None
         self.twist_interp = None
-        self.inbtw_twist = None
+        self.segment_twist = None
+        self.segment_twist_interp = None
         self.crv_skin_path = None
 
         super(SplineIk, self).__init__(*args, **kwargs)
@@ -51,19 +52,21 @@ class SplineIk(component.Component):
                                 hint="blueprint controls, order is from start to end")
         self.register_attribute('joints number', [], attr_name='jnts_num', attr_type='int', min=3, skippable=False,
                                 hint="generate joints evenly along the curve if no blueprint is given")
-        self.register_attribute('up vector', [0, 1, 0], attr_name='up_vector', attr_type='list', template=None,
-                                hint="generate joints base on the given up vector")
-        self.register_attribute('auto twist range', True, attr_name='auto_twist_range', attr_type='bool',
+        self.register_attribute('rotation up vector', [0, 1, 0], attr_name='rot_up_vector', attr_type='list',
+                                template=None, hint="generate joints base on the given up vector")
+        self.register_attribute('automatic set twist range', True, attr_name='auto_twist_range', attr_type='bool',
                                 hint="auto set twist start and end base on controls position")
         self.register_attribute('twist start', 0, attr_name='twist_start', attr_type='float', min=0, max=1,
                                 hint="twist start position on the curve, value from 0 to 1")
         self.register_attribute('twist end', 1, attr_name='twist_end', attr_type='float', min=0, max=1,
                                 hint="twist end position on the curve, value from 0 to 1")
         self.register_attribute('twist interpolation', 'linear', attr_name='twist_interp', attr_type='enum',
-                                enum=['linear', 'exponential up', 'exponential down', 'smooth', 'bump', 'spike'],
-                                hint="twist ramp interpolation")
-        self.register_attribute('inbetween twist', True, attr_name='inbtw_twist', attr_type='bool',
+                                enum=['linear', 'smooth', 'spline'], hint="twist ramp interpolation")
+        self.register_attribute('segment twist', True, attr_name='segment_twist', attr_type='bool',
                                 hint="add twist attribute to control each segment twist")
+        self.register_attribute('segment twist interpolation', 'linear', attr_name='segment_twist_interp',
+                                attr_type='enum',  enum=['linear', 'smooth', 'spline'],
+                                hint="segment twist ramp interpolation")
         self.register_attribute('curve weights', [{'project': '', 'asset': '', 'rig_type': ''}],
                                 attr_name='crv_skin_path', attr_type='list', select=False, template=None,
                                 hint="curve's skin cluster data to override the auto generate one")
@@ -98,12 +101,13 @@ class SplineIk(component.Component):
                   'blueprint_curve': self.bp_crv,
                   'blueprint_controls': self.bp_ctrls,
                   'joints_number': self.jnts_num,
-                  'up_vector': self.up_vector,
+                  'rotation_up_vector': self.rot_up_vector,
                   'auto_twist_range': self.auto_twist_range,
                   'twist_start': self.twist_start,
                   'twist_end': self.twist_end,
                   'twist_interpolation': self.twist_interp,
-                  'inbetween_twist': self.inbtw_twist,
+                  'segment_twist': self.segment_twist,
+                  'segment_twist_interpolation': self.segment_twist_interp,
                   'curve_skin': crv_skin_data,
                   'curve_name': self._crv_name}
 
