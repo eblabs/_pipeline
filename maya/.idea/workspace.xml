@@ -3,8 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/splineIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/splineIk.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/nodeUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/nodeUtils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/rotatePlaneIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/rotatePlaneIk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/attributes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/hierarchy.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/hierarchy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/controls.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/controls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/limb/rotatePlaneIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/limb/rotatePlaneIk.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/rigging/limb/splineIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/limb/splineIk.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />

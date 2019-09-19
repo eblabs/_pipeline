@@ -35,6 +35,7 @@ class Component(task.Task):
         # kwargs registered at the end of task's initialization, so we need to put these before super
         self.side = None
         self.description = None
+        self.description_suffix = None
         self.index = None
         self.bp_jnts = None
         self.ctrl_offsets = None
@@ -132,6 +133,11 @@ class Component(task.Task):
         self.register_attribute('description', '', attr_name='description', short_name='des', attr_type='str',
                                 hint="component's description")
 
+        self.register_attribute('description suffix', '', attr_name='description_suffix', short_name='desSfx',
+                                attr_type='str',
+                                hint="if the component's group description need a suffix, but doesn't want to affect\
+                                        nodes underneath, like armIk, armFk etc, then put Ik or Fk here")
+
         self.register_attribute('index', None, attr_name='index', short_name='i', attr_type='int', skippable=True,
                                 min=-1, hint="component's index")
 
@@ -161,7 +167,8 @@ class Component(task.Task):
             -- worldGroup
                 -- nodesWorldGroup
         """
-        namer = naming.Namer(type=naming.Type.component, side=self.side, description=self.description, index=self.index)
+        namer = naming.Namer(type=naming.Type.component, side=self.side,
+                             description=self.description+self.description_suffix, index=self.index)
 
         # create transforms
         # component

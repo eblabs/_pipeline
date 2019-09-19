@@ -135,7 +135,7 @@ class SplineIk(limb.Limb):
         if not crv_bind:
             # give it a default skin
             crv_skin_cluster = naming.update_name(crv_ik, type=naming.Type.skinCluster)
-            cmds.skinCluster(ctrl_jnts, crv_ik, toSelectedBones=True, dropoffRate=4, bindMethod=0,
+            cmds.skinCluster(ctrl_jnts, crv_ik, toSelectedBones=True, dropoffRate=6, bindMethod=0,
                              name=crv_skin_cluster)
         # get curve spans
         spans = cmds.getAttr(crv_ik_shape+'.spans')

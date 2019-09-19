@@ -5,6 +5,7 @@ import maya.cmds as cmds
 
 # import utils
 import logUtils
+import attributes
 
 # CONSTANT
 logger = logUtils.logger

@@ -22,6 +22,7 @@ ATTR_CONFIG = {'all': ['translateX', 'translateY', 'translateZ',
                'scale': ['scaleX', 'scaleY', 'scaleZ'],
                'vis': ['visibility'],
                'scaleVis': ['scaleX', 'scaleY', 'scaleZ', 'visibility'],
+               'rotateScale': ['rotateX', 'rotateY', 'rotateZ', 'scaleX', 'scaleY', 'scaleZ'],
                'rotateOrder': ['rotateOrder']}
 
 # logger
@@ -293,8 +294,8 @@ def separator(node, name):
         name(str): separator name
     """
     name_upper = _convert_camel_case(name, format='uppercase_space')
-    cmds.addAttr(node, longName=name+'Separator', niceName='{} ----------'.format(name_upper), attributeType='enum',
-                 enumName=' ')
+    cmds.addAttr(node, longName=name+'Separator', niceName='{} ---------------'.format(name_upper),
+                 attributeType='enum', enumName=' ')
     cmds.setAttr('{}.{}Separator'.format(node, name), channelBox=True)
     cmds.setAttr('{}.{}Separator'.format(node, name), lock=True)
 

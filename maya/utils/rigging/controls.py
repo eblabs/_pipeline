@@ -470,8 +470,8 @@ def create(description, **kwargs):
     shape = variables.kwargs('shape', 'cube', kwargs)
     size = variables.kwargs('size', 1, kwargs)
     color = variables.kwargs('color', None, kwargs, short_name='col')
-    color_sub = variables.kwargs('colorSub', None, kwargs, short_name='col_sub')
-    lock_hide = variables.kwargs('lockHide', attributes.Attr.scaleVis, kwargs, short_name='lh')
+    color_sub = variables.kwargs('color_sub', None, kwargs, short_name='col_sub')
+    lock_hide = variables.kwargs('lock_hide', attributes.Attr.scaleVis, kwargs, short_name='lh')
 
     namer = naming.Namer(type=naming.Type.control, side=side,
                          description=description, index=index)  # get naming object
@@ -524,12 +524,12 @@ def create(description, **kwargs):
     # unlock rotate order
     attributes.unlock_attrs(ctrl_list, 'rotateOrder', channel_box=True)
 
-    # lock hide
-    attributes.lock_hide_attrs(ctrl_list, lock_hide)
-
     # set rotate order for control and sub control
     for ctrl in ctrl_list:
         cmds.setAttr(ctrl+'.rotateOrder', rotate_order)
+
+    # lock hide
+    attributes.lock_hide_attrs(ctrl_list, lock_hide)
 
     ctrl = ctrl_list[0]
     # add output attrs
