@@ -211,6 +211,7 @@ class Component(task.Task):
         # -- jointsVis: joints visibility switch
         # -- rigNodesVis: rig nodes visibility switch
         # -- componentType: component class type to get the node wrapped as object
+        # -- inClassName: component name in builder
         # -- outputMatrix: joints' output matrices
 
         # input matrix, offset matrix
@@ -220,9 +221,9 @@ class Component(task.Task):
         # controls vis, joints vis
         attributes.add_attrs(self._component, ['controlsVis', 'jointsVis', 'rigNodesVis'], attribute_type='long',
                              range=[0, 1], default_value=[1, 0, 0], keyable=False, channel_box=True)
-        # component type
-        attributes.add_attrs(self._component, 'componentType', attribute_type='string', default_value=self._task,
-                             lock=True)
+        # component type and in-class name
+        attributes.add_attrs(self._component, ['componentType', 'inClassName'], attribute_type='string',
+                             default_value=[self._task, self._name], lock=True)
         # output matrix
         cmds.addAttr(self._component, longName='outputMatrix', attributeType='matrix', multi=True)
 
@@ -262,6 +263,7 @@ class Component(task.Task):
         """
         self._input_matrix_attr = self._component + '.inputMatrix'
         self._offset_matrix_attr = self._component + '.offsetMatrix'
+        self._output_matrix_attr = self._component + '.outputMatrix'
 
         # control message
         for i, ctrl in enumerate(self._ctrls):
@@ -272,13 +274,15 @@ class Component(task.Task):
             cmds.connectAttr(jnt+'.message', '{}.joints[{}]'.format(self._component, i), force=True)
             cmds.connectAttr(jnt+'.worldMatrix[0]', '{}.outputMatrix[{}]'.format(self._component, i), force=True)
 
-    def get_component_info(self, component):
+    def get_component_info(self, component_node):
         """
         get component information from component node
         """
-        self._component = component
+        self._component = component_node
         self._ctrls = self._get_attr(self._component+'.controls')
         self._jnts = self._get_attr(self._component+'.joints')
+        self._task = cmds.getAttr(self._component+'.componentType')
+        self._name = cmds.getAttr(self._component+'.inClassName')
 
         # output matrix
         output_matrix_dict = {'_output_matrix_attr': []}

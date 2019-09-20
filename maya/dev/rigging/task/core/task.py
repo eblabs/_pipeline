@@ -6,6 +6,7 @@ from collections import OrderedDict
 # import utils
 import utils.common.variables as variables
 import utils.common.logUtils as logUtils
+import utils.common.attributes as attributes
 
 # ICON
 import dev.rigging.builder.ui.widgets.icons as icons
@@ -27,7 +28,8 @@ class Task(object):
         builder = variables.kwargs('builder', None, kwargs)
         if not name:
             name = self.__class__.__name__
-        self._name = name[0].lower() + name[1:]  # make sure task name starts with lowercase
+        # make sure task name is snake case
+        self._name = attributes.convert_camel_case(name, output_format='snake_case')
         self._task = 'dev.rigging.task.core.task'
         self._task_type = 'task'
         self._builder = builder  # plug builder in to get builder's variables

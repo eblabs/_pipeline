@@ -70,15 +70,16 @@ class TaskInfo(QWidget):
         """
         change task's attr name in the builder
         """
-        title = "Change task's attribute name in the builder"
-        text = "This will break all functions call this attribute in the builder, \nare you sure you want to change it?"
+        title = "Change task's object name in the builder"
+        text = "This will break all functions call this task object in the builder, \nare you sure you want\
+                    to change it?"
         reply = QMessageBox.warning(self, title, text, QMessageBox.Ok | QMessageBox.Cancel,
                                     defaultButton=QMessageBox.Cancel)
 
         if reply == QMessageBox.Ok:
             # change the attr name
             current_name = self.label_name.text()
-            text, ok = QInputDialog.getText(self, 'Attribute Name', 'Set Attribute Name', text=current_name)
+            text, ok = QInputDialog.getText(self, 'Task Object Name', 'Set Task Object Name', text=current_name)
             if text and ok and text != current_name:
                 self.SIGNAL_ATTR_NAME.emit(text)
 

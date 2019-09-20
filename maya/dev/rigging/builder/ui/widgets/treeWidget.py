@@ -35,6 +35,7 @@ except ImportError:
 import utils.common.logUtils as logUtils
 import utils.common.modules as modules
 import utils.common.files as files
+import utils.common.attributes as attributes
 
 # import icon
 import icons
@@ -412,10 +413,10 @@ class TreeWidget(QTreeWidget):
                     item_setCol.setForeground(0, col)
 
     def set_attr_name(self, name):
-        title = "Change task's attribute name in the builder"
+        title = "Change task's object name in the builder"
         # check if name already exists
         if name in self._attr_items:
-            text = 'attribute name already exists'
+            text = 'object name already exists'
             QMessageBox.warning(self, title, text)
             return
         else:
@@ -430,10 +431,12 @@ class TreeWidget(QTreeWidget):
 
             if not check:
                 # raise warning box
-                text = 'attribute name is illegal, must start with letter'
+                text = 'task object name is illegal, must start with letter'
                 QMessageBox.warning(self, title, text)
                 return
             else:
+                # convert name to snake case
+                name = attributes.convert_camel_case(name, output_format='snake_case')
                 # set attr name
                 item = self.currentItem()
                 current_name = item.data(0, ROLE_TASK_NAME)

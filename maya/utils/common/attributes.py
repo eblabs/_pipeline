@@ -293,7 +293,7 @@ def separator(node, name):
         node(str): given maya node
         name(str): separator name
     """
-    name_upper = _convert_camel_case(name, format='uppercase_space')
+    name_upper = convert_camel_case(name, format='uppercase_space')
     cmds.addAttr(node, longName=name+'Separator', niceName='{} ---------------'.format(name_upper),
                  attributeType='enum', enumName=' ')
     cmds.setAttr('{}.{}Separator'.format(node, name), channelBox=True)
@@ -408,18 +408,33 @@ def _connect_single_attr(driver_attr, driven_attr, driver=None, driven=None, for
                 pass
 
 
-def _convert_camel_case(name, format='snake_case'):
+def convert_camel_case(name, output_format='snake_case'):
     """
     get function from stackoverflow
     https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
     """
-    if format == 'snake_case':
+    if output_format == 'snake_case':
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
         name_convert = re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
-    elif format == 'lowercase_space':
+    elif output_format == 'lowercase_space':
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1 \2', name)
         name_convert = re.sub('([a-z0-9])([A-Z])', r'\1 \2', s1).lower()
     else:
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1 \2', name)
         name_convert = re.sub('([a-z0-9])([A-Z])', r'\1 \2', s1).upper()
     return name_convert
+
+
+def convert_snake_case_to_camel_case(name):
+    """
+    get function from stackoverflow
+    https://stackoverflow.com/questions/4303492/how-can-i-simplify-this-conversion-from-underscore-to-camelcase-in-python
+    """
+    def camelcase():
+        yield str.lower
+        while True:
+            yield str.capitalize
+
+    c = camelcase()
+    name = convert_camel_case(name, output_format='snake_case')
+    return "".join(c.next()(x) if x else '_' for x in name.split("_"))
