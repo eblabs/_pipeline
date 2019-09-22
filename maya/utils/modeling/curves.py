@@ -79,9 +79,9 @@ def create_guide_line(name, attrs, reference=True, parent=None):
         curve(str): guide line's transform
     """
     # create guide line curve
-    crv = cmds.curve(d=1, p=[[0, 0, 0], [0, 0, 0]], name=name)
+    crv = cmds.curve(degree=1, point=[[0, 0, 0], [0, 0, 0]], name=name)
     # rename curve's shape node, maya doesn't rename the shape node on creation
-    crv_shape = cmds.listRelatives(crv, s=True)[0]
+    crv_shape = cmds.listRelatives(crv, shapes=True)[0]
     crv_shape = cmds.rename(crv_shape, crv+'Shape')
 
     if reference:

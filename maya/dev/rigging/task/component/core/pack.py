@@ -26,7 +26,7 @@ class Pack(component.Component):
     base class for pack, it will connect multi components base on feature
     """
     def __init__(self, *args, **kwargs):
-        super(Pack, self).__init__(**kwargs)
+        super(Pack, self).__init__(*args, **kwargs)
         self._task = 'dev.rigging.task.component.core.pack'
         self._task_type = 'pack'
 
@@ -37,6 +37,12 @@ class Pack(component.Component):
         # vars
         self._sub_component_grp = None
         self._sub_components_objs = []
+        self._override_kwargs = {}
+
+    def build(self):
+        self.override_sub_components()
+        self.set_sub_components_kwargs()
+        super(Pack, self).build()
 
     def create_hierarchy(self):
         super(Pack, self).create_hierarchy()
@@ -62,6 +68,37 @@ class Pack(component.Component):
 
         # message attr for sub components
         attributes.add_attrs(self._component, 'subComponents', attribute_type='message', multi=True)
+
+    def override_sub_components(self):
+        """
+        override sub components kwargs to pack's information
+        """
+        # sub components input should always be the same with pack
+        self.override_sub_component_kwarg('input_connect', None)
+
+    def override_sub_component_kwarg(self, sub_component_attr, value):
+        """
+        override sub component kwarg to given value
+
+        Args:
+            sub_component_attr(str): sub component attr need to be override
+            value: value to override
+        """
+        self._override_kwargs.update({sub_component_attr: value})
+
+    def set_sub_components_kwargs(self):
+        for sub_component_obj in self._sub_components_objs:
+            for attr, val in self._override_kwargs.iteritems():
+                setattr(sub_component_obj, attr, val)
+
+    def create_component(self):
+        super(Pack, self).create_component()
+        # parent each sub component to sub component group
+        for sub_component_obj in self._sub_components_objs:
+            cmds.parent(sub_component_obj.component, self._sub_component_grp)
+            attributes.connect_attrs(['rigNodesVis', 'inputMatrix', 'offsetMatrix'],
+                                     ['rigNodesVis', 'inputMatrix', 'offsetMatrix'],
+                                     driver=self._component, driven=sub_component_obj.component, force=True)
 
     def register_component_info(self):
         """

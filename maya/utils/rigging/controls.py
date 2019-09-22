@@ -290,6 +290,14 @@ class Control(object):
         offset_num = len(self._offsets)
         children = cmds.listRelatives(self._offsets[-1], c=True, type='transform')  # get nodes under the last offset
 
+        offset_mult_matrix = naming.Namer(type=naming.Type.multMatrix, side=self._side,
+                                          description=self._des+'OffsetMatrix', index=self._index).name
+
+        # disconnect mult matrix
+        for i in range(offset_num):
+            cmds.disconnectAttr(self._offsets[offset_num-1-i]+'.matrix',
+                                '{}.matrixIn[{}]'.format(offset_mult_matrix, i))
+
         if num < offset_num:
             # delete extra offsets
             cmds.parent(children, self._offsets[num-1])  # parent to the last offset group we want to keep
@@ -310,6 +318,10 @@ class Control(object):
 
             # re-parent children
             cmds.parent(children, self._offsets[-1])
+
+        # reconnect mult matrix node
+        for i in range(num):
+            cmds.connectAttr(self._offsets[num-1-i]+'.matrix', '{}.matrixIn[{}]'.format(offset_mult_matrix, i))
 
     def _update_sub(self, key):
         """
@@ -345,8 +357,8 @@ class Control(object):
             self._ctrls.append(self._sub)  # add sub control to control list
 
             # connect output
-            attributes.connect_attrs(attributes.Attr.all+['rotateOrder'],
-                                     attributes.Attr.all+['rotateOrder'],
+            attributes.connect_attrs(attributes.Attr.all+attributes.Attr.rotateOrder,
+                                     attributes.Attr.all+attributes.Attr.rotateOrder,
                                      driver=self._sub, driven=self._output)
 
             # sub vis
@@ -493,12 +505,16 @@ def create(description, **kwargs):
     # offset
     namer.type = naming.Type.offset
     parent = transform_nodes[2]
+    offset_matrix_attrs = []
     for i in range(offsets):
         namer.description = namer.description + ASCII[i]
         offset = transforms.create(namer.name, parent=parent)
 
         parent = offset
+        offset_matrix_attrs.append(offset+'.matrix')
         namer.description = namer.description[:-1]  # remove ASCII letter
+
+    offset_matrix_attrs.reverse()  # mult matrix starts from the child to parent
 
     # parent control to parent
     cmds.parent(ctrl, parent)
@@ -513,7 +529,8 @@ def create(description, **kwargs):
         ctrl_list.append(sub)
 
         # connect sub control with output
-        attributes.connect_attrs(attributes.Attr.transform+['rotateOrder'], attributes.Attr.transform+['rotateOrder'],
+        attributes.connect_attrs(attributes.Attr.transform+attributes.Attr.rotateOrder,
+                                 attributes.Attr.transform+attributes.Attr.rotateOrder,
                                  driver=sub, driven=transform_nodes[4])
 
         # sub vis
@@ -535,11 +552,20 @@ def create(description, **kwargs):
     # add output attrs
     attributes.add_attrs(ctrl, ['matrixLocal', 'matrixWorld'], attribute_type='matrix')
 
-    nodeUtils.mult_matrix([transform_nodes[-1]+'.worldMatrix[0]', transform_nodes[0]+'.parentInverseMatrix[0]'],
-                          attrs=ctrl+'.matrixWorld', side=side, description=description+'WorldMatrix', index=index)
+    # offset mult matrix
+    offset_mult_matrix_attr = nodeUtils.mult_matrix(offset_matrix_attrs, side=side,
+                                                    description=description+'OffsetsMatrix', index=index)
 
-    nodeUtils.mult_matrix([transform_nodes[-1]+'.worldMatrix[0]', transform_nodes[0]+'.worldInverseMatrix[0]'],
-                          attrs=ctrl+'.matrixLocal', side=side, description=description+'LocalMatrix', index=index)
+    # local matrix
+    local_mult_matrix_attr = nodeUtils.mult_matrix([transform_nodes[4]+'.matrix', transform_nodes[3]+'matrix',
+                                                    offset_mult_matrix_attr, transform_nodes[2]+'.matrix',
+                                                    transform_nodes[1]+'.matrix'],
+                                                   attrs=ctrl+'.matrixLocal', side=side,
+                                                   description=description+'LocalMatrix', index=index)
+
+    # world matrix
+    nodeUtils.mult_matrix([local_mult_matrix_attr, transform_nodes[0]+'.matrix'],
+                          attrs=ctrl+'.matrixWorld', side=side, description=description+'WorldMatrix', index=index)
 
     # set pos
     if pos:

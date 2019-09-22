@@ -8,7 +8,6 @@ import maya.cmds as cmds
 
 # import utils
 import utils.common.naming as naming
-import utils.common.files as files
 import utils.common.transforms as transforms
 import utils.common.attributes as attributes
 import utils.common.nodeUtils as nodeUtils
@@ -18,9 +17,11 @@ import utils.rigging.controls as controls
 import dev.rigging.task.core.task as task
 
 # CONSTANT
-import dev.rigging.task.config as config
-SPACE_CONFIG_PATH = os.path.join(os.path.dirname(config.__file__), 'SPACE.cfg')
-SPACE_CONFIG = files.read_json_file(SPACE_CONFIG_PATH)
+RES_CONFIG = {"high": 0,
+              "middle": 1,
+              "low": 2,
+              "proxy": 3,
+              "simulation": 4}
 
 
 # CLASS
@@ -119,14 +120,14 @@ class BaseNode(task.Task):
                                       '{}.resolutionGroups[{}].deformGroup'.format(self.master, i)])
 
             # enum attr info
-            enum_attr += '{}={}:'.format(res, SPACE_CONFIG[res])
+            enum_attr += '{}={}:'.format(res, RES_CONFIG[res])
 
-            cond = nodeUtils.condition(0, SPACE_CONFIG[res], 1, 0, side=naming.Side.middle, description=res+'Vis',
+            cond = nodeUtils.condition(0, RES_CONFIG[res], 1, 0, side=naming.Side.middle, description=res+'Vis',
                                        operation=0, attrs=grp_res + '.v', force=True, node_only=True)
             cond_nodes.append(cond + '.firstTerm')
 
-            if SPACE_CONFIG[res] < default_val:
-                default_val = SPACE_CONFIG[res]
+            if RES_CONFIG[res] < default_val:
+                default_val = RES_CONFIG[res]
 
             # add to class as attribute
             res_grp_info = {'group': grp_res,

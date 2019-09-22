@@ -345,17 +345,22 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
                 cmds.setAttr('{}.target[{}].targetParentMatrix'.format(con, i),
                              mathUtils.MATRIX_DEFAULT, type='matrix')
 
+    # output
+    compose_matrix = nodeUtils.node(type=naming.Type.composeMatrix, side=namer.side,
+                                    description=namer.description+'ConstraintMatrix', index=namer.index)
+    decompose_matrix = nodeUtils.node(type=naming.Type.decomposeMatrix, side=namer.side,
+                                      description=namer.description + 'ConstraintMatrix', index=namer.index)
+    nodeUtils.mult_matrix([compose_matrix+'.outputMatrix', driven+'.parentInverseMatrix[0]'], side=namer.side,
+                          description=namer.description+'ConstraintMatrix', index=namer.index,
+                          attrs=decompose_matrix+'.inputMatrix')
+
     for attr, con in zip(['translate', 'rotate', 'scale'],
                          [point_constraint, orient_constraint, scale_constraint]):
+
         if con:
             # connect constraint node to driven node
             for axis in 'XYZ':
-                attributes.connect_attrs('{}.constraint{}{}'.format(con, attr.title(), axis),
-                                         '{}.{}{}'.format(driven, attr, axis), force=force)
-
-                # joint orient
-                if attr == 'rotate' and cmds.attributeQuery('jointOrient'+axis, n=driven, ex=True):
-                    # if driven node has attr 'jointOrient', which means the driven node is a joint
-                    # connect joint orient to constraint node
-                    cmds.connectAttr('{}.jointOrient{}'.format(driven, axis),
-                                     '{}.constraintJointOrient{}'.format(con, axis))
+                attributes.connect_attrs(['{}.constraint{}{}'.format(con, attr.title(), axis),
+                                          '{}.output{}{}'.format(decompose_matrix, attr.title(), axis)],
+                                         ['{}.input{}{}'.format(compose_matrix, attr.title(), axis),
+                                          '{}.{}{}'.format(driven, attr, axis)], force=force)

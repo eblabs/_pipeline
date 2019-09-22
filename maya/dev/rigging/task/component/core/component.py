@@ -285,10 +285,10 @@ class Component(task.Task):
         self._name = cmds.getAttr(self._component+'.inClassName')
 
         # output matrix
-        output_matrix_dict = {'_output_matrix_attr': []}
+        output_matrix_dict = {'output_matrix_attr': []}
         if self._jnts:
             for i in range(len(self._jnts)):
-                output_matrix_dict['_output_matrix_attr'].append(self._component+'.outputMatrix[{}]'.format(i))
+                output_matrix_dict['output_matrix_attr'].append(self._component+'.outputMatrix[{}]'.format(i))
 
         self._add_attr_from_dict(output_matrix_dict)
 

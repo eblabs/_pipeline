@@ -3,13 +3,13 @@
   <component name="ChangeListManager">
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_template.psd" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_template.psd" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskInfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskInfo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/attributes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/pack.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/pack.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/config/SPACE.cfg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/baseNode.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/baseNode.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/modeling/curves.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/modeling/curves.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/constraints.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/constraints.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/controls.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/controls.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
