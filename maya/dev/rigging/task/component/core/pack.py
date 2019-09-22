@@ -35,6 +35,9 @@ class Pack(component.Component):
         self._icon_ref = icons.pack_reference
 
         # vars
+        # the sub components attr name in builder, use this var in widget to assign sub components
+        self.sub_components_attrs = []
+
         self._sub_component_grp = None
         self._sub_components_objs = []
         self._override_kwargs = {}
@@ -93,6 +96,15 @@ class Pack(component.Component):
 
     def create_component(self):
         super(Pack, self).create_component()
+        # get sub objects
+        for sub_attr in self.sub_components_attrs:
+            sub_obj = self._get_obj_attr('_builder.'+sub_attr)
+            if sub_obj:
+                self._sub_components_objs.append(sub_obj)
+            else:
+                logger.error("can't find given component '{}' in the builder".format(sub_attr))
+                raise RuntimeError()
+
         # parent each sub component to sub component group
         for sub_component_obj in self._sub_components_objs:
             cmds.parent(sub_component_obj.component, self._sub_component_grp)

@@ -35,6 +35,7 @@ except ImportError:
 import utils.common.logUtils as logUtils
 import utils.common.modules as modules
 import utils.common.files as files
+import utils.common.naming as naming
 import utils.common.attributes as attributes
 
 # import icon
@@ -436,7 +437,7 @@ class TreeWidget(QTreeWidget):
                 return
             else:
                 # convert name to snake case
-                name = attributes.convert_camel_case(name, output_format='snake_case')
+                name = naming.convert_camel_case(name, output_format='snake_case')
                 # set attr name
                 item = self.currentItem()
                 current_name = item.data(0, ROLE_TASK_NAME)
@@ -813,7 +814,6 @@ class TreeWidget(QTreeWidget):
                     item_running_state = item.data(0, role)
                     if item_running_state == 0:
                         # item haven't run, start running task
-                        cmds.refresh()
                         # check progress bar
                         if cmds.progressBar(self.maya_progress_bar, query=True, isCancelled=True):
                             # escape from loop
@@ -872,7 +872,27 @@ class TreeWidget(QTreeWidget):
                                     for key, val in kwargs_run.iteritems():
                                         setattr(task_obj, key, val)
 
-                                task_obj.builder = self.builder
+                                # check if task is pack
+                                task_type = task_obj.task_type
+                                if task_type == 'pack' and not task_obj.sub_components_attrs:
+                                    # collect all children item if haven't register sub components to pack
+                                    # get child count
+                                    child_count = item.childCount()
+
+                                    # loop downstream
+                                    for child_index in range(child_count):
+                                        # get child item
+                                        child_item = item.child(child_index)
+                                        # child item name in builder
+                                        child_name = child_item.data(0, ROLE_TASK_NAME)
+                                        # check if item checked
+                                        child_check_state = child_item.checkState(0)
+                                        # add to pack if checked
+                                        if child_check_state == Qt.Checked:
+                                            task_obj.sub_components_attrs.append(child_name)
+
+                                if not task_obj.builder:
+                                    task_obj.builder = self.builder
 
                                 # run task
                                 func = getattr(task_obj, sec)
@@ -880,7 +900,7 @@ class TreeWidget(QTreeWidget):
                                 return_signal = task_obj.signal
                                 message = task_obj.message
 
-                                self._execute_setting(item, return_signal, 'task', display, role, section, message)
+                                self._execute_setting(item, return_signal, 'task', display, role, sec, message)
                             except Exception as exc:
                                 self._error_setting(item, exc, role)
 

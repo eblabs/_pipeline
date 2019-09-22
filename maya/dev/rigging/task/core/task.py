@@ -6,6 +6,7 @@ from collections import OrderedDict
 # import utils
 import utils.common.variables as variables
 import utils.common.logUtils as logUtils
+import utils.common.naming as naming
 import utils.common.attributes as attributes
 
 # ICON
@@ -29,7 +30,7 @@ class Task(object):
         if not name:
             name = self.__class__.__name__
         # make sure task name is snake case
-        self._name = attributes.convert_camel_case(name, output_format='snake_case')
+        self._name = naming.convert_camel_case(name, output_format='snake_case')
         self._task = 'dev.rigging.task.core.task'
         self._task_type = 'task'
         self._builder = builder  # plug builder in to get builder's variables

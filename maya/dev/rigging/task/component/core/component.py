@@ -69,6 +69,7 @@ class Component(task.Task):
         self._nodes_world = []
         self._input_matrix_attr = None
         self._offset_matrix_attr = None
+        self._output_matrix_attr = None
 
         if args:
             self.get_component_info(args[0])
