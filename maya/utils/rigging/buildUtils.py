@@ -3,13 +3,17 @@
 # import os
 import os
 
+# import codecs
+import codecs
+
 # import utils
 import utils.common.assets as assets
 import utils.common.logUtils as logUtils
 
 # CONSTANT
-import config.BUILD_TEMPLATE as BUILD_TEMPLATE
-infile = open(BUILD_TEMPLATE.__file__, 'r')
+import config
+text_path = os.path.join(os.path.dirname(config.__file__), 'BUILD_TEMPLATE.txt')
+infile = open(text_path, 'r')
 BUILD_TEMPLATE = infile.read()
 infile.close()
 

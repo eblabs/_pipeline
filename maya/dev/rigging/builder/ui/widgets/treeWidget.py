@@ -441,7 +441,7 @@ class TreeWidget(QTreeWidget):
                 # set attr name
                 item = self.currentItem()
                 current_name = item.data(0, ROLE_TASK_NAME)
-                set_item_data(attr_name=current_name)
+                set_item_data(item, attr_name=name)
                 # remove previous name, add new name
                 self._attr_items.remove(current_name)
                 self._attr_items.append(name)
@@ -613,7 +613,7 @@ class TreeWidget(QTreeWidget):
                 else:
                     check = 0
                 if parent:
-                    parent = parent.text(0)
+                    parent = parent.data(0, ROLE_TASK_NAME)
                 else:
                     parent = ''
                 export_data.append({task: {'display': display,

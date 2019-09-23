@@ -1,8 +1,9 @@
-'''
+"""
 # IMPORT PACKAGES
 
 # import utils
 import utils.common.modules as modules
+import utils.common.logUtils as logUtils
 import utils.common.naming as naming
 import utils.common.attributes as attributes
 import utils.common.hierarchy as hierarchy
@@ -11,8 +12,7 @@ import utils.rigging.controls as controls
 import utils.rigging.joints as joints
 
 # LOGGER
-import utils.common.logUtils as logUtils
-logger = logUtils.get_logger(name='builder', level='info')
+logger = logUtils.logger
 
 # INHERIT CLASS
 BUILDER_INHERIT_PATH = TEMP_BUILDER_PATH
@@ -63,4 +63,4 @@ class Builder(CLASS_INHERIT):
                               use str 'default' to set back to default
         """
         super(Builder, self).tasks_registration()
-'''
+"""

@@ -212,8 +212,8 @@ class RigInfo(RigInfoBase):
             self.remove_action.setEnabled(False)
             self.build_action.setEnabled(False)
 
-        self._pos = self.line_edit_rig.mapToGlobal(pos)
-        self.menu.move(self._pos)  # move menu to the clicked position
+        # self._pos = self.line_edit_rig.mapToGlobal(pos)
+        self.menu.move(QCursor.pos())  # move menu to the clicked position
         self.menu.show()
 
     def generate_builder(self):
@@ -233,22 +233,22 @@ class RigInfo(RigInfoBase):
         self.builder_generator.line_edit_asset.setText('base')
         self.builder_generator.line_edit_rig.setText('puppet')
 
-        self.builder_generator.move(self._pos)
+        self.builder_generator.move(QCursor.pos())
         self.builder_generator.show()
 
     def get_builder(self):
         if self.rig_checker:
-            rig = self.line_edit_rig.text()
+            rig_type = self.line_edit_rig.text()
             asset = self.line_edit_asset.text()
             project = self.line_edit_project.text()
 
             # get builder
-            builder_path = buildUtils.get_builder(rig, asset, project, warning=False)
+            builder_path = buildUtils.get_builder(rig_type, asset, project, warning=False)
 
             if not builder_path:
                 title = "Builder doesn't exist"
                 text = "the rig builder doesn't exist for {} - {} - {}, " \
-                       "do you want to create it?".format(self.project, self.asset, self.rig_type)
+                       "do you want to create it?".format(project, asset, rig_type)
                 reply = QMessageBox.warning(self, title, text, QMessageBox.Ok | QMessageBox.Cancel,
                                             defaultButton=QMessageBox.Cancel)
                 if reply == QMessageBox.Ok:

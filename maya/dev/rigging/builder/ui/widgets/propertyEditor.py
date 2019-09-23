@@ -294,7 +294,7 @@ class PropertyEditor(QTreeView):
         column_property.setData(self._size, role=Qt.SizeHintRole)
 
         # update kwargs
-        if 'type' in item_kwargs:
+        if 'type' in item_kwargs and item_kwargs['type'] is not None:
             item_type = item_kwargs['type']
             if not isinstance(item_type, basestring) or item_type not in PROPERTY_ITEMS:
                 # item type need to be checked
