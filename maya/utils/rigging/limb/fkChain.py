@@ -20,7 +20,6 @@ class FkChain(limb.Limb):
         @ limb
             side(str)
             description(str)
-            index(int)
             blueprint_joints(list)
             joint_suffix(str)
             create_joints(bool): False will use blueprint joints as joints directly

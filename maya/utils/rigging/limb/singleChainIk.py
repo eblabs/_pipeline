@@ -25,7 +25,6 @@ class SingleChainIk(limb.Limb):
         @ limb
             side(str)
             description(str)
-            index(int)
             blueprint_joints(list)
             joint_suffix(str)
             create_joints(bool): False will use blueprint joints as joints directly
@@ -83,12 +82,12 @@ class SingleChainIk(limb.Limb):
         if self._ik_type == 'ik':
             # create ik handle
             ik_handle = naming.Namer(type=naming.Type.ikHandle, side=self._side, description=self._des+self._jnt_suffix,
-                                     index=self._index).name
+                                     index=1).name
             cmds.ikHandle(startJoint=self.jnts[0], endEffector=self.jnts[-1], solver='ikSCsolver', name=ik_handle)
 
             # add transform to drive ik handle
             ik_transform = naming.Namer(type=naming.Type.transform, side=self._side,
-                                        description=self._des+self._jnt_suffix, index=self._index).name
+                                        description=self._des+self._jnt_suffix, index=1).name
             ik_transform = transforms.create(ik_transform, pos=ctrl_objs[-1].name, lock_hide=attributes.Attr.all,
                                              vis=False, parent=self._nodes_hide_grp)
             constraints.matrix_connect(target_matrix, ik_transform, force=True)

@@ -52,9 +52,6 @@ class RigDataImport(rigData.RigData):
         self.update_attribute('data', default=[{'project': '', 'asset': '', 'rig_type': '', 'filter': ''}],
                               template='rig_data_import')
 
-        # self.register_attribute('filter', [], attr_name='filter', select=False, template='str',
-        #                         hint="filter, import either specific files or file types, import all if empty")
-
     def get_data(self):
         data_import_path = []
 

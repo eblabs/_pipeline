@@ -29,7 +29,6 @@ class SplineIk(limb.Limb):
         @ limb
             side(str)
             description(str)
-            index(int)
             blueprint_joints(list)
             joint_suffix(str)
             create_joints(bool): False will use blueprint joints as joints directly
@@ -93,7 +92,7 @@ class SplineIk(limb.Limb):
             crv_ik = self._crv_name
         else:
             crv_ik = naming.Namer(type=naming.Type.curve, side=self._side, description=self._des+self._jnt_suffix,
-                                  index=self._index).name
+                                  index=1).name
         crv_ik, crv_ik_shape = curves.create_curve(crv_ik, crv_info['control_vertices'], crv_info['knots'],
                                                    degree=crv_info['degree'], form=crv_info['form'],
                                                    parent=self._nodes_world_grp)

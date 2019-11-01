@@ -31,7 +31,6 @@ class SingleChainIk(component.Component):
 
         kwargs = {'side': self.side,
                   'description': self.description,
-                  'index': self.index,
                   'blueprint_joints': self.bp_jnts,
                   'joint_suffix': self._jnt_suffix,
                   'create_joints': True,

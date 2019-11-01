@@ -288,11 +288,13 @@ class Namer(object):
 
         if not self._type:
             logger.error('Type is invalid')
+            raise KeyError('Given name does not follow the correct name convention')
 
         if split_num > 2:
             self._side = self._get_name(name_split[1], 'side', return_type='long')
             if not self._side:
                 logger.error('Side is invalid')
+                raise KeyError('Given name does not follow the correct name convention')
 
             if split_num == 3:
                 # name only contains type side and des
@@ -323,15 +325,19 @@ class Namer(object):
                 self._resolution = self._get_name(name_split[2], 'resolution', return_type='long')
                 if not self._resolution:
                     logger.error('Resolution is invalid')
+                    raise KeyError('Given name does not follow the correct name convention')
+
                 self._description = name_split[3]
                 self._index = name_split[4]
                 self._suffix = name_split[5]
 
             else:
                 logger.error('{} is invalid'.format(name))
+                raise KeyError('Given name does not follow the correct name convention')
 
         elif split_num == 2:
             logger.error('{} is invalid'.format(name))
+            raise KeyError('Given name does not follow the correct name convention')
 
     def _compose_name(self):
         """
@@ -435,23 +441,100 @@ def update_name(name, **kwargs):
     _index = variables.kwargs('index', -1, kwargs, short_name=Namer.shortcuts['index'])
     _suffix = variables.kwargs('suffix', -1, kwargs, short_name=Namer.shortcuts['suffix'])
 
-    namer = Namer(name)
+    namer = check_name_convention(name)
 
-    # check each part
-    if _type != -1:
-        namer.type = _type
-    if _side != -1:
-        namer.side = _side
-    if _res != -1:
-        namer.resolution = _res
-    if _des != -1:
-        namer.description = _des
-    if _index != -1:
-        namer.index = _index
-    if _suffix != -1:
-        namer._suffix = _suffix
+    if namer:
+        # check each part
+        if _type != -1:
+            namer.type = _type
+        if _side != -1:
+            namer.side = _side
+        if _res != -1:
+            namer.resolution = _res
+        if _des != -1:
+            namer.description = _des
+        if _index != -1:
+            namer.index = _index
+        if _suffix != -1:
+            namer._suffix = _suffix
+        name_update = namer.name
+    else:
+        name_update = None
 
-    return namer.name
+    return name_update
+
+
+def mirror_name(name, keep_orig=False):
+    """
+    mirror name from one side to the other, middle will return the same, can be used for node's name and name with attr
+    Examples:
+        ctrl_l_arm_001 --> ctrl_r_arm_001
+        ctrl_m_arm_001 --> ctrl_m_arm_001
+        ctrl_r_arm_001 --> ctrl_l_arm_001
+        ctrl_l_arm_001.tx --> ctrl_r_arm_001.tx
+
+    Args:
+        name(str): name need to be mirrored, must follow the name convention, can be name or name with attribute
+    Keyword Args:
+        keep_orig(bool): if name doesn't follow the name convention, will remain if set to True, default is False
+
+    Returns:
+        name_mirror(str)
+    """
+    # split in case name has attribute
+    name_split = name.split('.')
+    name_mirror = ''
+
+    for part in name_split:
+        namer = check_name_convention(part)
+        if not namer and not keep_orig:
+            name_mirror = None
+            break
+        elif namer:
+            namer.side = flip_side(namer.side)
+            part_flip = namer.name
+        else:
+            part_flip = part
+        name_mirror += (part_flip + '.')
+
+    if name_mirror:
+        name_mirror = name_mirror[:-1]
+    return name_mirror
+
+
+def flip_side(side):
+    """
+    flip side from one side to the other, middle will return the same
+    Args:
+        side(str):
+
+    Returns:
+        side_flip(str)
+    """
+    if side == Side.left:
+        side_flip = Side.right
+    elif side == Side.right:
+        side_flip = Side.left
+    else:
+        side_flip = Side.middle
+    return side_flip
+
+
+def check_name_convention(name):
+    """
+    check the given name is following the correct naming convention or not
+
+    Args:
+        name(str)
+
+    Returns:
+        namer(obj): name's wrapper, return None if not in convention
+    """
+    try:
+        namer = Namer(name)
+    except KeyError:
+        namer = None
+    return namer
 
 
 def convert_camel_case(name, output_format='snake_case'):

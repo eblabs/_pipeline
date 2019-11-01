@@ -14,7 +14,6 @@ class Limb(object):
     Keyword Args:
         side(str)
         description(str)
-        index(int)
         blueprint_joints(list)
         joint_suffix(str)
         create_joints(bool): False will use blueprint joints as joints directly
@@ -32,7 +31,6 @@ class Limb(object):
     def __init__(self, **kwargs):
         self._side = variables.kwargs('side', 'middle', kwargs, short_name='s')
         self._des = variables.kwargs('description', '', kwargs, short_name='des')
-        self._index = variables.kwargs('index', None, kwargs, short_name='i')
         self._bp_jnts = variables.kwargs('blueprint_joints', [], kwargs, short_name=naming.Type.blueprintJoint)
         self._jnt_suffix = variables.kwargs('joint_suffix', '', kwargs, short_name='jntSfx')
         self._create_jnts = variables.kwargs('create_joints', True, kwargs)

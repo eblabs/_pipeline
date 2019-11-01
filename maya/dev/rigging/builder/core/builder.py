@@ -74,34 +74,33 @@ class Builder(object):
         Keyword Args:
             name(str): task name
             display(str): task display name
-            task_path(method): task function
+            task_path(method/str): task function, or module path
             index(str/int): register task at specific index
                             if given string, it will register after the given task
             parent(str): parent task to the given task
             kwargs(dict): task kwargs
-            section(str): register task in specific section (normally for in-class method)
+            section(str): register task in specific section (only for in-class method)
                           'pre_build', 'build', 'post_build', default is 'post_build'
-            background_color(list): task background color, None will use the default,
-                                    use str 'default' to set back to default
-            text_color(list): task text color, None will use the default
-                              use str 'default' to set back to default
+            background_color(list): task background color, None will use the default
         """
 
         # get kwargs
         _name = variables.kwargs('name', '', kwargs, short_name='n')
         _display = variables.kwargs('display', '', kwargs, short_name='dis')
-        _index = variables.kwargs('index', None, kwargs, short_name='i')
         _task_path = variables.kwargs('task_path', None, kwargs, short_name='tsk')
+        _index = variables.kwargs('index', None, kwargs, short_name='i')
         _parent = variables.kwargs('parent', '', kwargs, short_name='p')
         _kwargs = variables.kwargs('kwargs', {}, kwargs)
         _section = variables.kwargs('section', 'post_build', kwargs)
         _background_color = variables.kwargs('background_color', None, kwargs)
-        _text_color = variables.kwargs('text_color', None, kwargs)
 
         # kwargs for loading task info only, not for user
-        _lock = variables.kwargs('lock', True, kwargs)
-        _check = variables.kwargs('check', 1, kwargs)
-        _in_class = variables.kwargs('in_class', True, kwargs)
+        _lock = variables.kwargs('lock', True, kwargs)  # if the task is inherit or in class method
+        _check = variables.kwargs('check', 1, kwargs)  # check state in ui
+        _in_class = variables.kwargs('in_class', True, kwargs)  # either load from build script or task info file
+
+        # task info to pass to other widget for further use
+        _task_info = {}
 
         if _in_class:
             _level = check_level()  # check if the task is referenced or created in the class
@@ -109,7 +108,7 @@ class Builder(object):
             _level = None  # load from task info file, no need to put in level list
 
         if not _display:
-            _display = _name
+            _display = _name  # use the attr name as display name
 
         _save_data = False
 
@@ -119,6 +118,7 @@ class Builder(object):
             _task = _task_path
             _task_path = _task_path.__name__
             _task_kwargs = _kwargs
+            _task_info.update({'section': _section})  # only in class method has section
         else:
             # imported task, get task object
             task_import, task_function = modules.import_module(_task_path)
@@ -132,7 +132,7 @@ class Builder(object):
                 _task_kwargs = task_obj.kwargs_ui
                 _save_data = task_obj.save
                 # add attr
-                setattr(self, _name, task_obj)
+                setattr(self, _name, task_obj)  # initialize task object to builder
             # if value in _kwargs, set value as default
             if 'value' in _kwargs and _kwargs['value'] is not None:
                 _kwargs.update({'default': _kwargs['value']})
@@ -140,18 +140,16 @@ class Builder(object):
             _task_kwargs.update(_kwargs)
 
         # add task info to class as attribute
-        _task_info = {'task': _task,
-                      'task_path': _task_path,
-                      'display': _display,
-                      'task_kwargs': _task_kwargs,
-                      'parent': _parent,
-                      'section': _section,
-                      'lock': _lock,
-                      'index': _index,
-                      'check': _check,
-                      'background_color': _background_color,
-                      'text_color': _text_color,
-                      'save_data': _save_data}
+        _task_info.update({'task': _task,  # task function or task object
+                           'task_path': _task_path,
+                           'display': _display,
+                           'task_kwargs': _task_kwargs,
+                           'parent': _parent,
+                           'lock': _lock,
+                           'index': _index,
+                           'check': _check,
+                           'background_color': _background_color,
+                           'save_data': _save_data})
 
         self._tasks_info.update({_name: _task_info})
 
@@ -166,28 +164,25 @@ class Builder(object):
             name(str): task name
 
         Keyword Args:
-            task(method): task function
             display(str): task display name
+            task_path(method/str): task function or module path
             index(str/int): register task at specific index
                             if given string, it will register after the given task
             parent(str): parent task to the given task
             kwargs(dict): task kwargs
             check(int): task check state
-            background_color(list): task background color, None will use the default,
+            background_color(list): task background color, None will use the inherit color,
                                     use str 'default' to set back to default
-            text_color(list): task text color, None will use the default
-                              use str 'default' to set back to default
         """
-        _task_kwargs = {}
+        _task_kwargs = {}  # task kwargs to add back to task info
         # get kwargs
         _display = variables.kwargs('display', '', kwargs, short_name='dis')
         _task_path = variables.kwargs('task_path', None, kwargs, short_name='tsk')
+        _index = variables.kwargs('index', None, kwargs, short_name='i')
         _parent = variables.kwargs('parent', '', kwargs, short_name='p')
         _kwargs = variables.kwargs('kwargs', {}, kwargs)
-        _index = variables.kwargs('index', None, kwargs, short_name='i')
         _check = variables.kwargs('check', 1, kwargs)
         _background_color = variables.kwargs('background_color', None, kwargs)
-        _text_color = variables.kwargs('text_color', None, kwargs)
 
         if _display:
             self._tasks_info[name]['display'] = _display
@@ -199,12 +194,13 @@ class Builder(object):
             if not inspect.isfunction(_task):
                 # task class
                 task_obj = _task()
-                # add attr
+                # override class object to builder
                 setattr(self, name, task_obj)
                 # get task kwargs
-                _task_kwargs = task_obj.kwargs_ui
+                _task_kwargs = task_obj.kwargs_ui  # get all kwargs from the new task object
             else:
-                _task_kwargs = task_import.kwargs_ui
+                # callback, it is a function
+                _task_kwargs = task_import.kwargs_ui  # get all kwargs from the new task function
             self._tasks_info[name]['task'] = _task
             self._tasks_info[name]['task_path'] = _task_path
 
@@ -212,33 +208,32 @@ class Builder(object):
             self._tasks_info[name]['parent'] = _parent
 
         if _task_kwargs:
+            # get original kwargs to compare
             _kwargs_orig = self._tasks_info[name]['task_kwargs']
             for key, data in _task_kwargs.iteritems():
                 if key in _kwargs:
+                    # update with the kwargs values given by the input
                     _task_kwargs[key]['default'] = _kwargs[key]['default']
                 elif key in _kwargs_orig:
+                    # get kwargs values from the original task info,
+                    # that way we can keep the changes even if we switch the task
                     default_value = _task_kwargs[key]['default']
                     orig_value = _kwargs_orig[key]['default']
                     if type(default_value) == type(orig_value) and default_value != orig_value:
                         _task_kwargs[key]['default'] = orig_value
 
-            self._tasks_info[name]['task_kwargs'] = _task_kwargs
+        self._tasks_info[name]['task_kwargs'] = _task_kwargs  # override task kwargs info
 
         if _index is not None:
             self._tasks_info[name]['index'] = _index
 
         if _check != self._tasks_info[name]['check']:
-            self._tasks_info[name]['check'] = _check
+            self._tasks_info[name]['check'] = _check  # only save the check state if changed
 
         if _background_color is not None:
             if _background_color == 'default':
-                _background_color = None
+                _background_color = None  # override the background color to default
             self._tasks_info[name]['background_color'] = _background_color
-
-        if _text_color is not None:
-            if _text_color == 'default':
-                _text_color = None
-            self._tasks_info[name]['text_color'] = _text_color
 
     def load_task_data(self):
         for i, tasks_level in enumerate(self.tasks_level_list[:-1]):
@@ -253,12 +248,12 @@ class Builder(object):
                 tasks_data = files.read_json_file(self.task_data_paths[i])
                 self._load_each_task_data(tasks_data, lock=True, in_class=False)
 
-        # order the final level tasks, those are from the asset's class methods
+        # order the final level tasks, those are from the asset's in class methods
         for task in self.tasks_level_list[-1]:
             index = self._tasks_info[task]['index']
             self._order_task(task, index, update=False)
 
-        # copy to inheritance list
+        # copy to inheritance list, we need these info to compare to save users changes in ui
         self._tasks_info_compare = self._tasks_info.copy()
         self._tasks_compare = self._tasks[:]
 
@@ -287,19 +282,26 @@ class Builder(object):
             self._add_child(hierarchy, task)
         return hierarchy
 
-    def export_tasks_info(self, tasks_info):
+    def export_tasks_info(self, tasks_info, save_file=True):
         """
         compare the given tasks info with existing one in class, save the differences to the builder's folder
 
         Args:
             tasks_info(list): tasks info from ui
+        Keyword Args:
+            save_file(bool): save the tasks info as a file,
+                             will only print out the info if set to False, only for debugging
         """
         tasks_info_export = []  # final export tasks info list
-        index_previous = 0
+
         for i, task_info in enumerate(tasks_info):
-            task = task_info.keys()[0]
-            task_data = task_info[task]
-            # reduce task_kwargs
+            task = task_info.keys()[0]  # get task name
+            task_data = task_info[task]  # get task info
+            index_previous = task_data['index']  # get the previous task name
+
+            # reduce task_kwargs,
+            # because the task info exported from ui contains lots of unused info (min, max etc..)
+            # we only care about value, and that's how we some in the compare list as well
             if 'task_kwargs' in task_data:
                 task_kwargs_export = {}
                 for key, data in task_data['task_kwargs'].iteritems():
@@ -315,12 +317,11 @@ class Builder(object):
             # check if exist
             if task not in self._tasks_info_compare:
                 # new task added in ui, save all data
-                task_data.update({'index': index_previous})
                 tasks_info_export.append({task: task_data})
             else:
                 # task was in class, check differences
                 task_data_update = {}
-                for key in ['display', 'task_path', 'parent', 'check', 'text_color', 'background_color']:
+                for key in ['display', 'task_path', 'parent', 'check', 'background_color']:
                     if key in task_data and key not in self._tasks_info_compare[task]:
                         # update key
                         task_data_update.update({key: task_data[key]})
@@ -329,25 +330,31 @@ class Builder(object):
                         task_data_update.update({key: task_data[key]})
                 # ui kwargs
                 task_kwargs_update = {}
+                data_compare = self._tasks_info_compare[task]['task_kwargs']
                 for key, data in task_data['task_kwargs'].iteritems():
                     if 'value' in data:
                         value = data['value']
                     else:
                         value = data['default']
 
-                    data_compare = self._tasks_info_compare[task]['task_kwargs']
                     if key in data_compare and value != data_compare[key]['default']:
+                        # save the differences
                         task_kwargs_update.update({key: {'default': value}})
                     elif key not in data_compare:
+                        # it's a new kwarg, save it out
                         task_kwargs_update.update({key: {'default': value}})
+
                 if task_kwargs_update:
                     task_data_update.update({'task_kwargs': task_kwargs_update})
 
                 # check order
                 index_orig = self._tasks_compare.index(task)  # get original task position
+
                 if index_orig > 0:
+                    # find the task name before the task
                     task_previous_orig = self._tasks_compare[index_orig - 1]
                 else:
+                    # given task is the first one
                     task_previous_orig = 0
 
                 if index_previous != task_previous_orig:
@@ -355,15 +362,20 @@ class Builder(object):
 
                 if task_data_update:
                     tasks_info_export.append({task: task_data_update})
-            index_previous = task
 
         # export file
-        if tasks_info_export:
-            cls_path = inspect.getfile(self.__class__)
-            cls_dirname = os.path.dirname(cls_path)
-            task_export_path = os.path.join(cls_dirname, 'tasks.tsk')
-            files.write_json_file(task_export_path, tasks_info_export)
-            logger.info('save builder successfully at {}'.format(task_export_path))
+        if save_file:
+            # save out the file if anything changed
+            if tasks_info_export:
+                cls_path = inspect.getfile(self.__class__)
+                cls_dirname = os.path.dirname(cls_path)
+                task_export_path = os.path.join(cls_dirname, 'tasks.tsk')
+                files.write_json_file(task_export_path, tasks_info_export)
+                logger.info('save builder successfully at {}'.format(task_export_path))
+        else:
+            # only print out the tasks_info_export for debugging
+            logger.debug('export task info')
+            logger.debug(tasks_info_export)
 
     def _order_task(self, task, index, update=False):
         tasks_num = len(self._tasks)
@@ -406,17 +418,9 @@ class Builder(object):
     def _add_child(self, hierarchy, task):
         task_info = self._get_task_info(task)
         parent = task_info['parent']
-        task_info_add = {task: {'task': task_info['task'],
-                                'task_path': task_info['task_path'],
-                                'display': task_info['display'],
-                                'task_kwargs': task_info['task_kwargs'],
-                                'section': task_info['section'],
-                                'children': [],
-                                'lock': task_info['lock'],
-                                'check': task_info['check'],
-                                'background_color': task_info['background_color'],
-                                'text_color': task_info['text_color'],
-                                'save_data': task_info['save_data']}}
+        task_info.update({'children': []})  # add children list for tree build
+        task_info_add = {task: task_info}
+
         if parent:
             for hie_info in hierarchy:
                 key = hie_info.keys()[0]

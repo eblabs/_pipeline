@@ -38,12 +38,16 @@ class RotatePlaneIk(component.Component):
 
         self.register_attribute('ik_handle_offset', False, attr_type='bool', hint="add a control to offset ik handle")
 
+    def mirror_kwargs(self):
+        super(RotatePlaneIk, self).mirror_kwargs()
+        self.bp_ctrls = self._flip_list(self.bp_ctrls)
+        self.bp_rvs = self._flip_list(self.bp_rvs)
+
     def create_component(self):
         super(RotatePlaneIk, self).create_component()
 
         kwargs = {'side': self.side,
                   'description': self.description,
-                  'index': self.index,
                   'blueprint_joints': self.bp_jnts,
                   'joint_suffix': self._jnt_suffix,
                   'create_joints': True,

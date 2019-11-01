@@ -3,14 +3,25 @@
   <component name="ChangeListManager">
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/config/PROPERTY_ITEMS.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/config/TASK_FOLDERS.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/config/TASK_FOLDERS.cfg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/pack_new.png" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/pack_new.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/rigInfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/rigInfo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/treeWidget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/rigging/buildUtils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/buildUtils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/rigging/config/BUILD_TEMPLATE.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskCreator.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskCreator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/base/rigDataImport.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/base/rigDataImport.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/fkChain.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/fkChain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/rotatePlaneIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/rotatePlaneIk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/singleChainIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/singleChainIk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/splineIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/splineIk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/pack.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/pack.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/task.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/maya.sublime-workspace" beforeDir="false" afterPath="$PROJECT_DIR$/maya.sublime-workspace" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/config/NAME_CONVENTION.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/config/NAME_CONVENTION.cfg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/modules.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/modules.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/naming.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/naming.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/limb/fkChain.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/limb/fkChain.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/limb/limb.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/limb/limb.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/limb/rotatePlaneIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/limb/rotatePlaneIk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/limb/singleChainIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/limb/singleChainIk.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/rigging/limb/splineIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/limb/splineIk.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

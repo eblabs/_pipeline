@@ -42,7 +42,10 @@ class SplineIk(component.Component):
 
         # get curve name
         self._crv_name = naming.Namer(type=naming.Type.curve, side=self.side,
-                                      description=self.description + self._jnt_suffix, index=self.index).name
+                                      description=self.description + self._jnt_suffix, index=1).name
+
+        # we need to save the attr name before mirror behavior, so the flipped side will load the same data
+        self._name_no_flip = None
 
     def register_kwargs(self):
         super(SplineIk, self).register_kwargs()
@@ -71,6 +74,13 @@ class SplineIk(component.Component):
                                 attr_name='crv_skin_path', attr_type='list', select=False, template=None,
                                 hint="curve's skin cluster data to override the auto generate one")
 
+    def mirror_kwargs(self):
+        super(SplineIk, self).mirror_kwargs()
+        self._name_no_flip = naming.mirror_name(self._name, keep_orig=True)  # flip name back to the original
+        self.bp_crv = naming.mirror_name(self.bp_crv, keep_orig=True)
+        self.bp_ctrls = naming.mirror_name(self.bp_ctrls, keep_orig=True)
+        self._crv_name = naming.mirror_name(self._crv_name, keep_orig=True)
+
     def create_component(self):
         super(SplineIk, self).create_component()
 
@@ -78,14 +88,17 @@ class SplineIk(component.Component):
         crv_skin_data = None
         if self.crv_skin_path:
             # get path
-            self.crv_skin_path = buildUtils.get_data_path(self._name, self.rig_type, self.asset, self.project,
+            if self._name_no_flip:
+                attr_name = self._name_no_flip
+            else:
+                attr_name = self._name
+            self.crv_skin_path = buildUtils.get_data_path(attr_name, self.rig_type, self.asset, self.project,
                                                           warning=False, check_exist=True)
             # get curve skin data
             pass
 
         kwargs = {'side': self.side,
                   'description': self.description,
-                  'index': self.index,
                   'blueprint_joints': self.bp_jnts,
                   'joint_suffix': self._jnt_suffix,
                   'create_joints': True,

@@ -5,6 +5,7 @@ import maya.cmds as cmds
 
 # import utils
 import utils.common.logUtils as logUtils
+import utils.common.variables as variables
 import utils.common.naming as naming
 import utils.common.modules as modules
 import utils.common.transforms as transforms
@@ -36,11 +37,15 @@ class Pack(component.Component):
 
         # vars
         # the sub components attr name in builder, use this var in widget to assign sub components
-        self.sub_components_attrs = []
+        self.sub_components_attrs = variables.kwargs('sub_components_attrs', [], kwargs)
 
         self._sub_component_grp = None
         self._sub_components_objs = []
-        self._override_kwargs = {}
+        self._sub_components_override = {}
+
+    def mirror_kwargs(self):
+        super(Pack, self).mirror_kwargs()
+        self.sub_components_attrs = self._flip_list(self.sub_components_attrs)
 
     def build(self):
         self.override_sub_components()
@@ -63,7 +68,7 @@ class Pack(component.Component):
             -- subComponentGroup
         """
         namer = naming.Namer(type=naming.Type.subComponentGroup, side=self.side,
-                             description=self.description+self.description_suffix, index=self.index)
+                             description=self.description+self.description_suffix, index=1)
 
         # create transforms
         # sub component group
@@ -77,7 +82,9 @@ class Pack(component.Component):
         override sub components kwargs to pack's information
         """
         # sub components input should always be the same with pack
-        self.override_sub_component_kwarg('input_connect', None)
+        self.override_sub_component_kwarg('input_connect', self.input_connect)
+        # sub components should be parented to pack's sub component group
+        self.override_sub_component_kwarg('_parent', self._sub_component_grp)
 
     def override_sub_component_kwarg(self, sub_component_attr, value):
         """
@@ -87,11 +94,11 @@ class Pack(component.Component):
             sub_component_attr(str): sub component attr need to be override
             value: value to override
         """
-        self._override_kwargs.update({sub_component_attr: value})
+        self._sub_components_override.update({sub_component_attr: value})
 
     def set_sub_components_kwargs(self):
         for sub_component_obj in self._sub_components_objs:
-            for attr, val in self._override_kwargs.iteritems():
+            for attr, val in self._sub_components_override.iteritems():
                 setattr(sub_component_obj, attr, val)
 
     def create_component(self):

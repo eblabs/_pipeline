@@ -36,7 +36,6 @@ class Component(task.Task):
         self.side = None
         self.description = None
         self.description_suffix = None
-        self.index = None
         self.bp_jnts = None
         self.ctrl_offsets = None
         self.ctrl_size = None
@@ -46,6 +45,18 @@ class Component(task.Task):
 
         self._task = 'dev.rigging.task.component.core.component'
         self._task_type = 'component'
+
+        # mirror
+        # flip all parameters if set to True, this is not for user, is a plug for mirror component
+        self._mirror = variables.kwargs('mirror', False, kwargs)
+
+        # override
+        # override parameters if set to True, this is not for user, is a plug for duplicate component
+        self._override = variables.kwargs('override', False, kwargs)
+        self._override_attrs = variables.kwargs('override_attrs', {}, kwargs)
+
+        # parent
+        self.parent = variables.kwargs('parent', None, kwargs)
 
         # icon
         self._icon_new = icons.component_new
@@ -111,6 +122,14 @@ class Component(task.Task):
     def output_matrix(self):
         return self._get_attr(self._output_matrix_attr)
 
+    def register_attrs(self):
+        super(Component, self).register_attrs()
+        if self._mirror:
+            self.mirror_kwargs()
+
+        if self._override:
+            self.override_kwargs()
+
     def pre_build(self):
         super(Component, self).pre_build()
         self.create_hierarchy()
@@ -139,9 +158,6 @@ class Component(task.Task):
                                 hint="if the component's group description need a suffix, but doesn't want to affect\
                                         nodes underneath, like armIk, armFk etc, then put Ik or Fk here")
 
-        self.register_attribute('index', None, attr_name='index', short_name='i', attr_type='int', skippable=True,
-                                min=-1, hint="component's index")
-
         self.register_attribute('blueprint joints', [], attr_name='bp_jnts', attr_type='list', select=True,
                                 hint="component's blueprint joints")
 
@@ -154,6 +170,21 @@ class Component(task.Task):
         self.register_attribute('input connection', '', attr_name='input_connect', attr_type='str', select=False,
                                 hint="component's input connection, should be a component's joint's output matrix, or\
                                         an existing maya node's matrix attribute")
+
+    def mirror_kwargs(self):
+        """
+        mirror kwargs from one side to the other
+        """
+        # flip side
+        self.side = naming.flip_side(self.side)
+
+        # flip input connection
+        if self.input_connect:
+            self.input_connect = naming.mirror_name(self.input_connect, keep_orig=True)
+
+    def override_kwargs(self):
+        for key, val in self._override_attrs.iteritems():
+            self.__setattr__(key, val)
 
     def create_hierarchy(self):
         """
@@ -169,7 +200,7 @@ class Component(task.Task):
                 -- nodesWorldGroup
         """
         namer = naming.Namer(type=naming.Type.component, side=self.side,
-                             description=self.description+self.description_suffix, index=self.index)
+                             description=self.description+self.description_suffix, index=1)
 
         # create transforms
         # component
@@ -236,7 +267,7 @@ class Component(task.Task):
 
         # mult input and offset matrix to connect local group
         mult_matrix_attr = nodeUtils.mult_matrix([self._component+'.inputMatrix', self._component+'.offsetMatrix'],
-                                                 side=self.side, description=self.description, index=self.index)
+                                                 side=self.side, description=self.description, index=1)
         constraints.matrix_connect(mult_matrix_attr, self._local_grp, force=True)
 
         # parent to base node's component group and connect attr
@@ -300,20 +331,12 @@ class Component(task.Task):
         input_matrix_attr = None
         # check if has input connection
         if self.input_connect:
-            # check if input connection is an component attribute
-            input_matrix_attr_obj = self._get_obj_attr('builder.'+self.input_connect)
-            if input_matrix_attr_obj and cmds.getAttr(input_matrix_attr_obj, type=True) == 'matrix':
-                input_matrix_attr = input_matrix_attr_obj
-            else:
-                # check if it's a node in scene
-                attr_split = self.input_connect.split('.')
-                if len(attr_split) > 1 and cmds.objExists(attr_split[0]):
-                    # it's a node attribute and node is in the scene
-                    if attributes.check_attr_exists(attr_split[1:], node=attr_split[0]):
-                        # check if it's matrix
-                        if cmds.getAttr(self.input_connect, type=True) == 'matrix':
-                            input_matrix_attr = self.input_connect
-        else:
+            input_matrix_attr = self._get_node_name(self.input_connect)
+            # check if it's a matrix attr, could be a node name or other attr
+            if '.' not in input_matrix_attr or cmds.getAttr(input_matrix_attr, type=True) != 'matrix':
+                input_matrix_attr = None
+
+        if not input_matrix_attr:
             # check if base node in the scene, connect to base node
             input_matrix_attr_obj = self._get_obj_attr('builder.base_node.world_pos_attr.matrix_attr')
             if input_matrix_attr_obj:
@@ -340,6 +363,22 @@ class Component(task.Task):
 
         attributes.set_attrs([self._input_matrix_attr, self._offset_matrix_attr], mathUtils.MATRIX_DEFAULT,
                              type='matrix', force=True)
+
+    @ staticmethod
+    def _flip_list(list_value):
+        """
+        flip the names in the given list
+        Args:
+            list_value(list)
+
+        Returns:
+            list_flip(list)
+        """
+        list_flip = []
+        for val in list_value:
+            val_flip = naming.mirror_name(val, keep_orig=True)
+            list_flip.append(val_flip)
+        return list_flip
 
     @ staticmethod
     def _get_attr(attr):

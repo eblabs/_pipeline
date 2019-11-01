@@ -1,5 +1,8 @@
 # IMPORT PACKAGES
 
+# import maya cmds
+import maya.cmds as cmds
+
 # import OrderedDict
 from collections import OrderedDict 
 
@@ -53,7 +56,7 @@ class Task(object):
         self.signal = 1  # 1 is success, 2 is warning, error will be caught by ui
         self.message = ''  # if want to show any specific message to log window when click on status icon
 
-        self.register_attrs(**kwargs)
+        self.register_kwargs()  # register kwargs to ui and class for further use
 
     @ property
     def name(self):
@@ -95,6 +98,8 @@ class Task(object):
         self.signal = 1  # preset the signal to avoid overwrite
         self.message = ''
 
+        self.register_inputs()  # register inputs to class
+
     def build(self):
         self.signal = 1  # preset the signal to avoid overwrite
         self.message = ''
@@ -102,10 +107,6 @@ class Task(object):
     def post_build(self):
         self.signal = 1  # preset the signal to avoid overwrite
         self.message = ''
-
-    def register_attrs(self, **kwargs):
-        self.register_kwargs()
-        self.register_inputs(**kwargs)
 
     def register_kwargs(self):
         """
@@ -115,7 +116,7 @@ class Task(object):
         """
         pass
 
-    def register_inputs(self, **kwargs):
+    def register_inputs(self):
         for key, val in self.kwargs_task.iteritems():
             attr_val = variables.kwargs(val[0], val[1], kwargs, short_name=val[2])
             self.__setattr__(key, attr_val)
@@ -254,6 +255,40 @@ class Task(object):
                 attr_parent = None
                 break
         return attr_parent
+
+    def _get_node_name(self, node_name):
+        """
+        get the given name as the name in the scene.
+        given name could be builder's attribute, maya node's attribute or maya node
+
+        Args:
+            node_name(str): builder's attribute, maya node's attribute or maya node
+
+        Returns:
+            node_name_return(str): maya node name or maya node's attribute
+        """
+        # check if the node name is an component attribute
+        builder_attr = self._get_obj_attr('builder.' + node_name)
+        if builder_attr:
+            node_name_return = builder_attr
+        else:
+            # check if it's a node in scene
+            attr_split = node_name.split('.')  # split if it's an attribute
+            if cmds.objExists(attr_split[0]):
+                if len(attr_split) > 1:
+                    # given name is an attr, check if attr exist
+                    if attributes.check_attr_exists(node_name.replace(attr_split[0]+'.', ''), node=attr_split[0]):
+                        node_name_return = node_name
+                    else:
+                        node_name_return = None
+                else:
+                    # given name is a node name
+                    node_name_return = node_name
+            else:
+                # node doesn't exist
+                node_name_return = None
+
+        return node_name_return
 
 
 #  SUB CLASS

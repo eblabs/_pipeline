@@ -20,6 +20,7 @@ except ImportError:
 import utils.common.logUtils as logUtils
 import utils.common.files as files
 import utils.common.modules as modules
+import utils.common.naming as naming
 
 # CONSTANT
 logger = logUtils.logger
@@ -37,7 +38,7 @@ class TaskCreator(QWidget):
 
         # filter
         self.filter = QLineEdit()
-        self.filter.setPlaceholderText('Task Type Filter...')
+        self.filter.setPlaceholderText('Task Filter...')
 
         layout_base.addWidget(self.filter)
 
@@ -128,11 +129,28 @@ class TaskCreate(QDialog):
 
         if set_name:
             # add task name and display name widget if set name, (different between task creation / task switch)
-            # task name
-            self.task_name = QLineEdit()
-            self.task_name.setPlaceholderText('Task Name...')
 
-            layout_base.addWidget(self.task_name)
+            # ask user to set side and description, so we can force the user follow the naming convention
+            # this will make us easier to mirror the component
+            # task side
+            layout_side = QHBoxLayout()
+            label = QLabel('Side:')
+            label.setMaximumWidth(30)
+            self.task_side = QComboBox()
+            self.task_side.addItems(naming.Side.all)
+            self.index_side_default = self.task_side.findText('middle', Qt.MatchFixedString)
+            self.task_side.setCurrentIndex(self.index_side_default)
+
+            layout_side.addWidget(label)
+            layout_side.addWidget(self.task_side)
+
+            layout_base.addLayout(layout_side)
+
+            # task description
+            self.task_des = QLineEdit()
+            self.task_des.setPlaceholderText('Task Description...')
+
+            layout_base.addWidget(self.task_des)
 
             # task display name
             self.task_display = QLineEdit()
@@ -147,13 +165,37 @@ class TaskCreate(QDialog):
         # create button
         self.button = QPushButton(button)
         self.button.setFixedWidth(80)
+        self.button.setEnabled(False)
         layout_base.addWidget(self.button)
 
         layout_base.setAlignment(self.button, Qt.AlignRight)
 
+        # connect set button
+        if set_name:
+            self.task_des.textChanged.connect(self.set_button_with_name_check)
+            self.widget_task_creation.sourceModel.itemChanged.connect(self.set_button_with_name_check)
+        else:
+            self.widget_task_creation.sourceModel.itemChanged.connect(self.set_button)
+
     def edit_folders_open(self):
         self.edit_folders_window.close()
         self.edit_folders_window.show()
+
+    def set_button_with_name_check(self):
+        des = self.task_des.text()
+        task = self.widget_task_creation.listView.currentIndex().data()
+
+        if des and task:
+            self.button.setEnabled(True)
+        else:
+            self.button.setEnabled(False)
+
+    def set_button(self):
+        task = self.widget_task_creation.listView.currentIndex().data()
+        if task:
+            self.button.setEnabled(True)
+        else:
+            self.button.setEnabled(False)
 
 
 # Function

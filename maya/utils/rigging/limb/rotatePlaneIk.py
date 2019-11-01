@@ -27,7 +27,6 @@ class RotatePlaneIk(limb.Limb):
         @ limb
             side(str)
             description(str)
-            index(int)
             blueprint_joints(list)
             joint_suffix(str)
             create_joints(bool): False will use blueprint joints as joints directly
@@ -104,7 +103,7 @@ class RotatePlaneIk(limb.Limb):
 
         # set up ik handle
         ik_handle = naming.Namer(type=naming.Type.ikHandle, side=self._side,
-                                 description=self._des+self._jnt_suffix+'Rp', index=self._index).name
+                                 description=self._des+self._jnt_suffix+'Rp', index=1).name
         cmds.ikHandle(startJoint=rp_jnts[0], endEffector=rp_jnts[-1], solver='ikRPsolver', name=ik_handle)
 
         self.iks.append(ik_handle)
@@ -128,7 +127,7 @@ class RotatePlaneIk(limb.Limb):
         constraints.matrix_connect(ik_ctrl_obj.world_matrix_attr, ik_transform, force=True)
 
         pv_transform = naming.Namer(type=naming.Type.transform, side=self._side,
-                                    description=self._des+self._jnt_suffix+'Pv', index=self._index).name
+                                    description=self._des+self._jnt_suffix+'Pv', index=1).name
         pv_transform = transforms.create(pv_transform, pos=ctrl_objs[1].name, lock_hide=attributes.Attr.all,
                                          vis=False, parent=self._nodes_hide_grp)
         constraints.matrix_connect(ctrl_objs[1].world_matrix_attr, pv_transform, force=True)
@@ -140,21 +139,20 @@ class RotatePlaneIk(limb.Limb):
         # get ik handle local parent inverse matrix
         pv_parent_matrix_attr = nodeUtils.mult_matrix([ik_handle+'.parentMatrix[0]',
                                                        ik_transform+'.worldInverseMatrix[0]'], side=self._side,
-                                                      description=self._des+'PvParentMatrix', index=self._index)
+                                                      description=self._des+'PvParentMatrix', index=1)
         pv_inverse_matrix = nodeUtils.inverse_matrix(pv_parent_matrix_attr, side=self._side,
-                                                     description=self._des+'PvInverseMatrix', index=self._index)
+                                                     description=self._des+'PvInverseMatrix', index=1)
         # pole vector constraint
         constraints.matrix_pole_vector_constraint(pv_transform+'.matrix', ik_handle, rp_jnts[0],
                                                   parent_inverse_matrix=pv_inverse_matrix, force=True)
 
         # pole vector line
         pv_jnt_mult_matrix_attr = nodeUtils.mult_matrix([rp_jnts[1]+'.matrix', rp_jnts[0]+'.matrix'], side=self._side,
-                                                        descirption=self._des+'PvJntPos', index=self._index)
+                                                        descirption=self._des+'PvJntPos', index=1)
         pv_jnt_decompose_node = nodeUtils.node(type=naming.Type.decomposeMatrix, side=self._side,
-                                               description=self._des+'PvJntPos', index=self._index)
+                                               description=self._des+'PvJntPos', index=1)
         cmds.connectAttr(pv_jnt_mult_matrix_attr, pv_jnt_decompose_node+'.inputMatrix')
-        pv_line = naming.Namer(type=naming.Type.guideLine, side=self._side, description=self._des+'Pv',
-                               index=self._index).name
+        pv_line = naming.Namer(type=naming.Type.guideLine, side=self._side, description=self._des+'Pv', index=1).name
         pv_line = curves.create_guide_line(pv_line, [[pv_jnt_decompose_node+'.outputTranslateX',
                                                       pv_jnt_decompose_node+'.outputTranslateY',
                                                       pv_jnt_decompose_node+'.outputTranslateZ'],
@@ -172,7 +170,7 @@ class RotatePlaneIk(limb.Limb):
 
         # ik handle offset control
         if self._ik_offset:
-            ik_offset_ctrl_obj = controls.create(self._des+'IkOffset', side=self._side, index=self._index,
+            ik_offset_ctrl_obj = controls.create(self._des+'IkOffset', side=self._side, index=1,
                                                  offsets=self._ctrl_offsets, parent=ik_ctrl_obj.output,
                                                  pos=ik_handle, shape='handle', size=self._ctrl_size,
                                                  lock_hide=attributes.Attr.rotateScale+attributes.Attr.rotateOrder,
@@ -190,9 +188,9 @@ class RotatePlaneIk(limb.Limb):
         if sc_jnts:
             sc_iks = []
             start_jnt = rp_jnts[-1]
-            for jnt, sfx in zip(sc_jnts, ['A', 'B']):
+            for i, jnt in enumerate(sc_jnts):
                 ik_handle = naming.Namer(type=naming.Type.ikHandle, side=self._side,
-                                         description=self._des + self._jnt_suffix + 'SC' + sfx, index=self._index).name
+                                         description=self._des + self._jnt_suffix + 'SC', index=i+1).name
                 cmds.ikHandle(startJoint=start_jnt, endEffector=jnt, solver='ikSCsolver', name=ik_handle)
                 cmds.parent(ik_handle, ik_transform)  # parent ik handle to ik control's transform
                 start_jnt = jnt
@@ -203,7 +201,6 @@ class RotatePlaneIk(limb.Limb):
 
                 kwargs = {'side': self._side,
                           'description': self._des,
-                          'index': self._index,
                           'blueprint_joints': self._bp_rvs[:5],
                           'joint_suffix': '',
                           'create_joints': True,
@@ -262,7 +259,6 @@ class RotatePlaneIk(limb.Limb):
                         jnt_grp = fk_limb.jnts[-2]
                     kwargs = {'side': self._side,
                               'description': self._des,
-                              'index': self._index,
                               'blueprint_joints': [self._bp_rvs[5]],
                               'joint_suffix': '',
                               'create_joints': True,
