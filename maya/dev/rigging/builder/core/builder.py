@@ -266,7 +266,7 @@ class Builder(object):
         """
         sub classes register all the tasks to the builder here, using self.register_task()
         """
-        pass
+        self.register_task(name='task_m_rigInfo', display='Rig Info', task_path=self.rig_info, section='pre_build')
 
     def registration(self):
         """
@@ -275,6 +275,15 @@ class Builder(object):
         self.get_task_data_paths()
         self.tasks_registration()
         self.load_task_data()
+
+    def rig_info(self):
+        """
+        print out rig info
+        """
+        rig_info = 'RIG INFO\nproject: {}\nasset: {}\nrig type: {}'.format(self._project, self._asset, self._rig_type)
+        logger.info(rig_info)  # print in log
+        # return rig info to store in icon
+        return rig_info
 
     def tree_hierarchy(self):
         hierarchy = []

@@ -191,7 +191,8 @@ class PropertyEditor(QTreeView):
             items(list): a list contain key column item and value column item
         """
         # get value item data
-        val_data = items[1].data(0, ROLE_ITEM_KWARGS)
+        val_item = items[1]
+        val_data = val_item.data(ROLE_ITEM_KWARGS)
 
         # get value
         # user's value change will be saved in value, use default if no value set
@@ -425,8 +426,10 @@ class PropertyEditor(QTreeView):
         item_kwargs = item.data(role=ROLE_ITEM_KWARGS)
         value = item_kwargs['default']
         item.setText(convert_data_to_str(value))
-        self._rebuild_child(item)
+
         self._update_parent(item)
+        self._rebuild_child(item)
+
 
     def _set_selection(self):
         """
@@ -447,14 +450,17 @@ class PropertyEditor(QTreeView):
             else:
                 val = ''
             item.setText(convert_data_to_str(val))
+            # update parent item and save back to task item
+            self._update_parent(item)
         else:
             # item is list
             item.setText(convert_data_to_str(sel))
+            # update parent item and save back to task item
+            self._update_parent(item)
             # update child
             self._rebuild_child(item)
 
-        # update parent item and save back to task item
-        self._update_parent(item)
+
 
     def _add_selection(self):
         """
@@ -474,8 +480,9 @@ class PropertyEditor(QTreeView):
             val += sel
             val = list(OrderedDict.fromkeys(val))
             item.setText(convert_data_to_str(val))
-            self._rebuild_child(item)
             self._update_parent(item)
+            self._rebuild_child(item)
+
 
     def _add_element(self):
         """
@@ -532,8 +539,8 @@ class PropertyEditor(QTreeView):
 
         item.setText(convert_data_to_str(val))
 
-        self._rebuild_child(item)
         self._update_parent(item)
+        self._rebuild_child(item)
 
     def _dup_element(self):
         """
@@ -546,7 +553,7 @@ class PropertyEditor(QTreeView):
         val = convert_data(item.text())
 
         # get parent info
-        parent_info = self._get_parent_item_value_from_current_index()
+        parent_info = self._get_parent_item_info_from_current_index()
         parent_val_item = parent_info[0]
         parent_val = parent_info[1]
         parent_key_index = parent_info[2]
@@ -563,8 +570,8 @@ class PropertyEditor(QTreeView):
         # set the update value to parent item, let update parent/rebuild child do the rest work
         parent_val_item.setText(convert_data_to_str(parent_val))
 
-        self._rebuild_child(parent_val_item)
         self._update_parent(parent_val_item)
+        self._rebuild_child(parent_val_item)
 
         self.setCurrentIndex(index)  # set back selection
 
@@ -579,7 +586,7 @@ class PropertyEditor(QTreeView):
         val = convert_data(item.text())
 
         # get parent info
-        parent_info = self._get_parent_item_value_from_current_index()
+        parent_info = self._get_parent_item_info_from_current_index()
         parent_val_item = parent_info[0]
         parent_val = parent_info[1]
         parent_key_index = parent_info[2]
@@ -595,8 +602,8 @@ class PropertyEditor(QTreeView):
         # set the update value to parent item, let update parent/rebuild child do the rest work
         parent_val_item.setText(convert_data_to_str(parent_val))
 
-        self._rebuild_child(parent_val_item)
         self._update_parent(parent_val_item)
+        self._rebuild_child(parent_val_item)
 
         self.setCurrentIndex(QModelIndex())  # clear current selection
 
@@ -679,8 +686,14 @@ class PropertyDelegate(QItemDelegate):
 
         # I think this is for dictionary's key if the key is editable,
         # key column doesn't contain item kwargs, we can just go back update the parents
-        if not item_kwargs:
-            # shoot rebuild signal
+        # if not item_kwargs:
+        #     # shoot rebuild signal
+        #     self.SIGNAL_UPDATE_PARENT.emit(item)
+        #     return
+        column = item.column()  # get item's column
+        if column == 0:
+            # this is the key name change for dictionary, no need to compare input type
+            # shoot rebuild signal and update the parents
             self.SIGNAL_UPDATE_PARENT.emit(item)
             return
 

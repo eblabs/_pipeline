@@ -27,28 +27,48 @@ logger = logUtils.logger
 #  CLASS
 class Type(object):
     """Type class to access type variables"""
+    class Key(object):
+        """Key object to access each variables fullname by giving the short name"""
+        def __init__(self):
+            pass
+
     def __init__(self):
         pass
 
 
 class Side(object):
     """Side class to access side variables"""
+    class Key(object):
+        """Key object to access each variables fullname by giving the short name"""
+        def __init__(self):
+            pass
+
     def __init__(self):
         pass
 
 
 class Resolution(object):
     """Resolution class to access resolution variables"""
+    class Key(object):
+        """Key object to access each variables fullname by giving the short name"""
+        def __init__(self):
+            pass
+
     def __init__(self):
         pass
 
 
 # add static attrs for above classes base on dictionary
 for key, item in DATA_CONFIG.iteritems():
-    Obj = getattr(sys.modules[__name__], key.title())
-    for nameLong, nameShort in item.iteritems():
-        setattr(Obj, nameLong, nameShort)
-    setattr(Obj, 'all', item.keys())
+    obj = getattr(sys.modules[__name__], key.title())
+    obj_key = getattr(obj, 'Key')
+    val_all = []
+    for name_long, name_short in item.iteritems():
+        val_all.append(name_short)
+        setattr(obj, name_long, name_short)
+        setattr(obj_key, name_short, name_long)
+    setattr(obj, 'all', val_all)
+    setattr(obj_key, 'all', item.keys())
 
 
 class Namer(object):

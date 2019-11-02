@@ -40,9 +40,8 @@ class SplineIk(component.Component):
         self._curve = []
         self._ramp_twist = None
 
-        # get curve name
-        self._crv_name = naming.Namer(type=naming.Type.curve, side=self.side,
-                                      description=self.description + self._jnt_suffix, index=1).name
+        # curve name
+        self._crv_name = None
 
         # we need to save the attr name before mirror behavior, so the flipped side will load the same data
         self._name_no_flip = None
@@ -83,6 +82,8 @@ class SplineIk(component.Component):
 
     def create_component(self):
         super(SplineIk, self).create_component()
+        # get curve name
+        self._generate_curve_name()
 
         # get skin data from crv_skin_path
         crv_skin_data = None
@@ -147,3 +148,12 @@ class SplineIk(component.Component):
 
         # save data
         # save data function
+
+    def _generate_curve_name(self):
+        """
+        get default curve name from kwargs, we need to use this for build and save data
+
+        """
+        self._crv_name = naming.Namer(type=naming.Type.curve, side=self.side,
+                                      description=self.description + self._jnt_suffix, index=1).name
+

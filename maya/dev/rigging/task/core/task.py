@@ -50,8 +50,9 @@ class Task(object):
         self._icon_new = icons.task_new
         self._icon_ref = icons.task_reference
 
-        self.kwargs_task = {}
-        self.kwargs_ui = OrderedDict()
+        self.kwargs_task = {}  # store each kwarg's long name, short name and default value
+        self.kwargs_ui = OrderedDict()  # store ui info with order
+        self.kwargs_input = {}  # use kwargs input to plug in user final inputs value, to register to class
 
         self.signal = 1  # 1 is success, 2 is warning, error will be caught by ui
         self.message = ''  # if want to show any specific message to log window when click on status icon
@@ -116,9 +117,14 @@ class Task(object):
         """
         pass
 
-    def register_inputs(self):
+    def register_inputs(self, **kwargs):
+        if kwargs:
+            # normally we call the function in ui, so don't need the kwargs,
+            # the input kwargs should be picked from self.kwargs_input
+            # but just in case if we want to override anything for any reason, we can add kwargs to this function
+            self.kwargs_input.update(kwargs)
         for key, val in self.kwargs_task.iteritems():
-            attr_val = variables.kwargs(val[0], val[1], kwargs, short_name=val[2])
+            attr_val = variables.kwargs(val[0], val[1], self.kwargs_input, short_name=val[2])
             self.__setattr__(key, attr_val)
 
     def register_attribute(self, name, value, attr_name=None, short_name=None, attr_type=None, **kwargs):

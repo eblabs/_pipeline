@@ -594,10 +594,10 @@
 	],
 	"file_history":
 	[
+		"/C/_pipeline/maya/dev/rigging/task/core/task.py",
 		"/C/Users/harri/Downloads/AI-Syoujyo/Bepinex/config/AutoTranslatorConfig.ini",
 		"/C/_pipeline/maya/dev/rigging/task/__init__.py",
 		"/C/_pipeline/maya/dev/rigging/task/test/testTask.py",
-		"/C/_pipeline/maya/dev/rigging/task/core/task.py",
 		"/C/_pipeline/maya/dev/rigging/task/config/PROPERTY_ITEMS.py",
 		"/C/_pipeline/maya/dev/rigging/task/base/newScene.py",
 		"/C/_pipeline/maya/utils/common/uiUtils.py",

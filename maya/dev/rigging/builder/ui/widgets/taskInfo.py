@@ -17,8 +17,7 @@ except ImportError:
 TT_TASK_NAME = 'Task Name used in the build script as attribute'
 TT_TASK_TYPE = 'Task function path'
 
-ROLE_TASK_NAME = Qt.UserRole + 1
-ROLE_TASK_PATH = Qt.UserRole + 2
+ROLE_TASK_INFO = Qt.UserRole + 1
 
 
 # CLASS
@@ -56,10 +55,11 @@ class TaskInfo(QWidget):
         pass
 
     def set_label(self, item):
-        name = item.data(0, ROLE_TASK_NAME)
-        path = item.data(0, ROLE_TASK_PATH)
-        self.label_name.setText(name)
-        self.label_type.setText(path)
+        task_info = item.data(0, ROLE_TASK_INFO)
+        task_name = task_info['attr_name']
+        task_path = task_info['task_path']
+        self.label_name.setText(task_name)
+        self.label_type.setText(task_path)
 
     def refresh(self):
         self.setEnabled(True)
@@ -107,7 +107,6 @@ class TaskLabel(QLabel):
 
         self._tool_tip = tool_tip
         self.menu = None
-        self.mouse_pos = None
 
         # set stylesheet
         self.setStyleSheet("""border: 1.3px solid black; border-radius: 2px""")
@@ -123,7 +122,6 @@ class TaskLabel(QLabel):
 
     def _show_menu(self, pos):
         if self.text():
-            self.mouse_pos = self.mapToGlobal(pos)
-            self.menu.move(self.mouse_pos)  # move menu to the clicked position
+            self.menu.move(self.mapToGlobal(pos))  # move menu to the clicked position
 
             self.menu.show()

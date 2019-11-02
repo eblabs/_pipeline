@@ -657,10 +657,10 @@ class TaskTree(QTreeWidget):
         self.task_create_window.close()
         self.task_create_window.refresh_widgets()
         self.task_create_window.widget_task_creation.rebuild_list_model(task_folders)
-        self.task_create_window.move(self._pos)
+        self.task_create_window.move(QCursor.pos())
         self.task_create_window.show()
 
-    def task_switch_window_open(self, pos):
+    def task_switch_window_open(self):
         # try close window in case it's opened
         self.task_switch_window.close()
 
@@ -685,7 +685,7 @@ class TaskTree(QTreeWidget):
 
             self.task_switch_window.refresh_widgets()
             self.task_switch_window.widget_task_creation.rebuild_list_model(task_folders)
-            self.task_switch_window.move(pos)
+            self.task_switch_window.move(QCursor.pos())
             self.task_switch_window.show()
 
     def _add_child_item(self, item, data):
@@ -784,7 +784,7 @@ class TaskTree(QTreeWidget):
 
         progress_max = len(items_run)*len(section)
 
-        end_maya_progress_bar(self.maya_progress_bar, progress_max)  # clear out the cache
+        clear_maya_progress_bar_cache(self.maya_progress_bar, progress_max)  # clear out the cache
 
         # shoot signal to progress bar
         self.SIGNAL_PROGRESS_INIT.emit(len(items_run) * len(section))
@@ -841,14 +841,9 @@ class TaskTree(QTreeWidget):
                                     task_func = task_info['task']
                                     task_return = task_func(**task_kwargs)
                                     message = ''
-                                    if task_return is None or task_return == 1:
-                                        # success
-                                        task_return_state = 1
-                                    else:
-                                        # warning
-                                        task_return_state = 2
-                                        if isinstance(task_return, basestring):
-                                            message = task_return
+                                    task_return_state = 1  # success
+                                    if isinstance(task_return, basestring):
+                                        message = task_return  # override message to store in icon
                                     self._execute_setting(item, task_return_state, 'method', task_display, role, sec,
                                                           message)
                                 except Exception as exc:
@@ -875,7 +870,7 @@ class TaskTree(QTreeWidget):
 
                                 if sec == 'pre_build':
                                     # register input data
-                                    task_obj.kwargs_task = task_kwargs
+                                    task_obj.kwargs_input = task_kwargs
 
                                     # check if task is pack
                                     if task_type == 'pack':
@@ -911,7 +906,7 @@ class TaskTree(QTreeWidget):
                 self.SIGNAL_PROGRESS.emit(item_count * i + j + 1)
 
         # end progress bar
-        end_maya_progress_bar(self.maya_progress_bar, progress_max)
+        cmds.progressBar(self.maya_progress_bar, edit=True, endProgress=True)
 
         # emit reset signal
         self.SIGNAL_RESET.emit()
@@ -929,7 +924,7 @@ class TaskTree(QTreeWidget):
         self._save_log_status_info(item, exc, role)
 
         # end maya progress bar
-        end_maya_progress_bar(self.maya_progress_bar, 10)
+        cmds.progressBar(self.maya_progress_bar, edit=True, endProgress=True)
 
         raise RuntimeError()
 
@@ -1120,15 +1115,18 @@ class TaskItem(QTreeWidgetItem):
         task_kwargs_keys = task_kwargs.keys()
         kwargs.update({'task_kwargs_keys': task_kwargs_keys})
 
-        self.setData(0, ROLE_TASK_INFO, kwargs)  # carry the task's kwargs for further use
-
-        set_item_data(self, **kwargs)  # set item info
-
-        # initialize each icon, set to fresh status
+        # initialize each icon, set to fresh status,
+        # we need to set icon info first, because it override setData function
         self.setData(0, ROLE_TASK_PRE, 0)
         self.setData(0, ROLE_TASK_RUN, 0)
         self.setData(0, ROLE_TASK_POST, 0)
         self.setData(0, ROLE_TASK_STATUS_INFO, ['', '', ''])  # save log info for display
+
+        # carry the task's kwargs for further use
+        self.setData(0, ROLE_TASK_INFO, kwargs)
+
+        # set item info
+        set_item_data(self, **kwargs)
 
         # set background color
         if background_color is not None:
@@ -1306,7 +1304,7 @@ def set_item_data(item, **kwargs):
         item.setCheckState(0, CHECK_STATE[check])
 
 
-def end_maya_progress_bar(progress_bar, progress_max):
+def clear_maya_progress_bar_cache(progress_bar, progress_max):
     """
     there seems a maya bug that after cancelled the progress bar with multiple ESC, maya didn't clear the cache
     when the progress end, so we have to create/end progress bar one or two times to clear the cache

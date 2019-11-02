@@ -137,8 +137,8 @@ class TaskCreate(QDialog):
             label = QLabel('Side:')
             label.setMaximumWidth(30)
             self.task_side = QComboBox()
-            self.task_side.addItems(naming.Side.all)
-            self.index_side_default = self.task_side.findText('middle', Qt.MatchFixedString)
+            self.task_side.addItems(naming.Side.Key.all)
+            self.index_side_default = self.task_side.findText(naming.Side.Key.m, Qt.MatchFixedString)
             self.task_side.setCurrentIndex(self.index_side_default)
 
             layout_side.addWidget(label)
@@ -173,9 +173,9 @@ class TaskCreate(QDialog):
         # connect set button
         if set_name:
             self.task_des.textChanged.connect(self.set_button_with_name_check)
-            self.widget_task_creation.sourceModel.itemChanged.connect(self.set_button_with_name_check)
+            self.widget_task_creation.listView.selectionModel().currentChanged.connect(self.set_button_with_name_check)
         else:
-            self.widget_task_creation.sourceModel.itemChanged.connect(self.set_button)
+            self.widget_task_creation.listView.selectionModel().currentChanged.connect(self.set_button)
 
     def edit_folders_open(self):
         self.edit_folders_window.close()
@@ -184,6 +184,9 @@ class TaskCreate(QDialog):
     def set_button_with_name_check(self):
         des = self.task_des.text()
         task = self.widget_task_creation.listView.currentIndex().data()
+
+        print des
+        print task
 
         if des and task:
             self.button.setEnabled(True)

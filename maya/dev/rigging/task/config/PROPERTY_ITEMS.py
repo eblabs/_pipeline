@@ -26,7 +26,8 @@ PROPERTY_ITEMS = {'str': {'default': '',
                            'widget': QComboBox},
 
                   'bool': {'default': True,
-                           'widget': QComboBox},
+                           'widget': QComboBox,
+                           'enum': ['True', 'False']},
 
                   'list': {'default': [],
                            'template': '',

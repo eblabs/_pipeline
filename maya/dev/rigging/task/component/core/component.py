@@ -147,8 +147,8 @@ class Component(task.Task):
     def register_kwargs(self):
         super(Component, self).register_kwargs()
 
-        self.register_attribute('side', naming.Side.middle, attr_name='side', short_name='s', attr_type='enum',
-                                enum=naming.Side.all, hint="component's side")
+        self.register_attribute('side', naming.Side.Key.m, attr_name='side', short_name='s', attr_type='enum',
+                                enum=naming.Side.Key.all, hint="component's side")
 
         self.register_attribute('description', '', attr_name='description', short_name='des', attr_type='str',
                                 hint="component's description")
