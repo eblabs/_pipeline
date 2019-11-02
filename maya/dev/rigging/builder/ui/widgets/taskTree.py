@@ -313,8 +313,8 @@ class TaskTree(QTreeWidget):
     def show_menu(self, pos):
         top_item_count = self.topLevelItemCount()  # only show right click menu when builder loaded
         if top_item_count:
-            current_item = self.currentIndex().data()  # check if has task selected
-            if not current_item:
+            select_items = self.selectedItems() # check if has task selected
+            if not select_items:
                 # disable actions for select task (duplicate, rename etc..)
                 for widget in self._menu_widgets:
                     widget.setEnabled(False)
@@ -323,20 +323,33 @@ class TaskTree(QTreeWidget):
                 for widget in self._menu_widgets:
                     widget.setEnabled(True)
 
-                # disable duplicate and remove for in class method
-                current_item = self.currentItem()
-                task_type = current_item.data(0, ROLE_TASK_TYPE)
-                lock = current_item.data(0, ROLE_TASK_LOCK)
-                if task_type == 'method' or lock:
-                    # disable remove action for in class method and inherit task
-                    self.action_remove.setEnabled(False)
-                    if task_type == 'method':
-                        # disable duplication for in class method
-                        self.action_duplicate.setEnabled(False)
-                # enabled save data if is rigData task
-                save_data = current_item.data(0, ROLE_TASK_SAVE)
-                if save_data:
-                    self.action_save_data.setEnabled(True)
+                duplicate = False
+                remove = False
+                save = False
+
+                # loop in each item to check if we can enable these function
+                for item in select_items:
+                    task_type = item.data(0, ROLE_TASK_TYPE)
+                    task_lock = item.data(0, ROLE_TASK_LOCK)
+                    task_save = item.data(0, ROLE_TASK_SAVE)
+
+                    if task_type != 'method':
+                        # we can't duplicate in class method
+                        duplicate = True
+                        if not task_lock:
+                            # we can only remove task not inherited, and not in class method
+                            remove = True
+
+                    if task_save:
+                        save = True
+
+                    if duplicate and remove and save:
+                        # if all True, no need to continue the loop
+                        break
+
+                self.action_duplicate.setEnabled(duplicate)
+                self.action_remove.setEnabled(remove)
+                self.action_save_data.setEnabled(save)
 
             self.menu.move(QCursor.pos())  # move menu to right clicked position
 
@@ -1045,21 +1058,23 @@ class TaskTree(QTreeWidget):
                 self.SIGNAL_LOG_INFO.emit(log_info, level)
 
     def _save_task_data(self, *args):
-        item = self.currentItem()
-        task_info = item.data(0, ROLE_TASK_INFO)
-        task_name = task_info['attr_name']
-        task_kwargs = task_info['task_kwargs']
+        for item in self.selectedItems():
+            task_save = item.data(0, ROLE_TASK_SAVE)  # check if task has saving function
+            if task_save:
+                task_info = item.data(0, ROLE_TASK_INFO)
+                task_name = task_info['attr_name']
+                task_kwargs = task_info['task_kwargs']
 
-        # get task obj from builder
-        task_obj = getattr(self.builder, task_name)
+                # get task obj from builder
+                task_obj = getattr(self.builder, task_name)
 
-        # register kwargs
-        # some saving function need the input information to save data for specific node
-        task_obj.kwargs_task = task_kwargs
-        task_obj.register_inputs()
+                # register kwargs
+                # some saving function need the input information to save data for specific node
+                task_obj.kwargs_task = task_kwargs
+                task_obj.register_inputs()
 
-        # trigger save data function
-        task_obj.save_data()
+                # trigger save data function
+                task_obj.save_data()
 
     @staticmethod
     def _get_unique_name(name_orig, name_new, name_list):
@@ -1098,6 +1113,12 @@ class TaskItem(QTreeWidgetItem):
         background_color = kwargs.get('background_color', None)
 
         self.setFlags(self.flags() | Qt.ItemIsTristate | Qt.ItemIsUserCheckable)
+
+        # get task kwargs keys as list,
+        # because QTreeWidgetItem can't save order dictionary, we need the list to store the keys order
+        task_kwargs = kwargs.get('task_kwargs', {})
+        task_kwargs_keys = task_kwargs.keys()
+        kwargs.update({'task_kwargs_keys': task_kwargs_keys})
 
         self.setData(0, ROLE_TASK_INFO, kwargs)  # carry the task's kwargs for further use
 

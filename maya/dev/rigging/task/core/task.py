@@ -135,7 +135,8 @@ class Task(object):
             attr_type(str): if it has more complicate ui info need from PROPERTY_ITEMS
             min(float/int): min value
             max(float/int): max value
-            skippable(bool): if True, will show 'None' if int value is out of range
+            skippable(bool): define if the kwarg can be skip or not, it will turn red if no value for unskippable attr.
+                             default is True
             select(bool): if right click can add/set selection
             enum(list): enum options
             template: list/dict children template
