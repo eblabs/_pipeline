@@ -41,3 +41,33 @@ def import_module(path, **kwargs):
     module = __import__(path, fromlist=[modules[-1]])
 
     return module, func
+
+
+def get_obj_attr(obj, attr):
+    """
+    get given object attribute's value
+
+    Args:
+        obj(object): object contains the attribute
+        attr(str): object attr full path
+
+    Examples:
+        normally used in class,
+        obj = self
+        attr = 'builder.component.name'
+        component_name = get_obj_attr(obj, attr)
+
+    Returns:
+        obj_attr
+    """
+    attr_split = attr.split('.')
+    attr_parent = obj
+
+    for attr_part in attr_split[1:]:
+        if hasattr(attr_parent, attr_part):
+            attr_parent = getattr(attr_parent, attr_part)
+        else:
+            attr_parent = None
+            break
+
+    return attr_parent

@@ -35,6 +35,7 @@ class SplineIk(component.Component):
         self._save = True  # set save to True so can use ui to save the curve's skin data
 
         self._task = 'dev.rigging.task.component.base.splineIk'
+        self._save = True  # it has save data function
         self._jnt_suffix = 'SplineIk'
         self._iks = []
         self._curve = []
@@ -140,14 +141,8 @@ class SplineIk(component.Component):
         """
         save data to current rig's data folder, will automatically create folder if not exist
         """
-        save_data_path = buildUtils.get_data_path(self._name, self.rig_type, self.asset, self.project,
-                                                  warning=False, check_exist=False)
-        # create folder if not exist
-        if not os.path.exists(save_data_path):
-            os.mkdir(save_data_path)
-
-        # save data
-        # save data function
+        super(SplineIk, self).save_data()
+        pass
 
     def _generate_curve_name(self):
         """

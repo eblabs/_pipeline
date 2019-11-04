@@ -73,6 +73,9 @@ ICONS_TASK = {'task': [icons.task_new, icons.task_reference],
               'callback': [icons.callback_new, icons.callback_reference],
               'method': [icons.method, icons.method]}
 
+# warning color if any unskippable kwarg not set
+COLOR_WARN = QColor(255, 0, 0)
+
 # task folders
 TASK_FOLDERS_CONFIG = os.path.join(os.path.dirname(config.__file__), 'TASK_FOLDERS.cfg')
 TASK_FOLDERS = files.read_json_file(TASK_FOLDERS_CONFIG)
@@ -872,6 +875,16 @@ class TaskTree(QTreeWidget):
                                     # register input data
                                     task_obj.kwargs_input = task_kwargs
 
+                                    # check if task is duplicate
+                                    if task_type == 'copy':
+                                        # check target task is a pack or not
+                                        attr_name_target = task_kwargs.get('duplicate_component', None)
+                                        if attr_name_target:
+                                            task_target = modules.get_obj_attr(self.builder, attr_name_target)
+                                            if task_target:
+                                                # check if the target is pack, override the parameter if so
+                                                task_type = task_target.task_type
+
                                     # check if task is pack
                                     if task_type == 'pack':
                                         # get child count
@@ -1071,7 +1084,7 @@ class TaskTree(QTreeWidget):
                 # trigger save data function
                 task_obj.save_data()
 
-    @staticmethod
+    @ staticmethod
     def _get_unique_name(name_orig, name_new, name_list):
         i = 1
         name_new_add = name_new
@@ -1083,12 +1096,12 @@ class TaskTree(QTreeWidget):
             name_list.remove(name_orig)
         return name_new_add
 
-    @staticmethod
+    @ staticmethod
     def _get_project_task_folder(builder):
         if builder:
             return 'projects.{}.scripts.tasks'.format(builder.project)
 
-    @staticmethod
+    @ staticmethod
     def _save_log_status_info(item, message, role):
         if role == ROLE_TASK_PRE:
             index = 0
@@ -1100,6 +1113,34 @@ class TaskTree(QTreeWidget):
         log_status_info = item.data(0, ROLE_TASK_STATUS_INFO)
         log_status_info[index] = message
         item.setData(0, ROLE_TASK_STATUS_INFO, log_status_info)
+
+    @ staticmethod
+    def _get_item_children_attr_names(item):
+        """
+        get item's children's attr names as list
+        Args:
+            item(TaskItem)
+
+        Returns:
+            attr_name_children(list)
+        """
+        # get child count
+        child_count = item.childCount()
+
+        attr_name_children = []
+        # loop downstream
+        for index_child in range(child_count):
+            # get item
+            child_item = item.child(index_child)
+            # get child task info
+            child_task_info = child_item.data(0, ROLE_TASK_INFO)
+            # get check state
+            child_check_state = child_item.checkState(0)
+            # add to pack if checked
+            if child_check_state == Qt.Checked:
+                attr_name_children.append(child_task_info['attr_name'])
+
+        return attr_name_children
 
 
 class TaskItem(QTreeWidgetItem):
@@ -1170,6 +1211,20 @@ class TaskItem(QTreeWidgetItem):
         elif role == ROLE_TASK_POST:
             # set icon for the post build
             self.setIcon(3, ICONS_STATUS[value])
+
+        elif role == ROLE_TASK_INFO:
+            # normally happens when property editor send back the kwargs set by user
+            # check if has any unskippable kwarg not being set
+            task_info = self.data(0, ROLE_TASK_INFO)
+            warn = False
+            for key, item in task_info['task_kwargs'].iteritems():
+                warn = item.get('warn', False)
+                if warn:
+                    break
+            if warn:
+                self.setForeground(0, COLOR_WARN)
+            else:
+                self.setData(0, Qt.ForegroundRole, None)
 
 
 class SubMenu(QMenu):

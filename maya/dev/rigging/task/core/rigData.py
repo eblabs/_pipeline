@@ -1,8 +1,5 @@
 # IMPORT PACKAGES
 
-# import os
-import os
-
 # import utils
 import utils.rigging.buildUtils as buildUtils
 
@@ -26,12 +23,13 @@ class RigData(task.Task):
         data(list): list of data path
     """
     def __init__(self, **kwargs):
+        self.data_info = None
+
         super(RigData, self).__init__(**kwargs)
         self._task = 'dev.rigging.task.core.data'
         self._task_type = 'data'
         self._save = True
         self.data_path = []
-        self.save_data_path = None
 
         self._icon_new = icons.data_new
         self._icon_ref = icons.data_reference
@@ -46,16 +44,6 @@ class RigData(task.Task):
     def pre_build(self):
         super(RigData, self).pre_build()
         self.get_data()
-
-    def save_data(self):
-        """
-        save data to current rig's data folder, will automatically create folder if not exist
-        """
-        self.save_data_path = buildUtils.get_data_path(self._name, self.rig_type, self.asset, self.project,
-                                                       warning=False, check_exist=False)
-        # create folder if not exist
-        if not os.path.exists(self.save_data_path):
-            os.mkdir(self.save_data_path)
 
     def get_data(self):
         """

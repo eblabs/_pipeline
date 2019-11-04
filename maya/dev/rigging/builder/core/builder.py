@@ -35,6 +35,15 @@ class Builder(object):
         self._tasks_compare = None
         self._tasks_info_compare = None
 
+        # pack kwargs override
+        # because the pack shares some of the kwargs with its sub components,
+        # and we don't want the user to set each separately and keep those the same by themselves
+        # the problem is because the pack object register before its sub components,
+        # especially when we do mirror, there won't be sub components when we do pack's pre build
+        # so we register those override kwargs back to the builder as a dict, with sub components attr name as key,
+        # and in each component, we will search the dict to see if anything need to be override before set kwargs
+        self.pack_kwargs_override = {}
+
     @property
     def project(self):
         return self._project

@@ -1,5 +1,8 @@
 # IMPORT PACKAGES
 
+# import os
+import os
+
 # import maya cmds
 import maya.cmds as cmds
 
@@ -9,8 +12,10 @@ from collections import OrderedDict
 # import utils
 import utils.common.variables as variables
 import utils.common.logUtils as logUtils
+import utils.common.modules as modules
 import utils.common.naming as naming
 import utils.common.attributes as attributes
+import utils.rigging.buildUtils as buildUtils
 
 # ICON
 import dev.rigging.builder.ui.widgets.icons as icons
@@ -45,6 +50,7 @@ class Task(object):
             self.asset = self._builder.asset
             self.rig_type = self._builder.rig_type
         self._save = False  # attr to check if has save function
+        self.save_data_path = None  # store saving path for further use
 
         # icon
         self._icon_new = icons.task_new
@@ -83,17 +89,21 @@ class Task(object):
     def icons(self):
         return [self._icon_new, self._icon_ref]
 
-    @name.setter
+    @ name.setter
     def name(self, task_name):
         self._name = task_name
 
-    @builder.setter
+    @ builder.setter
     def builder(self, builder_obj):
         self._builder = builder_obj
         if self._builder:
             self.project = self._builder.project
             self.asset = self._builder.asset
             self.rig_type = self._builder.rig_type
+
+    @ save.setter
+    def save(self, save_check):
+        self._save = save_check
 
     def pre_build(self):
         self.signal = 1  # preset the signal to avoid overwrite
@@ -117,12 +127,7 @@ class Task(object):
         """
         pass
 
-    def register_inputs(self, **kwargs):
-        if kwargs:
-            # normally we call the function in ui, so don't need the kwargs,
-            # the input kwargs should be picked from self.kwargs_input
-            # but just in case if we want to override anything for any reason, we can add kwargs to this function
-            self.kwargs_input.update(kwargs)
+    def register_inputs(self):
         for key, val in self.kwargs_task.iteritems():
             attr_val = variables.kwargs(val[0], val[1], self.kwargs_input, short_name=val[2])
             self.__setattr__(key, attr_val)
@@ -149,7 +154,11 @@ class Task(object):
             key_edit(bool): if double click can edit dict key name
             keys_order(list): if the dictionary's keys need to show by order
             hint(str): attribute's hint
+            custom(bool): if set to custom, the kwarg will be QLineEdit, and user can add/remove/duplicate all the time,
+                          it will be the user's responsibility to keep the kwarg consistent with component,
+                          normally used for kwargs need to be override
         """
+        skippable = kwargs.get('skippable', True)
 
         if not attr_type:
             # if not specific attribute type, define the type by value
@@ -188,6 +197,12 @@ class Task(object):
 
         kwargs_ui['default'] = value
 
+        # check if value is skippable or not, if no value but unskippable, need to set the warning for user
+        if not skippable and not value:
+            kwargs_ui.update({'warn': True})
+        else:
+            kwargs_ui.update({'warn': False})
+
         self._register_attr_to_task([name, value, attr_name, short_name], kwargs_ui)
 
     def update_attribute(self, name, **kwargs):
@@ -200,15 +215,25 @@ class Task(object):
             default: default value
             min(float/int): min value
             max(float/int): max value
+            skippable(bool): define if the kwarg can be skip or not, it will turn red if no value for unskippable attr.
+                             default is True
             select(bool): if right click can add/set selection
             enum(list): enum options
             template: list/dict children template
             key_edit(bool): if double click can edit dict key name
             keys_order(list): if the dictionary's keys need to show by order
             hint(str): attribute's hint
+            custom(bool): if set to custom, the kwarg will be QLineEdit, and user can add/remove/duplicate all the time,
+                          it will be the user's responsibility to keep the kwarg consistent with component,
+                          normally used for kwargs need to be override
         """
         if name in self.kwargs_ui:
             self.kwargs_ui[name].update(kwargs)
+            skippable = self.kwargs_ui.get('skippable', True)
+            if not skippable and not self.kwargs_ui[name]['default']:
+                self.kwargs_ui[name].update({'warn': True})
+            else:
+                self.kwargs_ui[name].update({'warn': False})
 
     def remove_attribute(self, name, attr_name=None):
         """
@@ -227,6 +252,17 @@ class Task(object):
 
         self.kwargs_task.pop(key, None)
         self.kwargs_ui.pop(name, None)
+
+    def save_data(self):
+        """
+        function to save data, all tasks with saving data function should sub class here for saving
+        """
+        # get saving path
+        self.save_data_path = buildUtils.get_data_path(self._name, self.rig_type, self.asset, self.project,
+                                                       warning=False, check_exist=False)
+        # create folder if not exist
+        if not os.path.exists(self.save_data_path):
+            os.mkdir(self.save_data_path)
 
     def _register_attr_to_task(self, kwargs_task, kwargs_ui):
         """
@@ -253,15 +289,8 @@ class Task(object):
         setattr(attr_parent, attr_split[-1], ObjectView(attr_dict))
 
     def _get_obj_attr(self, attr):
-        attr_split = attr.split('.')
-        attr_parent = self
-        for attr_part in attr_split:
-            if hasattr(attr_parent, attr_part):
-                attr_parent = getattr(attr_parent, attr_part)
-            else:
-                attr_parent = None
-                break
-        return attr_parent
+        attr_value = modules.get_obj_attr(self, attr)
+        return attr_value
 
     def _get_node_name(self, node_name):
         """

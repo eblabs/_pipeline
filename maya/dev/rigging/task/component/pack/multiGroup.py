@@ -20,10 +20,10 @@ class MultiGroup(pack.Pack):
         super(MultiGroup, self).__init__(*args, **kwargs)
         self._task = 'dev.rigging.task.component.pack.multiGroup'
 
-    def override_sub_components(self):
-        super(MultiGroup, self).override_sub_components()
-        self.override_sub_component_kwarg('ctrl_offsets', self.ctrl_offsets)
-        self.override_sub_component_kwarg('ctrl_size', self.ctrl_size)
+    def pack_override_kwargs_registration(self):
+        super(MultiGroup, self).pack_override_kwargs_registration()
+        self.register_override_kwarg('ctrl_offsets', self.ctrl_offsets)
+        self.register_override_kwarg('ctrl_size', self.ctrl_size)
 
     def create_component(self):
         super(MultiGroup, self).create_component()

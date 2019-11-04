@@ -531,9 +531,9 @@ def flip_side(side):
     Returns:
         side_flip(str)
     """
-    if side == Side.left:
+    if side == Side.left or side == Side.Key.l:
         side_flip = Side.right
-    elif side == Side.right:
+    elif side == Side.right or side == Side.Key.r:
         side_flip = Side.left
     else:
         side_flip = Side.middle

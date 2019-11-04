@@ -185,9 +185,6 @@ class TaskCreate(QDialog):
         des = self.task_des.text()
         task = self.widget_task_creation.listView.currentIndex().data()
 
-        print des
-        print task
-
         if des and task:
             self.button.setEnabled(True)
         else:

@@ -39,18 +39,20 @@ class Pack(component.Component):
         # the sub components attr name in builder, use this var in widget to assign sub components
         self.sub_components_attrs = variables.kwargs('sub_components_attrs', [], kwargs)
 
+        self._pack_kwargs_override = {}
+
         self._sub_component_grp = None
         self._sub_components_objs = []
         self._sub_components_override = {}
 
-    def mirror_kwargs(self):
-        super(Pack, self).mirror_kwargs()
-        self.sub_components_attrs = self._flip_list(self.sub_components_attrs)
+    def pre_build(self):
+        super(Pack, self).pre_build()
+        self.pack_override_kwargs_registration()
+        self.set_override_kwargs_to_builder()
 
-    def build(self):
-        self.override_sub_components()
-        self.set_sub_components_kwargs()
-        super(Pack, self).build()
+    def in_class_attributes_mirror_registration(self):
+        super(Pack, self).in_class_attributes_mirror_registration()
+        self.set_attribute_for_mirror('sub_components_attrs')
 
     def create_hierarchy(self):
         super(Pack, self).create_hierarchy()
@@ -77,29 +79,45 @@ class Pack(component.Component):
         # message attr for sub components
         attributes.add_attrs(self._component, 'subComponents', attribute_type='message', multi=True)
 
-    def override_sub_components(self):
+    def pack_override_kwargs_registration(self):
         """
-        override sub components kwargs to pack's information
+        because the pack shares some of the kwargs with its sub components,
+        and we don't want the user to set each separately and keep those the same by themselves
+        the problem is because the pack object register before its sub components,
+        especially when we do mirror, there won't be sub components when we do pack's pre build
+        so we register those override kwargs back to the builder as a dict, with sub components attr name as key,
+        and in each component, we will search the dict to see if anything need to be override before set kwargs
         """
-        # sub components input should always be the same with pack
-        self.override_sub_component_kwarg('input_connect', self.input_connect)
-        # sub components should be parented to pack's sub component group
-        self.override_sub_component_kwarg('_parent', self._sub_component_grp)
+        # mirror behavior should keep consistent
+        self.register_override_kwarg('mirror', self.mirror)
 
-    def override_sub_component_kwarg(self, sub_component_attr, value):
+        # sub components input should always be connected to pack, so skip this attr
+        self.register_override_kwarg('input_connect', None)
+
+    def register_override_kwarg(self, attr, value):
         """
-        override sub component kwarg to given value
+        register each  pack override kwarg to the builder
 
         Args:
-            sub_component_attr(str): sub component attr need to be override
-            value: value to override
+            attr(str): attribute name
+            value: attribute value to override
         """
-        self._sub_components_override.update({sub_component_attr: value})
+        self._pack_kwargs_override.update({attr: value})
 
-    def set_sub_components_kwargs(self):
-        for sub_component_obj in self._sub_components_objs:
-            for attr, val in self._sub_components_override.iteritems():
-                setattr(sub_component_obj, attr, val)
+    def set_override_kwargs_to_builder(self):
+        """
+        set override kwargs back to builder, with sub components attr names as key
+        """
+        pack_kwargs_override = self._get_obj_attr('_builder.pack_kwargs_override')
+        if pack_kwargs_override and self._pack_kwargs_override:
+            # get mirrored pack override kwargs
+            pack_kwargs_override_mirror = self._flip_val(self._pack_kwargs_override)
+            for sub_attr_name in self.sub_components_attrs:
+                self._builder.pack_kwargs_override.update({sub_attr_name: self._pack_kwargs_override})
+                # set for mirror component as well
+                if self.mirror:
+                    sub_attr_name_mirror = self._flip_val(sub_attr_name)
+                    self._builder.pack_kwargs_override.update({sub_attr_name_mirror: pack_kwargs_override_mirror})
 
     def create_component(self):
         super(Pack, self).create_component()
@@ -112,9 +130,12 @@ class Pack(component.Component):
                 logger.error("can't find given component '{}' in the builder".format(sub_attr))
                 raise RuntimeError()
 
-        # parent each sub component to sub component group
+        # connect input and some attr, keep them consistent with pack
+        # parent sub components to sub group
         for sub_component_obj in self._sub_components_objs:
+            # parent sub component to sub group
             cmds.parent(sub_component_obj.component, self._sub_component_grp)
+            # connect attr
             attributes.connect_attrs(['rigNodesVis', 'inputMatrix', 'offsetMatrix'],
                                      ['rigNodesVis', 'inputMatrix', 'offsetMatrix'],
                                      driver=self._component, driven=sub_component_obj.component, force=True)

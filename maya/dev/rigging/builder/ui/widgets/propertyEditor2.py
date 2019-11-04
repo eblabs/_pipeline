@@ -34,6 +34,8 @@ ROLE_TASK_INFO = Qt.UserRole + 1
 
 ROLE_ITEM_KWARGS = Qt.UserRole + 2  # this role hold each property's ui kwargs
 
+COLOR_WARN = QColor(255, 0, 0)
+
 
 #  CLASS
 class PropertyEditor(QTreeView):
@@ -148,6 +150,11 @@ class PropertyEditor(QTreeView):
         if item_kwargs is None:
             item_kwargs = {}
 
+        # get custom, if custom set to True, enable key edit
+        custom = item_kwargs.get('custom', False)
+        if custom:
+            key_edit = True
+
         # column 1: property name
         column_key = QStandardItem(key)
 
@@ -203,6 +210,9 @@ class PropertyEditor(QTreeView):
         # get template
         template = val_data.get('template', None)
 
+        # get custom
+        custom = val_data.get('custom', False)
+
         # check value's type
         if isinstance(val, list):
             # loop in each item in list
@@ -222,6 +232,10 @@ class PropertyEditor(QTreeView):
                     attr_kwargs = PROPERTY_ITEMS[attr_type].copy()
                 else:
                     attr_kwargs = {}
+
+                # override custom
+                if custom:
+                    attr_kwargs.update({'custom': True})
 
                 # create row items
                 items_add = self._add_row_item(str(i), val=v, item_kwargs=attr_kwargs)
@@ -258,6 +272,10 @@ class PropertyEditor(QTreeView):
                     attr_kwargs = PROPERTY_ITEMS[attr_type].copy()
                 else:
                     attr_kwargs = {}
+
+                # override custom
+                if custom:
+                    attr_kwargs.update({'custom': True})
 
                 # create row items
                 items_add = self._add_row_item(k, val=v, item_kwargs=attr_kwargs, key_edit=key_edit)
@@ -328,8 +346,16 @@ class PropertyEditor(QTreeView):
             item_kwargs.update({'value': val})  # override ui kwargs's value to the current value
             item_data.setData(item_kwargs, ROLE_ITEM_KWARGS)  # save ui kwargs
 
+            # get background color, if has color, means it is unskippable but no value
+            background_col = item_data.data(role=Qt.BackgroundRole)
+            if background_col:
+                warn = True
+            else:
+                warn = False
+
             task_info = self._item.data(0, ROLE_TASK_INFO)  # get task info
             task_info['task_kwargs'][key]['value'] = val  # override task value
+            task_info['task_kwargs'][key]['warn'] = warn  # override warn
             self._item.setData(0, ROLE_TASK_INFO, task_info)  # set back to task item
 
     def _rebuild_child(self, item):
@@ -414,6 +440,13 @@ class PropertyEditor(QTreeView):
                 self.action_del_element.setEnabled(False)
                 self.action_dup_element.setEnabled(False)
 
+            # get custom, set add/dup/del element to True if set to custom
+            custom = item_kwargs.get('custom', False)
+            if custom:
+                self.action_add_element.setEnabled(True)
+                self.action_dup_element.setEnabled(True)
+                self.action_del_element.setEnabled(True)
+
             self.menu.show()
 
     def _reset_value(self):
@@ -427,9 +460,11 @@ class PropertyEditor(QTreeView):
         value = item_kwargs['default']
         item.setText(convert_data_to_str(value))
 
+        # we need to update parent first, because it will save the value back to item
+        # rebuild child will need the value from item, not from the text,
+        # this way we can keep the value type more consistent
         self._update_parent(item)
         self._rebuild_child(item)
-
 
     def _set_selection(self):
         """
@@ -455,12 +490,15 @@ class PropertyEditor(QTreeView):
         else:
             # item is list
             item.setText(convert_data_to_str(sel))
+
+            # we need to update parent first, because it will save the value back to item
+            # rebuild child will need the value from item, not from the text,
+            # this way we can keep the value type more consistent
+
             # update parent item and save back to task item
             self._update_parent(item)
             # update child
             self._rebuild_child(item)
-
-
 
     def _add_selection(self):
         """
@@ -480,9 +518,11 @@ class PropertyEditor(QTreeView):
             val += sel
             val = list(OrderedDict.fromkeys(val))
             item.setText(convert_data_to_str(val))
+            # we need to update parent first, because it will save the value back to item
+            # rebuild child will need the value from item, not from the text,
+            # this way we can keep the value type more consistent
             self._update_parent(item)
             self._rebuild_child(item)
-
 
     def _add_element(self):
         """
@@ -539,6 +579,9 @@ class PropertyEditor(QTreeView):
 
         item.setText(convert_data_to_str(val))
 
+        # we need to update parent first, because it will save the value back to item
+        # rebuild child will need the value from item, not from the text,
+        # this way we can keep the value type more consistent
         self._update_parent(item)
         self._rebuild_child(item)
 
@@ -570,6 +613,9 @@ class PropertyEditor(QTreeView):
         # set the update value to parent item, let update parent/rebuild child do the rest work
         parent_val_item.setText(convert_data_to_str(parent_val))
 
+        # we need to update parent first, because it will save the value back to item
+        # rebuild child will need the value from item, not from the text,
+        # this way we can keep the value type more consistent
         self._update_parent(parent_val_item)
         self._rebuild_child(parent_val_item)
 
@@ -602,6 +648,9 @@ class PropertyEditor(QTreeView):
         # set the update value to parent item, let update parent/rebuild child do the rest work
         parent_val_item.setText(convert_data_to_str(parent_val))
 
+        # we need to update parent first, because it will save the value back to item
+        # rebuild child will need the value from item, not from the text,
+        # this way we can keep the value type more consistent
         self._update_parent(parent_val_item)
         self._rebuild_child(parent_val_item)
 
@@ -650,7 +699,11 @@ class PropertyDelegate(QItemDelegate):
         value = index.data()
 
         if item_kwargs:
-            widget = item_kwargs['widget'](parent)  # get widget from kwargs
+            custom = item_kwargs.get('custom', False)
+            if not custom:
+                widget = item_kwargs['widget'](parent)  # get widget from kwargs
+            else:
+                widget = QLineEdit(parent)  # use QLineEdit
         else:
             widget = QLineEdit(parent)  # use QLineEdit as general widget
 
@@ -681,6 +734,9 @@ class PropertyDelegate(QItemDelegate):
         # get data info
         item_kwargs = item.data(role=ROLE_ITEM_KWARGS)
 
+        # get custom
+        custom = item_kwargs.get('custom', False)
+
         # set data
         super(PropertyDelegate, self).setModelData(editor, model, index)
 
@@ -700,7 +756,8 @@ class PropertyDelegate(QItemDelegate):
         # if it's string/list/dict, compare with the previous value
         # because we need to stick with the value type, and these three are all converted from string
         # if we don't do the compare, user may change the string to list by typing mistake
-        if isinstance(editor, QLineEdit):
+        # will skip check if it's set to custom, user will need to keep the kwargs consistent
+        if isinstance(editor, QLineEdit) and not custom:
             # get default value
             value_default = item_kwargs['default']
             # get changed value
@@ -730,6 +787,18 @@ class PropertyDelegate(QItemDelegate):
                     # change back to previous
                     item.setText(value)
 
+        # check if the value is unskippable, set background color if no value with skippable set to False
+        skippable = item_kwargs.get('skippable', True)
+
+        if not skippable:
+            value = convert_data(item.text())  # get current item value converted
+            if not value:
+                item.setData(COLOR_WARN, Qt.BackgroundRole)
+            else:
+                item.setData(None, Qt.BackgroundRole)
+        else:
+            item.setData(None, Qt.BackgroundRole)
+
         # shoot rebuild signal
         self.SIGNAL_UPDATE_PARENT.emit(item)
 
@@ -755,9 +824,8 @@ class PropertyItem(QStandardItem):
 
     def _set_data(self):
         # get default value
-        if 'value' in self._data_info and self._data_info['value'] is not None:
-            val = self._data_info['value']
-        else:
+        val = self._data_info.get('value', None)
+        if val is None:
             val = self._data_info['default']
 
         val = convert_data_to_str(val)  # convert value to str to display
@@ -767,6 +835,12 @@ class PropertyItem(QStandardItem):
         # add tool tip if has in kwargs
         if 'hint' in self._data_info and self._data_info['hint']:
             self.setData(self._data_info['hint'], Qt.ToolTipRole)
+
+        # check if value is unskippable,
+        # set background to red if no value but unskip so user can be aware
+        skippable = self._data_info.get('skippable', True)
+        if not skippable and not val:
+            self.setData(COLOR_WARN, Qt.BackgroundRole)
 
         # store all ui kwargs in data
         self.setData(self._data_info, role=ROLE_ITEM_KWARGS)

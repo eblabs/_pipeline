@@ -4,9 +4,9 @@
 import maya.cmds as cmds
 
 # import utils
-import utils.common.variables as variables
 import utils.common.logUtils as logUtils
 import utils.common.naming as naming
+import utils.common.modules as modules
 import utils.common.transforms as transforms
 import utils.common.attributes as attributes
 import utils.common.hierarchy as hierarchy
@@ -31,8 +31,9 @@ class Component(task.Task):
     """
     def __init__(self, *args, **kwargs):
         # component variables,
-        # useless, just put here so pyCharm won't keep warn me
+        # useless, just put here so pyCharm won't keep warning me
         # kwargs registered at the end of task's initialization, so we need to put these before super
+        self.mirror = None
         self.side = None
         self.description = None
         self.description_suffix = None
@@ -46,17 +47,12 @@ class Component(task.Task):
         self._task = 'dev.rigging.task.component.core.component'
         self._task_type = 'component'
 
-        # mirror
-        # flip all parameters if set to True, this is not for user, is a plug for mirror component
-        self._mirror = variables.kwargs('mirror', False, kwargs)
+        # kwargs input mirror
+        self.kwargs_input_mirror = {}
 
-        # override
-        # override parameters if set to True, this is not for user, is a plug for duplicate component
-        self._override = variables.kwargs('override', False, kwargs)
-        self._override_attrs = variables.kwargs('override_attrs', {}, kwargs)
-
-        # parent
-        self.parent = variables.kwargs('parent', None, kwargs)
+        # mirrored component object,
+        # in case we run the task creation outside the builder, save here gave us more flexibility
+        self.component_mirror = None
 
         # icon
         self._icon_new = icons.component_new
@@ -85,73 +81,125 @@ class Component(task.Task):
         if args:
             self.get_component_info(args[0])
 
-    @property
+    @ property
     def component(self):
         return self._component
 
-    @property
+    @ property
     def controls(self):
         return self._ctrls
 
-    @property
+    @ property
     def joints(self):
         return self._jnts
 
-    @property
+    @ property
     def input_matrix_attr(self):
         return self._input_matrix_attr
 
-    @property
+    @ property
     def input_matrix(self):
         return cmds.getAttr(self._input_matrix_attr)
 
-    @property
+    @ property
     def offset_matrix_attr(self):
         return self._offset_matrix_attr
 
-    @property
+    @ property
     def offset_matrix(self):
         return cmds.getAttr(self._offset_matrix_attr)
 
-    @property
+    @ property
     def output_matrix_attr(self):
         # attribute registered in get_component_info
         return self._output_matrix_attr
 
-    @property
+    @ property
     def output_matrix(self):
         return self._get_attr(self._output_matrix_attr)
-
-    def register_attrs(self):
-        super(Component, self).register_attrs()
-        if self._mirror:
-            self.mirror_kwargs()
-
-        if self._override:
-            self.override_kwargs()
 
     def pre_build(self):
         super(Component, self).pre_build()
         self.create_hierarchy()
+        if self.mirror:
+            self.in_class_attributes_mirror_registration()
+            self.get_mirrored_kwargs()
+            self.mirror_pre_build()
 
     def build(self):
         super(Component, self).build()
         self.create_component()
         self.register_component_info()
         self.get_component_info(self._component)
+        if self.mirror:
+            self.mirror_build()
 
     def post_build(self):
         super(Component, self).post_build()
         self.connect_component()
+        if self.mirror:
+            self.mirror_post_build()
+
+    def mirror_pre_build(self):
+        """
+        pre build function for mirrored component,
+        1. create component object
+        2. attached to builder and current component
+        3. get mirrored kwargs
+        4. create component in the scene
+        """
+        # get attr name
+        attr_name_mirror = self._flip_val(self._name)
+        # create component object
+        component_import, component_function = modules.import_module(self._task)
+        self.component_mirror = getattr(component_import, component_function)(name=attr_name_mirror,
+                                                                              builder=self._builder)
+
+        # attach to builder
+        if self._builder:
+            # check if build has the attr, in case it has name clash
+            component_exist = self._get_obj_attr('builder.'+attr_name_mirror)
+            if component_exist:
+                logger.error("builder already has component '{}' exists".format(attr_name_mirror))
+                raise KeyError("builder already has component '{}' exists".format(attr_name_mirror))
+            else:
+                setattr(self._builder, attr_name_mirror, self.component_mirror)
+
+        # get mirrored kwargs plug into the component
+        # make sure we turn mirror off, otherwise it will try to mirror again
+        self.kwargs_input_mirror.update({'mirror': False})
+        self.component_mirror.kwargs_input = self.kwargs_input_mirror
+
+        # trigger mirrored component's pre build
+        self.component_mirror.pre_build()
+
+    def mirror_build(self):
+        """
+        build function for mirrored component
+        """
+        self.component_mirror.build()
+
+    def mirror_post_build(self):
+        """
+        post build function for mirrored component
+        """
+        self.component_mirror.post_build()
+
+    def register_inputs(self):
+        self.get_override_kwargs()
+        super(Component, self).register_inputs()
+        self.check_mirror()
 
     def register_kwargs(self):
         super(Component, self).register_kwargs()
+
+        self.register_attribute('mirror', False, attr_name='mirror', attr_type='bool', hint="mirror component")
 
         self.register_attribute('side', naming.Side.Key.m, attr_name='side', short_name='s', attr_type='enum',
                                 enum=naming.Side.Key.all, hint="component's side")
 
         self.register_attribute('description', '', attr_name='description', short_name='des', attr_type='str',
-                                hint="component's description")
+                                hint="component's description", skippable=False)
 
         self.register_attribute('description suffix', '', attr_name='description_suffix', short_name='desSfx',
                                 attr_type='str',
@@ -171,20 +219,53 @@ class Component(task.Task):
                                 hint="component's input connection, should be a component's joint's output matrix, or\
                                         an existing maya node's matrix attribute")
 
-    def mirror_kwargs(self):
+    def check_mirror(self):
         """
-        mirror kwargs from one side to the other
+        we can't do mirror if attr_name's side or component's side set to middle,
+        so if in that case, we need to set mirror to False no matter what the user set.
         """
-        # flip side
-        self.side = naming.flip_side(self.side)
+        namer_attr = naming.Namer(self._name)
+        # check attr_name's side and component's side, if anything is middle, set mirror to False
+        if (namer_attr.side == naming.Side.middle or namer_attr.side == naming.Side.Key.m) or (
+                self.side == naming.Side.middle or self.side == naming.Side.Key.m):
+            self.mirror = False
 
-        # flip input connection
-        if self.input_connect:
-            self.input_connect = naming.mirror_name(self.input_connect, keep_orig=True)
+    def in_class_attributes_mirror_registration(self):
+        """
+        add in class attribute for mirror
+        """
+        pass
 
-    def override_kwargs(self):
-        for key, val in self._override_attrs.iteritems():
-            self.__setattr__(key, val)
+    def set_attribute_for_mirror(self, attr_name):
+        """
+        set individual in class attr to be mirrored
+
+        Args:
+            attr_name(str): attr's in class name
+        """
+        attr_value = self._get_obj_attr(attr_name)
+        self.kwargs_input.update({attr_name: attr_value})
+
+    def get_mirrored_kwargs(self):
+        """
+        get kwargs mirrored
+        """
+        self.kwargs_input_mirror = {}
+        for key, item in self.kwargs_input.iteritems():
+            # mirror everything
+            item_flip = self._flip_val(item)
+            self.kwargs_input_mirror.update({key: item_flip})
+
+    def get_override_kwargs(self):
+        """
+        check if there is any kwarg need to be override from builder, normally because the component is under a pack
+        """
+        pack_kwargs_override = self._get_obj_attr('_builder.pack_kwargs_override')
+        if pack_kwargs_override:
+            override_kwargs = self._builder.pack_kwargs_override.get(self._name, {})
+            if override_kwargs:
+                # update the kwargs
+                self.kwargs_input.update(override_kwargs)
 
     def create_hierarchy(self):
         """
@@ -364,21 +445,31 @@ class Component(task.Task):
         attributes.set_attrs([self._input_matrix_attr, self._offset_matrix_attr], mathUtils.MATRIX_DEFAULT,
                              type='matrix', force=True)
 
-    @ staticmethod
-    def _flip_list(list_value):
+    def _flip_val(self, attr_value):
         """
-        flip the names in the given list
+        flip name for all type
+
         Args:
-            list_value(list)
+            attr_value(str/list/dict): attribute value
 
         Returns:
-            list_flip(list)
+            attr_value_flip(str/list/dict)
         """
-        list_flip = []
-        for val in list_value:
-            val_flip = naming.mirror_name(val, keep_orig=True)
-            list_flip.append(val_flip)
-        return list_flip
+        if isinstance(attr_value, basestring):
+            attr_value_flip = naming.mirror_name(attr_value, keep_orig=True)
+        elif isinstance(attr_value, list):
+            attr_value_flip = []
+            for attr_val in attr_value:
+                attr_value_flip.append(self._flip_val(attr_val))
+        elif isinstance(attr_value, dict):
+            attr_value_flip = {}
+            for key, item in attr_value.iteritems():
+                key_flip = naming.mirror_name(key, keep_orig=True)
+                item_flip = self._flip_val(item)
+                attr_value_flip.update({key_flip: item_flip})
+        else:
+            attr_value_flip = attr_value
+        return attr_value_flip
 
     @ staticmethod
     def _get_attr(attr):
@@ -407,5 +498,3 @@ class Component(task.Task):
         else:
             val = None
         return val
-
-

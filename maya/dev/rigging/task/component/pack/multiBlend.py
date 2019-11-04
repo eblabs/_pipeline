@@ -45,17 +45,17 @@ class MultiBlend(pack.Pack):
         self._index_custom = MODE_CUSTOM
         self._mode_index_list = []
 
-    @property
+    @ property
     def blend_ctrl(self):
         return self._blend_ctrl
 
-    @property
+    @ property
     def modes(self, as_string=False):
         mode_a = cmds.getAttr(self._blend_ctrl+'.modeA', asString=as_string)
         mode_b = cmds.getAttr(self._blend_ctrl+'.modeB', asString=as_string)
         return [mode_a, mode_b]
 
-    @property
+    @ property
     def blend_value(self):
         blend_val = cmds.getAttr(self._blend_ctrl+'.blend')
         return blend_val
@@ -68,9 +68,9 @@ class MultiBlend(pack.Pack):
 
         self.remove_attribute('offsets', attr_name='ctrl_offsets')
 
-    def override_sub_components(self):
-        super(MultiBlend, self).override_sub_components()
-        self.override_sub_component_kwarg('bp_jnts', self.bp_jnts)
+    def pack_override_kwargs_registration(self):
+        super(MultiBlend, self).pack_override_kwargs_registration()
+        self.register_override_kwarg('bp_jnts', self.bp_jnts)
 
     def create_component(self):
         super(MultiBlend, self).create_component()
