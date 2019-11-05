@@ -224,10 +224,14 @@ class Component(task.Task):
         we can't do mirror if attr_name's side or component's side set to middle,
         so if in that case, we need to set mirror to False no matter what the user set.
         """
-        namer_attr = naming.Namer(self._name)
-        # check attr_name's side and component's side, if anything is middle, set mirror to False
-        if (namer_attr.side == naming.Side.middle or namer_attr.side == naming.Side.Key.m) or (
-                self.side == naming.Side.middle or self.side == naming.Side.Key.m):
+        namer_attr = naming.check_name_convention(self._name)  # check if attr follow name convention
+        if namer_attr:
+            # check attr_name's side and component's side, if anything is middle, set mirror to False
+            if (namer_attr.side == naming.Side.middle or namer_attr.side == naming.Side.Key.m) or (
+                    self.side == naming.Side.middle or self.side == naming.Side.Key.m):
+                self.mirror = False
+        else:
+            # normally create in script for debugging
             self.mirror = False
 
     def in_class_attributes_mirror_registration(self):
@@ -398,10 +402,10 @@ class Component(task.Task):
         self._name = cmds.getAttr(self._component+'.inClassName')
 
         # output matrix
-        output_matrix_dict = {'output_matrix_attr': []}
+        output_matrix_dict = {'_output_matrix_attr': []}
         if self._jnts:
             for i in range(len(self._jnts)):
-                output_matrix_dict['output_matrix_attr'].append(self._component+'.outputMatrix[{}]'.format(i))
+                output_matrix_dict['_output_matrix_attr'].append(self._component+'.outputMatrix[{}]'.format(i))
 
         self._add_attr_from_dict(output_matrix_dict)
 

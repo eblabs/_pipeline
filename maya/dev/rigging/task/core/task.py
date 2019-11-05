@@ -130,7 +130,7 @@ class Task(object):
     def register_inputs(self):
         for key, val in self.kwargs_task.iteritems():
             attr_val = variables.kwargs(val[0], val[1], self.kwargs_input, short_name=val[2])
-            self.__setattr__(key, attr_val)
+            self.__setattr__(val[0], attr_val)
 
     def register_attribute(self, name, value, attr_name=None, short_name=None, attr_type=None, **kwargs):
         """
@@ -203,7 +203,7 @@ class Task(object):
         else:
             kwargs_ui.update({'warn': False})
 
-        self._register_attr_to_task([name, value, attr_name, short_name], kwargs_ui)
+        self._register_attr_to_task([name, attr_name, value, short_name], kwargs_ui)
 
     def update_attribute(self, name, **kwargs):
         """
@@ -269,7 +269,7 @@ class Task(object):
         add custom attribute to task
         """
 
-        self.kwargs_task.update({kwargs_task[2]: [kwargs_task[0], kwargs_task[1], kwargs_task[3]]})
+        self.kwargs_task.update({kwargs_task[0]: [kwargs_task[1], kwargs_task[2], kwargs_task[3]]})
 
         self.kwargs_ui.update({kwargs_task[0]: kwargs_ui})
 

@@ -1111,7 +1111,7 @@ class TaskTree(QTreeWidget):
             index = 2
 
         log_status_info = item.data(0, ROLE_TASK_STATUS_INFO)
-        log_status_info[index] = message
+        log_status_info[index] = str(message)
         item.setData(0, ROLE_TASK_STATUS_INFO, log_status_info)
 
     @ staticmethod

@@ -557,7 +557,7 @@ def create(description, **kwargs):
                                                     description=description+'OffsetsMatrix', index=index)
 
     # local matrix
-    local_mult_matrix_attr = nodeUtils.mult_matrix([transform_nodes[4]+'.matrix', transform_nodes[3]+'matrix',
+    local_mult_matrix_attr = nodeUtils.mult_matrix([transform_nodes[4]+'.matrix', transform_nodes[3]+'.matrix',
                                                     offset_mult_matrix_attr, transform_nodes[2]+'.matrix',
                                                     transform_nodes[1]+'.matrix'],
                                                    attrs=ctrl+'.matrixLocal', side=side,
