@@ -267,6 +267,7 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
         translate(bool): constraint translate, default is True
         rotate(bool): constraint rotate, default is True
         scale(bool): constraint scale, default is True
+        localization(bool): constraint in local space, will skip parent inverse matrix if set to True, default is False
         force(bool): force connection, default is True
     """
 
@@ -275,6 +276,7 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
     translate = variables.kwargs('translate', True, kwargs, short_name='t')
     rotate = variables.kwargs('rotate', True, kwargs, short_name='r')
     scale = variables.kwargs('scale', True, kwargs, short_name='s')
+    local = variables.kwargs('localization', False, kwargs, short_name='local')
     force = variables.kwargs('force', True, kwargs, short_name='f')
 
     namer = naming.Namer(driven)  # get name
@@ -299,6 +301,15 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
                                           index=namer.index)
         cmds.parent(point_constraint, parent)
 
+        driver_attrs = [point_constraint + '.constraintTranslate']
+        driven_attrs = [driven + '.translate']
+
+        if not local:
+            driver_attrs.append(driven+'.parentInverseMatrix[0]')
+            driven_attrs.append(point_constraint+'.constraintParentInverseMatrix')
+
+        attributes.connect_attrs(driver_attrs, driven_attrs, force=force)
+
     if rotate:
         # create orient constraint
         orient_constraint = nodeUtils.node(type=naming.Type.orientConstraint,
@@ -308,6 +319,20 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
         cmds.setAttr(orient_constraint+'.interpType', 2)
         cmds.parent(orient_constraint, parent)
 
+        driver_attrs = [orient_constraint + '.constraintRotate']
+        driven_attrs = [driven + '.rotate']
+
+        if not local:
+            driver_attrs.append(driven + '.parentInverseMatrix[0]')
+            driven_attrs.append(orient_constraint + '.constraintParentInverseMatrix')
+
+        if cmds.objectType(driven) == 'joint':
+            # plug joint orient
+            driver_attrs.append(driven+'.jointOrient')
+            driven_attrs.append(orient_constraint+'.constraintJointOrient')
+
+        attributes.connect_attrs(driver_attrs, driven_attrs, force=force)
+
     if scale:
         # create scale constraint
         scale_constraint = nodeUtils.node(type=naming.Type.scaleConstraint,
@@ -315,6 +340,16 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
                                           description=namer.description+'BlendConstraint',
                                           index=namer.index)
         cmds.parent(scale_constraint, parent)
+
+        driver_attrs = [scale_constraint + '.constraintScale']
+        driven_attrs = [driven + '.scale']
+
+        if cmds.objectType(driven) != 'joint' and not local:
+            # because scale has inverse scale connected, don't need inverse matrix in constraint node
+            driver_attrs.append(driven+'.parentInverseMatrix[0]')
+            driven_attrs.append(scale_constraint+'.constraintParentInverseMatrix')
+
+        attributes.connect_attrs(driver_attrs, driven_attrs, force=force)
 
     for i, matrix in enumerate(input_matrices):
         driver = matrix.split('.')[0]
@@ -344,23 +379,3 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
                 # set parent matrix to zero, otherwise the result won't be correct
                 cmds.setAttr('{}.target[{}].targetParentMatrix'.format(con, i),
                              mathUtils.MATRIX_DEFAULT, type='matrix')
-
-    # output
-    compose_matrix = nodeUtils.node(type=naming.Type.composeMatrix, side=namer.side,
-                                    description=namer.description+'ConstraintMatrix', index=namer.index)
-    decompose_matrix = nodeUtils.node(type=naming.Type.decomposeMatrix, side=namer.side,
-                                      description=namer.description + 'ConstraintMatrix', index=namer.index)
-    nodeUtils.mult_matrix([compose_matrix+'.outputMatrix', driven+'.parentInverseMatrix[0]'], side=namer.side,
-                          description=namer.description+'ConstraintMatrix', index=namer.index,
-                          attrs=decompose_matrix+'.inputMatrix')
-
-    for attr, con in zip(['translate', 'rotate', 'scale'],
-                         [point_constraint, orient_constraint, scale_constraint]):
-
-        if con:
-            # connect constraint node to driven node
-            for axis in 'XYZ':
-                attributes.connect_attrs(['{}.constraint{}{}'.format(con, attr.title(), axis),
-                                          '{}.output{}{}'.format(decompose_matrix, attr.title(), axis)],
-                                         ['{}.input{}{}'.format(compose_matrix, attr.title(), axis),
-                                          '{}.{}{}'.format(driven, attr, axis)], force=force)

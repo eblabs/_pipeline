@@ -346,16 +346,8 @@ class PropertyEditor(QTreeView):
             item_kwargs.update({'value': val})  # override ui kwargs's value to the current value
             item_data.setData(item_kwargs, ROLE_ITEM_KWARGS)  # save ui kwargs
 
-            # get background color, if has color, means it is unskippable but no value
-            background_col = item_data.data(role=Qt.BackgroundRole)
-            if background_col:
-                warn = True
-            else:
-                warn = False
-
             task_info = self._item.data(0, ROLE_TASK_INFO)  # get task info
             task_info['task_kwargs'][key]['value'] = val  # override task value
-            task_info['task_kwargs'][key]['warn'] = warn  # override warn
             self._item.setData(0, ROLE_TASK_INFO, task_info)  # set back to task item
 
     def _rebuild_child(self, item):
@@ -819,7 +811,6 @@ class PropertyItem(QStandardItem):
             data_info = {}
 
         self._data_info = data_info
-
         self._set_data()
 
     def _set_data(self):
@@ -828,9 +819,9 @@ class PropertyItem(QStandardItem):
         if val is None:
             val = self._data_info['default']
 
-        val = convert_data_to_str(val)  # convert value to str to display
+        val_str = convert_data_to_str(val)  # convert value to str to display
 
-        self.setText(val)  # set default value
+        self.setText(val_str)  # set default value
 
         # add tool tip if has in kwargs
         if 'hint' in self._data_info and self._data_info['hint']:

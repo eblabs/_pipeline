@@ -148,7 +148,7 @@ class SplineIk(limb.Limb):
             self.jnts = joints.create_joints_along_curve(crv_ik, self._jnt_num, aim_vector=[1, 0, 0],
                                                          up_vector=[0, 1, 0], rotation_up_vector=self._rot_up_vector,
                                                          uniform_type='length', aim_type='next', flip_check=True,
-                                                         hierarchy=True)
+                                                         hierarchy=True, parent=self._joints_grp)
 
         # create spline ik
         ik_handle = naming.update_name(crv_ik, type=naming.Type.ikHandle)

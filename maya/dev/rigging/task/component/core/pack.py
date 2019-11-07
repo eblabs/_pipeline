@@ -41,7 +41,7 @@ class Pack(component.Component):
 
         self._pack_kwargs_override = {}
 
-        self._sub_component_grp = None
+        self._sub_components_grp = None
         self._sub_components_objs = []
         self._sub_components_override = {}
 
@@ -67,14 +67,14 @@ class Pack(component.Component):
                 -- nodesHideGroup
             -- worldGroup
                 -- nodesWorldGroup
-            -- subComponentGroup
+            -- subComponentsGroup
         """
-        namer = naming.Namer(type=naming.Type.subComponentGroup, side=self.side,
+        namer = naming.Namer(type=naming.Type.subComponentsGroup, side=self.side,
                              description=self.description+self.description_suffix, index=1)
 
         # create transforms
         # sub component group
-        self._sub_component_grp = transforms.create(namer.name, lock_hide=attributes.Attr.all, parent=self._component)
+        self._sub_components_grp = transforms.create(namer.name, lock_hide=attributes.Attr.all, parent=self._component)
 
         # message attr for sub components
         attributes.add_attrs(self._component, 'subComponents', attribute_type='message', multi=True)
@@ -109,7 +109,7 @@ class Pack(component.Component):
         set override kwargs back to builder, with sub components attr names as key
         """
         pack_kwargs_override = self._get_obj_attr('_builder.pack_kwargs_override')
-        if pack_kwargs_override and self._pack_kwargs_override:
+        if pack_kwargs_override is not None and self._pack_kwargs_override:
             # get mirrored pack override kwargs
             pack_kwargs_override_mirror = self._flip_val(self._pack_kwargs_override)
             for sub_attr_name in self.sub_components_attrs:
@@ -134,7 +134,7 @@ class Pack(component.Component):
         # parent sub components to sub group
         for sub_component_obj in self._sub_components_objs:
             # parent sub component to sub group
-            cmds.parent(sub_component_obj.component, self._sub_component_grp)
+            cmds.parent(sub_component_obj.component, self._sub_components_grp)
             # connect attr
             attributes.connect_attrs(['rigNodesVis', 'inputMatrix', 'offsetMatrix'],
                                      ['rigNodesVis', 'inputMatrix', 'offsetMatrix'],

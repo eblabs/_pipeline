@@ -30,6 +30,8 @@ class FkChain(component.Component):
         self.register_attribute('end joint', True, attr_name='end_jnt', short_name='end', attr_type='bool',
                                 hint="add control for the end joint")
 
+        self.update_attribute('description suffix', default='Fk')
+
     def create_component(self):
         super(FkChain, self).create_component()
 

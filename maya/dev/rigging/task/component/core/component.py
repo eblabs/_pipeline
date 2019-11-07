@@ -47,6 +47,9 @@ class Component(task.Task):
         self._task = 'dev.rigging.task.component.core.component'
         self._task_type = 'component'
 
+        # jnt suffix
+        self._jnt_suffix = ''
+
         # kwargs input mirror
         self.kwargs_input_mirror = {}
 
@@ -188,7 +191,12 @@ class Component(task.Task):
     def register_inputs(self):
         self.get_override_kwargs()
         super(Component, self).register_inputs()
+        self.override_joint_suffix()
         self.check_mirror()
+
+    def override_joint_suffix(self):
+        if self.description_suffix:
+            self._jnt_suffix = self.description_suffix
 
     def register_kwargs(self):
         super(Component, self).register_kwargs()
@@ -203,8 +211,8 @@ class Component(task.Task):
 
         self.register_attribute('description suffix', '', attr_name='description_suffix', short_name='desSfx',
                                 attr_type='str',
-                                hint="if the component's group description need a suffix, but doesn't want to affect\
-                                        nodes underneath, like armIk, armFk etc, then put Ik or Fk here")
+                                hint="if the component's nodes description need additional suffix, \
+                                      like Ik, Fk etc, put it here")
 
         self.register_attribute('blueprint joints', [], attr_name='bp_jnts', attr_type='list', select=True,
                                 hint="component's blueprint joints")
@@ -352,7 +360,8 @@ class Component(task.Task):
 
         # mult input and offset matrix to connect local group
         mult_matrix_attr = nodeUtils.mult_matrix([self._component+'.inputMatrix', self._component+'.offsetMatrix'],
-                                                 side=self.side, description=self.description, index=1)
+                                                 side=self.side, description=self.description+self.description_suffix,
+                                                 index=1)
         constraints.matrix_connect(mult_matrix_attr, self._local_grp, force=True)
 
         # parent to base node's component group and connect attr
@@ -490,7 +499,7 @@ class Component(task.Task):
         if attributes.check_attr_exists(attr_name, node=driver):
             # check type
             if cmds.getAttr(attr, type=True) == 'message':
-                val = cmds.listConnections(attr, source=True, destination=False, plugs=False)
+                val = cmds.listConnections(attr, source=True, destination=False, plugs=False, shapes=True)
             else:
                 if isinstance(attr, list):
                     val = []

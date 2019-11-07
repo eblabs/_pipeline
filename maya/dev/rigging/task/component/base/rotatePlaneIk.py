@@ -27,10 +27,11 @@ class RotatePlaneIk(component.Component):
     def register_kwargs(self):
         super(RotatePlaneIk, self).register_kwargs()
         self.register_attribute('blueprint controls', [], attr_name='bp_ctrls', attr_type='list', select=True,
+                                skippable=False,
                                 hint="ik control blueprint, [root, pole_vector, ik, ground] ground control is optional")
 
         self.register_attribute('single chain iks', 0, attr_name='sc_iks', attr_type='int', min=0, max=2,
-                                skippable=False, hint="create single chain ik per segment after rotate plane ik")
+                                hint="create single chain ik per segment after rotate plane ik")
 
         self.register_attribute('blueprint reverse controls', [], attr_name='bp_rvs', attr_type='list', select=True,
                                 hint="reverse set-up's controls blueprints, normally for foot or hand\
@@ -38,10 +39,7 @@ class RotatePlaneIk(component.Component):
 
         self.register_attribute('ik_handle_offset', False, attr_type='bool', hint="add a control to offset ik handle")
 
-    def mirror_kwargs(self):
-        super(RotatePlaneIk, self).mirror_kwargs()
-        self.bp_ctrls = self._flip_list(self.bp_ctrls)
-        self.bp_rvs = self._flip_list(self.bp_rvs)
+        self.update_attribute('description suffix', default='Ik')
 
     def create_component(self):
         super(RotatePlaneIk, self).create_component()

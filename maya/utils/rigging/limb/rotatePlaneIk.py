@@ -122,29 +122,23 @@ class RotatePlaneIk(limb.Limb):
 
         ik_transform = naming.Namer(type=naming.Type.transform, side=ik_ctrl_obj.side,
                                     description=ik_ctrl_obj.description, index=ik_ctrl_obj.index).name
-        ik_transform = transforms.create(ik_transform, pos=ik_ctrl_obj.name, lock_hide=attributes.Attr.all, vis=False,
+        ik_transform = transforms.create(ik_transform, pos=ik_ctrl_obj.name, lock_hide=attributes.Attr.all, vis=True,
                                          parent=ik_transform_parent)
         constraints.matrix_connect(ik_ctrl_obj.world_matrix_attr, ik_transform, force=True)
 
         pv_transform = naming.Namer(type=naming.Type.transform, side=self._side,
                                     description=self._des+self._jnt_suffix+'Pv', index=1).name
         pv_transform = transforms.create(pv_transform, pos=ctrl_objs[1].name, lock_hide=attributes.Attr.all,
-                                         vis=False, parent=self._nodes_hide_grp)
+                                         vis=True, parent=self._nodes_hide_grp)
         constraints.matrix_connect(ctrl_objs[1].world_matrix_attr, pv_transform, force=True)
 
         # parent ik to transform
         cmds.parent(ik_handle, ik_transform)
 
         # connect pole vector
-        # get ik handle local parent inverse matrix
-        pv_parent_matrix_attr = nodeUtils.mult_matrix([ik_handle+'.parentMatrix[0]',
-                                                       ik_transform+'.worldInverseMatrix[0]'], side=self._side,
-                                                      description=self._des+'PvParentMatrix', index=1)
-        pv_inverse_matrix = nodeUtils.inverse_matrix(pv_parent_matrix_attr, side=self._side,
-                                                     description=self._des+'PvInverseMatrix', index=1)
         # pole vector constraint
         constraints.matrix_pole_vector_constraint(pv_transform+'.matrix', ik_handle, rp_jnts[0],
-                                                  parent_inverse_matrix=pv_inverse_matrix, force=True)
+                                                  parent_inverse_matrix=ik_transform+'.inverseMatrix', force=True)
 
         # pole vector line
         pv_jnt_mult_matrix_attr = nodeUtils.mult_matrix([rp_jnts[1]+'.matrix', rp_jnts[0]+'.matrix'], side=self._side,

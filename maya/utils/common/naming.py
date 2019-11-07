@@ -552,7 +552,7 @@ def check_name_convention(name):
     """
     try:
         namer = Namer(name)
-    except KeyError:
+    except KeyError or ValueError:
         namer = None
     return namer
 

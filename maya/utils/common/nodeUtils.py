@@ -65,7 +65,7 @@ def node(**kwargs):
     # check if node exist
     if cmds.objExists(namer.name):
         if not _use_exist:
-            logger.error('{} node: {} already exists in the scene').format(namer.type, namer.name)
+            logger.error('{} node: {} already exists in the scene'.format(namer.type, namer.name))
         else:
             node_name = namer.name
     else:

@@ -136,6 +136,7 @@ def create_on_pos(pos_list, **kwargs):
         description(str)
         rotate_order(int): joint's rotate order, default is 0
         hierarchy(bool): parent as chain, default is False
+        parent(str): parent to the given node, default is None
 
     Returns:
         joints(list): list of created joints
@@ -146,6 +147,7 @@ def create_on_pos(pos_list, **kwargs):
     des = variables.kwargs('description', None, kwargs, short_name='des')
     ro = variables.kwargs('rotate_order', 0, kwargs, short_name='ro')
     hie = variables.kwargs('hierarchy', False, kwargs)
+    parent = variables.kwargs('parent', None, kwargs)
 
     jnt_list = []
     for i, pos in enumerate(pos_list):
@@ -160,11 +162,11 @@ def create_on_pos(pos_list, **kwargs):
             translate = pos
             rotate = [0, 0, 0]
         jnt_name = naming.Namer(type=jnt_type, side=side, description=des, index=i+1).name
-        jnt = create(jnt_name, rotate_order=ro, pos=[translate, rotate])
+        jnt = create(jnt_name, rotate_order=ro, pos=[translate, rotate], parent=parent)
         jnt_list.append(jnt)
 
     if hie:
-        jnt_list = hierarchy.parent_chain(jnt_list, reverse=True, parent=None)
+        jnt_list = hierarchy.parent_chain(jnt_list, reverse=True, parent=parent)
     return jnt_list
 
 
@@ -240,6 +242,7 @@ def create_joints_along_curve(curve, joints_number, **kwargs):
                        point, or keep in world orientation
         flip_check(bool): will automatically fix flipping transform if set to True
         hierarchy(bool): parent as chain, default is False
+        parent(str): parent joints to the given node, default is None
 
     Returns:
         joints(list): list of created joints
@@ -257,6 +260,7 @@ def create_joints_along_curve(curve, joints_number, **kwargs):
     aim_type = variables.kwargs('aim_type', 'tangent', kwargs)
     flip_check = variables.kwargs('flip_check', True, kwargs)
     hie = variables.kwargs('hierarchy', False, kwargs)
+    parent = variables.kwargs('parent', None, kwargs)
 
     if isinstance(search, basestring):
         search = [search]
@@ -276,7 +280,7 @@ def create_joints_along_curve(curve, joints_number, **kwargs):
 
     # create joints
     jnt_list = create_on_pos(matrix_list, joint_type=jnt_type, side=namer.side, description=namer.description,
-                             rotate_order=ro, hierarchy=hie)
+                             rotate_order=ro, hierarchy=hie, parent=parent)
 
     return jnt_list
 

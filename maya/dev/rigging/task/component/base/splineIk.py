@@ -50,10 +50,10 @@ class SplineIk(component.Component):
     def register_kwargs(self):
         super(SplineIk, self).register_kwargs()
         self.register_attribute('blueprint curve', '', attr_name='bp_crv', attr_type='str', select=True,
-                                hint="blueprint curve for spline ik setup")
+                                hint="blueprint curve for spline ik setup", skippable=False)
         self.register_attribute('blueprint controls', [], attr_name='bp_ctrls', attr_type='list', select=True,
-                                hint="blueprint controls, order is from start to end")
-        self.register_attribute('joints number', [], attr_name='jnts_num', attr_type='int', min=3, skippable=False,
+                                hint="blueprint controls, order is from start to end", skippable=False)
+        self.register_attribute('joints number', 5, attr_name='jnts_num', attr_type='int', min=3,
                                 hint="generate joints evenly along the curve if no blueprint is given")
         self.register_attribute('rotation up vector', [0, 1, 0], attr_name='rot_up_vector', attr_type='list',
                                 template=None, hint="generate joints base on the given up vector")
@@ -74,12 +74,7 @@ class SplineIk(component.Component):
                                 attr_name='crv_skin_path', attr_type='list', select=False, template=None,
                                 hint="curve's skin cluster data to override the auto generate one")
 
-    def mirror_kwargs(self):
-        super(SplineIk, self).mirror_kwargs()
-        self._name_no_flip = naming.mirror_name(self._name, keep_orig=True)  # flip name back to the original
-        self.bp_crv = naming.mirror_name(self.bp_crv, keep_orig=True)
-        self.bp_ctrls = naming.mirror_name(self.bp_ctrls, keep_orig=True)
-        self._crv_name = naming.mirror_name(self._crv_name, keep_orig=True)
+        self.update_attribute('description suffix', default='SplineIk')
 
     def create_component(self):
         super(SplineIk, self).create_component()

@@ -37,8 +37,7 @@ class Task(object):
         builder = variables.kwargs('builder', None, kwargs)
         if not name:
             name = self.__class__.__name__
-        # make sure task name is snake case
-        self._name = naming.convert_camel_case(name, output_format='snake_case')
+        self._name = name
         self._task = 'dev.rigging.task.core.task'
         self._task_type = 'task'
         self._builder = builder  # plug builder in to get builder's variables

@@ -63,7 +63,7 @@ def get_obj_attr(obj, attr):
     attr_split = attr.split('.')
     attr_parent = obj
 
-    for attr_part in attr_split[1:]:
+    for attr_part in attr_split:
         if hasattr(attr_parent, attr_part):
             attr_parent = getattr(attr_parent, attr_part)
         else:

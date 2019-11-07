@@ -87,7 +87,7 @@ class Builder(object):
             index(str/int): register task at specific index
                             if given string, it will register after the given task
             parent(str): parent task to the given task
-            kwargs(dict): task kwargs
+            task_kwargs(dict): task kwargs
             section(str): register task in specific section (only for in-class method)
                           'pre_build', 'build', 'post_build', default is 'post_build'
             background_color(list): task background color, None will use the default
@@ -99,7 +99,7 @@ class Builder(object):
         _task_path = variables.kwargs('task_path', None, kwargs, short_name='tsk')
         _index = variables.kwargs('index', None, kwargs, short_name='i')
         _parent = variables.kwargs('parent', '', kwargs, short_name='p')
-        _kwargs = variables.kwargs('kwargs', {}, kwargs)
+        _kwargs = variables.kwargs('task_kwargs', {}, kwargs)
         _section = variables.kwargs('section', 'post_build', kwargs)
         _background_color = variables.kwargs('background_color', None, kwargs)
 
@@ -128,6 +128,7 @@ class Builder(object):
             _task_path = _task_path.__name__
             _task_kwargs = _kwargs
             _task_info.update({'section': _section})  # only in class method has section
+            _task_type = 'method'
         else:
             # imported task, get task object
             task_import, task_function = modules.import_module(_task_path)
@@ -135,22 +136,28 @@ class Builder(object):
             if inspect.isfunction(_task):
                 # function, normally is callback
                 _task_kwargs = task_import.kwargs_ui
+                _task_type = 'callback'
             else:
                 # task class
-                task_obj = _task()
+                task_obj = _task(name=_name, builder=self)
                 _task_kwargs = task_obj.kwargs_ui
                 _save_data = task_obj.save
+                _task_type = task_obj.task_type
                 # add attr
                 setattr(self, _name, task_obj)  # initialize task object to builder
             # if value in _kwargs, set value as default
             if 'value' in _kwargs and _kwargs['value'] is not None:
                 _kwargs.update({'default': _kwargs['value']})
                 _kwargs.pop('value')
-            _task_kwargs.update(_kwargs)
+            # loop in each kwarg in _kwargs and update in _task_kwargs
+            for key, item in _kwargs.iteritems():
+                if key in _task_kwargs:
+                    _task_kwargs[key].update(item)
 
         # add task info to class as attribute
         _task_info.update({'task': _task,  # task function or task object
                            'task_path': _task_path,
+                           'task_type': _task_type,
                            'display': _display,
                            'task_kwargs': _task_kwargs,
                            'parent': _parent,
@@ -314,23 +321,27 @@ class Builder(object):
 
         for i, task_info in enumerate(tasks_info):
             task = task_info.keys()[0]  # get task name
-            task_data = task_info[task]  # get task info
+            task_data = task_info[task].copy()  # get task info
             index_previous = task_data['index']  # get the previous task name
 
             # reduce task_kwargs,
             # because the task info exported from ui contains lots of unused info (min, max etc..)
-            # we only care about value, and that's how we some in the compare list as well
+            # we only care about value, and that's how we save in the compare list as well
             if 'task_kwargs' in task_data:
                 task_kwargs_export = {}
                 for key, data in task_data['task_kwargs'].iteritems():
                     task_kwargs_key = {}
                     if 'value' in data:
-                        task_kwargs_key.update({'value': data['value']})
-                    elif 'default' in data:
+                        task_kwargs_key.update({'default': data['value']})
+                    else:
                         task_kwargs_key.update({'default': data['default']})
                     if task_kwargs_key:
                         task_kwargs_export.update({key: task_kwargs_key})
                 task_data['task_kwargs'] = task_kwargs_export
+
+            # remove task obj and children from task_data, because JSON can't save object
+            task_data.pop('task', None)
+            task_data.pop('children', None)
 
             # check if exist
             if task not in self._tasks_info_compare:
@@ -350,10 +361,7 @@ class Builder(object):
                 task_kwargs_update = {}
                 data_compare = self._tasks_info_compare[task]['task_kwargs']
                 for key, data in task_data['task_kwargs'].iteritems():
-                    if 'value' in data:
-                        value = data['value']
-                    else:
-                        value = data['default']
+                    value = data['default']
 
                     if key in data_compare and value != data_compare[key]['default']:
                         # save the differences
@@ -394,6 +402,8 @@ class Builder(object):
             # only print out the tasks_info_export for debugging
             logger.debug('export task info')
             logger.debug(tasks_info_export)
+
+        return tasks_info_export
 
     def _order_task(self, task, index, update=False):
         tasks_num = len(self._tasks)

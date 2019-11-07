@@ -76,7 +76,7 @@ class SingleChainIk(limb.Limb):
 
         # get target matrix
         target_matrix = nodeUtils.mult_matrix([ctrl_objs[1].world_matrix_attr, ctrl_objs[0].world_matrix_attr],
-                                              side=self._side, description=self._des+'TargetPos', index=self._index)
+                                              side=self._side, description=self._des+'TargetPos', index=1)
 
         # rig ik
         if self._ik_type == 'ik':
