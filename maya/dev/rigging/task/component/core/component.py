@@ -29,6 +29,7 @@ class Component(task.Task):
     """
     base class for all component
     """
+
     def __init__(self, *args, **kwargs):
         # component variables,
         # useless, just put here so pyCharm won't keep warning me
@@ -88,40 +89,40 @@ class Component(task.Task):
         if args:
             self.get_component_info(args[0])
 
-    @ property
+    @property
     def component(self):
         return self._component
 
-    @ property
+    @property
     def controls(self):
         return self._ctrls
 
-    @ property
+    @property
     def joints(self):
         return self._jnts
 
-    @ property
+    @property
     def input_matrix_attr(self):
         return self._input_matrix_attr
 
-    @ property
+    @property
     def input_matrix(self):
         return cmds.getAttr(self._input_matrix_attr)
 
-    @ property
+    @property
     def offset_matrix_attr(self):
         return self._offset_matrix_attr
 
-    @ property
+    @property
     def offset_matrix(self):
         return cmds.getAttr(self._offset_matrix_attr)
 
-    @ property
+    @property
     def output_matrix_attr(self):
         # attribute registered in get_component_info
         return self._output_matrix_attr
 
-    @ property
+    @property
     def output_matrix(self):
         return self._get_attr(self._output_matrix_attr)
 
@@ -165,7 +166,7 @@ class Component(task.Task):
         # attach to builder
         if self._builder:
             # check if build has the attr, in case it has name clash
-            component_exist = self._get_obj_attr('builder.'+attr_name_mirror)
+            component_exist = self._get_obj_attr('builder.' + attr_name_mirror)
             if component_exist:
                 logger.error("builder already has component '{}' exists".format(attr_name_mirror))
                 raise KeyError("builder already has component '{}' exists".format(attr_name_mirror))
@@ -218,8 +219,8 @@ class Component(task.Task):
 
         self.register_attribute('description suffix', '', attr_name='description_suffix', short_name='desSfx',
                                 attr_type='str',
-                                hint="if the component's nodes description need additional suffix, \
-                                      like Ik, Fk etc, put it here")
+                                hint=("if the component's nodes description need additional suffix,\n"
+                                      "like Ik, Fk etc, put it here"))
 
         self.register_attribute('blueprint joints', [], attr_name='bp_jnts', attr_type='list', select=True,
                                 hint="component's blueprint joints")
@@ -231,8 +232,8 @@ class Component(task.Task):
                                 hint="component's controls' size")
 
         self.register_attribute('input connection', '', attr_name='input_connect', attr_type='str', select=False,
-                                hint="component's input connection, should be a component's joint's output matrix, or\
-                                        an existing maya node's matrix attribute")
+                                hint=("component's input connection,\nshould be a component's joint's output matrix,\n"
+                                      "or an existing maya node's matrix attribute"))
 
     def check_mirror(self):
         """
@@ -307,7 +308,7 @@ class Component(task.Task):
                 -- nodesWorldGroup
         """
         namer = naming.Namer(type=naming.Type.component, side=self.side,
-                             description=self.description+self.description_suffix, index=1)
+                             description=self.description + self.description_suffix, index=1)
 
         # create transforms
         # component
@@ -358,8 +359,8 @@ class Component(task.Task):
         # controls, joints
         attributes.add_attrs(self._component, ['controls', 'joints'], attribute_type='message', multi=True)
         # controls vis, joints vis
-        attributes.add_attrs(self._component, ['controlsVis', 'jointsVis', 'rigNodesVis'], attribute_type='long',
-                             range=[0, 1], default_value=[1, 0, 0], keyable=False, channel_box=True)
+        attributes.add_attrs(self._component, ['controlsVis', 'jointsVis', 'rigNodesVis'], attribute_type='bool',
+                             default_value=[True, False, False], keyable=False, channel_box=True)
         # component type and in-class name
         attributes.add_attrs(self._component, ['componentType', 'inClassName'], attribute_type='string',
                              default_value=[self._task, self._name], lock=True)
@@ -368,13 +369,13 @@ class Component(task.Task):
 
         # connect attrs
         attributes.connect_attrs(['controlsVis', 'controlsVis', 'jointsVis', 'rigNodesVis', 'rigNodesVis'],
-                                 [self._controls_grp+'.visibility', self._nodes_show_grp+'.visibility',
-                                  self._joints_grp + '.visibility', self._nodes_hide_grp+'.visibility',
-                                  self._nodes_world_grp+'.visibility'], driver=self._component)
+                                 [self._controls_grp + '.visibility', self._nodes_show_grp + '.visibility',
+                                  self._joints_grp + '.visibility', self._nodes_hide_grp + '.visibility',
+                                  self._nodes_world_grp + '.visibility'], driver=self._component)
 
         # mult input and offset matrix to connect local group
-        mult_matrix_attr = nodeUtils.mult_matrix([self._component+'.inputMatrix', self._component+'.offsetMatrix'],
-                                                 side=self.side, description=self.description+self.description_suffix,
+        mult_matrix_attr = nodeUtils.mult_matrix([self._component + '.inputMatrix', self._component + '.offsetMatrix'],
+                                                 side=self.side, description=self.description + self.description_suffix,
                                                  index=1)
         constraints.matrix_connect(mult_matrix_attr, self._local_grp, force=True)
 
@@ -407,28 +408,28 @@ class Component(task.Task):
 
         # control message
         for i, ctrl in enumerate(self._ctrls):
-            cmds.connectAttr(ctrl+'.message', '{}.controls[{}]'.format(self._component, i), force=True)
+            cmds.connectAttr(ctrl + '.message', '{}.controls[{}]'.format(self._component, i), force=True)
 
         # joint message and output matrix
         for i, jnt in enumerate(self._jnts):
-            cmds.connectAttr(jnt+'.message', '{}.joints[{}]'.format(self._component, i), force=True)
-            cmds.connectAttr(jnt+'.worldMatrix[0]', '{}.outputMatrix[{}]'.format(self._component, i), force=True)
+            cmds.connectAttr(jnt + '.message', '{}.joints[{}]'.format(self._component, i), force=True)
+            cmds.connectAttr(jnt + '.worldMatrix[0]', '{}.outputMatrix[{}]'.format(self._component, i), force=True)
 
     def get_component_info(self, component_node):
         """
         get component information from component node
         """
         self._component = component_node
-        self._ctrls = self._get_attr(self._component+'.controls')
-        self._jnts = self._get_attr(self._component+'.joints')
-        self._task = cmds.getAttr(self._component+'.componentType')
-        self._name = cmds.getAttr(self._component+'.inClassName')
+        self._ctrls = self._get_attr(self._component + '.controls')
+        self._jnts = self._get_attr(self._component + '.joints')
+        self._task = cmds.getAttr(self._component + '.componentType')
+        self._name = cmds.getAttr(self._component + '.inClassName')
 
         # output matrix
         output_matrix_dict = {'_output_matrix_attr': []}
         if self._jnts:
             for i in range(len(self._jnts)):
-                output_matrix_dict['_output_matrix_attr'].append(self._component+'.outputMatrix[{}]'.format(i))
+                output_matrix_dict['_output_matrix_attr'].append(self._component + '.outputMatrix[{}]'.format(i))
 
         self._add_attr_from_dict(output_matrix_dict)
 
@@ -501,7 +502,7 @@ class Component(task.Task):
             attr_value_flip = attr_value
         return attr_value_flip
 
-    @ staticmethod
+    @staticmethod
     def _get_attr(attr):
         """
         get given node's attr value
@@ -512,7 +513,7 @@ class Component(task.Task):
             value
         """
         driver = attr.split('.')[0]
-        attr_name = attr.replace(driver+'.', '')
+        attr_name = attr.replace(driver + '.', '')
         if attributes.check_attr_exists(attr_name, node=driver):
             # check type
             if cmds.getAttr(attr, type=True) == 'message':

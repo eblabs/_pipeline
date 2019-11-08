@@ -157,22 +157,14 @@ class Task(object):
                           it will be the user's responsibility to keep the kwarg consistent with component,
                           normally used for kwargs need to be override
         """
-        skippable = kwargs.get('skippable', True)
+        hint = kwargs.get('hint', '')
+
+        # check attr type to save in hint
+        attr_type_str = self._check_value_type(value)
 
         if not attr_type:
-            # if not specific attribute type, define the type by value
-            if value in [True, False]:
-                attr_type = 'bool'
-            elif isinstance(value, float):
-                attr_type = 'float'
-            elif isinstance(value, int):
-                attr_type = 'int'
-            elif isinstance(value, list):
-                attr_type = 'list'
-            elif isinstance(value, dict):
-                attr_type = 'dict'
-            elif isinstance(value, basestring):
-                attr_type = 'str'
+            # if not specific attribute type, use attr_type_str, it will get all ui info from PROPERTY_ITEMS
+            attr_type = attr_type_str
 
         if not attr_name:
             attr_name = name
@@ -196,11 +188,10 @@ class Task(object):
 
         kwargs_ui['default'] = value
 
-        # check if value is skippable or not, if no value but unskippable, need to set the warning for user
-        if not skippable and not value:
-            kwargs_ui.update({'warn': True})
-        else:
-            kwargs_ui.update({'warn': False})
+        # add attr name to hint
+        hint = self._add_attr_name_to_hint(hint, attr_name, value, attr_type=attr_type_str)
+        # override hint
+        kwargs_ui.update({'hint': hint})
 
         self._register_attr_to_task([name, attr_name, value, short_name], kwargs_ui)
 
@@ -227,12 +218,16 @@ class Task(object):
                           normally used for kwargs need to be override
         """
         if name in self.kwargs_ui:
+            # override hint with attr name added on
+            hint = kwargs.get('hint', None)
+            if hint:
+                attr_name = self.kwargs_ui[name]['attr_name']
+                default = kwargs.get('default', None)
+                if default is None:
+                    default = self.kwargs_ui[name]['default']
+                hint = self._add_attr_name_to_hint(hint, attr_name, default)
+                kwargs.update({'hint': hint})
             self.kwargs_ui[name].update(kwargs)
-            skippable = self.kwargs_ui.get('skippable', True)
-            if not skippable and not self.kwargs_ui[name]['default']:
-                self.kwargs_ui[name].update({'warn': True})
-            else:
-                self.kwargs_ui[name].update({'warn': False})
 
     def remove_attribute(self, name):
         """
@@ -318,6 +313,37 @@ class Task(object):
 
         return node_name_return
 
+    def _add_attr_name_to_hint(self, hint, attr_name, value, attr_type=None):
+        """
+        add attr name and attr type to hint
+        """
+        if not attr_type:
+            attr_type = self._check_value_type(value)
+
+        hint_attr_name = attr_name
+        if attr_type:
+            hint_attr_name += '({})'.format(attr_type)
+        hint = '{}: {}'.format(hint_attr_name, hint)
+
+        return hint
+
+    @ staticmethod
+    def _check_value_type(value):
+        if value in [True, False]:
+            attr_type = 'bool'
+        elif isinstance(value, float):
+            attr_type = 'float'
+        elif isinstance(value, int):
+            attr_type = 'int'
+        elif isinstance(value, list):
+            attr_type = 'list'
+        elif isinstance(value, dict):
+            attr_type = 'dict'
+        elif isinstance(value, basestring):
+            attr_type = 'str'
+        else:
+            attr_type = None
+        return attr_type
 
 #  SUB CLASS
 class ObjectView(object):

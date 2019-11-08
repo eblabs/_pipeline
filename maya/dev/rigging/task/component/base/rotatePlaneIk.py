@@ -28,14 +28,15 @@ class RotatePlaneIk(component.Component):
         super(RotatePlaneIk, self).register_kwargs()
         self.register_attribute('blueprint controls', [], attr_name='bp_ctrls', attr_type='list', select=True,
                                 skippable=False,
-                                hint="ik control blueprint, [root, pole_vector, ik, ground] ground control is optional")
+                                hint=("ik control blueprint,\n",
+                                      "[root, pole_vector, ik, ground] ground control is optional"))
 
         self.register_attribute('single chain iks', 0, attr_name='sc_iks', attr_type='int', min=0, max=2,
                                 hint="create single chain ik per segment after rotate plane ik")
 
         self.register_attribute('blueprint reverse controls', [], attr_name='bp_rvs', attr_type='list', select=True,
-                                hint="reverse set-up's controls blueprints, normally for foot or hand\
-                                            structure like [heelRoll, toeRoll, sideInn, sideOut, ballRoll, (toeTap)]")
+                                hint=("reverse set-up's controls blueprints,\n normally for foot or hand,\n",
+                                      "structure like [heelRoll, toeRoll, sideInn, sideOut, ballRoll, (toeTap)]"))
 
         self.register_attribute('ik_handle_offset', False, attr_type='bool', hint="add a control to offset ik handle")
 

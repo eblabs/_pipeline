@@ -38,9 +38,9 @@ class Copy(component.Component):
                                 hint="duplicate the given component", skippable=False)
 
         self.register_attribute('override attributes', {}, attr_name='override_kwargs', attr_type='dict',
-                                hint="override the given attributes to the original one\nattribute name should be the \
-                                              name registered in class (the actual attr name)", custom=True,
-                                skippable=False)
+                                hint=("override the given attributes to the original one,\n"
+                                      "attribute name should be the name registered in class (the actual attr name)"),
+                                custom=True, skippable=False)
 
     def pre_build(self):
         """

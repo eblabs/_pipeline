@@ -67,8 +67,9 @@ class MultiBlend(pack.Pack):
     def register_kwargs(self):
         super(MultiBlend, self).register_kwargs()
         self.register_attribute('modes', [], attr_name='blend_modes', attr_type='list', select=False, template='str',
-                                hint="blend mode for each component, order is the same with the components parented \
-                                          under the pack, the first two will be the defaults")
+                                hint=("blend mode for each component,\n",
+                                      "order is the same with the components parented under the pack,\n",
+                                      "the first two will be the defaults"))
 
         self.register_attribute('translate blend', True, attr_name='blend_translate', attr_type='bool',
                                 hint='blend translation')
@@ -119,7 +120,7 @@ class MultiBlend(pack.Pack):
         attributes.add_attrs(self._blend_ctrl, ['modeA', 'modeB'], attribute_type='enum', enum_name=enum_name[:-1],
                              default_value=self._mode_index_list[:2], keyable=True, channel_box=True)
         cmds.addAttr(self._blend_ctrl, longName='blend', attributeType='float', min=0, max=1, keyable=True)
-        attributes.add_attrs(self._blend_ctrl, 'showAllCtrls', attribute_type='bool', default_value=False, keyable=False,
+        attributes.add_attrs(self._blend_ctrl, 'allCtrls', attribute_type='bool', default_value=False, keyable=False,
                              channel_box=True)
 
         # connect sub component joint vis with pack's rig node vis
@@ -150,9 +151,7 @@ class MultiBlend(pack.Pack):
             else:
                 suffix = mode.title()
 
-            condition_attr_sub = nodeUtils.condition(condition_attr[0],
-                                                     mode_index,
-                                                     1, self._blend_ctrl+'.showAllCtrls',
+            condition_attr_sub = nodeUtils.condition(condition_attr[0], mode_index, 1, self._blend_ctrl+'.allCtrls',
                                                      side=self.side,
                                                      description='{}{}CtrlVis'.format(self.description, suffix),
                                                      index=1)
