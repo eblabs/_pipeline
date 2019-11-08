@@ -234,22 +234,15 @@ class Task(object):
             else:
                 self.kwargs_ui[name].update({'warn': False})
 
-    def remove_attribute(self, name, attr_name=None):
+    def remove_attribute(self, name):
         """
         remove the task attribute
 
         Args:
             name(str): attribute name in kwargs
-
-        Keyword Args:
-            attr_name(str): attribute name in class
         """
-        if attr_name:
-            key = attr_name
-        else:
-            key = name
 
-        self.kwargs_task.pop(key, None)
+        self.kwargs_task.pop(name, None)
         self.kwargs_ui.pop(name, None)
 
     def save_data(self):

@@ -876,7 +876,6 @@ class TaskTree(QTreeWidget):
                             if sec == 'pre_build':
                                 # register input data
                                 task_obj.kwargs_input = task_kwargs
-                                print task_type
                                 # check if task is duplicate
                                 if task_type == 'copy':
                                     # check target task is a pack or not

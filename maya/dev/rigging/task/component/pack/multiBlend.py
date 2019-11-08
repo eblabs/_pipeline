@@ -81,7 +81,7 @@ class MultiBlend(pack.Pack):
         self.register_attribute('localization', True, attr_name='localization', attr_type='bool',
                                 hint='blend transform in local space or world space')
 
-        self.remove_attribute('offsets', attr_name='ctrl_offsets')
+        self.remove_attribute('offsets')
 
     def pack_override_kwargs_registration(self):
         super(MultiBlend, self).pack_override_kwargs_registration()
@@ -185,7 +185,20 @@ class MultiBlend(pack.Pack):
             # loop in each components joint
             for sub_component_node, mode_index in zip(self._sub_components_objs, self._mode_index_list):
                 if self.localization:
-                    driver = sub_component_node.joints[i]+'.matrix'
+                    namer_joint = naming.Namer(sub_component_node.joints[i])
+                    # compose matrix with joint's translate, rotate, scale (skip joint orient)
+                    driver = nodeUtils.compose_matrix([sub_component_node.joints[i]+'.translateX',
+                                                       sub_component_node.joints[i]+'.translateY',
+                                                       sub_component_node.joints[i]+'.translateZ'],
+                                                      [sub_component_node.joints[i]+'.rotateX',
+                                                       sub_component_node.joints[i]+'.rotateY',
+                                                       sub_component_node.joints[i]+'.rotateZ'],
+                                                      scale=[sub_component_node.joints[i]+'.scaleX',
+                                                             sub_component_node.joints[i]+'.scaleY',
+                                                             sub_component_node.joints[i]+'.scaleZ'],
+                                                      side=namer_joint.side,
+                                                      description=namer_joint.description+'Local',
+                                                      index=namer_joint.index)
                 else:
                     driver = sub_component_node.output_matrix_attr[i]
                 attributes.connect_attrs(driver, ['{}.input[{}]'.format(choice_nodes[0], mode_index),

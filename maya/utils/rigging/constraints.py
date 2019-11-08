@@ -301,8 +301,9 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
                                           index=namer.index)
         cmds.parent(point_constraint, parent)
 
-        driver_attrs = [point_constraint + '.constraintTranslate']
-        driven_attrs = [driven + '.translate']
+        driver_attrs = [point_constraint + '.constraintTranslateX', point_constraint + '.constraintTranslateY',
+                        point_constraint + '.constraintTranslateZ']
+        driven_attrs = [driven + '.translateX', driven + '.translateY', driven + '.translateZ']
 
         if not local:
             driver_attrs.append(driven+'.parentInverseMatrix[0]')
@@ -319,17 +320,18 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
         cmds.setAttr(orient_constraint+'.interpType', 2)
         cmds.parent(orient_constraint, parent)
 
-        driver_attrs = [orient_constraint + '.constraintRotate']
-        driven_attrs = [driven + '.rotate']
+        driver_attrs = [orient_constraint + '.constraintRotateX', orient_constraint + '.constraintRotateY',
+                        orient_constraint + '.constraintRotateZ']
+        driven_attrs = [driven + '.rotateX', driven + '.rotateY', driven + '.rotateZ']
 
         if not local:
             driver_attrs.append(driven + '.parentInverseMatrix[0]')
             driven_attrs.append(orient_constraint + '.constraintParentInverseMatrix')
 
-        if cmds.objectType(driven) == 'joint':
-            # plug joint orient
-            driver_attrs.append(driven+'.jointOrient')
-            driven_attrs.append(orient_constraint+'.constraintJointOrient')
+            if cmds.objectType(driven) == 'joint':
+                # plug joint orient
+                driver_attrs.append(driven+'.jointOrient')
+                driven_attrs.append(orient_constraint+'.constraintJointOrient')
 
         attributes.connect_attrs(driver_attrs, driven_attrs, force=force)
 
@@ -341,8 +343,9 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
                                           index=namer.index)
         cmds.parent(scale_constraint, parent)
 
-        driver_attrs = [scale_constraint + '.constraintScale']
-        driven_attrs = [driven + '.scale']
+        driver_attrs = [scale_constraint + '.constraintScaleX', scale_constraint + '.constraintScaleY',
+                        scale_constraint + '.constraintScaleZ']
+        driven_attrs = [driven + '.scaleX', driven + '.scaleY', driven + '.scaleZ']
 
         if cmds.objectType(driven) != 'joint' and not local:
             # because scale has inverse scale connected, don't need inverse matrix in constraint node

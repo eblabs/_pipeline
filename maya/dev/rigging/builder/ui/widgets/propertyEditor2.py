@@ -220,12 +220,14 @@ class PropertyEditor(QTreeView):
                 # try to get value's type from template
                 attr_type = None
                 if template:
-                    if isinstance(template, list) and template:
+                    if isinstance(template, list):
                         # each value has specific attr type
                         attr_type = check_item_type(template[i])
-                    elif not isinstance(template, list) or not template:
+                    else:
                         # all values has the same type
                         attr_type = check_item_type(template)
+                elif custom:
+                    attr_type = check_item_type(v)
 
                 # get attr_kwargs from attr_type
                 if attr_type:
@@ -264,9 +266,11 @@ class PropertyEditor(QTreeView):
                     if isinstance(template, dict) and k in template:
                         # key's value has a specific attr type
                         attr_type = check_item_type(template[k])
-                    elif not isinstance(template, dict) or not template:
+                    else:
                         # all keys have some attr type
                         attr_type = check_item_type(template)
+                elif custom:
+                    attr_type = check_item_type(v)
                 # get attr kwargs from attr type
                 if attr_type:
                     attr_kwargs = PROPERTY_ITEMS[attr_type].copy()
@@ -294,6 +298,15 @@ class PropertyEditor(QTreeView):
         Args:
             item: property item
         """
+        # save value to current item first
+        index_value = self._model.index(item.row(), 1, parent=item.index().parent())  # current item's value index
+        item_data = self._model.itemFromIndex(index_value)  # current item
+        val = convert_data(item_data.text())  # data value
+
+        item_kwargs = item_data.data(role=ROLE_ITEM_KWARGS)  # get ui kwargs for current item
+        item_kwargs.update({'value': val})  # override ui kwargs's value to the current value
+        item_data.setData(item_kwargs, ROLE_ITEM_KWARGS)  # save ui kwargs
+
         # get parent column key item
         parent = item.parent()
         if parent:
@@ -337,14 +350,7 @@ class PropertyEditor(QTreeView):
             # no parent item need to update, this is the root level
             # we need to get the value and save out the data to the task item in task tree
             index_key = self._model.index(item.row(), 0, parent=item.index().parent())  # current item's key index
-            index_value = self._model.index(item.row(), 1, parent=item.index().parent())  # current item's value index
-            item_data = self._model.itemFromIndex(index_value)  # current item
             key = self._model.data(index_key)  # key name
-            val = convert_data(item_data.text())  # data value
-
-            item_kwargs = item_data.data(role=ROLE_ITEM_KWARGS)  # get ui kwargs for current item
-            item_kwargs.update({'value': val})  # override ui kwargs's value to the current value
-            item_data.setData(item_kwargs, ROLE_ITEM_KWARGS)  # save ui kwargs
 
             task_info = self._item.data(0, ROLE_TASK_INFO)  # get task info
             task_info['task_kwargs'][key]['value'] = val  # override task value
@@ -532,7 +538,7 @@ class PropertyEditor(QTreeView):
         item_kwargs = item.data(role=ROLE_ITEM_KWARGS)
 
         if isinstance(val, list):
-            append_val = ''
+            append_val = 'null'
             # get template
             template = item_kwargs.get('template', None)
             if template is not None:
@@ -546,7 +552,7 @@ class PropertyEditor(QTreeView):
 
             # append to list
             val.append(append_val)
-        else:
+        elif isinstance(val, dict):
             # dict attr
             # check if has key
             if val.keys():
@@ -554,7 +560,7 @@ class PropertyEditor(QTreeView):
                 key = val.keys()[-1] + '_copy'
                 append_val = val[val.keys()[-1]]
             else:
-                append_val = ''
+                append_val = 'null'
                 # get template
                 template = item_kwargs.get('template', None)
                 if template is not None:
@@ -595,7 +601,7 @@ class PropertyEditor(QTreeView):
 
         if isinstance(parent_val, list):
             parent_val.append(val)
-        else:
+        elif isinstance(parent_val, dict):
             # parent value is dict
             # get key
             key_index = self._model.index(item.row(), 0, parent=parent_key_index)  # get key index
@@ -631,7 +637,7 @@ class PropertyEditor(QTreeView):
 
         if isinstance(parent_val, list):
             parent_val.remove(val)
-        else:
+        elif isinstance(parent_val, dict):
             # get key
             key_index = self._model.index(item.row(), 0, parent=parent_key_index)  # get key index
             key = convert_data(self._model.data(key_index))
@@ -723,12 +729,6 @@ class PropertyDelegate(QItemDelegate):
         # get previous value
         value = item.text()
 
-        # get data info
-        item_kwargs = item.data(role=ROLE_ITEM_KWARGS)
-
-        # get custom
-        custom = item_kwargs.get('custom', False)
-
         # set data
         super(PropertyDelegate, self).setModelData(editor, model, index)
 
@@ -745,17 +745,28 @@ class PropertyDelegate(QItemDelegate):
             self.SIGNAL_UPDATE_PARENT.emit(item)
             return
 
+        # get data info
+        item_kwargs = item.data(role=ROLE_ITEM_KWARGS)
+        # get custom
+        custom = item_kwargs.get('custom', False)
+
+        # get changed value
+        value_change = item.text()
+        # convert value
+        value_change = convert_data(value_change)
+
         # if it's string/list/dict, compare with the previous value
         # because we need to stick with the value type, and these three are all converted from string
         # if we don't do the compare, user may change the string to list by typing mistake
         # will skip check if it's set to custom, user will need to keep the kwargs consistent
+
+        # we need to update parent before rebuild children, because it will save the value back to item
+        # rebuild child will need the value from item, not from the text, so we check if we need rebuild child
+        # and shoot the signal in the end
+        rebuild_child = False
         if isinstance(editor, QLineEdit) and not custom:
             # get default value
             value_default = item_kwargs['default']
-            # get changed value
-            value_change = item.text()
-            # convert value
-            value_change = convert_data(value_change)
 
             # if string and changed value is not
             if isinstance(value_default, basestring) and not isinstance(value_change, basestring):
@@ -765,19 +776,29 @@ class PropertyDelegate(QItemDelegate):
             elif isinstance(value_default, list):
                 if isinstance(value_change, list):
                     # shoot signal
-                    self.SIGNAL_REBUILD_CHILD.emit(item)
+                    rebuild_child = True
                 else:
                     # change back to previous
                     item.setText(value)
+                    save_value = False
 
             # if dict
             elif isinstance(value_default, dict):
                 if isinstance(value_change, dict):
                     # shoot signal
-                    self.SIGNAL_REBUILD_CHILD.emit(item)
+                    rebuild_child = True
                 else:
                     # change back to previous
                     item.setText(value)
+                    save_value = False
+
+        elif custom:
+            # get changed value
+            value_change = item.text()
+            # convert value
+            value_change = convert_data(value_change)
+            if isinstance(value_change, list) or isinstance(value_change, dict):
+                rebuild_child = True
 
         # check if the value is unskippable, set background color if no value with skippable set to False
         skippable = item_kwargs.get('skippable', True)
@@ -793,6 +814,8 @@ class PropertyDelegate(QItemDelegate):
 
         # shoot rebuild signal
         self.SIGNAL_UPDATE_PARENT.emit(item)
+        if rebuild_child:
+            self.SIGNAL_REBUILD_CHILD.emit(item)
 
 
 class PropertyItem(QStandardItem):

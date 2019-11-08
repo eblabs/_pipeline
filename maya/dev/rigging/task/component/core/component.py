@@ -52,6 +52,10 @@ class Component(task.Task):
 
         # kwargs input mirror
         self.kwargs_input_mirror = {}
+        # kwargs in class attrs for mirror registration
+        self.kwargs_class_attrs = {}
+        # kwargs in class attrs mirror
+        self.kwargs_class_attrs_mirror = {}
 
         # mirrored component object,
         # in case we run the task creation outside the builder, save here gave us more flexibility
@@ -172,6 +176,7 @@ class Component(task.Task):
         # make sure we turn mirror off, otherwise it will try to mirror again
         self.kwargs_input_mirror.update({'mirror': False})
         self.component_mirror.kwargs_input = self.kwargs_input_mirror
+        self.component_mirror.kwargs_class_attrs = self.kwargs_class_attrs_mirror
 
         # trigger mirrored component's pre build
         self.component_mirror.pre_build()
@@ -191,6 +196,8 @@ class Component(task.Task):
     def register_inputs(self):
         self.get_override_kwargs()
         super(Component, self).register_inputs()
+        for key, val in self.kwargs_class_attrs.iteritems():
+            self.__setattr__(key, val)
         self.override_joint_suffix()
         self.check_mirror()
 
@@ -256,17 +263,24 @@ class Component(task.Task):
             attr_name(str): attr's in class name
         """
         attr_value = self._get_obj_attr(attr_name)
-        self.kwargs_input.update({attr_name: attr_value})
+        self.kwargs_class_attrs.update({attr_name: attr_value})
 
     def get_mirrored_kwargs(self):
         """
         get kwargs mirrored
         """
         self.kwargs_input_mirror = {}
+        self.kwargs_class_attrs_mirror = {}
+
         for key, item in self.kwargs_input.iteritems():
             # mirror everything
             item_flip = self._flip_val(item)
             self.kwargs_input_mirror.update({key: item_flip})
+
+        for key, item in self.kwargs_class_attrs.iteritems():
+            # mirror everything
+            item_flip = self._flip_val(item)
+            self.kwargs_class_attrs_mirror.update({key: item_flip})
 
     def get_override_kwargs(self):
         """
@@ -468,7 +482,10 @@ class Component(task.Task):
         Returns:
             attr_value_flip(str/list/dict)
         """
-        if isinstance(attr_value, basestring):
+        # check if attr_value is side
+        if attr_value in naming.Side.all + naming.Side.Key.all:
+            attr_value_flip = naming.flip_side(attr_value)
+        elif isinstance(attr_value, basestring):
             attr_value_flip = naming.mirror_name(attr_value, keep_orig=True)
         elif isinstance(attr_value, list):
             attr_value_flip = []

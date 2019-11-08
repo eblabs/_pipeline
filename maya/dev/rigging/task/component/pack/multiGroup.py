@@ -20,6 +20,10 @@ class MultiGroup(pack.Pack):
         super(MultiGroup, self).__init__(*args, **kwargs)
         self._task = 'dev.rigging.task.component.pack.multiGroup'
 
+    def register_kwargs(self):
+        super(MultiGroup, self).register_kwargs()
+        self.remove_attribute('blueprint joints')
+
     def pack_override_kwargs_registration(self):
         super(MultiGroup, self).pack_override_kwargs_registration()
         self.register_override_kwarg('ctrl_offsets', self.ctrl_offsets)

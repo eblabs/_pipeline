@@ -142,7 +142,7 @@ class RotatePlaneIk(limb.Limb):
 
         # pole vector line
         pv_jnt_mult_matrix_attr = nodeUtils.mult_matrix([rp_jnts[1]+'.matrix', rp_jnts[0]+'.matrix'], side=self._side,
-                                                        descirption=self._des+'PvJntPos', index=1)
+                                                        description=self._des+'PvJntPos', index=1)
         pv_jnt_decompose_node = nodeUtils.node(type=naming.Type.decomposeMatrix, side=self._side,
                                                description=self._des+'PvJntPos', index=1)
         cmds.connectAttr(pv_jnt_mult_matrix_attr, pv_jnt_decompose_node+'.inputMatrix')

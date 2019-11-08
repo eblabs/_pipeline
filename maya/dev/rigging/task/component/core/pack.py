@@ -115,9 +115,9 @@ class Pack(component.Component):
             for sub_attr_name in self.sub_components_attrs:
                 self._builder.pack_kwargs_override.update({sub_attr_name: self._pack_kwargs_override})
                 # set for mirror component as well
-                if self.mirror:
-                    sub_attr_name_mirror = self._flip_val(sub_attr_name)
-                    self._builder.pack_kwargs_override.update({sub_attr_name_mirror: pack_kwargs_override_mirror})
+                # if self.mirror:
+                #     sub_attr_name_mirror = self._flip_val(sub_attr_name)
+                #     self._builder.pack_kwargs_override.update({sub_attr_name_mirror: pack_kwargs_override_mirror})
 
     def create_component(self):
         super(Pack, self).create_component()

@@ -33,11 +33,11 @@ class Copy(component.Component):
         self._icon_ref = icons.copy_reference
 
     def register_kwargs(self):
-        super(Copy, self).register_kwargs()
+        # super(Copy, self).register_kwargs()
         self.register_attribute('duplicate component', '', attr_name='duplicate_component', attr_type='str',
                                 hint="duplicate the given component", skippable=False)
 
-        self.register_attribute('override attributes', '', attr_name='override_kwargs', attr_type='dict',
+        self.register_attribute('override attributes', {}, attr_name='override_kwargs', attr_type='dict',
                                 hint="override the given attributes to the original one\nattribute name should be the \
                                               name registered in class (the actual attr name)", custom=True,
                                 skippable=False)
@@ -46,8 +46,12 @@ class Copy(component.Component):
         """
         override existing pre build function, because we will need to replace with duplicated component's pre build
         """
+        self.signal = 1  # preset the signal to avoid overwrite
+        self.message = ''
+
+        self.register_inputs()  # register inputs to class
         # get component object we want to duplicate
-        component_orig = self._get_obj_attr('builder'+self.duplicate_component)
+        component_orig = self._get_obj_attr('builder.'+self.duplicate_component)
         if not component_orig:
             logger.error("can't find given component '{}' in the builder".format(self.duplicate_component))
             raise KeyError("can't find given component '{}' in the builder".format(self.duplicate_component))

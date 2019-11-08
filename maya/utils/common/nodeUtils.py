@@ -58,6 +58,9 @@ def node(**kwargs):
     if _name:
         namer = naming.Namer(_name)
     else:
+        if not _des or not _side:
+            raise ValueError('name must contain side and description')
+
         namer = naming.Namer(type=_type, side=_side,
                              description=_des, index=_index,
                              suffix=_suffix)
@@ -66,6 +69,7 @@ def node(**kwargs):
     if cmds.objExists(namer.name):
         if not _use_exist:
             logger.error('{} node: {} already exists in the scene'.format(namer.type, namer.name))
+            raise ValueError('{} node: {} already exists in the scene'.format(namer.type, namer.name))
         else:
             node_name = namer.name
     else:
