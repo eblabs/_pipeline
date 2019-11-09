@@ -39,8 +39,13 @@ class RigDataImport(rigData.RigData):
     used for tasks need import data from path (misc, model etc)
 
     Keyword Args:
-        data(list): list of data path
-        type(list): list of data type
+        data(list): [data_info] list of data path,
+                                template is [{'project': '', 'asset': '', 'rig_type': '', 'filter': ''}]
+                                filter can be file format, ['.mb', '.ma', '.obj'], or can be specific file name
+
+    Properties:
+        name(str): task's name in builder
+        task(str): task's path
     """
     def __init__(self, **kwargs):
         super(RigDataImport, self).__init__(**kwargs)

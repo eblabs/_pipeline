@@ -43,7 +43,7 @@ class LevelLabel(QLabel):
     """
     def __init__(self):
         super(LevelLabel, self).__init__()
-        self.setText('info')
+        self.setText('debug')
         self.setMaximumWidth(50)
         self.setStyleSheet("""border: 1px solid grey; border-radius: 1px""")
         self.setToolTip('log level')
@@ -109,7 +109,7 @@ class LogInfo(QTextEdit):
         super(LogInfo, self).__init__()
         self.setReadOnly(True)
         self.setFocusPolicy(Qt.NoFocus)
-        self.level = logUtils.LOG_LEVEL_INDEX['info']
+        self.level = logUtils.LOG_LEVEL_INDEX['debug']
 
     def keyPressEvent(self, event):
         pass

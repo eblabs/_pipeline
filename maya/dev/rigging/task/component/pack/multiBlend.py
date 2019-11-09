@@ -33,6 +33,51 @@ MODE_CUSTOM = 50
 class MultiBlend(pack.Pack):
     """
     base class for multi blend pack, it blends multiple components with mode blend attr, like ik/fk blend rig
+
+    Keyword Args:
+        mirror(bool): [mirror] mirror component, default is False
+        side(str): [side] component's side, default is middle
+        description(str): [description] component's description
+        description suffix(str): [description_suffix] if the component nodes description need additional suffix,
+                                                      like Ik, Fk etc, put it here
+        blueprint joints(list): [bp_jnts] component's blueprint joints
+        control_size(float): [ctrl_size] component's controls' size, default is 1.0
+        input connection(str):  [input_connect] component's input connection, should be a component's joint's output
+                                                matrix, or an existing maya node's matrix attribute
+        modes(list): [modes] blend mode for each component, order is the same with the components parented under the
+                             pack, the first two will be the defaults
+        translate blend(bool) [blend_translate] blend translation, default is True
+        rotate blend(bool) [blend_rotate] blend rotation, default is True
+        sacle blend(bool) [blend_scale] blend scale, default is False
+        localization(bool) [localization] blend transform in local space or world space, default is True
+
+    Properties:
+        name(str): task's name in builder
+        task(str): task's path
+
+        component(str): component node name
+        controls(list): component's controls names
+        joints(list): component's joints names
+        input_matrix_attr(str): component's input matrix attribute
+        input_matrix(list): component's input matrix
+        offset_matrix_attr(str): component's offset matrix attribute
+        offset_matrix(list): component's offset matrix
+        output_matrix_attr(list): component's output matrices attributes
+        output_matrix(list): component's output matrices
+
+        sub_components_nodes(list): pack's sub components in builder names
+        sub_components_objs(list): pack's sub components objects
+
+        blend_ctrl(str): pack's blend control
+        modes(list): pack's mode A&B's names
+        modes_index(list): pack's mode A&B's indices
+        all_modes(list): pack's all modes names as list
+        all_modes_index(list): pack's all modes indices as list
+        blend_value(float): pack's blend control's current blend value
+
+    Attributes:
+        self.sub_components.[mode](object): by giving the mode name, it will return the sub component object,
+                                            like self.sub_components.fk
     """
     def __init__(self, *args, **kwargs):
         self.blend_modes = None
@@ -54,10 +99,24 @@ class MultiBlend(pack.Pack):
         return self._blend_ctrl
 
     @ property
-    def modes(self, as_string=False):
-        mode_a = cmds.getAttr(self._blend_ctrl+'.modeA', asString=as_string)
-        mode_b = cmds.getAttr(self._blend_ctrl+'.modeB', asString=as_string)
+    def modes(self):
+        mode_a = cmds.getAttr(self._blend_ctrl+'.modeA', asString=True)
+        mode_b = cmds.getAttr(self._blend_ctrl+'.modeB', asString=True)
         return [mode_a, mode_b]
+
+    @ property
+    def modes_index(self):
+        mode_a = cmds.getAttr(self._blend_ctrl + '.modeA', asString=False)
+        mode_b = cmds.getAttr(self._blend_ctrl + '.modeB', asString=False)
+        return [mode_a, mode_b]
+
+    @ property
+    def all_modes(self):
+        return attributes.get_enum_names('modeA', node=self._blend_ctrl, as_string=True)
+
+    @ property
+    def all_modes_index(self):
+        return attributes.get_enum_names('modeA', node=self._blend_ctrl, as_string=False)
 
     @ property
     def blend_value(self):
@@ -220,3 +279,13 @@ class MultiBlend(pack.Pack):
         """
         super(MultiBlend, self).get_component_info(component_node)
         self._blend_ctrl = self._ctrls[0]
+
+        # get enum attrs
+        enum_list = attributes.get_enum_names('modeA', node=self._blend_ctrl, as_string=True)
+
+        sub_components_dict = {}
+        for mode, obj in zip(enum_list, self._sub_components_objs):
+            sub_components_dict.update({mode: obj})
+
+        # attach to component as attributes
+        self._add_obj_attr('sub_components', sub_components_dict)

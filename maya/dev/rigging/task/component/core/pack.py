@@ -25,6 +25,35 @@ logger = logUtils.logger
 class Pack(component.Component):
     """
     base class for pack, it will connect multi components base on feature
+
+    Keyword Args:
+        mirror(bool): [mirror] mirror component, default is False
+        side(str): [side] component's side, default is middle
+        description(str): [description] component's description
+        description suffix(str): [description_suffix] if the component nodes description need additional suffix,
+                                                      like Ik, Fk etc, put it here
+        blueprint joints(list): [bp_jnts] component's blueprint joints
+        offsets(int): [ctrl_offsets] component's controls' offset groups number, default is 1
+        control_size(float): [ctrl_size] component's controls' size, default is 1.0
+        input connection(str):  [input_connect] component's input connection, should be a component's joint's output
+                                                matrix, or an existing maya node's matrix attribute
+
+    Properties:
+        name(str): task's name in builder
+        task(str): task's path
+
+        component(str): component node name
+        controls(list): component's controls names
+        joints(list): component's joints names
+        input_matrix_attr(str): component's input matrix attribute
+        input_matrix(list): component's input matrix
+        offset_matrix_attr(str): component's offset matrix attribute
+        offset_matrix(list): component's offset matrix
+        output_matrix_attr(list): component's output matrices attributes
+        output_matrix(list): component's output matrices
+
+        sub_components_nodes(list): pack's sub components in builder names
+        sub_components_objs(list): pack's sub components objects
     """
     def __init__(self, *args, **kwargs):
         super(Pack, self).__init__(*args, **kwargs)
@@ -44,6 +73,16 @@ class Pack(component.Component):
         self._sub_components_grp = None
         self._sub_components_objs = []
         self._sub_components_override = {}
+
+        self._sub_components_nodes = []
+
+    @ property
+    def sub_components_nodes(self):
+        return self._sub_components_nodes
+
+    @ property
+    def sub_components_objs(self):
+        return self._sub_components_objs
 
     def pre_build(self):
         super(Pack, self).pre_build()
@@ -110,14 +149,8 @@ class Pack(component.Component):
         """
         pack_kwargs_override = self._get_obj_attr('_builder.pack_kwargs_override')
         if pack_kwargs_override is not None and self._pack_kwargs_override:
-            # get mirrored pack override kwargs
-            pack_kwargs_override_mirror = self._flip_val(self._pack_kwargs_override)
             for sub_attr_name in self.sub_components_attrs:
                 self._builder.pack_kwargs_override.update({sub_attr_name: self._pack_kwargs_override})
-                # set for mirror component as well
-                # if self.mirror:
-                #     sub_attr_name_mirror = self._flip_val(sub_attr_name)
-                #     self._builder.pack_kwargs_override.update({sub_attr_name_mirror: pack_kwargs_override_mirror})
 
     def create_component(self):
         super(Pack, self).create_component()
@@ -156,14 +189,10 @@ class Pack(component.Component):
         super(Pack, self).get_component_info(component_node)
         sub_component_nodes = self._get_attr(self._component+'.subComponents')
 
-        sub_components_dict = {'sub_components': {'nodes': []}}
-
         # get sub component obj
         for sub_node in sub_component_nodes:
             sub_node_type = cmds.getAttr(sub_node+'.componentType')
             sub_obj = modules.import_module(sub_node_type)
             sub_obj_name = cmds.getAttr(sub_node+'.inClassName')
-            sub_components_dict['sub_components']['nodes'].append(sub_obj_name)
-            sub_components_dict['sub_components'].update({sub_obj_name: sub_obj})
-
-        self._add_attr_from_dict(sub_components_dict)
+            self._sub_components_nodes.append(sub_obj_name)
+            self._sub_components_objs.append(sub_obj)

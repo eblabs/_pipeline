@@ -187,12 +187,17 @@ class TaskTree(QTreeWidget):
 
         self.menu.addSeparator()
 
+        self.action_task_info = self.menu.addAction('Task Info')
+
+        self.menu.addSeparator()
+
         self.action_expand = self.menu.addAction('Expand/Collapse')
         self.action_expand.setShortcut(SC_EXPAND_COLLAPSE)
 
         # set enable/disable
         self._menu_widgets = [self.menu_execute_sel, self.menu_execute_all, self.action_duplicate, self.action_remove,
-                              self.action_display, self.action_color_background, self.action_color_reset]
+                              self.action_task_info, self.action_display, self.action_color_background,
+                              self.action_color_reset]
 
         for widget in self._menu_widgets:
             widget.setEnabled(False)
@@ -213,6 +218,8 @@ class TaskTree(QTreeWidget):
         self.action_display.triggered.connect(self.set_display_name)
         self.action_color_background.triggered.connect(self.set_background_color)
         self.action_color_reset.triggered.connect(self.reset_background_color)
+
+        self.action_task_info.triggered.connect(self._show_task_info)
 
         self.action_expand.triggered.connect(self.expand_collapse)
 
@@ -1085,6 +1092,20 @@ class TaskTree(QTreeWidget):
 
                 # trigger save data function
                 task_obj.save_data()
+
+    def _show_task_info(self):
+        item = self.selectedItems()[0]
+        task_info = item.data(0, ROLE_TASK_INFO)
+        task_type = item.data(0, ROLE_TASK_TYPE)
+        task_name = task_info['attr_name']
+        if task_type == 'method':
+            doc = 'in-class method'
+        elif task_type == 'callback':
+            doc = 'callback function'
+        else:
+            task_obj = getattr(self.builder, task_name)
+            doc = inspect.getdoc(task_obj)
+        logger.debug('\n\ntask information for {}\n\n{}\n'.format(task_name, doc))
 
     @ staticmethod
     def _get_unique_name(name_orig, name_new, name_list):

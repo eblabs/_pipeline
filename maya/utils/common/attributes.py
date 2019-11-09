@@ -351,6 +351,54 @@ def check_attr_exists(attr, node=None):
         return None
 
 
+# enum
+def get_enum_names(attr, node=None, as_string=True):
+    """
+    return the list of enum strings for the given attribute
+
+    Args:
+        attr(str): enum attribute name
+    Keyword Args:
+        node(str): node name
+        as_string(bool): return the list of names or indices, default is True
+
+    Returns:
+        enum_list(list): list of names or indices
+    """
+    attr_split = attr.split('.')
+    if not node:
+        # get node name from attr
+        node = attr_split[0]
+        attr = attr_split[1]
+    enum_name = cmds.attributeQuery(attr, node=node, listEnum=True)[0]
+    # split by :
+    enum_name_split = enum_name.split(':')
+
+    enum_name_list = []
+    enum_index_list = []
+
+    index_current = 0
+    for part in enum_name_split:
+        # maya saving enum format is name=index, so we split = to get index
+        part_split = part.split('=')
+        name = part_split[0]
+        # because maya only save the index if it's not continuously, like 'attr1=1:attr2=5',
+        # otherwise will be 'attr1=1:attr2', so we need to check if it has index or not, if not, use current one
+        if len(part_split) > 1:
+            index = int(part_split[1])
+        else:
+            index = index_current
+        enum_name_list.append(name)
+        enum_index_list.append(index)
+
+        index_current = index + 1  # add 1 for the current index, so the next enum attr will use if next to it
+
+    if as_string:
+        return enum_name_list
+    else:
+        return enum_index_list
+
+
 # SUB FUNCTION
 def _connect_single_attr(driver_attr, driven_attr, driver=None, driven=None, force=True):
     """

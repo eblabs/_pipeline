@@ -15,6 +15,34 @@ logger = logUtils.logger
 class MultiGroup(pack.Pack):
     """
     base class for multi group pack, it will group multi components as one group pack, like fingers
+
+    Keyword Args:
+        mirror(bool): [mirror] mirror component, default is False
+        side(str): [side] component's side, default is middle
+        description(str): [description] component's description
+        description suffix(str): [description_suffix] if the component nodes description need additional suffix,
+                                                      like Ik, Fk etc, put it here
+        offsets(int): [ctrl_offsets] component's controls' offset groups number, default is 1
+        control_size(float): [ctrl_size] component's controls' size, default is 1.0
+        input connection(str):  [input_connect] component's input connection, should be a component's joint's output
+                                                matrix, or an existing maya node's matrix attribute
+
+    Properties:
+        name(str): task's name in builder
+        task(str): task's path
+
+        component(str): component node name
+        controls(list): component's controls names
+        joints(list): component's joints names
+        input_matrix_attr(str): component's input matrix attribute
+        input_matrix(list): component's input matrix
+        offset_matrix_attr(str): component's offset matrix attribute
+        offset_matrix(list): component's offset matrix
+        output_matrix_attr(list): component's output matrices attributes
+        output_matrix(list): component's output matrices
+
+        sub_components_nodes(list): pack's sub components in builder names
+        sub_components_objs(list): pack's sub components objects
     """
     def __init__(self, *args, **kwargs):
         super(MultiGroup, self).__init__(*args, **kwargs)

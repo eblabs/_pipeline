@@ -10,12 +10,45 @@ import dev.rigging.task.component.core.component as component
 # CLASS
 class RotatePlaneIk(component.Component):
     """
-    single chain ik component
+    rotate plane ik component
+
+    Keyword Args:
+        mirror(bool): [mirror] mirror component, default is False
+        side(str): [side] component's side, default is middle
+        description(str): [description] component's description
+        description suffix(str): [description_suffix] if the component nodes description need additional suffix,
+                                                      like Ik, Fk etc, put it here, default is Ik
+        blueprint joints(list): [bp_jnts] component's blueprint joints
+        offsets(int): [ctrl_offsets] component's controls' offset groups number, default is 1
+        control_size(float): [ctrl_size] component's controls' size, default is 1.0
+        input connection(str):  [input_connect] component's input connection, should be a component's joint's output
+                                                matrix, or an existing maya node's matrix attribute
+        blueprint controls(list): [bp_ctrls] ik controls blueprint, [root, pole vector, ik, ground], gournd is optional
+        single chain iks(int): [sc_iks] create single chain ik per segment after rotate plane ik, default is 1
+        blueprint reverse controls(list): [bp_rvs] reverse set-up's controls blueprints, normally for foot or hand,
+                                                   structure like:
+                                                   [heelRoll, toeRoll, sideInn, sideOut, ballRoll, (toeTap)]
+        ik handle offset(bool): [ik_offset] add a control to offset ik handle, default is False
+
+    Properties:
+        name(str): task's name in builder
+        task(str): task's path
+
+        component(str): component node name
+        controls(list): component's controls names
+        joints(list): component's joints names
+        input_matrix_attr(str): component's input matrix attribute
+        input_matrix(list): component's input matrix
+        offset_matrix_attr(str): component's offset matrix attribute
+        offset_matrix(list): component's offset matrix
+        output_matrix_attr(list): component's output matrices attributes
+        output_matrix(list): component's output matrices
     """
     def __init__(self, *args, **kwargs):
         self.bp_ctrls = None
         self.sc_iks = None
         self.bp_rvs = None
+        self.ik_offset = None
 
         super(RotatePlaneIk, self).__init__(*args, **kwargs)
 
@@ -28,17 +61,18 @@ class RotatePlaneIk(component.Component):
         super(RotatePlaneIk, self).register_kwargs()
         self.register_attribute('blueprint controls', [], attr_name='bp_ctrls', attr_type='list', select=True,
                                 skippable=False,
-                                hint=("ik control blueprint,\n",
+                                hint=("ik controls blueprint,\n",
                                       "[root, pole_vector, ik, ground] ground control is optional"))
 
-        self.register_attribute('single chain iks', 0, attr_name='sc_iks', attr_type='int', min=0, max=2,
+        self.register_attribute('single chain iks', 1, attr_name='sc_iks', attr_type='int', min=0, max=2,
                                 hint="create single chain ik per segment after rotate plane ik")
 
         self.register_attribute('blueprint reverse controls', [], attr_name='bp_rvs', attr_type='list', select=True,
                                 hint=("reverse set-up's controls blueprints,\n normally for foot or hand,\n",
                                       "structure like [heelRoll, toeRoll, sideInn, sideOut, ballRoll, (toeTap)]"))
 
-        self.register_attribute('ik_handle_offset', False, attr_type='bool', hint="add a control to offset ik handle")
+        self.register_attribute('ik handle offset', False, attr_name='ik_offset', attr_type='bool',
+                                hint="add a control to offset ik handle")
 
         self.update_attribute('description suffix', default='Ik')
 
@@ -52,6 +86,7 @@ class RotatePlaneIk(component.Component):
                   'create_joints': True,
                   'offsets': self.ctrl_offsets,
                   'control_size': self.ctrl_size,
+                  'ik_handle_offset': self.ik_offset,
 
                   'controls_group': self._controls_grp,
                   'joints_group': self._joints_grp,

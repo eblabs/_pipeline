@@ -46,6 +46,8 @@ class RigBuilder(uiUtils.BaseWindow):
         # splitter
         splitter_base = QSplitter()
         layout_base.addWidget(splitter_base)
+        # splitter right for log
+        splitter_right = QSplitter()
 
         # left layout
         frame_left = QFrame()
@@ -54,18 +56,32 @@ class RigBuilder(uiUtils.BaseWindow):
 
         # rig layout
         frame_right = QFrame()
-        frame_right.setMinimumSize(550, 700)
+        # frame_right.setMinimumSize(550, 550)
         layout_right = QVBoxLayout(frame_right)
+
+        # log layout
+        frame_log = QFrame()
+        frame_log.setMinimumSize(550, 150)
+        layout_log = QVBoxLayout(frame_log)
 
         # attach frame
         splitter_base.addWidget(frame_left)
-        splitter_base.addWidget(frame_right)
+        splitter_base.addWidget(splitter_right)
+
+        # attach right side widgets
+        splitter_right.addWidget(frame_right)
+        splitter_right.addWidget(frame_log)
 
         # splitter setting
         splitter_base.setCollapsible(0, False)
         splitter_base.setCollapsible(1, False)
         splitter_base.setStretchFactor(0, 1)
         splitter_base.setStretchFactor(1, 2)
+        splitter_right.setOrientation(Qt.Vertical)
+        splitter_right.setCollapsible(0, False)
+        splitter_right.setCollapsible(1, False)
+        splitter_right.setStretchFactor(0, 3)
+        splitter_right.setStretchFactor(1, 1)
 
         # widgets
         self.rig_info = rigInfo.RigInfo()
@@ -84,7 +100,7 @@ class RigBuilder(uiUtils.BaseWindow):
 
         self.attach_rig_widget(self.task_info, 'Task Info', layout_right)
         self.attach_rig_widget(self.property_editor, 'Property Editor', layout_right)
-        self.attach_rig_widget(self.log_window, 'Log', layout_right, height=150)
+        self.attach_rig_widget(self.log_window, 'Log', layout_log)
 
         # connect signal
         self.connect_signals()
@@ -96,7 +112,7 @@ class RigBuilder(uiUtils.BaseWindow):
         pass
 
     @ staticmethod
-    def attach_rig_widget(widget, title, layout, no_space=False, height=None):
+    def attach_rig_widget(widget, title, layout, no_space=False):
         """
         attach widget to the given layout with a group box
 
@@ -107,7 +123,6 @@ class RigBuilder(uiUtils.BaseWindow):
 
         Keyword Args:
             no_space(bool): if remove the space in the layout, default is False
-            height(float): set maximum height for group box
         """
         group_box = QGroupBox(title)
         group_box.setStyleSheet("""QGroupBox {
@@ -129,9 +144,6 @@ class RigBuilder(uiUtils.BaseWindow):
 
         layout_widget.addWidget(widget)  # add widget to group box
         layout.addWidget(group_box)  # attach group box to layout
-
-        if height:
-            group_box.setMaximumHeight(height)
 
     def connect_signals(self):
         # hook up buttons

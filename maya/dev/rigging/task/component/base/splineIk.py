@@ -16,6 +16,47 @@ import dev.rigging.task.component.core.component as component
 class SplineIk(component.Component):
     """
     single chain ik component
+
+    Keyword Args:
+        mirror(bool): [mirror] mirror component, default is False
+        side(str): [side] component's side, default is middle
+        description(str): [description] component's description
+        description suffix(str): [description_suffix] if the component nodes description need additional suffix,
+                                                      like Ik, Fk etc, put it here, default is SplineIk
+        blueprint joints(list): [bp_jnts] component's blueprint joints
+        offsets(int): [ctrl_offsets] component's controls' offset groups number, default is 1
+        control_size(float): [ctrl_size] component's controls' size, default is 1.0
+        input connection(str):  [input_connect] component's input connection, should be a component's joint's output
+                                                matrix, or an existing maya node's matrix attribute
+        blueprint curve(str): [bp_crv] blueprint curve for spline ik setup
+        blueprint controls(list): [bp_ctrls] blueprint controls, order is from start to end
+        joints number(int): [jnts_num] generate joints evenly along the curve if no blueprint is given,
+                                       default is 5, minimum is 3
+        rotation up vector(list): [rot_up_vector] generated joints' up vector, default is [0,1,0]
+        automatic set twist range(bool): [auto_twist_range] auto set twist start and end base on controls position,
+                                         default is True
+        twist start(float): [twist start] twist start position on the curve, value from 0 to 1, default is 0
+        twist end(float): [twist end] twist end position on the curve, value from 0 to 1, default is 1
+        twist interpolation(str): [twist_interp] twist ramp interpolation, linear/smooth/spline, default is linear
+        segment twist(bool): [segment twist] add twist attribute to control each segment twist, default is True
+        segment twist interpolation(str): [segment_twist_interp] segment twist ramp interpolation, linear/smooth/spline,
+                                                                 default is linear
+        curve weights(list): [crv_skin_path] curve's skin cluster data to override the auto generate one,
+                                             template is [{'project': '', 'asset': '', 'rig_type': ''}]
+
+    Properties:
+        name(str): task's name in builder
+        task(str): task's path
+
+        component(str): component node name
+        controls(list): component's controls names
+        joints(list): component's joints names
+        input_matrix_attr(str): component's input matrix attribute
+        input_matrix(list): component's input matrix
+        offset_matrix_attr(str): component's offset matrix attribute
+        offset_matrix(list): component's offset matrix
+        output_matrix_attr(list): component's output matrices attributes
+        output_matrix(list): component's output matrices
     """
     def __init__(self, *args, **kwargs):
         self.bp_crv = None

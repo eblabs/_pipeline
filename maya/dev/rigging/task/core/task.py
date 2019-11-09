@@ -29,7 +29,9 @@ logger = logUtils.logger
 
 # CLASS
 class Task(object):
-    """base class for Task"""
+    """
+    base class for Task
+    """
     def __init__(self, **kwargs):
         super(Task, self).__init__()
         # get name and builder

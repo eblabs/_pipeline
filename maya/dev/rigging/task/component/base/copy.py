@@ -17,7 +17,27 @@ logger = logUtils.logger
 # CLASS
 class Copy(component.Component):
     """
-    copy component with kwargs override
+    copy component with kwargs override, it will override the current component with the target duplication
+
+    Keyword Args:
+        duplicate component(str): [duplicate_component] the source component name in builder
+        override attributes(dict): [override_kwargs] override the given attributes to the original one,
+                                                     attribute name should be the name registered in class
+                                                     (the actual attr name)
+
+    Properties:
+        name(str): task's name in builder
+        task(str): task's path (it will return the duplication's path instead)
+
+        component(str): component node name
+        controls(list): component's controls names
+        joints(list): component's joints names
+        input_matrix_attr(str): component's input matrix attribute
+        input_matrix(list): component's input matrix
+        offset_matrix_attr(str): component's offset matrix attribute
+        offset_matrix(list): component's offset matrix
+        output_matrix_attr(list): component's output matrices attributes
+        output_matrix(list): component's output matrices
     """
     def __init__(self, *args, **kwargs):
         self.duplicate_component = None
@@ -33,7 +53,6 @@ class Copy(component.Component):
         self._icon_ref = icons.copy_reference
 
     def register_kwargs(self):
-        # super(Copy, self).register_kwargs()
         self.register_attribute('duplicate component', '', attr_name='duplicate_component', attr_type='str',
                                 hint="duplicate the given component", skippable=False)
 
