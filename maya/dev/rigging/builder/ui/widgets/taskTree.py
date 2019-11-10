@@ -36,7 +36,6 @@ import utils.common.logUtils as logUtils
 import utils.common.modules as modules
 import utils.common.files as files
 import utils.common.naming as naming
-import utils.common.attributes as attributes
 
 # import icon
 import icons
@@ -60,6 +59,9 @@ ROLE_TASK_RUN = Qt.UserRole + 6
 ROLE_TASK_POST = Qt.UserRole + 7
 ROLE_TASK_STATUS_INFO = Qt.UserRole + 8
 
+ROLE_TASK_ICON = Qt.UserRole + 9
+ROLE_TASK_ICON_WARN = Qt.UserRole + 10
+
 CHECK_STATE = [Qt.Unchecked, Qt.Checked]
 
 # icons
@@ -68,10 +70,6 @@ for icon in [icons.grey, icons.green, icons.yellow, icons.red]:
     ICONS_STATUS.append(QIcon(icon).pixmap(QSize(15, 15)))
 
 ICON_UNCHECK = QIcon(icons.unCheck).pixmap(QSize(15, 15))
-
-ICONS_TASK = {'task': [icons.task_new, icons.task_reference],
-              'callback': [icons.callback_new, icons.callback_reference],
-              'method': [icons.method, icons.method]}
 
 # warning color if any unskippable kwarg not set
 COLOR_WARN = QColor(255, 0, 0)
@@ -142,7 +140,7 @@ class TaskTree(QTreeWidget):
         self.setDragEnabled(True)
         self.setDropIndicatorShown(True)
 
-        self.setIconSize(QSize(25, 25))
+        self.setIconSize(QSize(60, 22))
 
         self._root = self.invisibleRootItem()
 
@@ -151,6 +149,11 @@ class TaskTree(QTreeWidget):
 
         # maya progress bar, used to escape from loop
         self.maya_progress_bar = mel.eval('$tmp = $gMainProgressBar')
+
+        # skip task already build
+        self.action_skip = QAction('Skip Built', self.menu, checkable=True)
+        self.menu.addAction(self.action_skip)
+        self.menu.addSeparator()
 
         # execute menu
         self.menu_execute_sel = SubMenu('Execute Selection', parent=self.menu, shortcut=SC_RUN)
@@ -371,7 +374,7 @@ class TaskTree(QTreeWidget):
             section = ['pre_build', 'build', 'post_build']
         items = self.selectedItems()
         if items:
-            self._run_task(items=items, section=section)
+            self._run_task(items=items, section=section, skip_build=self.action_skip.isChecked())
             self.SIGNAL_EXECUTE.emit()
 
     def run_all_tasks(self, section=None):
@@ -380,7 +383,7 @@ class TaskTree(QTreeWidget):
         top_item_count = self.topLevelItemCount()
         if top_item_count:
             # builder loaded
-            self._run_task(section=section)
+            self._run_task(section=section, skip_build=self.action_skip.isChecked())
             self.SIGNAL_EXECUTE.emit()
 
     def rebuild_tasks(self, section=None):
@@ -545,7 +548,9 @@ class TaskTree(QTreeWidget):
                 task_info.update({'display': display,
                                   'attr_name': attr_name})
 
-                self._create_item(**task_info)
+                item_parent = item.parent()
+
+                self._create_item(item=item_parent, **task_info)
 
     def remove_tasks(self):
         for item in self.selectedItems():
@@ -757,7 +762,7 @@ class TaskTree(QTreeWidget):
 
         return item_remove
 
-    def _run_task(self, items=None, collect=True, section=None, ignore_check=False):
+    def _run_task(self, items=None, collect=True, section=None, ignore_check=False, skip_build=False):
         """
         run task
 
@@ -767,6 +772,7 @@ class TaskTree(QTreeWidget):
             section(list): run for specific section, None will run for all, default is None
                            ['pre_build', 'build', 'post_build']
             ignore_check(bool): ignore the item's check state if True, default is False
+            skip_build(bool): skip task section already built if True, or will re-run the section, default is False
         """
         if section is None:
             section = ['pre_build', 'build', 'post_build']
@@ -829,8 +835,8 @@ class TaskTree(QTreeWidget):
                 if check_state == Qt.Checked or ignore_check:
                     # get task running state, skipped if already run
                     item_running_state = item.data(0, role)
-                    if item_running_state == 0:
-                        # item haven't run, start running task
+                    if item_running_state == 0 or not skip_build:
+                        # item haven't run, or need re-run, start running task
                         # check progress bar
                         if cmds.progressBar(self.maya_progress_bar, query=True, isCancelled=True):
                             # escape from loop
@@ -991,24 +997,9 @@ class TaskTree(QTreeWidget):
         if not item:
             item = self._root
 
-        item_create = TaskItem(**kwargs)
-
-        item.addChild(item_create)
-
-    def _create_task(self, task_info):
-        attr_name = task_info[0]
-        display = task_info[1]
-        task_path = task_info[2]
-
-        save_data = False
-
-        attr_name = self._get_unique_name('', attr_name, self._attr_items)
-        self._attr_items.append(attr_name)
-
-        if not display:
-            display = attr_name
-        display = self._get_unique_name('', display, self._display_items)
-        self._display_items.append(display)
+        # get task path
+        attr_name = kwargs.get('attr_name', None)
+        task_path = kwargs.get('task_path', None)
 
         # imported task, get task object
         task_import, task_function = modules.import_module(task_path)
@@ -1018,6 +1009,7 @@ class TaskTree(QTreeWidget):
             # function, normally is callback
             task_kwargs = task_import.kwargs_ui
             task_type = 'callback'
+            save_data = False
         else:
             # task class
             task_obj = task(name=attr_name, builder=self.builder)
@@ -1027,15 +1019,37 @@ class TaskTree(QTreeWidget):
             # attach to builder
             setattr(self.builder, attr_name, task_obj)
 
+        # update kwargs
+        kwargs.update({'task': task,
+                       'task_type': task_type,
+                       'save_data': save_data})
+
+        # check if has ui kwargs already (which is duplicate task, skip the override)
+        if 'task_kwargs' not in kwargs:
+            kwargs.update({'task_kwargs': task_kwargs})
+
+        item_create = TaskItem(**kwargs)
+
+        item.addChild(item_create)
+
+    def _create_task(self, task_info):
+        attr_name = task_info[0]
+        display = task_info[1]
+        task_path = task_info[2]
+
+        attr_name = self._get_unique_name('', attr_name, self._attr_items)
+        self._attr_items.append(attr_name)
+
+        if not display:
+            display = attr_name
+        display = self._get_unique_name('', display, self._display_items)
+        self._display_items.append(display)
+
         kwargs = {'display': display,
                   'attr_name': attr_name,
                   'task_path': task_path,
-                  'task': task,
-                  'task_type': task_type,
-                  'task_kwargs': task_kwargs,
                   'check': 1,
-                  'lock': False,
-                  'save_data': save_data}
+                  'lock': False}
 
         item = self.selectedItems()
         if item:
@@ -1179,6 +1193,11 @@ class TaskItem(QTreeWidgetItem):
         task_kwargs_keys = task_kwargs.keys()
         kwargs.update({'task_kwargs_keys': task_kwargs_keys})
 
+        # we need icon saved to item, so we don't need to get the dictionary and object to find the icon everytime
+        task = kwargs.get('task', None)
+        task_type = kwargs.get('task_type', None)
+        lock = kwargs.get('lock', 0)
+
         # initialize each icon, set to fresh status,
         # we need to set icon info first, because it override setData function
         self.setData(0, ROLE_TASK_PRE, 0)
@@ -1186,11 +1205,11 @@ class TaskItem(QTreeWidgetItem):
         self.setData(0, ROLE_TASK_POST, 0)
         self.setData(0, ROLE_TASK_STATUS_INFO, ['', '', ''])  # save log info for display
 
-        # carry the task's kwargs for further use
-        self.setData(0, ROLE_TASK_INFO, kwargs)
-
         # set item info
         set_item_data(self, **kwargs)
+
+        # carry the task's kwargs for further use
+        self.setData(0, ROLE_TASK_INFO, kwargs)
 
         # set background color
         if background_color is not None:
@@ -1201,7 +1220,7 @@ class TaskItem(QTreeWidgetItem):
             self.setData(0, Qt.BackgroundRole, None)
 
         font = QFont()
-        font.setPointSize(9)
+        font.setPointSize(12)
         self.setFont(0, font)
 
     def setData(self, column, role, value):
@@ -1236,22 +1255,29 @@ class TaskItem(QTreeWidgetItem):
             self.setIcon(3, ICONS_STATUS[value])
 
         elif role == ROLE_TASK_INFO:
-            # normally happens when property editor send back the kwargs set by user
+            # normally happens when property editor send back the kwargs set by user, only for task object
             # check if has any unskippable kwarg not being set
             task_info = self.data(0, ROLE_TASK_INFO)
-            warn = False
-            for key, item in task_info['task_kwargs'].iteritems():
-                skippable = item.get('skippable', True)
-                val = item.get('value', None)
-                if not val:
-                    val = item.get('default', None)
-                if not skippable and not val:
-                    warn = True
-                    break
-            if warn:
-                self.setForeground(0, COLOR_WARN)
-            else:
-                self.setData(0, Qt.ForegroundRole, None)
+            task_type = task_info['task_type']
+
+            if task_type not in ['method', 'callback']:
+                warn = False
+                for key, item in task_info['task_kwargs'].iteritems():
+                    skippable = item.get('skippable', True)
+                    val = item.get('value', None)
+                    if not val:
+                        val = item.get('default', None)
+
+                    if not skippable and not val:
+                        warn = True
+                        break
+
+                if warn:
+                    task_icon = self.data(0, ROLE_TASK_ICON_WARN)
+                else:
+                    task_icon = self.data(0, ROLE_TASK_ICON)
+
+                self.setIcon(0, task_icon)
 
 
 class SubMenu(QMenu):
@@ -1352,7 +1378,7 @@ def set_item_data(item, **kwargs):
     display = kwargs.get('display', None)
     task_type = kwargs.get('task_type', None)
     task = kwargs.get('task', None)
-    lock = kwargs.get('lock', None)
+    lock = kwargs.get('lock', 0)
     check = kwargs.get('check', None)
     save_data = kwargs.get('save_data', False)
 
@@ -1369,18 +1395,19 @@ def set_item_data(item, **kwargs):
     if task is not None:
         if inspect.ismethod(task):
             item.setData(0, ROLE_TASK_TYPE, 'method')
-            task_icons = [icons.method, icons.method]
+            task_icon = [icons.method, icons.method][lock]
         elif inspect.isfunction(task):
             item.setData(0, ROLE_TASK_TYPE, 'callback')
-            task_icons = [icons.callback_new, icons.callback_reference]
+            task_icon = [icons.callback_new, icons.callback_lock][lock]
         else:
             item.setData(0, ROLE_TASK_TYPE, task_type)  # normally user will given task_path and task together
-            task_icons = task().icons
+            task_icon_list = task().icons
+            warn_icon = task_icon_list[2]
+            item.setData(0, ROLE_TASK_ICON_WARN, QIcon(warn_icon))
+            task_icon = task_icon_list[lock]
 
-        if lock is None:
-            lock = 0
-
-        item.setIcon(0, QIcon(task_icons[lock]))  # set task's icon
+        item.setIcon(0, QIcon(task_icon))  # set task's icon
+        item.setData(0, ROLE_TASK_ICON, QIcon(task_icon))
 
     if check is not None:
         item.setCheckState(0, CHECK_STATE[check])

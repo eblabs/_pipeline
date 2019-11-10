@@ -3,21 +3,29 @@
   <component name="ChangeListManager">
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/logWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/logWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/callback_new.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/callback_reference.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/component_new.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/component_reference.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/copy_new.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/copy_reference.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/data_new.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/data_reference.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/method.png" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/method.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/pack_new.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/pack_reference.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_new.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_reference.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_template.psd" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_template.psd" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskTree.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskTree.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/base/rigDataImport.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/base/rigDataImport.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/copy.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/copy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/fkChain.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/fkChain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/rotatePlaneIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/rotatePlaneIk.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/singleChainIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/singleChainIk.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/splineIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/splineIk.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/pack.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/pack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/pack/multiBlend.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/pack/multiBlend.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/pack/multiGroup.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/pack/multiGroup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/rigData.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/rigData.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/attributes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/common/naming.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/naming.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

@@ -55,7 +55,8 @@ class Task(object):
 
         # icon
         self._icon_new = icons.task_new
-        self._icon_ref = icons.task_reference
+        self._icon_lock = icons.task_lock
+        self._icon_warn = icons.task_warn
 
         self.kwargs_task = {}  # store each kwarg's long name, short name and default value
         self.kwargs_ui = OrderedDict()  # store ui info with order
@@ -88,7 +89,7 @@ class Task(object):
 
     @ property
     def icons(self):
-        return [self._icon_new, self._icon_ref]
+        return [self._icon_new, self._icon_lock, self._icon_warn]
 
     @ name.setter
     def name(self, task_name):
@@ -346,6 +347,7 @@ class Task(object):
         else:
             attr_type = None
         return attr_type
+
 
 #  SUB CLASS
 class ObjectView(object):

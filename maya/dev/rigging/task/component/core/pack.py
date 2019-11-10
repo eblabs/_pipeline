@@ -62,7 +62,8 @@ class Pack(component.Component):
 
         # icon
         self._icon_new = icons.pack_new
-        self._icon_ref = icons.pack_reference
+        self._icon_lock = icons.pack_lock
+        self._icon_warn = icons.pack_warn
 
         # vars
         # the sub components attr name in builder, use this var in widget to assign sub components
@@ -147,7 +148,7 @@ class Pack(component.Component):
         """
         set override kwargs back to builder, with sub components attr names as key
         """
-        pack_kwargs_override = self._get_obj_attr('_builder.pack_kwargs_override')
+        pack_kwargs_override = modules.get_obj_attr(self.builder, 'pack_kwargs_override')
         if pack_kwargs_override is not None and self._pack_kwargs_override:
             for sub_attr_name in self.sub_components_attrs:
                 self._builder.pack_kwargs_override.update({sub_attr_name: self._pack_kwargs_override})
@@ -156,7 +157,7 @@ class Pack(component.Component):
         super(Pack, self).create_component()
         # get sub objects
         for sub_attr in self.sub_components_attrs:
-            sub_obj = self._get_obj_attr('_builder.'+sub_attr)
+            sub_obj = modules.get_obj_attr(self.builder, sub_attr)
             if sub_obj:
                 self._sub_components_objs.append(sub_obj)
             else:

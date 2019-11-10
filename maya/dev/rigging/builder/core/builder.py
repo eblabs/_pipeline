@@ -143,6 +143,7 @@ class Builder(object):
                 _task_kwargs = task_obj.kwargs_ui
                 _save_data = task_obj.save
                 _task_type = task_obj.task_type
+
                 # add attr
                 setattr(self, _name, task_obj)  # initialize task object to builder
             # if value in _kwargs, set value as default
@@ -395,8 +396,14 @@ class Builder(object):
             if tasks_info_export:
                 cls_path = inspect.getfile(self.__class__)
                 cls_dirname = os.path.dirname(cls_path)
+                # generate task info file path
                 task_export_path = os.path.join(cls_dirname, 'tasks.tsk')
+                # make a copy so if we destroyed the original task info file by mistake, we can still revert it back
+                task_export_copy_path = os.path.join(cls_dirname, 'tasks_copy.tsk_copy')
+                # export task info file
                 files.write_json_file(task_export_path, tasks_info_export)
+                # export copy file
+                files.write_json_file(task_export_copy_path, tasks_info_export)
                 logger.info('save builder successfully at {}'.format(task_export_path))
         else:
             # only print out the tasks_info_export for debugging

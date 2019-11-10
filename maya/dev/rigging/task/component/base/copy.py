@@ -50,7 +50,8 @@ class Copy(component.Component):
 
         # icon
         self._icon_new = icons.copy_new
-        self._icon_ref = icons.copy_reference
+        self._icon_lock = icons.copy_lock
+        self._icon_warn = icons.copy_warn
 
     def register_kwargs(self):
         self.register_attribute('duplicate component', '', attr_name='duplicate_component', attr_type='str',
@@ -58,7 +59,7 @@ class Copy(component.Component):
 
         self.register_attribute('override attributes', {}, attr_name='override_kwargs', attr_type='dict',
                                 hint=("override the given attributes to the original one,\n"
-                                      "attribute name should be the name registered in class (the actual attr name)"),
+                                      "attribute name should be the display name in ui, or registered name in class"),
                                 custom=True, skippable=False)
 
     def pre_build(self):
@@ -70,13 +71,27 @@ class Copy(component.Component):
 
         self.register_inputs()  # register inputs to class
         # get component object we want to duplicate
-        component_orig = self._get_obj_attr('builder.'+self.duplicate_component)
+        component_orig = modules.get_obj_attr(self.builder, self.duplicate_component)
         if not component_orig:
             logger.error("can't find given component '{}' in the builder".format(self.duplicate_component))
             raise KeyError("can't find given component '{}' in the builder".format(self.duplicate_component))
 
         # get component path
         component_path = component_orig.task
+
+        # because the input override kwargs may use attribute's display name as key, we need to convert into attr name
+        override_kwargs_convert = {}
+        for key, val in self.override_kwargs.iteritems():
+            if key in component_orig.kwargs_task:
+                # key is a display name, get attr name
+                attr_name = component_orig.kwargs_task[key][0]
+                override_kwargs_convert.update({attr_name: val})
+            else:
+                # assume it's the attr name
+                override_kwargs_convert.update({key: val})
+
+        # override the override_kwargs attr
+        self.override_kwargs = override_kwargs_convert
 
         # get component kwargs
         kwargs_input = component_orig.kwargs_input

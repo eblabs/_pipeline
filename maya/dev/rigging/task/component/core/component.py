@@ -90,7 +90,8 @@ class Component(task.Task):
 
         # icon
         self._icon_new = icons.component_new
-        self._icon_ref = icons.component_reference
+        self._icon_lock = icons.component_lock
+        self._icon_warn = icons.component_warn
 
         # hierarchy
         self._component = None
@@ -313,7 +314,7 @@ class Component(task.Task):
         """
         check if there is any kwarg need to be override from builder, normally because the component is under a pack
         """
-        pack_kwargs_override = self._get_obj_attr('_builder.pack_kwargs_override')
+        pack_kwargs_override = modules.get_obj_attr(self.builder, 'pack_kwargs_override')
         if pack_kwargs_override:
             override_kwargs = self._builder.pack_kwargs_override.get(self._name, {})
             if override_kwargs:
@@ -407,12 +408,12 @@ class Component(task.Task):
 
         # parent to base node's component group and connect attr
         # check if has base node, skip if doesn't
-        component_grp = self._get_obj_attr('_builder.base_node.components')
+        component_grp = modules.get_obj_attr(self.builder, 'base_node.components')
         if component_grp:
             # base node exists, parent component to component group
             hierarchy.parent_node(self._component, component_grp)
             # get master node
-            master_node = self._get_obj_attr('_builder.base_node.master')
+            master_node = modules.get_obj_attr(self.builder, 'base_node.master')
             # connect vis attrs
             attributes.connect_attrs(['controlsVis', 'jointsVis', 'rigNodesVis'],
                                      ['controlsVis', 'jointsVis', 'rigNodesVis'],
@@ -473,7 +474,7 @@ class Component(task.Task):
 
         if not input_matrix_attr:
             # check if base node in the scene, connect to base node
-            input_matrix_attr_obj = self._get_obj_attr('builder.base_node.world_pos_attr.matrix_attr')
+            input_matrix_attr_obj = modules.get_obj_attr(self.builder, 'base_node.world_pos_attr.matrix_attr')
             if input_matrix_attr_obj:
                 input_matrix_attr = input_matrix_attr_obj
 

@@ -32,7 +32,8 @@ class RigData(task.Task):
         self.data_path = []
 
         self._icon_new = icons.data_new
-        self._icon_ref = icons.data_reference
+        self._icon_lock = icons.data_lock
+        self._icon_warn = icons.data_warn
 
     def register_kwargs(self):
         super(RigData, self).register_kwargs()

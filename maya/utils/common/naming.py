@@ -100,6 +100,8 @@ class Namer(object):
             index/i(str): name's index
             suffix/sfx(str): name's suffix
 
+            warn(bool): will error out if name is not follow the naming convention, default is True
+
         Properties:
             type/t(str)
             side/s(str)
@@ -117,9 +119,11 @@ class Namer(object):
         self._description = None
         self._index = None
         self._suffix = None
+        self._warn = None
 
         if args:
             self._decompose_name(args[0])
+            self._warn = kwargs.get('warn', True)
         else:
             for key_long, key_short in self.shortcuts.iteritems():
                 val = variables.kwargs(key_long, None, kwargs, short_name=key_short)
@@ -307,14 +311,20 @@ class Namer(object):
         self._type = self._get_name(name_split[0], 'type', return_type='long')
 
         if not self._type:
-            logger.error('Type is invalid')
-            raise KeyError('Given name does not follow the correct name convention')
+            if self._warn:
+                logger.error('Type is invalid')
+                raise KeyError('Given name does not follow the correct name convention')
+            else:
+                return None
 
         if split_num > 2:
             self._side = self._get_name(name_split[1], 'side', return_type='long')
             if not self._side:
-                logger.error('Side is invalid')
-                raise KeyError('Given name does not follow the correct name convention')
+                if self._warn:
+                    logger.error('Side is invalid')
+                    raise KeyError('Given name does not follow the correct name convention')
+                else:
+                    return None
 
             if split_num == 3:
                 # name only contains type side and des
@@ -344,20 +354,29 @@ class Namer(object):
                 # name contains type side res des index and suffix
                 self._resolution = self._get_name(name_split[2], 'resolution', return_type='long')
                 if not self._resolution:
-                    logger.error('Resolution is invalid')
-                    raise KeyError('Given name does not follow the correct name convention')
+                    if self._warn:
+                        logger.error('Resolution is invalid')
+                        raise KeyError('Given name does not follow the correct name convention')
+                    else:
+                        return None
 
                 self._description = name_split[3]
                 self._index = name_split[4]
                 self._suffix = name_split[5]
 
             else:
-                logger.error('{} is invalid'.format(name))
-                raise KeyError('Given name does not follow the correct name convention')
+                if self._warn:
+                    logger.error('{} is invalid'.format(name))
+                    raise KeyError('Given name does not follow the correct name convention')
+                else:
+                    return None
 
         elif split_num == 2:
-            logger.error('{} is invalid'.format(name))
-            raise KeyError('Given name does not follow the correct name convention')
+            if self._warn:
+                logger.error('{} is invalid'.format(name))
+                raise KeyError('Given name does not follow the correct name convention')
+            else:
+                return None
 
     def _compose_name(self):
         """
@@ -399,8 +418,12 @@ class Namer(object):
                 self._name = self._get_name(self._type, 'type', return_type='short')
 
         else:
-            # the name is invalid, should at least has type
-            logger.error('Name is invalid, should at least has Type')
+            if self._warn:
+                # the name is invalid, should at least has type
+                logger.error('Name is invalid, should at least has Type')
+                raise ValueError('Name is invalid, should at least has Type')
+            else:
+                return None
 
     @staticmethod
     def _get_name(key_value, key_type, return_type='short'):
@@ -550,10 +573,7 @@ def check_name_convention(name):
     Returns:
         namer(obj): name's wrapper, return None if not in convention
     """
-    try:
-        namer = Namer(name)
-    except KeyError or ValueError:
-        namer = None
+    namer = Namer(name, warn=False)
     return namer
 
 
