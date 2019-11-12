@@ -408,12 +408,12 @@ class Component(task.Task):
 
         # parent to base node's component group and connect attr
         # check if has base node, skip if doesn't
-        component_grp = modules.get_obj_attr(self.builder, 'base_node.components')
+        component_grp = self._get_attr_from_base_node('components')
         if component_grp:
             # base node exists, parent component to component group
             hierarchy.parent_node(self._component, component_grp)
             # get master node
-            master_node = modules.get_obj_attr(self.builder, 'base_node.master')
+            master_node = self._get_attr_from_base_node('master')
             # connect vis attrs
             attributes.connect_attrs(['controlsVis', 'jointsVis', 'rigNodesVis'],
                                      ['controlsVis', 'jointsVis', 'rigNodesVis'],
@@ -474,7 +474,7 @@ class Component(task.Task):
 
         if not input_matrix_attr:
             # check if base node in the scene, connect to base node
-            input_matrix_attr_obj = modules.get_obj_attr(self.builder, 'base_node.world_pos_attr.matrix_attr')
+            input_matrix_attr_obj = self._get_attr_from_base_node('world_pos_attr.matrix_attr')
             if input_matrix_attr_obj:
                 input_matrix_attr = input_matrix_attr_obj
 

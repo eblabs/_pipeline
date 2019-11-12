@@ -330,6 +330,18 @@ class Task(object):
 
         return hint
 
+    def _get_attr_from_base_node(self, attr_name):
+        """
+        get attr from builder's base node
+        Args:
+            attr_name(str): base node's attribute name
+
+        Returns:
+            attr_val: attribute's value, None if attribute doesn't exist
+        """
+        attr_val = modules.get_obj_attr(self.builder, 'base_node.'+attr_name)
+        return attr_val
+
     @ staticmethod
     def _check_value_type(value):
         if value in [True, False]:

@@ -115,6 +115,64 @@ class TaskListView(QListView):
         self.setCurrentIndex(QModelIndex())
 
 
+class TaskName(QWidget):
+    """widget to set task name"""
+    def __init__(self, display=True):
+        super(TaskName, self).__init__()
+        self._side = naming.Side.Key.m
+        self._des = ''
+
+        layout_base = QVBoxLayout()
+        layout_base.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout_base)
+
+        # side
+        layout_side = QHBoxLayout()
+        label = QLabel('Side:')
+        label.setMaximumWidth(30)
+        self.task_side = QComboBox()
+        self.task_side.addItems(naming.Side.Key.all)
+        self.index_side_default = self.task_side.findText(self.side, Qt.MatchFixedString)
+        self.task_side.setCurrentIndex(self.index_side_default)
+
+        layout_side.addWidget(label)
+        layout_side.addWidget(self.task_side)
+
+        layout_base.addLayout(layout_side)
+
+        # description
+        self.task_des = QLineEdit()
+        self.task_des.setPlaceholderText('Task Description...')
+
+        layout_base.addWidget(self.task_des)
+
+        # display
+        if display:
+            self.task_display = QLineEdit()
+            self.task_display.setPlaceholderText('Display Name (Optional)...')
+
+            layout_base.addWidget(self.task_display)
+
+    @ property
+    def side(self):
+        return self.task_side.currentText()
+
+    @ property
+    def description(self):
+        return self.task_des.text()
+
+    @ side.setter
+    def side(self, val):
+        self._side = val
+        self.index_side_default = self.task_side.findText(self._side, Qt.MatchFixedString)
+        self.task_side.setCurrentIndex(self.index_side_default)
+
+    @ description.setter
+    def description(self, val):
+        self._des = val
+        self.task_des.setText(val)
+
+
 class TaskCreate(QDialog):
     """widget to create task"""
 
@@ -132,31 +190,8 @@ class TaskCreate(QDialog):
 
             # ask user to set side and description, so we can force the user follow the naming convention
             # this will make us easier to mirror the component
-            # task side
-            layout_side = QHBoxLayout()
-            label = QLabel('Side:')
-            label.setMaximumWidth(30)
-            self.task_side = QComboBox()
-            self.task_side.addItems(naming.Side.Key.all)
-            self.index_side_default = self.task_side.findText(naming.Side.Key.m, Qt.MatchFixedString)
-            self.task_side.setCurrentIndex(self.index_side_default)
-
-            layout_side.addWidget(label)
-            layout_side.addWidget(self.task_side)
-
-            layout_base.addLayout(layout_side)
-
-            # task description
-            self.task_des = QLineEdit()
-            self.task_des.setPlaceholderText('Task Description...')
-
-            layout_base.addWidget(self.task_des)
-
-            # task display name
-            self.task_display = QLineEdit()
-            self.task_display.setPlaceholderText('Display Name (Optional)...')
-
-            layout_base.addWidget(self.task_display)
+            self.task_name_widget = TaskName()
+            layout_base.addWidget(self.task_name_widget)
 
         # get task creator widget
         self.widget_task_creation = TaskCreator()
@@ -172,7 +207,7 @@ class TaskCreate(QDialog):
 
         # connect set button
         if set_name:
-            self.task_des.textChanged.connect(self.set_button_with_name_check)
+            self.task_name_widget.task_des.textChanged.connect(self.set_button_with_name_check)
             self.widget_task_creation.listView.selectionModel().currentChanged.connect(self.set_button_with_name_check)
         else:
             self.widget_task_creation.listView.selectionModel().currentChanged.connect(self.set_button)
@@ -182,7 +217,7 @@ class TaskCreate(QDialog):
         self.edit_folders_window.show()
 
     def set_button_with_name_check(self):
-        des = self.task_des.text()
+        des = self.task_name_widget.task_des.text()
         task = self.widget_task_creation.listView.currentIndex().data()
 
         if des and task:

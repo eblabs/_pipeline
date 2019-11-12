@@ -58,6 +58,9 @@ class BaseNode(task.Task):
 
     def pre_build(self):
         super(BaseNode, self).pre_build()
+        if self._builder:
+            # plug self object as base node
+            setattr(self._builder, 'base_node', self)
         self.create_hierarchy()
         self.connect_vis()
         self.set_rig_info()
@@ -101,7 +104,7 @@ class BaseNode(task.Task):
         enum_attr = ''
         cond_nodes = []
         default_val = 10
-        for i, res in enumerate(naming.Resolution.all):
+        for i, res in enumerate(naming.Resolution.Key.all):
             namer_res = naming.Namer(type=naming.Type.group, side=naming.Side.middle, resolution=res,
                                      description='geometries')
             grp_res = transforms.create(namer_res.name, lock_hide=attributes.Attr.all, parent=self.geometries)
@@ -169,8 +172,8 @@ class BaseNode(task.Task):
                              default_value=2, channel_box=True, enum_name='normal:template:reference')
         attributes.add_attrs(self.master,
                              ['geometriesVis', 'moverVis', 'controlsVis', 'jointsVis', 'rigNodesVis', 'skeletonVis'],
-                             attribute_type='long', range=[0, 1], default_value=[1, 1, 1, 0, 0, 0], keyable=False,
-                             channel_box=True)
+                             attribute_type='bool', default_value=[True, True, True, False, False, False],
+                             keyable=False, channel_box=True)
 
         # connect attrs
         attributes.connect_attrs([self.master + '.geometriesDisplayType', self.master + '.geometriesVis',

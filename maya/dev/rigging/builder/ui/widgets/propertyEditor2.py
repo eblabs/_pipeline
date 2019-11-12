@@ -34,7 +34,7 @@ ROLE_TASK_INFO = Qt.UserRole + 1
 
 ROLE_ITEM_KWARGS = Qt.UserRole + 2  # this role hold each property's ui kwargs
 
-COLOR_WARN = QColor(255, 0, 0)
+COLOR_WARN = QColor(245, 188, 66)
 
 
 #  CLASS
@@ -458,6 +458,9 @@ class PropertyEditor(QTreeView):
         value = item_kwargs['default']
         item.setText(convert_data_to_str(value))
 
+        # check skippable
+        warn_unskippable_kwarg(item)
+
         # we need to update parent first, because it will save the value back to item
         # rebuild child will need the value from item, not from the text,
         # this way we can keep the value type more consistent
@@ -498,6 +501,9 @@ class PropertyEditor(QTreeView):
             # update child
             self._rebuild_child(item)
 
+        # check skippable
+        warn_unskippable_kwarg(item)
+
     def _add_selection(self):
         """
         add selected nodes to attr
@@ -507,8 +513,10 @@ class PropertyEditor(QTreeView):
         item = self._model.itemFromIndex(index)
 
         val = item.text()
+
         # convert value
         val = convert_data(val)
+        val_orig = val[:]
         # get selection
         sel = cmds.ls(selection=True)
         # add selection
@@ -521,6 +529,10 @@ class PropertyEditor(QTreeView):
             # this way we can keep the value type more consistent
             self._update_parent(item)
             self._rebuild_child(item)
+
+        if not val_orig:
+            # because we added sth, we need to check skippable to change background color
+            warn_unskippable_kwarg(item)
 
     def _add_element(self):
         """
@@ -803,14 +815,7 @@ class PropertyDelegate(QItemDelegate):
         # check if the value is unskippable, set background color if no value with skippable set to False
         skippable = item_kwargs.get('skippable', True)
 
-        if not skippable:
-            value = convert_data(item.text())  # get current item value converted
-            if not value:
-                item.setData(COLOR_WARN, Qt.BackgroundRole)
-            else:
-                item.setData(None, Qt.BackgroundRole)
-        else:
-            item.setData(None, Qt.BackgroundRole)
+        warn_unskippable_kwarg(item, skippable=skippable)
 
         # shoot rebuild signal
         self.SIGNAL_UPDATE_PARENT.emit(item)
@@ -898,3 +903,18 @@ def check_item_type(item_value):
     else:
         item_type = None
     return item_type
+
+
+def warn_unskippable_kwarg(item, skippable=None):
+    if skippable is None:
+        item_kwargs = item.data(role=ROLE_ITEM_KWARGS)
+        skippable = item_kwargs.get('skippable', True)
+
+    if not skippable:
+        value = convert_data(item.text())  # get current item value converted
+        if not value:
+            item.setData(COLOR_WARN, Qt.BackgroundRole)
+        else:
+            item.setData(None, Qt.BackgroundRole)
+    else:
+        item.setData(None, Qt.BackgroundRole)

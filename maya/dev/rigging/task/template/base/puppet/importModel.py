@@ -47,7 +47,7 @@ class ImportModel(task.Task):
 
     def parent_model_groups(self):
         # get master node
-        master_node = naming.Namer(type=naming.Type.master).name
+        master_node = self._get_attr_from_base_node('master')
 
         # check if master exist
         if cmds.objExists(master_node):

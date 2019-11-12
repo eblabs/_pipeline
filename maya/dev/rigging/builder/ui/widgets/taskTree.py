@@ -31,6 +31,9 @@ except ImportError:
     from PySide import __version__
     from shiboken import wrapInstance
 
+# import traceback
+import traceback
+
 # import utils
 import utils.common.logUtils as logUtils
 import utils.common.modules as modules
@@ -42,6 +45,7 @@ import icons
 
 # import widget
 import taskCreator
+import transferAttr
 
 # import config
 import config
@@ -62,6 +66,9 @@ ROLE_TASK_STATUS_INFO = Qt.UserRole + 8
 ROLE_TASK_ICON = Qt.UserRole + 9
 ROLE_TASK_ICON_WARN = Qt.UserRole + 10
 
+ROLE_TASK_WARN = Qt.UserRole + 11
+ROLE_TASK_WARN_CHILD = Qt.UserRole + 12
+
 CHECK_STATE = [Qt.Unchecked, Qt.Checked]
 
 # icons
@@ -70,9 +77,6 @@ for icon in [icons.grey, icons.green, icons.yellow, icons.red]:
     ICONS_STATUS.append(QIcon(icon).pixmap(QSize(15, 15)))
 
 ICON_UNCHECK = QIcon(icons.unCheck).pixmap(QSize(15, 15))
-
-# warning color if any unskippable kwarg not set
-COLOR_WARN = QColor(255, 0, 0)
 
 # task folders
 TASK_FOLDERS_CONFIG = os.path.join(os.path.dirname(config.__file__), 'TASK_FOLDERS.cfg')
@@ -101,7 +105,6 @@ class TaskTree(QTreeWidget):
     SIGNAL_CLEAR = Signal()
     SIGNAL_EXECUTE = Signal()
     SIGNAL_ATTR_NAME = Signal(QTreeWidgetItem)
-    SIGNAL_TASK_TYPE = Signal(QTreeWidgetItem)
     SIGNAL_GET_BUILDER = Signal()
     SIGNAL_LOG_INFO = Signal(str, str)
     SIGNAL_RESET = Signal()  # emit signal to reset buttons
@@ -181,6 +184,7 @@ class TaskTree(QTreeWidget):
         self.action_duplicate.setShortcut(SC_DUPLICATE)
         self.action_remove = self.menu.addAction('Remove')
         self.action_remove.setShortcut(SC_REMOVE)
+        self.action_transfer = self.menu.addAction('Transfer Attributes')
 
         self.menu.addSeparator()
 
@@ -198,12 +202,14 @@ class TaskTree(QTreeWidget):
         self.action_expand.setShortcut(SC_EXPAND_COLLAPSE)
 
         # set enable/disable
-        self._menu_widgets = [self.menu_execute_sel, self.menu_execute_all, self.action_duplicate, self.action_remove,
-                              self.action_task_info, self.action_display, self.action_color_background,
-                              self.action_color_reset]
+        self._menu_widgets = [self.menu_execute_sel, self.action_duplicate, self.action_remove, self.action_task_info,
+                              self.action_display, self.action_color_background, self.action_color_reset]
 
         for widget in self._menu_widgets:
             widget.setEnabled(False)
+
+        self.menu_execute_all.setEnabled(True)
+        self.action_transfer.setEnabled(False)
 
         self.action_save_data.setEnabled(False)
 
@@ -234,6 +240,11 @@ class TaskTree(QTreeWidget):
         # task switch window
         self.task_switch_window = TaskSwitch()
         self.task_switch_window.SIGNAL_TASK_SWITCH.connect(self.set_task_type)
+
+        # transfer attr window
+        self.transfer_attr_window = transferAttr.TransferAttr()
+        self.action_transfer.triggered.connect(self.transfer_attr_window_open)
+        self.transfer_attr_window.SIGNAL_ATTR_TRANSFER.connect(self.transfer_attrs)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_menu)
@@ -323,18 +334,25 @@ class TaskTree(QTreeWidget):
             if not self._change:
                 self.run_sel_tasks()
 
-    def show_menu(self, pos):
+    def show_menu(self):
         top_item_count = self.topLevelItemCount()  # only show right click menu when builder loaded
         if top_item_count:
-            select_items = self.selectedItems() # check if has task selected
+            select_items = self.selectedItems()  # check if has task selected
             if not select_items:
                 # disable actions for select task (duplicate, rename etc..)
                 for widget in self._menu_widgets:
                     widget.setEnabled(False)
                 self.action_save_data.setEnabled(False)
+                self.action_transfer.setEnabled(False)
+
             else:
                 for widget in self._menu_widgets:
                     widget.setEnabled(True)
+
+                if len(select_items) > 1:
+                    self.action_transfer.setEnabled(True)
+                else:
+                    self.action_transfer.setEnabled(False)
 
                 duplicate = False
                 remove = False
@@ -443,27 +461,11 @@ class TaskTree(QTreeWidget):
             QMessageBox.warning(self, title, text)
             return
         else:
-            # check if the string starts with letter
-            try:
-                ast.literal_eval(name[0])  # not letter
-                check = False
-            except ValueError:
-                check = True  # letter
-            except SyntaxError:
-                check = False  # unknown type
-
-            if not check:
-                # raise warning box
-                text = 'task object name is illegal, must start with letter'
-                QMessageBox.warning(self, title, text)
-                return
-            else:
-                # convert name to snake case
-                name = naming.convert_camel_case(name, output_format='snake_case')
-                # set attr name
-                item = self.currentItem()
-                task_info = item.data(0, ROLE_TASK_INFO)
-                current_name = task_info['attr_name']
+            # set attr name
+            item = self.currentItem()
+            task_info = item.data(0, ROLE_TASK_INFO)
+            current_name = task_info['attr_name']
+            if name != current_name:
                 task_info.update({'attr_name': name})
                 item.setData(0, ROLE_TASK_INFO, task_info)
                 # remove previous name, add new name
@@ -482,11 +484,16 @@ class TaskTree(QTreeWidget):
                 # shoot signal to reset task info
                 self.SIGNAL_ATTR_NAME.emit(item)
 
+                # log info
+                logger.info("task's object name changed, and registered to builder as '{}'".format(name))
+            else:
+                logger.warning("task's object name is the same with the current one, skipped")
+
     def set_task_type(self, task_path):
         item = self.selectedItems()[0]
         task_info = item.data(0, ROLE_TASK_INFO)
-        task_type_orig = item.data(0, ROLE_TASK_TYPE)
         task_name = task_info['attr_name']
+        task_type_orig = item.data(0, ROLE_TASK_TYPE)
         task_path_orig = task_info['task_path']
         # compare if changed
         if task_path != task_path_orig:
@@ -501,35 +508,38 @@ class TaskTree(QTreeWidget):
             else:
                 task_kwargs = task().kwargs_ui.copy()  # get a copy of kwargs
 
+            task_kwargs_keys = task_kwargs.keys()
+
             kwargs_orig = task_info['task_kwargs']  # get original kwargs to see if any can be swapped
-            for key in kwargs_orig:
-                if key in task_kwargs:
-                    dv_orig = kwargs_orig[key]['default']
-                    dv = task_kwargs[key]['default']
-                    if type(dv_orig) == type(dv):
-                        # same type of input, swap
-                        task_kwargs[key]['default'] = dv_orig
-                        # check if value, if value, swap
-                        if 'value' in kwargs_orig[key]:
-                            task_kwargs[key].update({'value': kwargs_orig[key]['value']})
+
+            task_kwargs = self._transfer_task_kwargs(kwargs_orig, task_kwargs)  # transfer kwargs
 
             task_info.update({'task_path': task_path,
                               'task': task,
-                              'task_kwargs': task_kwargs})
+                              'task_kwargs': task_kwargs,
+                              'task_kwargs_keys': task_kwargs_keys})
 
-            set_item_data(item, **task_info)
+            # get item index and parent
+            parent = item.parent()
+            if not parent:
+                parent = self._root
+            index = parent.indexOfChild(item)
 
-            task_type = item.data(0, ROLE_TASK_TYPE)  # get the update task type
-            if task_type != 'callback':
-                # attach to builder
-                task_obj = task(name=task_name, builder=self.builder)
-                setattr(self.builder, task_name, task_obj)
-            else:
-                # object switched from task object to callback, need to remove the task object attached to builder
-                delattr(self.builder, task_name)
+            # remove item
+            self.remove_tasks(tasks=[item])
+
+            # create item and insert at the same spot
+            self._create_item(item=parent, item_index=index, **task_info)
+
+            item_create = parent.child(index)
+
+            logger.info("change {}'s type from {} to {} successfully".format(task_name, task_path_orig, task_path))
+
+            # set item as current index
+            self.setCurrentIndex(self.indexFromItem(item_create))
 
             # shoot signal to reset task info
-            self.SIGNAL_TASK_TYPE.emit(item)
+            self.itemPressed.emit(item_create, 0)
 
     def duplicate_tasks(self):
         items = self.selectedItems()
@@ -552,8 +562,10 @@ class TaskTree(QTreeWidget):
 
                 self._create_item(item=item_parent, **task_info)
 
-    def remove_tasks(self):
-        for item in self.selectedItems():
+    def remove_tasks(self, tasks=None):
+        if not tasks:
+            tasks = self.selectedItems()
+        for item in tasks:
             # check type, can't delete in class method or task referenced from parented classes
             task_type = item.data(0, ROLE_TASK_TYPE)
             task_lock = item.data(0, ROLE_TASK_LOCK)
@@ -705,6 +717,48 @@ class TaskTree(QTreeWidget):
             self.task_switch_window.widget_task_creation.rebuild_list_model(task_folders)
             self.task_switch_window.move(QCursor.pos())
             self.task_switch_window.show()
+
+    def transfer_attr_window_open(self):
+        # try close window
+        self.transfer_attr_window.close()
+
+        items = self.selectedItems()
+        task_info_orig = items[0].data(0, ROLE_TASK_INFO)
+        task_orig = task_info_orig['attr_name']
+        task_attrs = task_info_orig['task_kwargs_keys']
+
+        task_target = []
+        for item in items[1:]:
+            task_info_target = item.data(0, ROLE_TASK_INFO)
+            task_target.append(task_info_target['attr_name'])
+
+        self.transfer_attr_window.task_orig = task_orig
+        self.transfer_attr_window.task_target = task_target
+        self.transfer_attr_window.task_attrs = task_attrs
+
+        self.transfer_attr_window.move(QCursor.pos())
+        self.transfer_attr_window.show()
+
+    def transfer_attrs(self, task_attrs):
+        items = self.selectedItems()
+        task_info_orig = items[0].data(0, ROLE_TASK_INFO)
+        task_orig = task_info_orig['attr_name']
+        kwargs_orig = task_info_orig['task_kwargs']
+
+        for item_target in items[1:]:
+            task_info_target = item_target.data(0, ROLE_TASK_INFO)
+            task_target = task_info_target['attr_name']
+            kwargs_target = task_info_target['task_kwargs']
+
+            kwargs_target = self._transfer_task_kwargs(kwargs_orig, kwargs_target, transfer_keys=task_attrs,
+                                                       info=[task_orig, task_target])
+
+            task_info_target['task_kwargs'] = kwargs_target
+
+            item_target.setData(0, ROLE_TASK_INFO, task_info_target)
+
+        # shoot signal to reset task info
+        self.itemPressed.emit(items[-1], 0)
 
     def _add_child_item(self, item, data):
         for d in data:
@@ -864,8 +918,9 @@ class TaskTree(QTreeWidget):
                                         message = task_return  # override message to store in icon
                                     self._execute_setting(item, task_return_state, 'method', task_display, role, sec,
                                                           message)
-                                except Exception as exc:
-                                    self._error_setting(item, exc, role)
+                                except Exception:
+                                    traceback_str = traceback.format_exc()
+                                    self._error_setting(item, traceback_str, role)
 
                         # check if registered function is a function (mainly for callback)
                         elif task_type == 'callback':
@@ -876,53 +931,56 @@ class TaskTree(QTreeWidget):
                                     task_func = task_info['task']
                                     task_func(task_kwargs[sec])
                                 self._execute_setting(item, 1, 'function', task_display, role, sec, '')
-                            except Exception as exc:
-                                self._error_setting(item, exc, role)
+                            except Exception:
+                                traceback_str = traceback.format_exc()
+                                self._error_setting(item, traceback_str, role)
                         else:
                             # Task is an imported task
                             # try to run task
-                            # try:
-                            # get task name
-                            task_name = task_info['attr_name']
-                            task_obj = getattr(self.builder, task_name)
+                            try:
+                                # get task name
+                                task_name = task_info['attr_name']
+                                task_obj = getattr(self.builder, task_name)
 
-                            if sec == 'pre_build':
-                                # register input data
-                                task_obj.kwargs_input = task_kwargs
-                                # check if task is duplicate
-                                if task_type == 'copy':
-                                    # check target task is a pack or not
-                                    attr_name_target = task_kwargs.get('duplicate_component', None)
-                                    if attr_name_target:
-                                        task_target = modules.get_obj_attr(self.builder, attr_name_target)
-                                        if task_target:
-                                            # check if the target is pack, override the parameter if so
-                                            task_type = task_target.task_type
+                                if sec == 'pre_build':
+                                    # register input data
+                                    task_obj.kwargs_input = task_kwargs
+                                    # check if task is duplicate
+                                    if task_type == 'copy':
+                                        # check target task is a pack or not
+                                        attr_name_target = task_kwargs.get('duplicate_component', None)
+                                        if attr_name_target:
+                                            task_target = modules.get_obj_attr(self.builder, attr_name_target)
+                                            if task_target:
+                                                # check if the target is pack, override the parameter if so
+                                                task_type = task_target.task_type
 
-                                # check if task is pack
-                                if task_type == 'pack':
-                                    # get child count
-                                    child_count = item.childCount()
-                                    # loop downstream
-                                    for index_child in range(child_count):
-                                        # get item
-                                        child_item = item.child(index_child)
-                                        # get child task info
-                                        child_task_info = child_item.data(0, ROLE_TASK_INFO)
-                                        # get check state
-                                        child_check_state = child_item.checkState(0)
-                                        # add to pack if checked
-                                        if child_check_state == Qt.Checked:
-                                            task_obj.sub_components_attrs.append(child_task_info['attr_name'])
-                            # run task
-                            func = getattr(task_obj, sec)
-                            func()
-                            return_signal = task_obj.signal
-                            message = task_obj.message
+                                    # check if task is pack
+                                    if task_type == 'pack':
+                                        # get child count
+                                        child_count = item.childCount()
+                                        # loop downstream
+                                        for index_child in range(child_count):
+                                            # get item
+                                            child_item = item.child(index_child)
+                                            # get child task info
+                                            child_task_info = child_item.data(0, ROLE_TASK_INFO)
+                                            # get check state
+                                            child_check_state = child_item.checkState(0)
+                                            # add to pack if checked
+                                            if child_check_state == Qt.Checked:
+                                                task_obj.sub_components_attrs.append(child_task_info['attr_name'])
+                                # run task
+                                func = getattr(task_obj, sec)
+                                func()
+                                return_signal = task_obj.signal
+                                message = task_obj.message
 
-                            self._execute_setting(item, return_signal, 'task', task_display, role, sec, message)
-                            # except Exception as exc:
-                            #     self._error_setting(item, exc, role)
+                                self._execute_setting(item, return_signal, 'task', task_display, role, sec, message)
+
+                            except Exception:
+                                traceback_str = traceback.format_exc()
+                                self._error_setting(item, traceback_str, role)
 
                 # progress bar grow
                 cmds.progressBar(self.maya_progress_bar, edit=True, step=1)
@@ -990,7 +1048,7 @@ class TaskTree(QTreeWidget):
 
         return items
 
-    def _create_item(self, item=None, **kwargs):
+    def _create_item(self, item=None, item_index=None, **kwargs):
         """
         create QTreeWidgetItem
         """
@@ -1030,7 +1088,10 @@ class TaskTree(QTreeWidget):
 
         item_create = TaskItem(**kwargs)
 
-        item.addChild(item_create)
+        if not item_index:
+            item.addChild(item_create)
+        else:
+            item.insertChild(item_index, item_create)
 
     def _create_task(self, task_info):
         attr_name = task_info[0]
@@ -1038,12 +1099,10 @@ class TaskTree(QTreeWidget):
         task_path = task_info[2]
 
         attr_name = self._get_unique_name('', attr_name, self._attr_items)
-        self._attr_items.append(attr_name)
 
         if not display:
             display = attr_name
         display = self._get_unique_name('', display, self._display_items)
-        self._display_items.append(display)
 
         kwargs = {'display': display,
                   'attr_name': attr_name,
@@ -1179,6 +1238,45 @@ class TaskTree(QTreeWidget):
 
         return attr_name_children
 
+    @staticmethod
+    def _transfer_task_kwargs(kwargs_orig, kwargs_target, transfer_keys=None, info=None):
+        """
+        transfer one kwargs to the other if anything has the same name and value type
+
+        Args:
+            kwargs_orig(dict): original task's kwargs
+            kwargs_target(dict): target task's kwargs
+
+        Keyword Args
+            transfer_keys(list): transfer specific kwargs, None will transfer everything, default is None
+            info(list): by giving to task's name, it will print out the transfer information, default is None
+
+        Returns:
+            kwargs_target(dict)
+        """
+        if not transfer_keys:
+            transfer_keys = kwargs_orig.keys()
+
+        for key in transfer_keys:
+            if key in kwargs_target:
+                dv_orig = kwargs_orig[key]['default']
+                dv = kwargs_target[key]['default']
+                if value_type(dv_orig) == value_type(dv):
+                    # same type of input, swap
+                    kwargs_target[key]['default'] = dv_orig
+                    # check if value, if value, swap
+                    if 'value' in kwargs_orig[key]:
+                        kwargs_target[key].update({'value': kwargs_orig[key]['value']})
+                    if info:
+                        logger.info("Transfer {}'s attribute {} to {} successfully".format(info[0], key, info[1]))
+                elif info:
+                    logger.warning("{}'s attribute {} and {}'s {} type doesn't match, skipped".format(info[0], key,
+                                                                                                   info[1], key))
+            elif info:
+                logger.warning("{} doesn't have attribute {}, skipped".format(info[1], key))
+
+        return kwargs_target
+
 
 class TaskItem(QTreeWidgetItem):
     def __init__(self, **kwargs):
@@ -1189,14 +1287,13 @@ class TaskItem(QTreeWidgetItem):
 
         # get task kwargs keys as list,
         # because QTreeWidgetItem can't save order dictionary, we need the list to store the keys order
+        # add because duplication will copy task info from QTreeWidgetItem, and it will carry the key order,
+        # we need to check it first
         task_kwargs = kwargs.get('task_kwargs', {})
-        task_kwargs_keys = task_kwargs.keys()
+        task_kwargs_keys = kwargs.get('task_kwargs_keys', None)
+        if not task_kwargs_keys:
+            task_kwargs_keys = task_kwargs.keys()
         kwargs.update({'task_kwargs_keys': task_kwargs_keys})
-
-        # we need icon saved to item, so we don't need to get the dictionary and object to find the icon everytime
-        task = kwargs.get('task', None)
-        task_type = kwargs.get('task_type', None)
-        lock = kwargs.get('lock', 0)
 
         # initialize each icon, set to fresh status,
         # we need to set icon info first, because it override setData function
@@ -1204,6 +1301,10 @@ class TaskItem(QTreeWidgetItem):
         self.setData(0, ROLE_TASK_RUN, 0)
         self.setData(0, ROLE_TASK_POST, 0)
         self.setData(0, ROLE_TASK_STATUS_INFO, ['', '', ''])  # save log info for display
+
+        # save warn in item, so when we set any item as warning, it's easier for its parent to check
+        self.setData(0, ROLE_TASK_WARN, False)
+        self.setData(0, ROLE_TASK_WARN_CHILD, False)
 
         # set item info
         set_item_data(self, **kwargs)
@@ -1260,8 +1361,9 @@ class TaskItem(QTreeWidgetItem):
             task_info = self.data(0, ROLE_TASK_INFO)
             task_type = task_info['task_type']
 
+            warn = False
             if task_type not in ['method', 'callback']:
-                warn = False
+                # only task object has skippable option
                 for key, item in task_info['task_kwargs'].iteritems():
                     skippable = item.get('skippable', True)
                     val = item.get('value', None)
@@ -1272,12 +1374,77 @@ class TaskItem(QTreeWidgetItem):
                         warn = True
                         break
 
-                if warn:
-                    task_icon = self.data(0, ROLE_TASK_ICON_WARN)
-                else:
-                    task_icon = self.data(0, ROLE_TASK_ICON)
+            warn_child = self.data(0, ROLE_TASK_WARN_CHILD)
 
-                self.setIcon(0, task_icon)
+            if warn or warn_child:
+                task_icon = self.data(0, ROLE_TASK_ICON_WARN)
+            else:
+                task_icon = self.data(0, ROLE_TASK_ICON)
+
+            self.setData(0, ROLE_TASK_WARN, warn)
+            self.warn_parent_item(self, warn)
+
+            self.setIcon(0, task_icon)
+
+    def addChild(self, child):
+        super(TaskItem, self).addChild(child)
+        self._set_parent_warn(child)
+
+    def insertChild(self, index, child):
+        super(TaskItem, self).insertChild(index, child)
+        self._set_parent_warn(child)
+
+    def removeChild(self, child):
+        super(TaskItem, self).removeChild(child)
+        self.warn_current_item(self)
+
+    def takeChild(self, index):
+        task = super(TaskItem, self).takeChild(index)
+        self.warn_current_item(self)
+        return task
+
+    def warn_parent_item(self, item, warn):
+        # get parent item
+        parent = item.parent()
+        if parent:
+            # check warn
+            if warn:
+                # set parent to warning anyway
+                parent.setData(0, ROLE_TASK_WARN_CHILD, warn)
+                parent.setIcon(0, parent.data(0, ROLE_TASK_ICON_WARN))
+                self.warn_parent_item(parent, warn)
+            else:
+                self.warn_current_item(parent)
+
+    def warn_current_item(self, item):
+        if item:
+            # get all children
+            child_count = item.childCount()
+            warn = False
+            warn_children = False
+            for index in range(child_count):
+                # loop in each child to check warn
+                child_item = item.child(index)
+                warn = child_item.data(0, ROLE_TASK_WARN)
+                warn_children = child_item.data(0, ROLE_TASK_WARN_CHILD)
+                if warn or warn_children:
+                    break
+            if not warn and not warn_children:
+                # if it's still has warning, means nothing need to be changed for parent, skip
+                item.setData(0, ROLE_TASK_WARN_CHILD, False)
+                # check item itself warn
+                warn_item = item.data(0, ROLE_TASK_WARN)
+                if not warn_item:
+                    item.setIcon(0, item.data(0, ROLE_TASK_ICON))
+                    self.warn_parent_item(item, warn)
+
+    def _set_parent_warn(self, item):
+        if item:
+            warn = item.data(0, ROLE_TASK_WARN)
+            warn_child = item.data(0, ROLE_TASK_WARN_CHILD)
+            if warn or warn_child:
+                warn = True
+            self.warn_parent_item(item, warn)
 
 
 class SubMenu(QMenu):
@@ -1328,17 +1495,17 @@ class TaskCreate(taskCreator.TaskCreate):
         self.button.clicked.connect(self._get_select_task)
 
     def refresh_widgets(self):
-        self.task_side.setCurrentIndex(self.index_side_default)
-        self.task_des.setText('')
-        self.task_display.setText('')
+        self.task_name_widget.side = naming.Side.Key.m
+        self.task_name_widget.description = ''
+        self.task_name_widget.task_display.setText('')
         self.widget_task_creation.filter.setText('')
         self.setFocus()
 
     def _get_select_task(self):
-        side = self.task_side.currentText()
-        description = self.task_des.text()
+        side = self.task_name_widget.side
+        description = self.task_name_widget.description
         name = naming.Namer(type=naming.Type.task, side=side, description=description).name
-        display = self.task_display.text()
+        display = self.task_name_widget.task_display.text()
         task = self.widget_task_creation.listView.currentIndex().data()
 
         self.SIGNAL_TASK_CREATION.emit([name, display, task])
@@ -1396,18 +1563,20 @@ def set_item_data(item, **kwargs):
         if inspect.ismethod(task):
             item.setData(0, ROLE_TASK_TYPE, 'method')
             task_icon = [icons.method, icons.method][lock]
+            warn_icon = icons.method_warn
         elif inspect.isfunction(task):
             item.setData(0, ROLE_TASK_TYPE, 'callback')
             task_icon = [icons.callback_new, icons.callback_lock][lock]
+            warn_icon = icons.callback_warn
         else:
             item.setData(0, ROLE_TASK_TYPE, task_type)  # normally user will given task_path and task together
             task_icon_list = task().icons
             warn_icon = task_icon_list[2]
-            item.setData(0, ROLE_TASK_ICON_WARN, QIcon(warn_icon))
             task_icon = task_icon_list[lock]
 
         item.setIcon(0, QIcon(task_icon))  # set task's icon
         item.setData(0, ROLE_TASK_ICON, QIcon(task_icon))
+        item.setData(0, ROLE_TASK_ICON_WARN, QIcon(warn_icon))
 
     if check is not None:
         item.setCheckState(0, CHECK_STATE[check])
@@ -1435,6 +1604,17 @@ def clear_maya_progress_bar_cache(progress_bar, progress_max):
         else:
             # cache cleared out, finish the loop
             break
+
+
+def value_type(value):
+    """
+    just because some string is unicode, some is str, I didn't find good way to compare them
+    """
+    if isinstance(value, basestring):
+        val_type = str
+    else:
+        val_type = type(value)
+    return val_type
 
 
 # Fix

@@ -4,28 +4,22 @@
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/core/builder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/rigBuilder.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/callback_new.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/callback_reference.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/component_new.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/component_reference.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/copy_new.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/copy_reference.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/data_new.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/data_reference.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/method.png" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/method.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/pack_new.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/pack_reference.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_new.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_reference.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_template.psd" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/icons/task_template.psd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/logWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/logWindow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor2.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/rigInfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/rigInfo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskCreator.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskCreator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskInfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskInfo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskTree.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskTree.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/base/copy.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/base/copy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/component.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/core/pack.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/core/pack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/rigData.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/rigData.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/callback.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/base/callback.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/naming.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/naming.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/baseNode.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/baseNode.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/blueprint.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/blueprint.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/importModel.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/importModel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/maya.sublime-workspace" beforeDir="false" afterPath="$PROJECT_DIR$/maya.sublime-workspace" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -52,6 +46,9 @@
     <property name="settings.editor.selected.configurable" value="configurable.group.project" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\_pipeline\maya\dev\rigging\task\base" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\_pipeline\maya\dev\rigging\task\base" />
     </key>

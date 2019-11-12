@@ -45,9 +45,9 @@ class Blueprint(rigData.RigData):
         # build blueprints
         for path in self.data_path:
             for file_format, load_method in zip([joints.JOINT_INFO_FORMAT, curves.CURVE_INFO_FORMAT,
-                                            surfaces.SURF_INFO_FORMAT, meshes.MESH_INFO_FORMAT],
-                                           [joints.load_joints_info, curves.load_curves_info,
-                                            surfaces.load_surfaces_info, meshes.load_meshes_info]):
+                                                 surfaces.SURF_INFO_FORMAT, meshes.MESH_INFO_FORMAT],
+                                                [joints.load_joints_info, curves.load_curves_info,
+                                                 surfaces.load_surfaces_info, meshes.load_meshes_info]):
                 blueprint_path = os.path.join(path, BLUEPRINT_NAME+file_format)
                 if os.path.exists(blueprint_path):
                     load_method(blueprint_path, BLUEPRINT_NAME, parent_node=self.blueprint_grp)
@@ -70,7 +70,7 @@ class Blueprint(rigData.RigData):
             for sel in selection:
                 if sel not in nodes_sel:
                     # because we loop in all hierarchy node under the node, this means we already have the nodes
-                    nodes.append(sel)
+                    nodes_sel.append(sel)
                     sel_hierarchy = cmds.listRelatives(sel, allDescendents=True)
                     if sel_hierarchy:
                         nodes_sel += sel_hierarchy

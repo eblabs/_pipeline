@@ -11,6 +11,7 @@ import utils.common.variables as variables
 import utils.common.modules as modules
 import utils.common.files as files
 import utils.common.logUtils as logUtils
+import utils.common.naming as naming
 
 # CONSTANT
 logger = logUtils.logger
@@ -43,6 +44,9 @@ class Builder(object):
         # so we register those override kwargs back to the builder as a dict, with sub components attr name as key,
         # and in each component, we will search the dict to see if anything need to be override before set kwargs
         self.pack_kwargs_override = {}
+
+        # base node task will override this parameter, so components will get base node use it
+        self.base_node = None
 
     @property
     def project(self):

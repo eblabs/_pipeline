@@ -139,7 +139,6 @@ class RigInfo(RigInfoBase):
 
     def __init__(self):
         super(RigInfo, self).__init__()
-        self._pos = None
 
         # rig right clicked menu
         self.menu = QMenu()
@@ -212,7 +211,6 @@ class RigInfo(RigInfoBase):
             self.remove_action.setEnabled(False)
             self.build_action.setEnabled(False)
 
-        # self._pos = self.line_edit_rig.mapToGlobal(pos)
         self.menu.move(QCursor.pos())  # move menu to the clicked position
         self.menu.show()
 

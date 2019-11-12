@@ -79,7 +79,7 @@ class LogLevelMenu(QMenu):
         self.info = QRadioButton('info')
         self.debug = QRadioButton('debug')
 
-        self.info.setChecked(True)
+        self.debug.setChecked(True)
 
         layout_base.addWidget(self.critical)
         layout_base.addWidget(self.error)

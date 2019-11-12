@@ -519,14 +519,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks.tsk",
-			"settings":
-			{
-				"buffer_size": 5702,
-				"line_ending": "Unix"
-			}
-		}
 	],
 	"build_system": "Packages/Python/Python.sublime-build",
 	"build_system_choices":
@@ -603,6 +595,8 @@
 	"file_history":
 	[
 		"/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks.tsk",
+		"/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks_copy.tsk_copy",
+		"/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks - Copy.tsk",
 		"/C/_pipeline/maya/dev/rigging/task/core/task.py",
 		"/C/Users/harri/Downloads/AI-Syoujyo/Bepinex/config/AutoTranslatorConfig.ini",
 		"/C/_pipeline/maya/dev/rigging/task/__init__.py",
@@ -727,9 +721,7 @@
 		"/C/_pipeline/maya_oldCodes/rigSys/components/package/componentsBlendPackage.py",
 		"/C/_pipeline/maya_oldCodes/rigSys/behaviors/ikSplineSolverBehavior.py",
 		"/C/_pipeline/maya_oldCodes/rigSys/components/advance/ikRPsolverPlusComponent.py",
-		"/C/_pipeline/maya_oldCodes/rigSys/components/base/fkChainComponent.py",
-		"/C/_pipeline/maya_oldCodes/rigSys/behaviors/baseBehavior.py",
-		"/C/_pipeline/maya_oldCodes/rigSys/behaviors/fkChainBehavior.py"
+		"/C/_pipeline/maya_oldCodes/rigSys/components/base/fkChainComponent.py"
 	],
 	"find":
 	{
@@ -996,39 +988,8 @@
 	"groups":
 	[
 		{
-			"selected": 0,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks.tsk",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5702,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Text/Plain text.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1428.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				}
 			]
 		},
 		{
