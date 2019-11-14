@@ -53,7 +53,7 @@ def publish_model(model_type, asset, project, comment=''):
         publish_grps = {}
         model_paths_return = []
         # get all resolution model groups
-        namer_res = naming.Namer(type=naming.Type.group, side=naming.Side.middle, description=model_type)
+        namer_res = naming.Namer(type=naming.Type.group, side=naming.Side.middle, description=model_type, index=1)
         for res in naming.Resolution.all:
             namer_res.resolution = res
             res_grp = namer_res.name

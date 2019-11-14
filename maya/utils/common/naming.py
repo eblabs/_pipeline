@@ -122,8 +122,8 @@ class Namer(object):
         self._warn = None
 
         if args:
-            self._decompose_name(args[0])
             self._warn = kwargs.get('warn', True)
+            self._decompose_name(args[0])
         else:
             for key_long, key_short in self.shortcuts.iteritems():
                 val = variables.kwargs(key_long, None, kwargs, short_name=key_short)
@@ -573,7 +573,12 @@ def check_name_convention(name):
     Returns:
         namer(obj): name's wrapper, return None if not in convention
     """
-    namer = Namer(name, warn=False)
+    try:
+        namer = Namer(name, warn=False)
+    except ValueError:
+        namer = None
+    except KeyError:
+        namer = None
     return namer
 
 

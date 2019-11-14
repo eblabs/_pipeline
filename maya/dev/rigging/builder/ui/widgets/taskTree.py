@@ -876,14 +876,7 @@ class TaskTree(QTreeWidget):
                 task_display = item.text(0)
                 check_state = item.checkState(0)
                 # reduce task kwargs, because original one contains lots of ui info we don't need
-                task_kwargs = {}
-                for key, data in task_info['task_kwargs'].iteritems():
-                    if 'value' in data and data['value'] is not None:
-                        val = data['value']
-                    else:
-                        val = data['default']
-                    attr_name = data['attr_name']
-                    task_kwargs.update({attr_name: val})
+                task_kwargs = self._reduce_task_kwargs(task_info['task_kwargs'])
 
                 # check if the item is unchecked
                 if check_state == Qt.Checked or ignore_check:
@@ -1153,14 +1146,14 @@ class TaskTree(QTreeWidget):
             if task_save:
                 task_info = item.data(0, ROLE_TASK_INFO)
                 task_name = task_info['attr_name']
-                task_kwargs = task_info['task_kwargs']
+                task_kwargs = self._reduce_task_kwargs(task_info['task_kwargs'])
 
                 # get task obj from builder
                 task_obj = getattr(self.builder, task_name)
 
                 # register kwargs
                 # some saving function need the input information to save data for specific node
-                task_obj.kwargs_task = task_kwargs
+                task_obj.kwargs_input = task_kwargs
                 task_obj.register_inputs()
 
                 # trigger save data function
@@ -1238,7 +1231,30 @@ class TaskTree(QTreeWidget):
 
         return attr_name_children
 
-    @staticmethod
+    @ staticmethod
+    def _reduce_task_kwargs(task_kwargs):
+        """
+        because task's kwargs has too many information we don't need (like ui info), this function will reduce to
+        only have value and attr name, so later on we can plug into task's kwargs_input
+
+        Args:
+            task_kwargs(dict): task's kwargs
+
+        Returns:
+            task_kwargs_reduce(dict)
+
+        """
+        task_kwargs_reduce = {}
+        for key, data in task_kwargs.iteritems():
+            if 'value' in data and data['value'] is not None:
+                val = data['value']
+            else:
+                val = data['default']
+            attr_name = data['attr_name']
+            task_kwargs_reduce.update({attr_name: val})
+        return task_kwargs_reduce
+
+    @ staticmethod
     def _transfer_task_kwargs(kwargs_orig, kwargs_target, transfer_keys=None, info=None):
         """
         transfer one kwargs to the other if anything has the same name and value type
