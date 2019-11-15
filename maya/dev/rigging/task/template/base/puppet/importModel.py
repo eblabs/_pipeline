@@ -48,9 +48,10 @@ class ImportModel(task.Task):
     def parent_model_groups(self):
         # get master node
         master_node = self._get_attr_from_base_node('master')
+        print master_node
 
         # check if master exist
-        if cmds.objExists(master_node):
+        if master_node and cmds.objExists(master_node):
             # get all resolution transform group
             trans_grps = {}
             for i in range(len(naming.Resolution.all)):

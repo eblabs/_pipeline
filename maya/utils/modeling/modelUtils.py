@@ -141,7 +141,7 @@ def import_model(model_type, asset, project, resolution=None):
         if os.path.exists(publish_info_path):
             # has published model, prepare to import models
             model_grps = {}
-            namer_res = naming.Namer(type=naming.Type.group, side=naming.Side.middle, description=model_type)
+            namer_res = naming.Namer(type=naming.Type.group, side=naming.Side.middle, description=model_type, index=1)
             # get publish info data
             publish_info = files.read_json_file(publish_info_path)
             if not resolution:

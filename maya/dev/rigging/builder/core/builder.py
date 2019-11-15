@@ -190,18 +190,19 @@ class Builder(object):
             index(str/int): register task at specific index
                             if given string, it will register after the given task
             parent(str): parent task to the given task
-            kwargs(dict): task kwargs
+            task_kwargs(dict): task kwargs
             check(int): task check state
             background_color(list): task background color, None will use the inherit color,
                                     use str 'default' to set back to default
         """
-        _task_kwargs = {}  # task kwargs to add back to task info
+        # task kwargs to add back to task info, it will store the task kwargs here temperately if we change task path
+        _task_kwargs = {}
         # get kwargs
         _display = variables.kwargs('display', '', kwargs, short_name='dis')
         _task_path = variables.kwargs('task_path', None, kwargs, short_name='tsk')
         _index = variables.kwargs('index', None, kwargs, short_name='i')
         _parent = variables.kwargs('parent', '', kwargs, short_name='p')
-        _kwargs = variables.kwargs('kwargs', {}, kwargs)
+        _kwargs = variables.kwargs('task_kwargs', {}, kwargs)
         _check = variables.kwargs('check', 1, kwargs)
         _background_color = variables.kwargs('background_color', None, kwargs)
 
@@ -228,20 +229,44 @@ class Builder(object):
         if _parent:
             self._tasks_info[name]['parent'] = _parent
 
+        # override kwargs if has any
+        # get original kwargs to compare
+        _kwargs_orig = self._tasks_info[name]['task_kwargs'].copy()
+
+        for key, data in _kwargs.iteritems():
+            if key in _kwargs_orig:
+                # update with the kwargs values given by the input
+                _kwargs_orig[key]['default'] = data['default']
+            elif key in _kwargs_orig:
+                # get kwargs values from the original task info,
+                # that way we can keep the changes even if we switch the task
+                default_value = _task_kwargs[key]['default']
+                orig_value = _kwargs_orig[key]['default']
+                if type(default_value) == type(orig_value) and default_value != orig_value:
+                    _task_kwargs[key]['default'] = orig_value
+
         if _task_kwargs:
+            # means we change the task path, it's now a different task,
+            # we need to see if anything from original can be swapped.
             # get original kwargs to compare
             _kwargs_orig = self._tasks_info[name]['task_kwargs']
+
             for key, data in _task_kwargs.iteritems():
-                if key in _kwargs:
-                    # update with the kwargs values given by the input
-                    _task_kwargs[key]['default'] = _kwargs[key]['default']
-                elif key in _kwargs_orig:
+                if key in _kwargs_orig:
                     # get kwargs values from the original task info,
                     # that way we can keep the changes even if we switch the task
                     default_value = _task_kwargs[key]['default']
                     orig_value = _kwargs_orig[key]['default']
                     if type(default_value) == type(orig_value) and default_value != orig_value:
                         _task_kwargs[key]['default'] = orig_value
+        else:
+            _task_kwargs = self._tasks_info[name]['task_kwargs']
+
+        if _kwargs:
+            # check to see if any kwargs need to be updated
+            for key, data in _kwargs.iteritems():
+                if key in _task_kwargs:
+                    _task_kwargs[key]['default'] = data['default']
 
         self._tasks_info[name]['task_kwargs'] = _task_kwargs  # override task kwargs info
 

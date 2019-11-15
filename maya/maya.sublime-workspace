@@ -519,6 +519,14 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/build/tasks.tsk",
+			"settings":
+			{
+				"buffer_size": 35310,
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "Packages/Python/Python.sublime-build",
 	"build_system_choices":
@@ -594,6 +602,7 @@
 	],
 	"file_history":
 	[
+		"/C/_works/maya/projects/template/assets/baseBiped/models/body/publish/publish_info.pub",
 		"/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks.tsk",
 		"/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks_copy.tsk_copy",
 		"/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks - Copy.tsk",
@@ -720,8 +729,7 @@
 		"/C/_pipeline/maya_oldCodes/rigSys/components/package/multiComponentsPackage.py",
 		"/C/_pipeline/maya_oldCodes/rigSys/components/package/componentsBlendPackage.py",
 		"/C/_pipeline/maya_oldCodes/rigSys/behaviors/ikSplineSolverBehavior.py",
-		"/C/_pipeline/maya_oldCodes/rigSys/components/advance/ikRPsolverPlusComponent.py",
-		"/C/_pipeline/maya_oldCodes/rigSys/components/base/fkChainComponent.py"
+		"/C/_pipeline/maya_oldCodes/rigSys/components/advance/ikRPsolverPlusComponent.py"
 	],
 	"find":
 	{
@@ -988,8 +996,37 @@
 	"groups":
 	[
 		{
+			"selected": 0,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/build/tasks.tsk",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 35310,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
 			]
 		},
 		{

@@ -12,6 +12,7 @@ import utils.common.transforms as transforms
 import utils.common.attributes as attributes
 import utils.common.nodeUtils as nodeUtils
 import utils.rigging.controls as controls
+import utils.modeling.meshes as meshes
 
 # import task
 import dev.rigging.task.core.task as task
@@ -264,13 +265,15 @@ class BaseNode(task.Task):
         """
         automatically scale mover controls to fit the geometries' bounding box, will skip if no geo in the group
         """
+        # get all meshes from geo group
+        meshes_nodes = meshes.get_meshes_from_node(self.geometries)
+
         # get geo bounding box info
-        geo_bbox_min = cmds.getAttr(self.geometries+'.boundingBoxMin')[0]
-        geo_bbox_max = cmds.getAttr(self.geometries + '.boundingBoxMax')[0]
+        if meshes_nodes:
+            bbox_info = cmds.exactWorldBoundingBox(meshes_nodes)
 
-        geo_length = max(geo_bbox_max[0]-geo_bbox_min[0], geo_bbox_max[2]-geo_bbox_min[2])
+            geo_length = max(bbox_info[3]-bbox_info[0], bbox_info[5]-bbox_info[2])
 
-        if geo_length > 0:
             # if no geo in the group, geo_length will be 0, skip in that case
             # get local control bounding box info
             local_control_bbox_min = cmds.getAttr(self.local_control.name+'.boundingBoxMin')[0]
@@ -280,6 +283,6 @@ class BaseNode(task.Task):
             control_length = local_control_bbox_max[0] - local_control_bbox_min[0]
 
             # get scale multiplier
-            scale_multiplier = geo_length/float(control_length) * 2
+            scale_multiplier = geo_length/float(control_length)
             controls.transform_ctrl_shape([self.world_control.control_shape, self.layout_control.control_shape,
                                            self.local_control.control_shape], scale=scale_multiplier)

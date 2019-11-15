@@ -198,6 +198,37 @@ def load_meshes_info(path, name='meshesInfo', parent_node=None):
         logger.warning('given path: {} does not exist, skipped'.format(meshes_info_path))
 
 
+def get_meshes_from_node(node, **kwargs):
+    """
+    get all meshes parented to the given node
+    Args:
+        node(str): transform node name
+    Keyword Args:
+        all_descendants(bool): get all the children, grand-children etc, default is True
+        visible_only(bool): only get visible meshes, default is False
+
+    Returns:
+        meshes_nodes(list): meshes' transform nodes
+    """
+    all_descendants = variables.kwargs('all_descendants', True, kwargs, short_name='ad')
+    visible_only = variables.kwargs('visible_only', False, kwargs)
+
+    if all_descendants:
+        meshes_shapes = cmds.listRelatives(node, allDescendents=True, type='mesh')
+    else:
+        meshes_shapes = cmds.listRelatives(node, children=True, type='mesh')
+
+    meshes_shapes = cmds.ls(meshes_shapes, visible=visible_only, noIntermediate=True, geometry=True)
+
+    meshes_nodes = []
+    for shape in meshes_shapes:
+        trans_node = cmds.listRelatives(shape, parent=True)[0]
+        if trans_node not in meshes_nodes:
+            meshes_nodes.append(trans_node)
+
+    return meshes_nodes
+
+
 # SUB FUNCTION
 def _get_MFnMesh(mesh):
     """

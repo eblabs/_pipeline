@@ -13,7 +13,6 @@ from collections import OrderedDict
 import utils.common.variables as variables
 import utils.common.logUtils as logUtils
 import utils.common.modules as modules
-import utils.common.naming as naming
 import utils.common.attributes as attributes
 import utils.rigging.buildUtils as buildUtils
 

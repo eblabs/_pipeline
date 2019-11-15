@@ -110,6 +110,7 @@ class PropertyEditor(QTreeView):
 
         # get task info
         task_info = item.data(0, ROLE_TASK_INFO)
+
         # get kwargs and keys
         task_kwargs = task_info['task_kwargs']
         task_kwargs_keys = task_info['task_kwargs_keys']
@@ -226,7 +227,7 @@ class PropertyEditor(QTreeView):
                     else:
                         # all values has the same type
                         attr_type = check_item_type(template)
-                elif custom:
+                else:
                     attr_type = check_item_type(v)
 
                 # get attr_kwargs from attr_type
@@ -269,7 +270,7 @@ class PropertyEditor(QTreeView):
                     else:
                         # all keys have some attr type
                         attr_type = check_item_type(template)
-                elif custom:
+                else:
                     attr_type = check_item_type(v)
                 # get attr kwargs from attr type
                 if attr_type:
@@ -728,8 +729,12 @@ class PropertyDelegate(QItemDelegate):
             # set range
             if 'min' in item_kwargs and item_kwargs['min'] is not None:
                 widget.setMinimum(item_kwargs['min'])
+            else:
+                widget.setMinimum(-9999)  # pySide default is 0, we need to reset it to go negative
             if 'max' in item_kwargs and item_kwargs['max'] is not None:
                 widget.setMaximum(item_kwargs['max'])
+            else:
+                widget.setMaximum(9999)  # pySide default is 99, give it more range
 
         elif isinstance(widget, QLineEdit):
             widget.setFrame(False)
