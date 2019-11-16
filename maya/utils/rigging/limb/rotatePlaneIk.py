@@ -9,6 +9,7 @@ import utils.common.variables as variables
 import utils.common.attributes as attributes
 import utils.common.nodeUtils as nodeUtils
 import utils.common.transforms as transforms
+import utils.common.hierarchy as hierarchy
 import utils.rigging.controls as controls
 import utils.rigging.constraints as constraints
 import utils.modeling.curves as curves
@@ -113,7 +114,7 @@ class RotatePlaneIk(limb.Limb):
             ground_transform = naming.Namer(type=naming.Type.transform, side=ground_ctrl_obj.side,
                                             description=ground_ctrl_obj.description, index=ground_ctrl_obj.index).name
             ground_transform = transforms.create(ground_transform, pos=ground_ctrl_obj.name,
-                                                 lock_hide=attributes.Attr.all, vis=False, parent=self._nodes_hide_grp)
+                                                 lock_hide=attributes.Attr.all, vis=True, parent=self._nodes_hide_grp)
             constraints.matrix_connect(ground_ctrl_obj.world_matrix_attr, ground_transform, force=True)
             ik_transform_parent = ground_transform
         else:
@@ -136,9 +137,9 @@ class RotatePlaneIk(limb.Limb):
         cmds.parent(ik_handle, ik_transform)
 
         # connect pole vector
-        # pole vector constraint
-        constraints.matrix_pole_vector_constraint(pv_transform+'.matrix', ik_handle, rp_jnts[0],
-                                                  parent_inverse_matrix=ik_transform+'.inverseMatrix', force=True)
+        # because we have reverse foot set up later, and it will re parent the ik handle,
+        # we have to do pole vector constraint at the end of the process
+        # otherwise we won't know how many nodes on top of the ik handle, then we can't get the correct matrix
 
         # pole vector line
         pv_jnt_mult_matrix_attr = nodeUtils.mult_matrix([rp_jnts[1]+'.matrix', rp_jnts[0]+'.matrix'], side=self._side,
@@ -276,6 +277,24 @@ class RotatePlaneIk(limb.Limb):
 
             # pass info
             self.iks += sc_iks
+
+        # get ik handle's parent inverse matrix so we can plug into pole vector constraint
+        # get ik handle's parent nodes util rig node group
+        parent_nodes_ik = hierarchy.get_all_parents(self.iks[0], root=self.nodes_hide)
+        # check nodes count, if only one, use inverse matrix attr
+        if len(parent_nodes_ik) == 1:
+            pv_inverse_matrix_attr = parent_nodes_ik[0]+'.inverseMatrix'
+        else:
+            mult_matrix_attr = []
+            for n in parent_nodes_ik:
+                mult_matrix_attr.append(n+'.matrix')
+            pv_mult_matrix_attr = nodeUtils.mult_matrix(mult_matrix_attr, side=self._side,
+                                                        description=self._des+'PvParentMatrix', index=1)
+            pv_inverse_matrix_attr = nodeUtils.inverse_matrix(pv_mult_matrix_attr, side=self._side,
+                                                              description=self._des+'PvParentInverseMatrix', index=1)
+        # create pole vector constraint
+        constraints.matrix_pole_vector_constraint(pv_transform+'.matrix', self.iks[0], rp_jnts[0],
+                                                  parent_inverse_matrix=pv_inverse_matrix_attr, force=True)
 
         # pass info
         self.nodes_hide += [pv_transform, ik_transform]

@@ -127,8 +127,8 @@ def matrix_aim_constraint(input_matrix, driven_nodes, **kwargs):
     parent = variables.kwargs('parent', None, kwargs, short_name='p')
     world_up_type = variables.kwargs('world_up_type', 'objectrotation', kwargs)
     world_up_matrix = variables.kwargs('world_up_matrix', None, kwargs)
-    aim_vector = variables.kwargs('aimVector', [1, 0, 0], kwargs, short_name='aim')
-    up_vector = variables.kwargs('upVector', [0, 1, 0], kwargs, short_name='up')
+    aim_vector = variables.kwargs('aim_vector', [1, 0, 0], kwargs, short_name='aim')
+    up_vector = variables.kwargs('up_vector', [0, 1, 0], kwargs, short_name='up')
     local = variables.kwargs('local', False, kwargs)
     force = variables.kwargs('force', True, kwargs, short_name='f')
 

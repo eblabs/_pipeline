@@ -401,7 +401,7 @@ class Component(task.Task):
                                   self._nodes_world_grp + '.visibility'], driver=self._component)
 
         # mult input and offset matrix to connect local group
-        mult_matrix_attr = nodeUtils.mult_matrix([self._component + '.inputMatrix', self._component + '.offsetMatrix'],
+        mult_matrix_attr = nodeUtils.mult_matrix([self._component + '.offsetMatrix', self._component + '.inputMatrix'],
                                                  side=self.side, description=self.description + self.description_suffix,
                                                  index=1)
         constraints.matrix_connect(mult_matrix_attr, self._local_grp, force=True)
@@ -465,28 +465,31 @@ class Component(task.Task):
         connect component with given input (input connection registered in initialization)
         """
         input_matrix_attr = None
-        # check if has input connection
-        if self.input_connect:
-            input_matrix_attr = self._get_node_name(self.input_connect)
-            # check if it's a matrix attr, could be a node name or other attr
-            if '.' not in input_matrix_attr or cmds.getAttr(input_matrix_attr, type=True) != 'matrix':
-                input_matrix_attr = None
+        # check if input matrix already has connection
+        input_matrix_plug = cmds.listConnections(self._input_matrix_attr, source=True, destination=False)
+        if not input_matrix_plug:
+            # check if has input connection
+            if self.input_connect:
+                input_matrix_attr = self._get_node_name(self.input_connect)
+                # check if it's a matrix attr, could be a node name or other attr
+                if '.' not in input_matrix_attr or cmds.getAttr(input_matrix_attr, type=True) != 'matrix':
+                    input_matrix_attr = None
 
-        if not input_matrix_attr:
-            # check if base node in the scene, connect to base node
-            input_matrix_attr_obj = self._get_attr_from_base_node('world_pos_attr.matrix_attr')
-            if input_matrix_attr_obj:
-                input_matrix_attr = input_matrix_attr_obj
+            if not input_matrix_attr:
+                # check if base node in the scene, connect to base node
+                input_matrix_attr_obj = self._get_attr_from_base_node('world_pos_attr.matrix_attr')
+                if input_matrix_attr_obj:
+                    input_matrix_attr = input_matrix_attr_obj
 
-        if input_matrix_attr:
-            # compute matrix if input matrix exist
-            input_matrix = cmds.getAttr(input_matrix_attr)
-            input_matrix_inv = mathUtils.inverse_matrix(input_matrix)
-            offset_matrix = mathUtils.mult_matrix([mathUtils.MATRIX_DEFAULT, input_matrix_inv])
+            if input_matrix_attr:
+                # compute matrix if input matrix exist
+                input_matrix = cmds.getAttr(input_matrix_attr)
+                input_matrix_inv = mathUtils.inverse_matrix(input_matrix)
+                offset_matrix = mathUtils.mult_matrix([mathUtils.MATRIX_DEFAULT, input_matrix_inv])
 
-            # connect input matrix, set offset matrix
-            attributes.connect_attrs(input_matrix_attr, self._input_matrix_attr, force=True)
-            attributes.set_attrs(self._offset_matrix_attr, offset_matrix, type='matrix', force=True)
+                # connect input matrix, set offset matrix
+                attributes.connect_attrs(input_matrix_attr, self._input_matrix_attr, force=True)
+                attributes.set_attrs(self._offset_matrix_attr, offset_matrix, type='matrix', force=True)
 
     def disconnect_component(self):
         """

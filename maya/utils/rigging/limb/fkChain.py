@@ -52,7 +52,7 @@ class FkChain(limb.Limb):
         # create controls
         parent = self._controls_grp
         jnts = self.jnts
-        if not self._end_jnt:
+        if not self._end_jnt and len(self.jnts) > 1:
             jnts = self.jnts[:-1]
 
         for jnt, shape in zip(jnts, self._ctrl_shape):

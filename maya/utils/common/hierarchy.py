@@ -65,3 +65,26 @@ def parent_chain(nodes, reverse=False, parent=None):
         nodes_return.reverse()  # reverse back to keep the order same as nodes
 
     return nodes_return
+
+
+def get_all_parents(node, root=None):
+    """
+    get all parent nodes of the given node until the root node, the order is from the bottom to top
+    Args:
+        node(str): transform node
+        root(str): get all parent nodes until this transform node, None will search till world, default is None
+
+    Returns:
+        parent_nodes(list)
+    """
+    # get node's full path name
+    node_long = cmds.ls(node, long=True)[0]
+    # split to get each node name, first is empty, and last is node's name, remove those
+    parent_nodes = node_long.split('|')[1:-1]
+    if root and root in parent_nodes:
+        # get root index
+        root_index = parent_nodes.index(root)
+        parent_nodes = parent_nodes[root_index+1:]
+
+    parent_nodes.reverse()  # get the nodes order from child to parent
+    return parent_nodes

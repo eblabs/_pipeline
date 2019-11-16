@@ -64,8 +64,40 @@ def get_obj_attr(obj, attr):
     attr_parent = obj
 
     for attr_part in attr_split:
+        # check if attr_part contain []
+        attr_part_split = attr_part.split('[')
+        if len(attr_part_split) > 1:
+            # means contain [], the attr is a list or dict
+            # extract the info in []
+            attr_index_str = attr_part_split[1][:-1]
+            # check if it's int
+            try:
+                attr_index = int(attr_index_str)
+            except ValueError:
+                attr_index = attr_index_str
+            attr_part = attr_part_split[0]
+        else:
+            attr_index = None
+
         if hasattr(attr_parent, attr_part):
             attr_parent = getattr(attr_parent, attr_part)
+            # get list value or dict value
+            if attr_index is not None:
+                if ((isinstance(attr_parent, list) or isinstance(attr_parent, basestring)) and
+                        isinstance(attr_index, int)):
+                    try:
+                        attr_parent = attr_parent[attr_index]
+                    except IndexError:
+                        attr_parent = None
+                elif isinstance(attr_parent, dict) and isinstance(attr_index, basestring):
+                    if attr_index in attr_parent:
+                        attr_parent = attr_parent[attr_index]
+                    else:
+                        attr_parent = None
+                else:
+                    attr_parent = None
+            if not attr_parent:
+                break
         else:
             attr_parent = None
             break

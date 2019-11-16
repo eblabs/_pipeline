@@ -313,18 +313,14 @@ class Namer(object):
         if not self._type:
             if self._warn:
                 logger.error('Type is invalid')
-                raise KeyError('Given name does not follow the correct name convention')
-            else:
-                return None
+            raise KeyError('Given name does not follow the correct name convention')
 
         if split_num > 2:
             self._side = self._get_name(name_split[1], 'side', return_type='long')
             if not self._side:
                 if self._warn:
                     logger.error('Side is invalid')
-                    raise KeyError('Given name does not follow the correct name convention')
-                else:
-                    return None
+                raise KeyError('Given name does not follow the correct name convention')
 
             if split_num == 3:
                 # name only contains type side and des
@@ -356,9 +352,7 @@ class Namer(object):
                 if not self._resolution:
                     if self._warn:
                         logger.error('Resolution is invalid')
-                        raise KeyError('Given name does not follow the correct name convention')
-                    else:
-                        return None
+                    raise KeyError('Given name does not follow the correct name convention')
 
                 self._description = name_split[3]
                 self._index = name_split[4]
@@ -367,16 +361,12 @@ class Namer(object):
             else:
                 if self._warn:
                     logger.error('{} is invalid'.format(name))
-                    raise KeyError('Given name does not follow the correct name convention')
-                else:
-                    return None
+                raise KeyError('Given name does not follow the correct name convention')
 
         elif split_num == 2:
             if self._warn:
                 logger.error('{} is invalid'.format(name))
-                raise KeyError('Given name does not follow the correct name convention')
-            else:
-                return None
+            raise KeyError('Given name does not follow the correct name convention')
 
     def _compose_name(self):
         """

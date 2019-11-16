@@ -98,6 +98,16 @@ class SingleChainIk(limb.Limb):
             self.nodes_hide.append(ik_transform)
             self.iks.append(ik_handle)
         else:
+            # get aim axis and up axis, because right side may be -1
+            # get second joint's tx
+            tx = cmds.getAttr(self.jnts[1]+'.translateX')
+            if tx >= 0:
+                aim_vec = [1, 0, 0]
+                up_vec = [0, 1, 0]
+            else:
+                aim_vec = [-1, 0, 0]
+                up_vec = [0, -1, 0]
             # aim constraint
             constraints.matrix_aim_constraint(target_matrix, self.jnts[0], world_up_type='objectrotation',
-                                              world_up_matrix=ctrl_objs[0].world_matrix_attr, lock=True, force=True)
+                                              world_up_matrix=ctrl_objs[0].world_matrix_attr, aim_vector=aim_vec,
+                                              up_vector=up_vec, local=True, lock=True, force=True)
