@@ -523,7 +523,15 @@
 			"file": "/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/build/tasks.tsk",
 			"settings":
 			{
-				"buffer_size": 35310,
+				"buffer_size": 36512,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/data/task_m_ctrlShape/ctrlShapes.ctrlShapeInfo",
+			"settings":
+			{
+				"buffer_size": 589517,
 				"line_ending": "Unix"
 			}
 		}
@@ -602,8 +610,11 @@
 	],
 	"file_history":
 	[
-		"/C/_works/maya/projects/template/assets/baseBiped/models/body/publish/publish_info.pub",
+		"/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/data/task_m_blueprint/blueprint.jntInfo",
+		"/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/data/task_m_ctrlShape/ctrlShapes.ctrlShapeInfo",
+		"/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/build/tasks.tsk",
 		"/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks.tsk",
+		"/C/_works/maya/projects/template/assets/baseBiped/models/body/publish/publish_info.pub",
 		"/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks_copy.tsk_copy",
 		"/C/_works/maya/projects/template/assets/base/rigs/puppet/build/tasks - Copy.tsk",
 		"/C/_pipeline/maya/dev/rigging/task/core/task.py",
@@ -726,14 +737,11 @@
 		"/C/_pipeline/maya_oldCodes/lib/common/apiUtils.py",
 		"/C/_pipeline/maya_oldCodes/lib/common/packages.py",
 		"/C/_pipeline/maya_oldCodes/rigSys/components/core/componentsPackage.py",
-		"/C/_pipeline/maya_oldCodes/rigSys/components/package/multiComponentsPackage.py",
-		"/C/_pipeline/maya_oldCodes/rigSys/components/package/componentsBlendPackage.py",
-		"/C/_pipeline/maya_oldCodes/rigSys/behaviors/ikSplineSolverBehavior.py",
-		"/C/_pipeline/maya_oldCodes/rigSys/components/advance/ikRPsolverPlusComponent.py"
+		"/C/_pipeline/maya_oldCodes/rigSys/components/package/multiComponentsPackage.py"
 	],
 	"find":
 	{
-		"height": 43.0
+		"height": 55.0
 	},
 	"find_in_files":
 	{
@@ -747,6 +755,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"task_m_importModel",
 			"_collect_items",
 			"refresh",
 			"_task_create_window_open",
@@ -873,8 +882,7 @@
 			"QtGui.",
 			"changeStyleTriggered",
 			"signalNewPath",
-			"Qt",
-			"QSourceModel_version"
+			"Qt"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -996,7 +1004,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -1005,7 +1013,35 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 35310,
+						"buffer_size": 36512,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								112,
+								130
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/data/task_m_ctrlShape/ctrlShapes.ctrlShapeInfo",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 589517,
 						"regions":
 						{
 						},
@@ -1018,7 +1054,9 @@
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,

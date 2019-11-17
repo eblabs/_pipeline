@@ -253,6 +253,20 @@ class Task(object):
         if not os.path.exists(self.save_data_path):
             os.mkdir(self.save_data_path)
 
+    def update_data(self):
+        """
+        function to update selection data to the saving file,
+        it will be a normal saving selection function if no data file saved previously
+        all tasks with updating data function should sub class here for saving
+        """
+        # get saving path
+        self.save_data_path = buildUtils.get_data_path(self._name, self.rig_type, self.asset, self.project,
+                                                       warning=False, check_exist=False)
+        # create folder if not exist
+        if not os.path.exists(self.save_data_path):
+            os.mkdir(self.save_data_path)
+
+
     def _register_attr_to_task(self, kwargs_task, kwargs_ui):
         """
         add custom attribute to task

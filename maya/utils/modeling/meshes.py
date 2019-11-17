@@ -19,6 +19,7 @@ import utils.common.logUtils as logUtils
 # CONSTANT
 logger = logUtils.logger
 MESH_INFO_FORMAT = '.meshInfo'
+MESH_INFO_DEFAULT_NAME = 'meshesInfo'
 
 
 #    FUNCTION
@@ -69,7 +70,7 @@ def create_mesh(name, points, poly_count, poly_connects, u_values, v_values, **k
     return name, shape
 
 
-def get_mesh_info(mesh):
+def get_mesh_shape_info(mesh):
     """
     get mesh shape info
     Args:
@@ -114,7 +115,26 @@ def get_mesh_info(mesh):
     return mesh_info
 
 
-def export_meshes_info(meshes, path, name='meshesInfo'):
+def get_mesh_info(mesh):
+    """
+    get mesh info, include world matrix and mesh info
+
+    Args:
+        mesh(str): mesh transform node
+
+    Returns:
+        mesh_info(dict)
+    """
+    mesh_shape = cmds.listRelatives(mesh, shapes=True)[0]
+    # get shape info
+    shape_info = get_mesh_shape_info(mesh_shape)
+    matrix_world = cmds.getAttr(mesh + '.worldMatrix[0]')
+    mesh_info = ({mesh: {'world_matrix': matrix_world,
+                         'shape': shape_info}})
+    return mesh_info
+
+
+def export_meshes_info(meshes, path, name=MESH_INFO_DEFAULT_NAME):
     """
     export meshes information to the given path
     mesh information contain mesh's name, mesh's world matrix and shape info
@@ -136,12 +156,8 @@ def export_meshes_info(meshes, path, name='meshesInfo'):
         if cmds.objExists(msh):
             msh_shape = cmds.listRelatives(msh, shapes=True)
             if msh_shape:
-                msh_shape = msh_shape[0]
-                # get shape info
-                shape_info = get_mesh_info(msh_shape)
-                matrix_world = cmds.getAttr(msh+'.worldMatrix[0]')
-                meshes_info.update({msh: {'world_matrix': matrix_world,
-                                          'shape': shape_info}})
+                mesh_info = get_mesh_info(msh)
+                meshes_info.update(mesh_info)
 
     # check if has meshes info
     if meshes_info:
@@ -178,7 +194,7 @@ def build_meshes_from_meshes_info(meshes_info, parent_node=None):
             hierarchy.parent_node(msh, parent_node)
 
 
-def load_meshes_info(path, name='meshesInfo', parent_node=None):
+def load_meshes_info(path, name=MESH_INFO_DEFAULT_NAME, parent_node=None):
     """
     load meshes information from given path and build the meshes in the scene
     Args:

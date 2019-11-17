@@ -41,8 +41,8 @@ class SplineIk(component.Component):
         segment twist(bool): [segment twist] add twist attribute to control each segment twist, default is True
         segment twist interpolation(str): [segment_twist_interp] segment twist ramp interpolation, linear/smooth/spline,
                                                                  default is linear
-        curve weights(list): [crv_skin_path] curve's skin cluster data to override the auto generate one,
-                                             template is [{'project': '', 'asset': '', 'rig_type': ''}]
+        curve weights(list): [crv_skin_info] curve's skin cluster data to override the auto generate one,
+                                             template is {'project': '', 'asset': '', 'rig_type': '', 'task': ''}
 
     Properties:
         name(str): task's name in builder
@@ -69,6 +69,7 @@ class SplineIk(component.Component):
         self.twist_interp = None
         self.segment_twist = None
         self.segment_twist_interp = None
+        self.crv_skin_info = None
         self.crv_skin_path = None
 
         super(SplineIk, self).__init__(*args, **kwargs)
@@ -111,8 +112,9 @@ class SplineIk(component.Component):
         self.register_attribute('segment twist interpolation', 'linear', attr_name='segment_twist_interp',
                                 attr_type='enum',  enum=['linear', 'smooth', 'spline'],
                                 hint="segment twist ramp interpolation")
-        self.register_attribute('curve weights', [{'project': '', 'asset': '', 'rig_type': ''}],
-                                attr_name='crv_skin_path', attr_type='list', select=False, template=None,
+        self.register_attribute('curve weights', {'project': '', 'asset': '', 'rig_type': '', 'task': ''},
+                                attr_name='crv_skin_info', attr_type='dict', select=False, template=None,
+                                key_order=['project', 'asset', 'rig_type', 'task'],
                                 hint="curve's skin cluster data to override the auto generate one")
 
         self.update_attribute('description suffix', default='SplineIk')
@@ -127,11 +129,22 @@ class SplineIk(component.Component):
         if self.crv_skin_path:
             # get path
             if self._name_no_flip:
-                attr_name = self._name_no_flip
+                task_name = self._name_no_flip
             else:
-                attr_name = self._name
-            self.crv_skin_path = buildUtils.get_data_path(attr_name, self.rig_type, self.asset, self.project,
-                                                          warning=False, check_exist=True)
+                task_name = self._name
+
+            # get curve skin path
+            if not self.crv_skin_info['project']:
+                project = self.project
+            if not self.crv_skin_info['asset']:
+                asset = self.asset
+            if not self.crv_skin_info['rig_type']:
+                rig_type = self.rig_type
+            if not self.crv_skin_info['task']:
+                task_name = task_name
+
+            self.crv_skin_path = buildUtils.get_data_path(task_name, rig_type, asset, project, warning=False,
+                                                          check_exist=True)
             # get curve skin data
             pass
 

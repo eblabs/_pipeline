@@ -32,6 +32,9 @@ ASCII = string.ascii_uppercase
 
 logger = logUtils.logger
 
+CTRL_SHAPE_INFO_FORMAT = '.ctrlShapeInfo'
+CTRL_SHAPE_INFO_DEFAULT_NAME = 'ctrlShapes'
+
 
 # CLASS
 class Control(object):
@@ -380,7 +383,7 @@ class Control(object):
         match sub control's control shape to the controller
         """
         if self._sub:
-            ctrl_shape_info = curves.get_curve_info(self._ctrl_shape)  # get curve info
+            ctrl_shape_info = curves.get_curve_shape_info(self._ctrl_shape)  # get curve info
             color = cmds.getAttr(self._ctrl_shape+'.overrideColor')  # get color
             _add_ctrl_shape(self._sub, shapeInfo=ctrl_shape_info, size=0.9, color=color)
 
@@ -611,7 +614,7 @@ def transform_ctrl_shape(ctrl_shapes, **kwargs):
 
     for shape in ctrl_shapes:
         if cmds.objExists(shape):
-            ctrl_shape_info = curves.get_curve_info(shape)
+            ctrl_shape_info = curves.get_curve_shape_info(shape)
             cv_points = ctrl_shape_info['control_vertices']
 
             matrix_offset = apiUtils.compose_matrix(translate=translate, rotate=rotate, scale=scale)
@@ -669,6 +672,123 @@ def add_ctrls_shape(ctrls, **kwargs):
         _add_ctrl_shape(c, **kwargs)
 
 
+def get_ctrl_shape_info(ctrl):
+    """
+    get ctrl shape information
+    Args:
+        ctrl(str): control's transform or shape node
+
+    Returns:
+        ctrl_shape_info(dict): control's shape information
+    """
+    # check if control it's transform
+    if cmds.objectType(ctrl) == 'transform':
+        # get namer
+        namer = naming.check_name_convention(ctrl)
+        if namer and namer.type == naming.Type.Key.ctrl:
+            # change namer type to control shape
+            namer.type = naming.Type.controlShape
+            ctrl_shape = namer.name
+        else:
+            logger.warning("{} is not a control, skipped".format(ctrl))
+            ctrl_shape = None
+    else:
+        # most likely it's a nurbs curve shape node, check if it follow the naming convention
+        # in case it's a shape control (like ik/fk blend), we won't save the info in that case
+        namer = naming.check_name_convention(ctrl)
+        if namer and namer.type == naming.Type.Key.ctsp:
+            ctrl_shape = ctrl
+        else:
+            logger.warning("{} doesn't have a control shape node, skipped".format(ctrl))
+            ctrl_shape = None
+
+    # get ctrl shape info
+    if ctrl_shape:
+        curve_info = curves.get_curve_shape_info(ctrl_shape)
+        ctrl_name = curve_info['name']
+        color = cmds.getAttr(ctrl_shape+'.overrideColor')
+
+        ctrl_shape_info = {ctrl_name: {'color': color,
+                                       'shape_info': curve_info}}
+    else:
+        ctrl_shape_info = None
+
+    return ctrl_shape_info
+
+
+def export_ctrl_shape(ctrl, path, name=CTRL_SHAPE_INFO_DEFAULT_NAME):
+    """
+    export control shapes information to the given path
+    control shape information contain shape info and color
+
+    Args:
+        ctrl(list/str): controls need to be exported
+        path(str): given path
+    Keyword Args:
+        name(str): export control shape info file name, default is ctrlShapes
+    Returns:
+        ctrl_shape_info_path(str): exported path, return None if nothing to be exported
+    """
+    if isinstance(ctrl, basestring):
+        ctrl = [ctrl]
+
+    ctrl_shape_info_export = {}
+    for c in ctrl:
+        # check if it's exist
+        if cmds.objExists(c):
+            # get ctrl shape info
+            ctrl_shape_info = get_ctrl_shape_info(c)
+            if ctrl_shape_info:
+                ctrl_shape_info_export.update(ctrl_shape_info)
+        else:
+            logger.warning("{} doesn't exist in the scene, skipped".format(c))
+
+    # check if has ctrl shape info
+    if ctrl_shape_info_export:
+        # compose path
+        ctrl_shape_info_path = os.path.join(path, name + CTRL_SHAPE_INFO_FORMAT)
+        files.write_json_file(ctrl_shape_info_path, ctrl_shape_info_export)
+        logger.info('export curves info successfully at {}'.format(ctrl_shape_info_path))
+        return ctrl_shape_info_export
+    else:
+        logger.warning('nothing to be exported, skipped')
+        return None
+
+
+def load_ctrl_shape_info(path, name=CTRL_SHAPE_INFO_DEFAULT_NAME, control_list=None, exception_list=None, size=1):
+    """
+    load control shapes information from the given path, and add shapes to controllers
+
+    Args:
+        path(str): ctrl shape info path
+    Keyword Args:
+        name(str): ctrl shape info file name, default is ctrlShapes
+        control_list(list): only load ctrl shape info to those controls in the list, None will load all, default is None
+        exception_list(list): skip loading ctrl shape info to those controls in the list, default is None
+        size(float): scale controls shapes uniformly, default is 1
+    """
+    # get path
+    ctrl_shape_info_path = os.path.join(path, name + CTRL_SHAPE_INFO_FORMAT)
+    if os.path.exists(ctrl_shape_info_path):
+        ctrl_shape_info = files.read_json_file(ctrl_shape_info_path)
+        for ctrl, shape_info in ctrl_shape_info.iteritems():
+            if cmds.objExists(ctrl):
+                if control_list and ctrl not in control_list:
+                    pass
+                elif exception_list and ctrl in exception_list:
+                    pass
+                else:
+                    shape_info.update({'size': size})
+                    _add_ctrl_shape(ctrl, **shape_info)
+                    # log info
+                    logger.info("load and create control shape for {} "
+                                "base on given control shape info file: {}".format(ctrl, ctrl_shape_info_path))
+            else:
+                logger.warning("{} doesn't exist, skipped".format(ctrl))
+    else:
+        logger.warning('given path: {} does not exist, skipped'.format(ctrl_shape_info_path))
+
+
 # SUB FUNCTION
 def _add_ctrl_shape(ctrl, **kwargs):
     """
@@ -682,13 +802,13 @@ def _add_ctrl_shape(ctrl, **kwargs):
         size(float): control shape's size, default is size
         color(str/int): control's color, None will follow the side preset
         transform(str/list): if add shape node as control, the shape node would parented to the given transforms
-        shape_info(dict): if has custom shape node (like copy/paste)
+        shape_info(dict): if has custom shape node (like copy/paste), or load from file
     """
     shape = kwargs.get('shape', 'cube')
     size = kwargs.get('size', 1)
     color = kwargs.get('color', None)
     transform = kwargs.get('transform', None)
-    shape_info = kwargs.get('shapeInfo', None)
+    shape_info = kwargs.get('shape_info', None)
 
     if transform and isinstance(transform, basestring):
         transform = [transform]

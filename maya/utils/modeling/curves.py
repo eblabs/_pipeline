@@ -20,6 +20,7 @@ import utils.common.logUtils as logUtils
 # CONSTANT
 logger = logUtils.logger
 CURVE_INFO_FORMAT = '.crvInfo'
+CURVE_INFO_DEFAULT_NAME = 'curvesInfo'
 
 
 #    FUNCTION
@@ -144,7 +145,7 @@ def create_curve_on_nodes(name, nodes, degree=3, parent=None):
     return crv
 
 
-def get_curve_info(curve):
+def get_curve_shape_info(curve):
     """
     get curve shape info
 
@@ -196,7 +197,25 @@ def set_curve_points(curve, points):
     MFnNurbsCurve.setCVPositions(MPointArray)
 
 
-def export_curves_info(curves, path, name='curvesInfo'):
+def get_curve_info(curve):
+    """
+    get curve info, include world matrix and curve shape info
+
+    Args:
+        curve(str)
+
+    Returns:
+        curve_info(dict)
+    """
+    crv_shape = cmds.listRelatives(curve, shapes=True)[0]
+    shape_info = get_curve_shape_info(crv_shape)
+    matrix_world = cmds.getAttr(curve+'.worldMatrix[0]')
+    curve_info = {curve: {'world_matrix': matrix_world,
+                          'shape': shape_info}}
+    return curve_info
+
+
+def export_curves_info(curves, path, name=CURVE_INFO_DEFAULT_NAME):
     """
     export curves information to the given path
     curve information contain curve's name, curve's world matrix and shape info
@@ -218,12 +237,9 @@ def export_curves_info(curves, path, name='curvesInfo'):
         if cmds.objExists(crv):
             crv_shape = cmds.listRelatives(crv, shapes=True)
             if crv_shape:
-                crv_shape = crv_shape[0]
                 # get shape info
-                shape_info = get_curve_info(crv_shape)
-                matrix_world = cmds.getAttr(crv+'.worldMatrix[0]')
-                curves_info.update({crv: {'world_matrix': matrix_world,
-                                          'shape': shape_info}})
+                curve_info = get_curve_info(crv)
+                curves_info.update(curve_info)
 
     # check if has curves info
     if curves_info:
@@ -259,7 +275,7 @@ def build_curves_from_curves_info(curves_info, parent_node=None):
             hierarchy.parent_node(crv, parent_node)
 
 
-def load_curves_info(path, name='curvesInfo', parent_node=None):
+def load_curves_info(path, name=CURVE_INFO_DEFAULT_NAME, parent_node=None):
     """
     load curves information from given path and build the curves in the scene
     Args:

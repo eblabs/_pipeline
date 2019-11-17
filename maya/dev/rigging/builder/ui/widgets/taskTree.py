@@ -175,6 +175,7 @@ class TaskTree(QTreeWidget):
         self.menu.addSeparator()
 
         self.action_save_data = self.menu.addAction('Save Data')
+        self.action_update_data = self.menu.addAction('Update Data With Selection')
 
         self.menu.addSeparator()
 
@@ -212,6 +213,7 @@ class TaskTree(QTreeWidget):
         self.action_transfer.setEnabled(False)
 
         self.action_save_data.setEnabled(False)
+        self.action_update_data.setEnabled(False)
 
         # connect functions
         self.action_reload.triggered.connect(self.reload_tasks)
@@ -220,6 +222,7 @@ class TaskTree(QTreeWidget):
         self.menu_rebuild.SIGNAL_SECTION.connect(self.rebuild_tasks)
 
         self.action_save_data.triggered.connect(self._save_task_data)
+        self.action_update_data.triggered.connect(self._update_task_data)
 
         self.action_duplicate.triggered.connect(self.duplicate_tasks)
         self.action_remove.triggered.connect(self.remove_tasks)
@@ -343,6 +346,7 @@ class TaskTree(QTreeWidget):
                 for widget in self._menu_widgets:
                     widget.setEnabled(False)
                 self.action_save_data.setEnabled(False)
+                self.action_update_data.setEnabled(False)
                 self.action_transfer.setEnabled(False)
 
             else:
@@ -381,6 +385,7 @@ class TaskTree(QTreeWidget):
                 self.action_duplicate.setEnabled(duplicate)
                 self.action_remove.setEnabled(remove)
                 self.action_save_data.setEnabled(save)
+                self.action_update_data.setEnabled(save)
 
             self.menu.move(QCursor.pos())  # move menu to right clicked position
 
@@ -390,9 +395,21 @@ class TaskTree(QTreeWidget):
     def run_sel_tasks(self, section=None):
         if section is None:
             section = ['pre_build', 'build', 'post_build']
-        items = self.selectedItems()
+        # selectedItems return items in selection order as a list, but we need in tree's order,
+        # so we need to get all tasks in tree order from ui later on, and re order the selection
+        # because list doesn't support getting index from object element, we need to convert list to set
+        items = set(self.selectedItems())
         if items:
-            self._run_task(items=items, section=section, skip_build=self.action_skip.isChecked())
+            # get all items
+            items_all = self._collect_items()
+
+            items_sel = []
+            for itm in items_all:
+                if itm in items:
+                    # if the item in the selection set, add to the list
+                    items_sel.append(itm)
+
+            self._run_task(items=items_sel, section=section, skip_build=self.action_skip.isChecked())
             self.SIGNAL_EXECUTE.emit()
 
     def run_all_tasks(self, section=None):
@@ -1131,33 +1148,53 @@ class TaskTree(QTreeWidget):
     def _show_log_status_info(self, *args):
         item = self.currentItem()
         col = self.currentColumn()
-        log_status_info = item.data(0, ROLE_TASK_STATUS_INFO)
-        if col > 0:
-            log_info = log_status_info[col-1]
-            level_index = item.data(0, [ROLE_TASK_PRE, ROLE_TASK_RUN, ROLE_TASK_POST][col-1])
-            level = ['info', 'warning', 'error'][level_index - 1]
-            check = item.checkState(0)
-            if check == Qt.Checked and log_info:
-                self.SIGNAL_LOG_INFO.emit(log_info, level)
+        if item:
+            log_status_info = item.data(0, ROLE_TASK_STATUS_INFO)
+            if col > 0:
+                log_info = log_status_info[col-1]
+                level_index = item.data(0, [ROLE_TASK_PRE, ROLE_TASK_RUN, ROLE_TASK_POST][col-1])
+                level = ['info', 'warning', 'error'][level_index - 1]
+                check = item.checkState(0)
+                if check == Qt.Checked and log_info:
+                    self.SIGNAL_LOG_INFO.emit(log_info, level)
 
     def _save_task_data(self, *args):
         for item in self.selectedItems():
-            task_save = item.data(0, ROLE_TASK_SAVE)  # check if task has saving function
-            if task_save:
-                task_info = item.data(0, ROLE_TASK_INFO)
-                task_name = task_info['attr_name']
-                task_kwargs = self._reduce_task_kwargs(task_info['task_kwargs'])
-
-                # get task obj from builder
-                task_obj = getattr(self.builder, task_name)
-
-                # register kwargs
-                # some saving function need the input information to save data for specific node
-                task_obj.kwargs_input = task_kwargs
-                task_obj.register_inputs()
-
-                # trigger save data function
+            task_obj = self._get_item_obj_for_saving(item)
+            if task_obj:
                 task_obj.save_data()
+
+    def _update_task_data(self, *args):
+        item = self.selectedItems()[0]
+        task_obj = self._get_item_obj_for_saving(item)
+        if task_obj:
+            task_obj.update_data()
+
+    def _get_item_obj_for_saving(self, item):
+        """
+        get item object for saving
+        Args:
+            item(TaskItem)
+
+        Returns:
+            task_obj
+        """
+        task_save = item.data(0, ROLE_TASK_SAVE)  # check if task has saving function
+        if task_save:
+            task_info = item.data(0, ROLE_TASK_INFO)
+            task_name = task_info['attr_name']
+            task_kwargs = self._reduce_task_kwargs(task_info['task_kwargs'])
+
+            # get task obj from builder
+            task_obj = getattr(self.builder, task_name)
+
+            # register kwargs
+            # some saving function need the input information to save data for specific node
+            task_obj.kwargs_input = task_kwargs
+            task_obj.register_inputs()
+        else:
+            task_obj = None
+        return task_obj
 
     def _show_task_info(self):
         item = self.selectedItems()[0]

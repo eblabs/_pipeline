@@ -40,7 +40,7 @@ class RigDataImport(rigData.RigData):
 
     Keyword Args:
         data(list): [data_info] list of data path,
-                                template is [{'project': '', 'asset': '', 'rig_type': '', 'filter': ''}]
+                                template is [{'project': '', 'asset': '', 'rig_type': '', 'task': '', 'filter': ''}]
                                 filter can be file format, ['.mb', '.ma', '.obj'], or can be specific file name
 
     Properties:
@@ -54,7 +54,7 @@ class RigDataImport(rigData.RigData):
     def register_kwargs(self):
         super(RigDataImport, self).register_kwargs()
 
-        self.update_attribute('data', default=[{'project': '', 'asset': '', 'rig_type': '', 'filter': ''}],
+        self.update_attribute('data', default=[{'project': '', 'asset': '', 'rig_type': '', 'task': '', 'filter': ''}],
                               template='rig_data_import')
 
     def get_data(self):
@@ -64,6 +64,7 @@ class RigDataImport(rigData.RigData):
             project = d_info['project']
             asset = d_info['asset']
             rig_type = d_info['rig_type']
+            task_name = d_info['task']
             d_filter = d_info['filter']
             if not project:
                 project = self.project
@@ -71,9 +72,11 @@ class RigDataImport(rigData.RigData):
                 asset = self.asset
             if not rig_type:
                 rig_type = self.rig_type
+            if not task_name:
+                task_name = self._name
 
             if project and asset and rig_type:
-                data_folder = buildUtils.get_data_path(self._name, rig_type, asset, project, warning=False,
+                data_folder = buildUtils.get_data_path(task_name, rig_type, asset, project, warning=False,
                                                        check_exist=True)
 
                 if data_folder:
@@ -107,6 +110,11 @@ class RigDataImport(rigData.RigData):
 
     def save_data(self):
         super(RigDataImport, self).save_data()
+        self.save_select_data()
+
+    def update_data(self):
+        super(RigDataImport, self).update_data()
+        # because rig data import need to save with selection anyway, we call the same function here
         self.save_select_data()
 
     def save_select_data(self):

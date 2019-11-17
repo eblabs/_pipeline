@@ -19,6 +19,7 @@ import utils.modeling.curves as curves
 # CONSTANT
 logger = logUtils.logger
 JOINT_INFO_FORMAT = '.jntInfo'
+JOINT_INFO_DEFAULT_NAME = 'jointsInfo'
 
 
 # FUNCTION
@@ -285,7 +286,37 @@ def create_joints_along_curve(curve, joints_number, **kwargs):
     return jnt_list
 
 
-def export_joints_info(joints, path, name='jointsInfo'):
+def get_joint_info(joint):
+    """
+    get given joint's information
+
+    Args:
+        joint(str): joint name
+
+    Returns:
+        joint_info(dict): joint's information
+    """
+    if cmds.objExists(joint) and cmds.objectType(joint) == 'joint':
+        # get jnt world matrix
+        matrix_world = cmds.getAttr(joint + '.worldMatrix[0]')
+        # get jnt rotate order
+        rotate_order = cmds.getAttr(joint + '.rotateOrder')
+        # get parent node
+        parent = cmds.listRelatives(joint, p=True)
+        if parent:
+            parent = parent[0]
+        else:
+            parent = ''
+        # generate joint info
+        joint_info = ({joint: {'world_matrix': matrix_world,
+                               'rotate_order': rotate_order,
+                               'parent': parent}})
+    else:
+        joint_info = None
+    return joint_info
+
+
+def export_joints_info(joints, path, name=JOINT_INFO_DEFAULT_NAME):
     """
     export joints information to the given path
     joints information contain joint's name, joint's world matrix, joint's rotate order and hierarchy
@@ -305,29 +336,12 @@ def export_joints_info(joints, path, name='jointsInfo'):
 
     # get joints position info
     for jnt in joints:
-        # check if jnt exist and if it is a joint
-        if cmds.objExists(jnt) and cmds.objectType(jnt) == 'joint':
-            # get jnt world matrix
-            matrix_world = cmds.getAttr(jnt+'.worldMatrix[0]')
-            # get jnt rotate order
-            rotate_order = cmds.getAttr(jnt+'.rotateOrder')
-            # add information to dictionary
-            joints_info.update({jnt: {'world_matrix': matrix_world,
-                                      'rotate_order': rotate_order}})
+        # get joint info
+        joint_info = get_joint_info(jnt)
+        if joint_info:
+            joints_info.update(joint_info)
         else:
             logger.warning('given joint {} does not exist, skipped'.format(jnt))
-
-    # check joints parent node
-    for jnt in joints_info.keys():
-        # check parent node
-        parent = cmds.listRelatives(jnt, p=True)
-        # check if has parent and parent in the dictionary
-        if parent and parent[0] in joints_info:
-            parent = parent[0]
-        else:
-            parent = ''
-        # add parent information
-        joints_info[jnt].update({'parent': parent})
 
     # check if has joints info
     if joints_info:
@@ -369,7 +383,7 @@ def build_joints_from_joints_info(joints_info, parent_node=None):
         hierarchy.parent_node(jnt, parent)
 
 
-def load_joints_info(path, name='jointsInfo', parent_node=None):
+def load_joints_info(path, name=JOINT_INFO_DEFAULT_NAME, parent_node=None):
     """
     load joints information from given path and build the joints in the scene
     Args:

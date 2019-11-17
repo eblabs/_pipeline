@@ -38,13 +38,17 @@ class RigData(task.Task):
     def register_kwargs(self):
         super(RigData, self).register_kwargs()
 
-        self.register_attribute('data', [{'project': '', 'asset': '', 'rig_type': ''}], attr_name='data_info',
-                                short_name='d', select=False, template='rig_data',
+        self.register_attribute('data', [{'project': '', 'asset': '', 'rig_type': '', 'task': ''}],
+                                attr_name='data_info', short_name='d', select=False, template='rig_data',
                                 hint='load data from following paths')
 
     def pre_build(self):
         super(RigData, self).pre_build()
         self.get_data()
+
+    def post_build(self):
+        super(RigData, self).post_build()
+        self.load_data()
 
     def get_data(self):
         """
@@ -56,6 +60,7 @@ class RigData(task.Task):
             project = d_info['project']
             asset = d_info['asset']
             rig_type = d_info['rig_type']
+            task_name = d_info['task']
 
             if not project:
                 project = self.project
@@ -63,12 +68,20 @@ class RigData(task.Task):
                 asset = self.asset
             if not rig_type:
                 rig_type = self.rig_type
+            if not task_name:
+                task_name = self._name
 
             if project and asset and rig_type:
-                data_folder = buildUtils.get_data_path(self._name, rig_type, asset, project, warning=False,
+                data_folder = buildUtils.get_data_path(task_name, rig_type, asset, project, warning=False,
                                                        check_exist=True)
 
                 if data_folder:
                     data_folder_path.append(data_folder)
 
         self.data_path = list(set(data_folder_path))
+
+    def load_data(self):
+        """
+        function to load data, all sub class should use this function to load data to nodes, happens in post build
+        """
+        pass

@@ -18,6 +18,7 @@ import utils.common.logUtils as logUtils
 # CONSTANT
 logger = logUtils.logger
 SURF_INFO_FORMAT = '.surfInfo'
+SURF_INFO_DEFAULT_NAME = 'surfacesInfo'
 
 
 # FUNCTION
@@ -69,7 +70,7 @@ def create_surface(name, control_vertices, u_knot_sequences, v_knot_sequences, *
     return name, shape
 
 
-def get_surface_info(surface):
+def get_surface_shape_info(surface):
     """
     get surface shape info
     Args:
@@ -117,7 +118,24 @@ def get_surface_info(surface):
     return surface_info
 
 
-def export_surfaces_info(surfaces, path, name='surfacesInfo'):
+def get_surface_info(surface):
+    """
+    get surface info, include world matrix and shape info
+    Args:
+        surface(str): surface transform node
+
+    Returns:
+        surface_info(dict)
+    """
+    surf_shape = cmds.listRelatives(surface, shapes=True)[0]
+    shape_info = get_surface_shape_info(surf_shape)
+    matrix_world = cmds.getAttr(surface + '.worldMatrix[0]')
+    surface_info = ({surface: {'world_matrix': matrix_world,
+                               'shape': shape_info}})
+    return surface_info
+
+
+def export_surfaces_info(surfaces, path, name=SURF_INFO_DEFAULT_NAME):
     """
     export surfaces information to the given path
     surface information contain surface's name, surface's world matrix and shape info
@@ -139,12 +157,8 @@ def export_surfaces_info(surfaces, path, name='surfacesInfo'):
         if cmds.objExists(surf):
             surf_shape = cmds.listRelatives(surf, shapes=True)
             if surf_shape:
-                surf_shape = surf_shape[0]
-                # get shape info
-                shape_info = get_surface_info(surf_shape)
-                matrix_world = cmds.getAttr(surf+'.worldMatrix[0]')
-                surfaces_info.update({surf: {'world_matrix': matrix_world,
-                                             'shape': shape_info}})
+                surf_info = get_surface_info(surf)
+                surfaces_info.update(surf_info)
 
     # check if has surfaces info
     if surfaces_info:
@@ -183,7 +197,7 @@ def build_surfaces_from_surfaces_info(surfaces_info, parent_node=None):
             hierarchy.parent_node(surf, parent_node)
 
 
-def load_surfaces_info(path, name='surfacesInfo', parent_node=None):
+def load_surfaces_info(path, name=SURF_INFO_DEFAULT_NAME, parent_node=None):
     """
     load surfaces information from given path and build the surfaces in the scene
     Args:
