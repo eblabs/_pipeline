@@ -26,7 +26,7 @@ class RigData(task.Task):
         self.data_info = None
 
         super(RigData, self).__init__(**kwargs)
-        self._task = 'dev.rigging.task.core.data'
+        self._task = 'dev.rigging.task.core.rigData'
         self._task_type = 'data'
         self._save = True
         self.data_path = []

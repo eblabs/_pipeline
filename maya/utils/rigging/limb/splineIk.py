@@ -87,7 +87,7 @@ class SplineIk(limb.Limb):
             self._ctrl_shape = [self._ctrl_shape] * len(self._bp_ctrl)
 
         # create ik curve
-        crv_info = curves.get_curve_info(self._bp_crv)
+        crv_info = curves.get_curve_shape_info(self._bp_crv)
         if self._crv_name:
             crv_ik = self._crv_name
         else:

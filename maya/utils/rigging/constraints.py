@@ -28,20 +28,28 @@ def matrix_connect(input_matrix, nodes, **kwargs):
         offset(bool): maintain offset, default is False
         skip(list): skip channels
         force(bool): force connection, default is True
+        addition_description(str): custom additional info add on for node's description,
+                                   None will use input matrix's attr name, default is None
+        addition_offset_description(str): custom additional info add on for offset matrix node's description
+                                          default is Offset
     """
 
     offset = variables.kwargs('offset', '', kwargs)
     skip = variables.kwargs('skip', None, kwargs)
     force = variables.kwargs('force', True, kwargs, short_name='f')
+    des_add = variables.kwargs('addition_description', None, kwargs)
+    offset_add = variables.kwargs('addition_offset_des', 'Offset', kwargs)
 
     driver = input_matrix.split('.')[0]
-    attr_name = cmds.ls(input_matrix)[0].split('.')[-1]  # use to compose name
-
     namer_driver = naming.Namer(driver)
     namer_driver.type = naming.Type.decomposeMatrix
-    namer_driver.description = namer_driver.description + attr_name[0].upper() + attr_name[1:]
+    if not des_add:
+        attr_name = cmds.ls(input_matrix)[0].split('.')[-1]  # use to compose name
+        namer_driver.description = namer_driver.description + attr_name[0].upper() + attr_name[1:]
+    else:
+        namer_driver.description = namer_driver.description + des_add
 
-    des_offset = namer_driver.description + 'Offset'
+    des_offset = namer_driver.description + offset_add
 
     if isinstance(nodes, basestring):
         nodes = [nodes]
@@ -268,6 +276,9 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
         rotate(bool): constraint rotate, default is True
         scale(bool): constraint scale, default is True
         localization(bool): constraint in local space, will skip parent inverse matrix if set to True, default is False
+        addition_constraint_description(str): custom additional description for constraint, default is 'BlendConstraint'
+        addition_decompose_description(str): custom additional description for decompose matrix node,
+                                             default is 'BlendConstraint'
         force(bool): force connection, default is True
     """
 
@@ -277,6 +288,8 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
     rotate = variables.kwargs('rotate', True, kwargs, short_name='r')
     scale = variables.kwargs('scale', True, kwargs, short_name='s')
     local = variables.kwargs('localization', False, kwargs, short_name='local')
+    add_cons_des = variables.kwargs('addition_constraint_description', 'BlendConstraint', kwargs)
+    add_decompose_des = variables.kwargs('addition_decompose_description', 'BlendConstraint', kwargs)
     force = variables.kwargs('force', True, kwargs, short_name='f')
 
     namer = naming.Namer(driven)  # get name
@@ -297,7 +310,7 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
         # create point constraint
         point_constraint = nodeUtils.node(type=naming.Type.pointConstraint,
                                           side=namer.side,
-                                          description=namer.description+'BlendConstraint',
+                                          description=namer.description + add_cons_des,
                                           index=namer.index)
         cmds.parent(point_constraint, parent)
 
@@ -315,7 +328,7 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
         # create orient constraint
         orient_constraint = nodeUtils.node(type=naming.Type.orientConstraint,
                                            side=namer.side,
-                                           description=namer.description+'BlendConstraint',
+                                           description=namer.description + add_cons_des,
                                            index=namer.index)
         cmds.setAttr(orient_constraint+'.interpType', 2)
         cmds.parent(orient_constraint, parent)
@@ -339,7 +352,7 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
         # create scale constraint
         scale_constraint = nodeUtils.node(type=naming.Type.scaleConstraint,
                                           side=namer.side,
-                                          description=namer.description+'BlendConstraint',
+                                          description=namer.description + add_cons_des,
                                           index=namer.index)
         cmds.parent(scale_constraint, parent)
 
@@ -361,7 +374,7 @@ def matrix_blend_constraint(input_matrices, driven, **kwargs):
         # create decompose matrix node to drive constraints
         decompose = nodeUtils.node(type=naming.Type.decomposeMatrix,
                                    side=namer_driver.side,
-                                   description=namer_driver.description+'BlendConstraint',
+                                   description=namer_driver.description + add_decompose_des,
                                    index=namer_driver.index)
         cmds.connectAttr(matrix, decompose+'.inputMatrix')
 

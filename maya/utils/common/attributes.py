@@ -286,6 +286,32 @@ def set_attrs(attrs, value, **kwargs):
             logger.warning('{} does not exist, skipped'.format(attr_compose))
 
 
+def get_attr(attr, node=None, warn=True):
+    """
+    get given node's attribute value, return None if the attr doesn't exist
+
+    Args:
+        attr(str): can be attribute name or full name like 'node.attr'
+    Keyword Args:
+        node(str): node name, default is None
+        warn(bool): raise warning if attr doesn't exist, default is True
+
+    Returns:
+        val: given attribute's value, return None if the attr doesn't exist
+    """
+    # check attr exist
+    attr_compose = check_attr_exists(attr, node=node, warn=False)
+    if attr_compose:
+        # get attr
+        val = cmds.getAttr(attr_compose)
+    else:
+        val = None
+        # raise warning
+        if warn:
+            logger.warning("given attribute '{}' doesn't exist".format(attr_compose))
+    return val
+
+
 def separator(node, name):
     """
     add separator attribute for the given node
@@ -320,7 +346,7 @@ def attr_in_channel_box(node, attr):
     return check
 
 
-def check_attr_exists(attr, node=None):
+def check_attr_exists(attr, node=None, warn=True):
     """
     check if attr exists
 
@@ -329,6 +355,7 @@ def check_attr_exists(attr, node=None):
 
     Keyword Args:
         node(str): given node, default is None
+        warn(bool): raise warning if True, default is True
 
     Returns:
         attr(str): attribute full name, return None if doesn't exist
@@ -347,7 +374,8 @@ def check_attr_exists(attr, node=None):
         # listConnections will error out if the attr does not exist
         return '{}.{}'.format(node, attr)
     except ValueError:
-        logger.warning('{} does not have attr {}'.format(node, attr))
+        if warn:
+            logger.warning('{} does not have attr {}'.format(node, attr))
         return None
 
 

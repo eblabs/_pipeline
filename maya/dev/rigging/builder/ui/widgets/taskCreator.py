@@ -87,7 +87,6 @@ class TaskListView(QListView):
     """
     def __init__(self, parent=None):
         super(TaskListView, self).__init__(parent)
-        self.setFocusPolicy(Qt.NoFocus)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape and event.modifiers() == Qt.NoModifier:

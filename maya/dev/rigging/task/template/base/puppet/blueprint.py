@@ -29,6 +29,9 @@ logger = logUtils.logger
 class Blueprint(rigData.RigData):
     """
     load blueprint joints, curves, surfaces and meshes
+
+    Keyword Args:
+        data(list): list of data path
     """
 
     def __init__(self, **kwargs):

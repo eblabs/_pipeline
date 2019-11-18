@@ -79,7 +79,6 @@ class TaskAttrList(QListView):
 
     def __init__(self, parent=None):
         super(TaskAttrList, self).__init__(parent)
-        self.setFocusPolicy(Qt.NoFocus)
         self._attr_list = []
         self.model = QStandardItemModel()
         self.setModel(self.model)

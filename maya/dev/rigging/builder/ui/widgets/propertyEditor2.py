@@ -47,7 +47,6 @@ class PropertyEditor(QTreeView):
         self._size = QSize(20, 20)
         self._item = None  # store property item for further use
 
-        self.setFocusPolicy(Qt.NoFocus)
         # different color each row
         self.setAlternatingRowColors(True)
         # show header so user can adjust the first column width

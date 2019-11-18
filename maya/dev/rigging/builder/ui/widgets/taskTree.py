@@ -124,8 +124,6 @@ class TaskTree(QTreeWidget):
         # task folders
         self.task_folders = TASK_FOLDERS[:]
 
-        self.setFocusPolicy(Qt.NoFocus)
-
         header_item = QTreeWidgetItem(self._header)
         self.setHeaderItem(header_item)
         self.setRootIsDecorated(True)

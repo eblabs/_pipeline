@@ -20,7 +20,7 @@ import utils.rigging.controls as controls
 import dev.rigging.task.component.core.pack as pack
 
 # CONSTANT
-import dev.rigging.task.component.config as config
+import utils.rigging.config as config
 SPACE_CONFIG_PATH = os.path.join(os.path.dirname(config.__file__), 'SPACE.cfg')
 SPACE_CONFIG = files.read_json_file(SPACE_CONFIG_PATH)
 

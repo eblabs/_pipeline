@@ -108,17 +108,7 @@ class LogInfo(QTextEdit):
     def __init__(self):
         super(LogInfo, self).__init__()
         self.setReadOnly(True)
-        self.setFocusPolicy(Qt.NoFocus)
         self.level = logUtils.LOG_LEVEL_INDEX['debug']
-
-    def keyPressEvent(self, event):
-        pass
-
-    def mousePressEvent(self, event):
-        pass
-
-    def mouseDoubleClickEvent(self, event):
-        pass
 
     def add_log_info(self, message, level):
         level_index = logUtils.LOG_LEVEL_INDEX[level]
