@@ -3,21 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="cae4b882-d32c-453c-bf11-ab61afba3b5c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/logWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/logWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor2.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/propertyEditor2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskCreator.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskCreator.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskTree.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/taskTree.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/transferAttr.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/builder/ui/widgets/transferAttr.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/component/config/SPACE.cfg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/config/SPACE.cfg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/component/pack/multiBlend.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/component/pack/multiBlend.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/rigData.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/rigData.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/core/controlData.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/core/controlData.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/blueprint.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/blueprint.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/controlShape.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/controlShape.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/common/attributes.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/common/attributes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/rigging/constraints.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/constraints.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/space.py" beforeDir="false" afterPath="$PROJECT_DIR$/dev/rigging/task/template/base/puppet/space.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/maya.sublime-workspace" beforeDir="false" afterPath="$PROJECT_DIR$/maya.sublime-workspace" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/rigging/controls.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/controls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/rigging/limb/splineIk.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/rigging/limb/splineIk.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

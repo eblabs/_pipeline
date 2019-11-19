@@ -48,10 +48,20 @@ class ControlShape(controlData.ControlData):
 
     def load_data(self):
         super(ControlShape, self).load_data()
-        # loop in each control shape info file
+        ctrl_shape_info_load = {}
+
+        # loop in each path
         for path in self.data_path:
-            controls.load_ctrl_shape_info(path, control_list=self.control_list, exception_list=self.exception_list,
-                                          size=self.ctrl_size, name=CTRL_SHAPE_INFO_NAME)
+            ctrl_shape_data_path = os.path.join(path, CTRL_SHAPE_INFO_NAME+controls.CTRL_SHAPE_INFO_FORMAT)
+            if os.path.exists(ctrl_shape_data_path):
+                ctrl_shape_data = files.read_json_file(ctrl_shape_data_path)
+                for ctrl, shape_info in ctrl_shape_data.iteritems():
+                    if ctrl not in ctrl_shape_info_load:
+                        ctrl_shape_info_load.update({ctrl: shape_info})
+
+        # add shape node
+        controls.build_ctrl_shape_from_info(ctrl_shape_info_load, control_list=self.control_list,
+                                            exception_list=self.exception_list, size=self.ctrl_size)
 
     def save_data(self):
         super(ControlShape, self).save_data()

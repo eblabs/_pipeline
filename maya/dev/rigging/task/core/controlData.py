@@ -16,6 +16,7 @@ class ControlData(rigData.RigData):
 
     Keyword Args:
         data(list): list of data path
+
         controls(list): [ctrls] list of controls need to be loaded, empty list will load data for all controls.
                                 It support * and ? for multiple nodes, like 'ctrl_l_*_???' or 'ctrl_m_*'
         exceptions(list): [ctrls_exc] list of controls doesn't need to be loaded, will skip those controls when loading
@@ -56,9 +57,3 @@ class ControlData(rigData.RigData):
             ctrl_transforms = cmds.ls(ctrl, type='transforms')
             if ctrl_transforms:
                 self.exception_list += ctrl_transforms
-
-    def load_data(self):
-        """
-        function to load data, all sub class should use this function to load data to nodes, happens in post build
-        """
-        pass

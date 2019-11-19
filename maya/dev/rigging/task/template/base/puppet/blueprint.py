@@ -41,18 +41,33 @@ class Blueprint(rigData.RigData):
 
     def pre_build(self):
         super(Blueprint, self).pre_build()
-        self.build_blueprints()
 
-    def build_blueprints(self):
+    def load_data(self):
+        super(Blueprint, self).load_data()
         if not cmds.objExists(self.blueprint_grp):
             # create group if not exist
             transforms.create(self.blueprint_grp, lock_hide=attributes.Attr.transform, vis=False)
 
-        # build blueprints
-        for path in self.data_path:
-            for load_method in [joints.load_joints_info, curves.load_curves_info, surfaces.load_surfaces_info,
-                                meshes.load_meshes_info]:
-                load_method(path, BLUEPRINT_NAME, parent_node=self.blueprint_grp)
+        for build_method, file_type in zip([joints.build_joints_from_joints_info, curves.build_curves_from_curves_info,
+                                           surfaces.build_surfaces_from_surfaces_info,
+                                           meshes.build_meshes_from_meshes_info],
+                                          [joints.JOINT_INFO_FORMAT, curves.CURVE_INFO_FORMAT,
+                                           surfaces.SURF_INFO_FORMAT, meshes.MESH_INFO_FORMAT]):
+            file_name = BLUEPRINT_NAME + file_type
+            bp_info_build = {}
+
+            # loop in each path
+            for path in self.data_path:
+                bp_path = os.path.join(path, file_name)
+                if os.path.exists(bp_path):
+                    bp_data = files.read_json_file(bp_path)
+                    for key, item in bp_data.iteritems():
+                        if key not in bp_info_build:
+                            bp_info_build.update({key: item})
+
+            # build
+            if bp_info_build:
+                build_method(bp_info_build, parent_node=self.blueprint_grp)
 
     def save_data(self):
         super(Blueprint, self).save_data()

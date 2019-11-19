@@ -39,6 +39,8 @@ logger = logUtils.logger
 
 CTRL_SHAPE_INFO_FORMAT = '.ctrlShapeInfo'
 CTRL_SHAPE_INFO_DEFAULT_NAME = 'ctrlShapes'
+CTRL_SPACE_INFO_FORMAT = '.spaceInfo'
+CTRL_SPACE_INFO_DEFAULT_NAME = 'spaces'
 
 CUSTOM_SPACE_INDEX = 50
 
@@ -54,128 +56,134 @@ class Control(object):
         self._index = None
         self._suffix = None
 
+        self._space_info = {}
+
         self._get_control_info(ctrl)
 
-    @property
+    @ property
     def name(self):
         return self._name
 
-    @property
+    @ property
     def n(self):
         return self._name
 
-    @property
+    @ property
     def side(self):
         return self._side
 
-    @property
+    @ property
     def s(self):
         return self._side
 
-    @property
+    @ property
     def description(self):
         return self._des
 
-    @property
+    @ property
     def des(self):
         return self._des
 
-    @property
+    @ property
     def index(self):
         return self._index
 
-    @property
+    @ property
     def i(self):
         return self._index
 
-    @property
+    @ property
     def zero(self):
         return self._zero
 
-    @property
+    @ property
     def drive(self):
         return self._drive
 
-    @property
+    @ property
     def space(self):
         return self._space
 
-    @property
+    @ property
     def offsets(self):
         return self._offsets
 
-    @property
+    @ property
     def output(self):
         return self._output
 
-    @property
+    @ property
     def control_shape(self):
         return self._ctrl_shape
 
-    @property
+    @ property
     def sub(self):
         return self._sub
 
-    @property
+    @ property
     def sub_control_shape(self):
         return self._sub_shape
 
-    @property
+    @ property
     def local_matrix(self):
         matrix = cmds.getAttr(self._local_matrix_attr)
         return matrix
 
-    @property
+    @ property
     def local_matrix_attr(self):
         return self._local_matrix_attr
 
-    @property
+    @ property
     def world_matrix(self):
         matrix = cmds.getAttr(self._world_matrix_attr)
         return matrix
 
-    @property
+    @ property
     def world_matrix_attr(self):
         return self._world_matrix_attr
 
-    @side.setter
+    @ property
+    def space_info(self):
+        return get_space_info(self._name)
+
+    @ side.setter
     def side(self, key):
         self._side = key
         self._update_control_name()
 
-    @s.setter
+    @ s.setter
     def s(self, key):
         self._side = key
         self._update_control_name()
 
-    @description.setter
+    @ description.setter
     def description(self, key):
         self._des = key
         self._update_control_name()
 
-    @des.setter
+    @ des.setter
     def des(self, key):
         self._des = key
         self._update_control_name()
 
-    @index.setter
+    @ index.setter
     def index(self, num):
         self._index = num
         self._update_control_name()
 
-    @i.setter
+    @ i.setter
     def i(self, num):
         self._index = num
         self._update_control_name()
 
-    @offsets.setter
+    @ offsets.setter
     def offsets(self, num):
         if isinstance(num, int) and num > 0:
             self._update_offsets(num)
         else:
             logger.warning('Given number: {} is invalid, must be an integer'.format(num))
 
-    @sub.setter
+    @ sub.setter
     def sub(self, key):
         self._update_sub(key)
 
@@ -440,6 +448,26 @@ class Control(object):
 
         attributes.add_attrs(self._ctrls[0], attrs, **kwargs)
 
+    def add_space(self, **kwargs):
+        """
+        add spaces for controller's space node,
+        it will either create the blend set up for spaces if no spaces, or add spaces to the existing setup
+        it will also add space info to the given control for further query
+
+        Keyword Args:
+            parent(dict): add spaces behaves like parent constraint, template is space: matrix attribute,
+                          it will be skipped if the control already had point/orient spaces
+            point(dict): add spaces only for translation, it will be skipped if the control already had parent spaces
+            orient(dict): add spaces only for rotation, it will be skipped if the control already had parent spaces
+            scale(dict): add spaces only for scale
+            parent_default(list): set default values for parent spaces, None will use either the first two from dict, or
+                                  keep the previous value if already had any spaces
+            point_default(list): set default values for point spaces
+            orient_default(list): set default values for orient spaces
+            scale_default(list): set default values for scale spaces
+        """
+        add_space(self._name, **kwargs)
+
 
 # FUNCTION
 def create(description, **kwargs):
@@ -628,6 +656,101 @@ def add_space(ctrl, **kwargs):
                 _add_single_space_to_ctrl(ctrl, {space: info}, default=space_default, space_type=space_type)
 
 
+def get_space_info(ctrl):
+    """
+    get given control's space info
+
+    Args:
+        ctrl(str): control name
+
+    Returns:
+        space_info(dict)
+    """
+    space_info = {}
+    for space_attr, space_type in zip({'parentSpaces', 'pointSpaces', 'orientSpaces', 'scaleSpaces'},
+                                      {'parent', 'point', 'orient', 'scale'}):
+        space_attr_str = attributes.get_attr(space_attr, node=ctrl, warn=False)
+        if space_attr_str:
+            # convert to dict
+            space_attr_val = ast.literal_eval([space_attr_str])
+            if len(space_attr_val) > 1:
+                # it has blend set up, get current space as default value
+                space_a = cmds.getAttr('{}.{}SpaceA'.format(ctrl, space_type))
+                space_b = cmds.getAttr('{}.{}SpaceB'.format(ctrl, space_type))
+                default_info = [space_a, space_b]
+            else:
+                default_info = []
+            space_info.update({space_type: {'space': space_attr_val,
+                                            'default': default_info}})
+    return space_info
+
+
+def export_space_info(ctrls, path, name=CTRL_SPACE_INFO_DEFAULT_NAME):
+    """
+    export controls space info to the given path, space info contains each spaces information, and default values
+
+    Args:
+        ctrls(list/str): controls need to be exported
+        path(str): given path
+    Keyword Args:
+        name(str): export space info file name, default is 'spaces'
+    Returns:
+        space_info_path(str): exported path, return None if nothing to be exported
+    """
+    if isinstance(ctrls, basestring):
+        ctrls = [ctrls]
+
+    space_info_export = {}
+    for c in ctrls:
+        # check if it's exist
+        if cmds.objExists(c):
+            # get space info
+            space_info = get_space_info(c)
+            if space_info:
+                space_info_export.update({c: space_info})
+        else:
+            logger.warning("{} doesn't exist in the scene, skipped".format(c))
+
+    # check if has ctrl shape info
+    if space_info_export:
+        # compose path
+        space_info_path = os.path.join(path, name + CTRL_SPACE_INFO_FORMAT)
+        files.write_json_file(space_info_path, space_info_export)
+        logger.info('export space info successfully at {}'.format(space_info_path))
+        return space_info_path
+    else:
+        logger.warning('nothing to be exported, skipped')
+        return None
+
+
+def build_spaces_from_info(space_info, control_list=None, exception_list=None):
+    """
+    build space base on given space information
+
+    Args:
+        space info(dict): space info
+    Keyword Args:
+        control_list(list): only load space info to those controls in the list, None will load all, default is None
+        exception_list(list): skip loading space info to those controls in the list, default is None
+    """
+    for ctrl, space_info in space_info.iteritems():
+        if cmds.objExists(ctrl):
+            if control_list and ctrl not in control_list:
+                pass
+            elif exception_list and ctrl in exception_list:
+                pass
+            else:
+                ctrl_space_info = {}
+                for key, item in space_info.iteritems():
+                    ctrl_space_info.update({key: item['space'],
+                                            key+'_default': item['default']})
+                add_space(ctrl, **ctrl_space_info)
+                # log info
+                logger.info("build spaces for {} base on the given information".format(ctrl))
+        else:
+            logger.warning("{} doesn't exist, skipped".format(ctrl))
+
+
 def transform_ctrl_shape(ctrl_shapes, **kwargs):
     """
     offset controls shape nodes
@@ -794,45 +917,38 @@ def export_ctrl_shape(ctrl, path, name=CTRL_SHAPE_INFO_DEFAULT_NAME):
         # compose path
         ctrl_shape_info_path = os.path.join(path, name + CTRL_SHAPE_INFO_FORMAT)
         files.write_json_file(ctrl_shape_info_path, ctrl_shape_info_export)
-        logger.info('export curves info successfully at {}'.format(ctrl_shape_info_path))
-        return ctrl_shape_info_export
+        logger.info('export control shapes info successfully at {}'.format(ctrl_shape_info_path))
+        return ctrl_shape_info_path
     else:
         logger.warning('nothing to be exported, skipped')
         return None
 
 
-def load_ctrl_shape_info(path, name=CTRL_SHAPE_INFO_DEFAULT_NAME, control_list=None, exception_list=None, size=1):
+def build_ctrl_shape_from_info(ctrl_shape_info, control_list=None, exception_list=None, size=1):
     """
-    load control shapes information from the given path, and add shapes to controllers
+    add shapes to controllers base on the given control shapes info
 
     Args:
-        path(str): ctrl shape info path
+        ctrl_shape_info(dict): ctrl shape info
     Keyword Args:
-        name(str): ctrl shape info file name, default is ctrlShapes
         control_list(list): only load ctrl shape info to those controls in the list, None will load all, default is None
         exception_list(list): skip loading ctrl shape info to those controls in the list, default is None
         size(float): scale controls shapes uniformly, default is 1
     """
-    # get path
-    ctrl_shape_info_path = os.path.join(path, name + CTRL_SHAPE_INFO_FORMAT)
-    if os.path.exists(ctrl_shape_info_path):
-        ctrl_shape_info = files.read_json_file(ctrl_shape_info_path)
-        for ctrl, shape_info in ctrl_shape_info.iteritems():
-            if cmds.objExists(ctrl):
-                if control_list and ctrl not in control_list:
-                    pass
-                elif exception_list and ctrl in exception_list:
-                    pass
-                else:
-                    shape_info.update({'size': size})
-                    _add_ctrl_shape(ctrl, **shape_info)
-                    # log info
-                    logger.info("load and create control shape for {} "
-                                "base on given control shape info file: {}".format(ctrl, ctrl_shape_info_path))
+
+    for ctrl, shape_info in ctrl_shape_info.iteritems():
+        if cmds.objExists(ctrl):
+            if control_list and ctrl not in control_list:
+                pass
+            elif exception_list and ctrl in exception_list:
+                pass
             else:
-                logger.warning("{} doesn't exist, skipped".format(ctrl))
-    else:
-        logger.warning('given path: {} does not exist, skipped'.format(ctrl_shape_info_path))
+                shape_info.update({'size': size})
+                _add_ctrl_shape(ctrl, **shape_info)
+                # log info
+                logger.info("added control shape for {} base on the given control shape info".format(ctrl))
+        else:
+            logger.warning("{} doesn't exist, skipped".format(ctrl))
 
 
 # SUB FUNCTION
@@ -1027,7 +1143,9 @@ def _add_single_space_to_ctrl(ctrl, space_info, space_type='parent', default=Non
                              '{}.{}'.format(space_node, attr))
 
         # save space info to ctrl node
-        attributes.add_attrs(ctrl, attr_save, attribute_type='string', default_value=str(space_info_save), lock=True)
+        # we can't lock the attribute, because we may want to add more spaces in animation scene,
+        # the rig will be referenced into the scene, and we can't unlock attr in that case, so keep it unlock
+        attributes.add_attrs(ctrl, attr_save, attribute_type='string', default_value=str(space_info_save), lock=False)
         return True
 
     elif len(space_info_pre.keys()) == 1:
