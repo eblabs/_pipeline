@@ -69,7 +69,7 @@ class RigData(task.Task):
             if not rig_type:
                 rig_type = self.rig_type
             if not task_name:
-                task_name = self._name
+                task_name = self.task_data_name
 
             if project and asset and rig_type:
                 data_folder = buildUtils.get_data_path(task_name, rig_type, asset, project, warning=False,

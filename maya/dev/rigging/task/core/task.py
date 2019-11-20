@@ -52,6 +52,11 @@ class Task(object):
         self._save = False  # attr to check if has save function
         self.save_data_path = None  # store saving path for further use
 
+        # this attr is specific for module, task need to read data from its own folder, will need to get the task name
+        # the default is the task's own name, but it's bundled to a module, it won't have its own data folder, we need
+        # to get data from module's data folder instead
+        self.task_data_name = self._name
+
         # icon
         self._icon_new = icons.task_new
         self._icon_lock = icons.task_lock
@@ -247,7 +252,7 @@ class Task(object):
         function to save data, all tasks with saving data function should sub class here for saving
         """
         # get saving path
-        self.save_data_path = buildUtils.get_data_path(self._name, self.rig_type, self.asset, self.project,
+        self.save_data_path = buildUtils.get_data_path(self.task_data_name, self.rig_type, self.asset, self.project,
                                                        warning=False, check_exist=False)
         # create folder if not exist
         if not os.path.exists(self.save_data_path):
@@ -265,7 +270,6 @@ class Task(object):
         # create folder if not exist
         if not os.path.exists(self.save_data_path):
             os.mkdir(self.save_data_path)
-
 
     def _register_attr_to_task(self, kwargs_task, kwargs_ui):
         """
