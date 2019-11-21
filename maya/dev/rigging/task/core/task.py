@@ -157,12 +157,17 @@ class Task(object):
             select(bool): if right click can add/set selection
             enum(list): enum options
             template: list/dict children template
-            key_edit(bool): if double click can edit dict key name
+            template_lock(bool): it will lock the template, user can't add/remove/duplicate element anymore,
+                                 default is False
+            key_edit(bool): if double click can edit dict key name, default is False
+            val_edit(bool): if double click can edit attribute's value, default is True
+            checkable(bool): if attribute is checkable or not, default is False
+            check_state(bool): set check state for attribute, default is True
             keys_order(list): if the dictionary's keys need to show by order
             hint(str): attribute's hint
             custom(bool): if set to custom, the kwarg will be QLineEdit, and user can add/remove/duplicate all the time,
                           it will be the user's responsibility to keep the kwarg consistent with component,
-                          normally used for kwargs need to be override
+                          normally used for kwargs need to be override, default is False
         """
         hint = kwargs.get('hint', '')
 
@@ -217,7 +222,11 @@ class Task(object):
             select(bool): if right click can add/set selection
             enum(list): enum options
             template: list/dict children template
+            template_lock(bool): it will lock the template, user can't add/remove/duplicate element anymore
             key_edit(bool): if double click can edit dict key name
+            val_edit(bool): if double click can edit attribute's value
+            checkable(bool): if attribute is checkable or not
+            check_state(bool): set check state for attribute
             keys_order(list): if the dictionary's keys need to show by order
             hint(str): attribute's hint
             custom(bool): if set to custom, the kwarg will be QLineEdit, and user can add/remove/duplicate all the time,

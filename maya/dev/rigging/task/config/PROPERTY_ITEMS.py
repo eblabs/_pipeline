@@ -4,8 +4,6 @@ try:
 except ImportError:
     from PySide.QtGui import *
 
-# import OrderedDict
-from collections import OrderedDict
 
 PROPERTY_ITEMS = {'str': {'default': '',
                           'widget': QLineEdit},
@@ -29,11 +27,11 @@ PROPERTY_ITEMS = {'str': {'default': '',
                            'enum': ['True', 'False']},
 
                   'list': {'default': [],
-                           'template': '',
+                           'template': 'null',
                            'widget': QLineEdit},
 
                   'dict': {'default': {},
-                           'template': [],
+                           'template': 'null',
                            'widget': QLineEdit},
 
                   'callback': {'default': '',
@@ -55,4 +53,37 @@ PROPERTY_ITEMS = {'str': {'default': '',
                                                    'filter': ''},
                                       'keys_order': ['project', 'asset', 'rig_type', 'task', 'filter'],
                                       'widget': QLineEdit},
+
+                  'space_info': {'default': {'parent': {'space': {},
+                                                        'defaults': []},
+                                             'point': {'space': {},
+                                                       'defaults': []},
+                                             'orient': {'space': {},
+                                                        'defaults': []},
+                                             'scale': {'space': {},
+                                                       'defaults': []}},
+                                 'template': {'parent': 'space_data', 'point': 'space_data', 'orient': 'space_data',
+                                              'scale': 'space_data'},
+                                 'template_lock': True,
+                                 'keys_order': ['parent', 'point', 'orient', 'scale'],
+                                 'widget': QLineEdit,
+                                 'key_edit': False,
+                                 'val_edit': False,
+                                 'checkable': True},
+
+                  'space_data': {'default': {'space': {}, 'defaults': []},
+                                 'template': {'space': 'space_input', 'defaults': []},
+                                 'template_lock': True,
+                                 'keys_order': ['space', 'defaults'],
+                                 'widget': QLineEdit,
+                                 'key_edit': False,
+                                 'val_edit': False,
+                                 'checkable': False},
+
+                  'space_input': {'default': {},
+                                  'template': 'str',
+                                  'widget': QLineEdit,
+                                  'key_edit': True,
+                                  'val_edit': True,
+                                  'checkable': True}
                   }

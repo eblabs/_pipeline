@@ -119,7 +119,7 @@ class PropertyEditor(QTreeView):
             kwarg_data = task_kwargs[key]
 
             # add row item
-            row_items = self._add_row_item(key, item_kwargs=kwarg_data, key_edit=False)
+            row_items = self._add_row_item(key, item_kwargs=kwarg_data, key_edit=False, val_edit=True)
             # add row item function
             self._model.appendRow(row_items)
 
@@ -135,7 +135,8 @@ class PropertyEditor(QTreeView):
         self._model.setHeaderData(1, Qt.Horizontal, '')
         self.setModel(self._model)
 
-    def _add_row_item(self, key, val=None, item_kwargs=None, key_edit=False):
+    def _add_row_item(self, key, val=None, item_kwargs=None, key_edit=False, val_edit=True, checkable=False,
+                      check_state=True):
         """
         add row for property
         Args:
@@ -144,6 +145,9 @@ class PropertyEditor(QTreeView):
             val: property default value
             item_kwargs(dict): property item's ui kwargs
             key_edit(bool): if the key name can be changed by user, normally used for sth like adding space
+            val_edit(bool): if the value can be changed by user, normally off if need to check inheritance
+            checkable(bool): if the property is checkable, normally used for inherit attr so user can turn it off
+            check_state(bool): check state if the property is checkable
         Returns:
             row_items(list): key_item, value_item
         """
@@ -164,6 +168,16 @@ class PropertyEditor(QTreeView):
         else:
             column_key.setEditable(False)
 
+        # check if checkable
+        if checkable:
+            column_key.setCheckable(True)
+            if check_state:
+                column_key.setCheckState(Qt.Checked)
+            else:
+                column_key.setCheckState(Qt.Unchecked)
+        else:
+            column_key.setCheckable(False)
+
         column_key.setData(self._size, role=Qt.SizeHintRole)  # set column size
 
         # add ui kwargs info from template in case sth missing
@@ -182,6 +196,12 @@ class PropertyEditor(QTreeView):
             item_kwargs.update({'value': val})  # override the value
 
         column_val = PropertyItem(data_info=item_kwargs)  # create property item with given item kwargs info
+
+        # set editable
+        if val_edit:
+            column_val.setEditable(True)
+        else:
+            column_val.setEditable(False)
 
         # set height, normally for call back
         if 'height' in item_kwargs:
@@ -218,7 +238,6 @@ class PropertyEditor(QTreeView):
             # loop in each item in list
             for i, v in enumerate(val):
                 # try to get value's type from template
-                attr_type = None
                 if template:
                     if isinstance(template, list):
                         # each value has specific attr type
@@ -239,8 +258,15 @@ class PropertyEditor(QTreeView):
                 if custom:
                     attr_kwargs.update({'custom': True})
 
+                # get check info
+                # checkable = val_data.get('checkable', False)
+                # check_state = val_data.get('check_state', True)
+
+                # get editable
+                val_edit = val_data.get('val_edit', True)
+
                 # create row items
-                items_add = self._add_row_item(str(i), val=v, item_kwargs=attr_kwargs)
+                items_add = self._add_row_item(str(i), val=v, item_kwargs=attr_kwargs, val_edit=val_edit)
 
                 # add row attached to key column item
                 items[0].appendRow(items_add)
@@ -261,7 +287,6 @@ class PropertyEditor(QTreeView):
             for k in keys_order:
                 v = val[k]  # get key's value
                 # try to get value's type from template
-                attr_type = None
                 if template:
                     if isinstance(template, dict) and k in template:
                         # key's value has a specific attr type
@@ -281,8 +306,16 @@ class PropertyEditor(QTreeView):
                 if custom:
                     attr_kwargs.update({'custom': True})
 
+                # get check info
+                checkable = val_data.get('checkable', False)
+                check_state = val_data.get('check_state', True)
+
+                # get editable
+                val_edit = val_data.get('val_edit', True)
+
                 # create row items
-                items_add = self._add_row_item(k, val=v, item_kwargs=attr_kwargs, key_edit=key_edit)
+                items_add = self._add_row_item(k, val=v, item_kwargs=attr_kwargs, key_edit=key_edit, val_edit=val_edit,
+                                               checkable=checkable, check_state=check_state)
 
                 # add row attached to key column item
                 items[0].appendRow(items_add)
@@ -407,8 +440,11 @@ class PropertyEditor(QTreeView):
             self.action_add_select.setEnabled(select*add_select)
 
             # get template, set add element to True if has template in it
+            # also get template lock, because some template are just for set property type,
+            # not allow for adding elements
             template = item_kwargs.get('template', None)
-            if template is not None:
+            template_lock = item_kwargs.get('template_lock', None)
+            if template is not None and not template_lock:
                 self.action_add_element.setEnabled(True)
             else:
                 self.action_add_element.setEnabled(False)
@@ -427,8 +463,10 @@ class PropertyEditor(QTreeView):
 
                 parent_item_kwargs = item_value.data(role=ROLE_ITEM_KWARGS)
                 parent_template = parent_item_kwargs.get('template', None)
-                if parent_template is not None:
+                parent_template_lock = parent_item_kwargs.get('template_lock', False)
+                if parent_template is not None and not parent_template_lock:
                     # parent item has template, means the children items are editable, can be remove or duplicate
+                    # also parent template is not locked, which allow to remove or duplicate
                     self.action_del_element.setEnabled(True)
                     self.action_dup_element.setEnabled(True)
                 else:
@@ -550,7 +588,7 @@ class PropertyEditor(QTreeView):
         item_kwargs = item.data(role=ROLE_ITEM_KWARGS)
 
         if isinstance(val, list):
-            append_val = 'null'
+            append_val = 'val'
             # get template
             template = item_kwargs.get('template', None)
             if template is not None:
@@ -572,17 +610,22 @@ class PropertyEditor(QTreeView):
                 key = val.keys()[-1] + '_copy'
                 append_val = val[val.keys()[-1]]
             else:
-                append_val = 'null'
+                append_val = 'val'
                 # get template
                 template = item_kwargs.get('template', None)
                 if template is not None:
                     if isinstance(template, basestring) and template in PROPERTY_ITEMS:
                         # get value from PROPERTY_ITEMS
                         append_val = PROPERTY_ITEMS[template]['default']
+                        print 'get value from PROPERTY_ITEMS'
                     else:
                         # check template type and get info from PROPERTY_ITEMS
+                        print item_kwargs
+                        print template
                         template_type = check_item_type(template)
+                        print template_type
                         append_val = PROPERTY_ITEMS[template_type]['default']
+                        print 'check template type and get info from PROPERTY_ITEMS'
                 key = 'key'
 
             val.update({key: append_val})

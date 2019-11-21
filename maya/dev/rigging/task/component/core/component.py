@@ -258,6 +258,10 @@ class Component(task.Task):
         self.register_attribute('control size', 1.0, attr_name='ctrl_size', attr_type='float', min=0.001,
                                 hint="component's controls' size")
 
+        self.register_attribute('control space', {}, attr_name='ctrl_space', attr_type='dict', key_edit=True,
+                                template='space_info', checkable=True, val_edit=False,
+                                hint='add spaces for each controller')
+
         self.register_attribute('input connection', '', attr_name='input_connect', attr_type='str', select=False,
                                 hint=("component's input connection,\nshould be a component's joint's output matrix,\n"
                                       "or an existing maya node's matrix attribute"))
