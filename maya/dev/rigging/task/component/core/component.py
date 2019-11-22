@@ -37,7 +37,19 @@ class Component(task.Task):
                                                       like Ik, Fk etc, put it here
         blueprint joints(list): [bp_jnts] component's blueprint joints
         offsets(int): [ctrl_offsets] component's controls' offset groups number, default is 1
-        control_size(float): [ctrl_size] component's controls' size, default is 1.0
+        control size(float): [ctrl_size] component's controls' size, default is 1.0
+        control space(dict): [ctrl_space] component's controls' spaces, it will create the space blend set up for given
+                                          space types.
+                                          template is {control_name: {space_name: {'input_matrix_attr': matrix_attr,
+                                                                                   'space_type': []}}}
+                                          control name can be control's transform node in maya,
+                                          or current component control attr
+                                          input matrix attr can be component's matrix attribute, or maya matrix attr
+                                          space type has 'parent', 'point', 'orient', 'scale'
+                                          point/orient won't be added if control already had parent space,
+                                          same for the opposite way, all depends on which one will be added first
+                                          there are check boxes for control and space,
+                                          user can turn it off if don't want to add it
         input connection(str):  [input_connect] component's input connection, should be a component's joint's output
                                                 matrix, or an existing maya node's matrix attribute
 
@@ -259,7 +271,7 @@ class Component(task.Task):
                                 hint="component's controls' size")
 
         self.register_attribute('control space', {}, attr_name='ctrl_space', attr_type='dict', key_edit=True,
-                                template='space_info', checkable=True, val_edit=False,
+                                template='space_list', checkable=True, val_edit=False,
                                 hint='add spaces for each controller')
 
         self.register_attribute('input connection', '', attr_name='input_connect', attr_type='str', select=False,

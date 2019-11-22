@@ -51,8 +51,6 @@ class PropertyEditor(QTreeView):
         self.setAlternatingRowColors(True)
         # show header so user can adjust the first column width
         self.setHeaderHidden(False)
-        # last section stretch
-        self.header().setStretchLastSection(True)
 
         # QStandardItemModel
         self._model = QStandardItemModel(0, 2)
@@ -134,6 +132,8 @@ class PropertyEditor(QTreeView):
         self._model.setHeaderData(0, Qt.Horizontal, 'Properties')
         self._model.setHeaderData(1, Qt.Horizontal, '')
         self.setModel(self._model)
+        # give it a initial width so it can fit most kwargs keys
+        self.setColumnWidth(0, 130)
 
     def _add_row_item(self, key, val=None, item_kwargs=None, key_edit=False, val_edit=True, checkable=False,
                       check_state=True):
@@ -259,14 +259,15 @@ class PropertyEditor(QTreeView):
                     attr_kwargs.update({'custom': True})
 
                 # get check info
-                # checkable = val_data.get('checkable', False)
-                # check_state = val_data.get('check_state', True)
+                checkable = val_data.get('checkable', False)
+                check_state = val_data.get('check_state', True)
 
                 # get editable
                 val_edit = val_data.get('val_edit', True)
 
                 # create row items
-                items_add = self._add_row_item(str(i), val=v, item_kwargs=attr_kwargs, val_edit=val_edit)
+                items_add = self._add_row_item(str(i), val=v, item_kwargs=attr_kwargs, val_edit=val_edit,
+                                               checkable=checkable, check_state=check_state)
 
                 # add row attached to key column item
                 items[0].appendRow(items_add)
@@ -440,11 +441,12 @@ class PropertyEditor(QTreeView):
             self.action_add_select.setEnabled(select*add_select)
 
             # get template, set add element to True if has template in it
-            # also get template lock, because some template are just for set property type,
+            # also check if can add element or not, because some template are just for set property type,
             # not allow for adding elements
             template = item_kwargs.get('template', None)
-            template_lock = item_kwargs.get('template_lock', None)
-            if template is not None and not template_lock:
+            template_add = item_kwargs.get('add_element', True)
+
+            if template is not None and template_add:
                 self.action_add_element.setEnabled(True)
             else:
                 self.action_add_element.setEnabled(False)
@@ -463,10 +465,10 @@ class PropertyEditor(QTreeView):
 
                 parent_item_kwargs = item_value.data(role=ROLE_ITEM_KWARGS)
                 parent_template = parent_item_kwargs.get('template', None)
-                parent_template_lock = parent_item_kwargs.get('template_lock', False)
-                if parent_template is not None and not parent_template_lock:
+                parent_template_add = parent_item_kwargs.get('add_element', True)
+                if parent_template is not None and parent_template_add:
                     # parent item has template, means the children items are editable, can be remove or duplicate
-                    # also parent template is not locked, which allow to remove or duplicate
+                    # also parent template can add element, which allow to remove or duplicate
                     self.action_del_element.setEnabled(True)
                     self.action_dup_element.setEnabled(True)
                 else:
@@ -596,9 +598,8 @@ class PropertyEditor(QTreeView):
                     # get value from PROPERTY_ITEMS
                     append_val = PROPERTY_ITEMS[template]['default']
                 else:
-                    # check template type and get info from PROPERTY_ITEMS
-                    template_type = check_item_type(template)
-                    append_val = PROPERTY_ITEMS[template_type]['default']
+                    # use template as default value directly
+                    append_val = template
 
             # append to list
             val.append(append_val)
@@ -617,15 +618,9 @@ class PropertyEditor(QTreeView):
                     if isinstance(template, basestring) and template in PROPERTY_ITEMS:
                         # get value from PROPERTY_ITEMS
                         append_val = PROPERTY_ITEMS[template]['default']
-                        print 'get value from PROPERTY_ITEMS'
                     else:
-                        # check template type and get info from PROPERTY_ITEMS
-                        print item_kwargs
-                        print template
-                        template_type = check_item_type(template)
-                        print template_type
-                        append_val = PROPERTY_ITEMS[template_type]['default']
-                        print 'check template type and get info from PROPERTY_ITEMS'
+                        # use template as default value directly
+                        append_val = template
                 key = 'key'
 
             val.update({key: append_val})

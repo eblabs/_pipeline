@@ -157,8 +157,7 @@ class Task(object):
             select(bool): if right click can add/set selection
             enum(list): enum options
             template: list/dict children template
-            template_lock(bool): it will lock the template, user can't add/remove/duplicate element anymore,
-                                 default is False
+            add_element(bool): list/dict can let user add/remove/duplicate element or not, default is True
             key_edit(bool): if double click can edit dict key name, default is False
             val_edit(bool): if double click can edit attribute's value, default is True
             checkable(bool): if attribute is checkable or not, default is False
@@ -222,7 +221,7 @@ class Task(object):
             select(bool): if right click can add/set selection
             enum(list): enum options
             template: list/dict children template
-            template_lock(bool): it will lock the template, user can't add/remove/duplicate element anymore
+            add_element(bool): list/dict can let user add/remove/duplicate element or not, default is True
             key_edit(bool): if double click can edit dict key name
             val_edit(bool): if double click can edit attribute's value
             checkable(bool): if attribute is checkable or not
