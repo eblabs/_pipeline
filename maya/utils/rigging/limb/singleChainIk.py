@@ -67,15 +67,16 @@ class SingleChainIk(limb.Limb):
 
         # lock hide target control's rotation and rotate order
         ctrl_objs[1].lock_hide_attrs(attributes.Attr.rotate+attributes.Attr.rotateOrder)
+
         # parent target control to root control
         cmds.parent(ctrl_objs[1].zero, ctrl_objs[0].output)
 
         # connect root control translate with root joint
-        constraints.matrix_connect(ctrl_objs[0].world_matrix_attr, self.jnts[0],
+        constraints.matrix_connect(ctrl_objs[0].object_matrix_attr, self.jnts[0],
                                    skip=attributes.Attr.rotate+attributes.Attr.scale)
 
         # get target matrix
-        target_matrix = nodeUtils.mult_matrix([ctrl_objs[1].world_matrix_attr, ctrl_objs[0].world_matrix_attr],
+        target_matrix = nodeUtils.mult_matrix([ctrl_objs[1].object_matrix_attr, ctrl_objs[0].object_matrix_attr],
                                               side=self._side, description=self._des+'TargetPos', index=1)
 
         # rig ik
@@ -109,5 +110,5 @@ class SingleChainIk(limb.Limb):
                 up_vec = [0, -1, 0]
             # aim constraint
             constraints.matrix_aim_constraint(target_matrix, self.jnts[0], world_up_type='objectrotation',
-                                              world_up_matrix=ctrl_objs[0].world_matrix_attr, aim_vector=aim_vec,
+                                              world_up_matrix=ctrl_objs[0].object_matrix_attr, aim_vector=aim_vec,
                                               up_vector=up_vec, local=True, lock=True, force=True)

@@ -64,7 +64,7 @@ class FkChain(limb.Limb):
 
             # connect ctrl to joint
             constraints.matrix_connect(ctrl.local_matrix_attr, jnt, skip=attributes.Attr.translate)
-            constraints.matrix_connect(ctrl.world_matrix_attr, jnt, skip=attributes.Attr.rotate+attributes.Attr.scale)
+            constraints.matrix_connect(ctrl.object_matrix_attr, jnt, skip=attributes.Attr.rotate+attributes.Attr.scale)
 
             self.ctrls.append(ctrl.name)
             parent = ctrl.output

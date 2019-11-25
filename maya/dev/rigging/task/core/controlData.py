@@ -43,6 +43,10 @@ class ControlData(rigData.RigData):
                                      "loading data. \nit support * and ? for multiple nodes, "
                                      "like 'ctrl_l_*_???' or 'ctrl_m_*'")
 
+    def post_build(self):
+        super(ControlData, self).post_build()
+        self.load_data()
+
     def get_data(self):
         super(ControlData, self).get_data()
 

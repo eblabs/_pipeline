@@ -125,13 +125,13 @@ class RotatePlaneIk(limb.Limb):
                                     description=ik_ctrl_obj.description, index=ik_ctrl_obj.index).name
         ik_transform = transforms.create(ik_transform, pos=ik_ctrl_obj.name, lock_hide=attributes.Attr.all, vis=True,
                                          parent=ik_transform_parent)
-        constraints.matrix_connect(ik_ctrl_obj.world_matrix_attr, ik_transform, force=True)
+        constraints.matrix_connect(ik_ctrl_obj.object_matrix_attr, ik_transform, force=True)
 
         pv_transform = naming.Namer(type=naming.Type.transform, side=self._side,
                                     description=self._des+self._jnt_suffix+'Pv', index=1).name
         pv_transform = transforms.create(pv_transform, pos=ctrl_objs[1].name, lock_hide=attributes.Attr.all,
                                          vis=True, parent=self._nodes_hide_grp)
-        constraints.matrix_connect(ctrl_objs[1].world_matrix_attr, pv_transform, force=True)
+        constraints.matrix_connect(ctrl_objs[1].object_matrix_attr, pv_transform, force=True)
 
         # parent ik to transform
         cmds.parent(ik_handle, ik_transform)
@@ -156,7 +156,7 @@ class RotatePlaneIk(limb.Limb):
                                            parent=self._nodes_show_grp)
 
         # connect root
-        constraints.matrix_connect(ctrl_objs[0].world_matrix_attr, rp_jnts[0],
+        constraints.matrix_connect(ctrl_objs[0].object_matrix_attr, rp_jnts[0],
                                    skip=attributes.Attr.rotate+attributes.Attr.scale)
 
         # twist attr
@@ -174,8 +174,8 @@ class RotatePlaneIk(limb.Limb):
                                   keyable=False, channel_box=True)
             cmds.connectAttr(ik_ctrl_obj.name+'.ikOffsetControlVis', ik_offset_ctrl_obj.zero+'.visibility')
             # control the ik handle
-            constraints.matrix_connect(ik_offset_ctrl_obj.world_matrix_attr, ik_handle,
-                                       skip=['rotateX', 'rotateY', 'rotateZ', 'scaleX', 'scaleY', 'scaleZ'])
+            constraints.matrix_connect(ik_offset_ctrl_obj.object_matrix_attr, ik_handle,
+                                       skip=attributes.Attr.rotateScale)
         else:
             ik_offset_ctrl_obj = None
 

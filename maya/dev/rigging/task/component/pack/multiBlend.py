@@ -142,6 +142,7 @@ class MultiBlend(pack.Pack):
                                 hint='blend transform in local space or world space')
 
         self.remove_attribute('offsets')
+        self.remove_attribute('ctrl_space')
 
     def pack_override_kwargs_registration(self):
         super(MultiBlend, self).pack_override_kwargs_registration()

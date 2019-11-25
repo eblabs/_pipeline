@@ -51,6 +51,7 @@ class MultiGroup(pack.Pack):
     def register_kwargs(self):
         super(MultiGroup, self).register_kwargs()
         self.remove_attribute('blueprint joints')
+        self.remove_attribute('ctrl_space')
 
     def pack_override_kwargs_registration(self):
         super(MultiGroup, self).pack_override_kwargs_registration()

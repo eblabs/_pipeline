@@ -159,9 +159,6 @@ class Task(object):
             template: list/dict children template
             add_element(bool): list/dict can let user add/remove/duplicate element or not, default is True
             key_edit(bool): if double click can edit dict key name, default is False
-            val_edit(bool): if double click can edit attribute's value, default is True
-            checkable(bool): if attribute is checkable or not, default is False
-            check_state(bool): set check state for attribute, default is True
             keys_order(list): if the dictionary's keys need to show by order
             hint(str): attribute's hint
             custom(bool): if set to custom, the kwarg will be QLineEdit, and user can add/remove/duplicate all the time,
@@ -223,9 +220,6 @@ class Task(object):
             template: list/dict children template
             add_element(bool): list/dict can let user add/remove/duplicate element or not, default is True
             key_edit(bool): if double click can edit dict key name
-            val_edit(bool): if double click can edit attribute's value
-            checkable(bool): if attribute is checkable or not
-            check_state(bool): set check state for attribute
             keys_order(list): if the dictionary's keys need to show by order
             hint(str): attribute's hint
             custom(bool): if set to custom, the kwarg will be QLineEdit, and user can add/remove/duplicate all the time,

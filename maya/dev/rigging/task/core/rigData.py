@@ -48,7 +48,6 @@ class RigData(task.Task):
 
     def post_build(self):
         super(RigData, self).post_build()
-        self.load_data()
 
     def get_data(self):
         """
@@ -82,6 +81,7 @@ class RigData(task.Task):
 
     def load_data(self):
         """
-        function to load data, all sub class should use this function to load data to nodes, happens in post build
+        function to load data, all sub class should use this function to load data to nodes,
+        then attach it to the section need to load
         """
         pass

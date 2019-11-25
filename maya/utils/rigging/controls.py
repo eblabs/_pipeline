@@ -134,6 +134,15 @@ class Control(object):
         return self._local_matrix_attr
 
     @ property
+    def object_matrix(self):
+        matrix = cmds.getAttr(self._object_matrix_attr)
+        return matrix
+
+    @ property
+    def object_matrix_attr(self):
+        return self._object_matrix_attr
+
+    @ property
     def world_matrix(self):
         matrix = cmds.getAttr(self._world_matrix_attr)
         return matrix
@@ -242,6 +251,7 @@ class Control(object):
             self._sub_shape = None
 
         self._local_matrix_attr = self._name+'.matrixLocal'
+        self._object_matrix_attr = self._name+'.matrixObject'
         self._world_matrix_attr = self._name+'.matrixWorld'
         self._mult_matrix = cmds.listConnections(self._local_matrix_attr, s=True, d=False, p=False)[0]
 
@@ -448,25 +458,19 @@ class Control(object):
 
         attributes.add_attrs(self._ctrls[0], attrs, **kwargs)
 
-    def add_space(self, **kwargs):
+    def add_space(self, space_name, input_matrix_attr, space_type):
         """
         add spaces for controller's space node,
         it will either create the blend set up for spaces if no spaces, or add spaces to the existing setup
-        it will also add space info to the given control for further query
+        it will also add space info to the control for further query
 
-        Keyword Args:
-            parent(dict): add spaces behaves like parent constraint, template is space: matrix attribute,
-                          it will be skipped if the control already had point/orient spaces
-            point(dict): add spaces only for translation, it will be skipped if the control already had parent spaces
-            orient(dict): add spaces only for rotation, it will be skipped if the control already had parent spaces
-            scale(dict): add spaces only for scale
-            parent_default(list): set default values for parent spaces, None will use either the first two from dict, or
-                                  keep the previous value if already had any spaces
-            point_default(list): set default values for point spaces
-            orient_default(list): set default values for orient spaces
-            scale_default(list): set default values for scale spaces
+        Args:
+            space_name(str): space name
+            input_matrix_attr(str): input matrix attribute
+            space_type(str/list): parent/point/orient/scale,
+                                  parent and point/orient can't be added on top if the other exist already
         """
-        add_space(self._name, **kwargs)
+        add_space(self._name, space_name, input_matrix_attr, space_type)
 
 
 # FUNCTION
@@ -527,7 +531,8 @@ def create(description, **kwargs):
                          description=description, index=index)  # get naming object
 
     if attributes.Attr.vis[0] not in lock_hide:
-        lock_hide.append(attributes.Attr.vis[0])  # make sure to add visibility to lock hide list
+        # make sure lock hide visibility, don't use append, it will change attributes.Attr.scale
+        lock_hide = lock_hide + attributes.Attr.vis
 
     # build hierarchy
     transform_nodes = []
@@ -588,7 +593,7 @@ def create(description, **kwargs):
 
     ctrl = ctrl_list[0]
     # add output attrs
-    attributes.add_attrs(ctrl, ['matrixLocal', 'matrixWorld'], attribute_type='matrix')
+    attributes.add_attrs(ctrl, ['matrixLocal', 'matrixObject', 'matrixWorld'], attribute_type='matrix')
 
     # offset mult matrix
     offset_mult_matrix_attr = nodeUtils.mult_matrix(offset_matrix_attrs, side=side,
@@ -601,9 +606,12 @@ def create(description, **kwargs):
                                                    attrs=ctrl+'.matrixLocal', side=side,
                                                    description=description+'LocalMatrix', index=index)
 
-    # world matrix
+    # object matrix
     nodeUtils.mult_matrix([local_mult_matrix_attr, transform_nodes[0]+'.matrix'],
-                          attrs=ctrl+'.matrixWorld', side=side, description=description+'WorldMatrix', index=index)
+                          attrs=ctrl+'.matrixObject', side=side, description=description+'ObjectMatrix', index=index)
+
+    # world matrix
+    cmds.connectAttr(transform_nodes[-1]+'.worldMatrix[0]', ctrl+'.matrixWorld')
 
     # set pos
     if pos:
@@ -617,7 +625,7 @@ def create(description, **kwargs):
     return Control(ctrl)
 
 
-def add_space(ctrl, **kwargs):
+def add_space(ctrl, space_name, input_matrix_attr, space_type):
     """
     add spaces for given controller's space node,
     it will either create the blend set up for spaces if no spaces, or add spaces to the existing setup
@@ -625,40 +633,248 @@ def add_space(ctrl, **kwargs):
 
     Args:
         ctrl(str): control name
-    Keyword Args:
-        parent(dict): add spaces behaves like parent constraint, template is space: matrix attribute,
-                      it will be skipped if the control already had point/orient spaces
-        point(dict): add spaces only for translation, it will be skipped if the control already had parent spaces
-        orient(dict): add spaces only for rotation, it will be skipped if the control already had parent spaces
-        scale(dict): add spaces only for scale
-        parent_default(list): set default values for parent spaces, None will use either the first two from dict, or
-                              keep the previous value if already had any spaces
-        point_default(list): set default values for point spaces
-        orient_default(list): set default values for orient spaces
-        scale_default(list): set default values for scale spaces
+        space_name(str): space name
+        input_matrix_attr(str): input matrix attribute
+        space_type(str/list): parent/point/orient/scale,
+                              parent and point/orient can't be added on top if the other exist already
     """
-    # get kwargs
-    parent = variables.kwargs('parent', None, kwargs)
-    point = variables.kwargs('point', None, kwargs)
-    orient = variables.kwargs('orient', None, kwargs)
-    scale = variables.kwargs('scale', None, kwargs)
-    parent_default = variables.kwargs('parent_default', None, kwargs)
-    point_default = variables.kwargs('point_default', None, kwargs)
-    orient_default = variables.kwargs('orient_default', None, kwargs)
-    scale_default = variables.kwargs('scale_default', None, kwargs)
+    if isinstance(space_type, basestring):
+        space_type = [space_type]
+    for space in space_type:
+        update_space_to_ctrl(ctrl, space_name, input_matrix_attr=input_matrix_attr, space_type=space)
 
-    # add each space to ctrl
-    for space_add, space_default, space_type in zip([parent, point, orient, scale],
-                                                    [parent_default, point_default, orient_default, scale_default],
-                                                    ['parent', 'point', 'orient', 'scale']):
-        if space_add:
-            for space, info in space_add.iteritems():
-                _add_single_space_to_ctrl(ctrl, {space: info}, default=space_default, space_type=space_type)
+
+def update_space_to_ctrl(ctrl, space_name, input_matrix_attr=None, space_type=None):
+    """
+    update given controller's space
+
+    Args:
+        ctrl(str): control name
+        space_name(str): space name
+    Keyword Args:
+        input_matrix_attr(str): input matrix attribute name,
+                                it will override the existing input if space name already exist,
+                                will use the existing input to add more space types if set to None
+                                default is None
+        space_type(str): parent/point/orient/scale
+                         parent and point/orient can't be added on top if the other exist already
+                         set to None if only want to update input matrix attribute
+                         default is None
+
+    Returns:
+        True/False
+    """
+    # check if has input matrix attr and space type
+    if not input_matrix_attr and not space_type:
+        logger.error("need at least one of the following input to update space: 'input_matrix_attr', 'space_type'")
+        return False
+
+    # get control object
+    ctrl_obj = Control(ctrl)
+
+    # get ctrl space info
+    ctrl_space_info_str = attributes.get_attr('spaceInfo', node=ctrl, warn=False)
+    ctrl_space_type_str = attributes.get_attr('spaceType', node=ctrl, warn=False)
+    if ctrl_space_info_str:
+        ctrl_space_info = ast.literal_eval(ctrl_space_info_str)
+        ctrl_space_type = ast.literal_eval(ctrl_space_type_str)
+    else:
+        ctrl_space_info = {}
+        ctrl_space_type = []
+
+    # check space name
+    if space_name in ctrl_space_info:
+        # space already exist, either override input matrix attr, or add more space type
+        offset_matrix_node = ctrl_space_info[space_name]['offset_matrix_node']
+        space_index = ctrl_space_info[space_name]['index']
+        # get input matrix attr
+        if input_matrix_attr and input_matrix_attr != ctrl_space_info[space_name]['input_matrix_attr']:
+            # get offset matrix
+            input_matrix = cmds.getAttr(input_matrix_attr)
+            world_matrix_ctrl = cmds.getAttr(ctrl+'.worldMatrix[0]')
+            offset_matrix = mathUtils.get_local_matrix(world_matrix_ctrl, input_matrix)
+            # update input matrix attr
+            cmds.setAttr(offset_matrix_node+'.matrixIn[0]', offset_matrix, type='matrix')
+            cmds.connectAttr(input_matrix_attr, offset_matrix_node+'.matrixIn[1]', force=True)
+            # update ctrl space info
+            ctrl_space_info[space_name]['input_matrix_attr'] = input_matrix_attr
+    elif space_type:
+        # it's a new space, check space type
+        if space_type in ['point', 'orient'] and 'parent' in ctrl_space_type:
+            # can't add space because already had parent space
+            logger.warning("can't add {} space because already had parent space".format(space_type))
+            return False
+        elif space_type == 'parent' and ('point' in ctrl_space_type or 'orient' in ctrl_space_type):
+            # can't add space because already had point/orient space
+            logger.warning("can't add {} space because already had point/orient space".format(space_type))
+            return False
+        else:
+            # new space, create offset matrix node
+            # get offset matrix
+            input_matrix = cmds.getAttr(input_matrix_attr)
+            world_matrix_ctrl = cmds.getAttr(ctrl + '.worldMatrix[0]')
+            offset_matrix = mathUtils.get_local_matrix(world_matrix_ctrl, input_matrix)
+            # create offset matrix node
+            offset_matrix_node = nodeUtils.mult_matrix([offset_matrix, input_matrix_attr], side=ctrl_obj.side,
+                                                       description='{}{}{}'.format(ctrl_obj.description,
+                                                                                   space_name[0].upper(),
+                                                                                   space_name[1:]),
+                                                       index=ctrl_obj.index, node_only=True)
+            # update ctrl space info
+            # get index
+            if space_name in SPACE_CONFIG:
+                space_index = SPACE_CONFIG[space_name]
+            else:
+                # collect all index
+                index_all = [CUSTOM_SPACE_INDEX-1]  # add custom space index here so it's easier to use max to compare
+                for space, info in ctrl_space_info.iteritems():
+                    index_all.append(info['index'])
+                space_index = max(index_all) + 1
+            # update info
+            ctrl_space_info.update({space_name: {'input_matrix_attr': input_matrix_attr,
+                                                 'space_type': [],
+                                                 'offset_matrix_node': offset_matrix_node,
+                                                 'index': space_index}})
+    else:
+        logger.error("No space type specific for the new space: {}".format(space_name))
+        return False
+
+    # add space
+    # attrs for connection
+    attrs_connect = {'parent': {'attrs': attributes.Attr.translateRotate,
+                                'translate': True,
+                                'rotate': True,
+                                'scale': False},
+                     'point': {'attrs': attributes.Attr.translate,
+                               'translate': True,
+                               'rotate': False,
+                               'scale': False},
+                     'orient': {'attrs': attributes.Attr.rotate,
+                                'translate': False,
+                                'rotate': True,
+                                'scale': False},
+                     'scale': {'attrs': attributes.Attr.scale,
+                               'translate': False,
+                               'rotate': False,
+                               'scale': True}}
+    # check if space type exists or not
+    if space_type not in ctrl_space_type:
+        # brand new space type, connect to ctrl with offset matrix node
+        # get connect attrs
+        ctrl_offset_node_attr = nodeUtils.mult_matrix([offset_matrix_node+'.matrixSum',
+                                                       ctrl_obj.space+'.parentInverseMatrix[0]'], side=ctrl_obj.side,
+                                                      description='{}{}{}{}Inverse'.format(ctrl_obj.description,
+                                                                                           space_name[0].upper(),
+                                                                                           space_name[1:],
+                                                                                           space_type.title()),
+                                                      index=ctrl_obj.index)
+        decompose_node = nodeUtils.node(type=naming.Type.decomposeMatrix, side=ctrl_obj.side,
+                                        description='{}Space{}'.format(ctrl_obj.description, space_type.title()),
+                                        index=ctrl_obj.index)
+        cmds.connectAttr(ctrl_offset_node_attr, decompose_node+'.inputMatrix')
+        for attr in attrs_connect[space_type]['attrs']:
+            cmds.connectAttr('{}.output{}{}'.format(decompose_node, attr[0].upper(), attr[1:]),
+                             '{}.{}'.format(ctrl_obj.space, attr))
+
+        # add space info and space type attr if not exist
+        if not attributes.check_attr_exists('spaceInfo', node=ctrl, warn=False):
+            attributes.add_attrs(ctrl, ['spaceInfo', 'spaceType'], attribute_type='string')
+
+        # update info
+        ctrl_space_type.append(space_type)
+        ctrl_space_info[space_name]['space_type'].append(space_type)
+
+    elif space_type not in ctrl_space_info[space_name]['space_type']:
+        # not the first space, add to the existing set up
+        # check input node is a constraint or decompose matrix node
+        input_node = cmds.listConnections('{}.{}'.format(ctrl_obj.space, attrs_connect[space_type]['attrs'][0]),
+                                          source=True, destination=False, plugs=False, skipConversionNodes=True)[0]
+        # get choice node name
+        choice_a = naming.Namer(type=naming.Type.choice, side=ctrl_obj.side,
+                                description='{}{}A'.format(ctrl_obj.description, space_type.title()),
+                                index=ctrl.index).name
+        choice_b = naming.Namer(type=naming.Type.choice, side=ctrl_obj.side,
+                                description='{}{}B'.format(ctrl_obj.description, space_type.title()),
+                                index=ctrl.index).name
+        # check type
+        if cmds.objectType(input_node) == 'decomposeMatrix':
+            # this is the second space, add space blend set up
+            # create choice nodes
+            nodeUtils.node(name=choice_a)
+            nodeUtils.node(name=choice_b)
+            # collect space info
+            # loop in each space, if has space type, plug into choice node, also generate enum name
+            enum_name = ''
+
+            # because there is only one input has this space type, we will break the loop once we find it
+            for space, info in ctrl_space_info.iteritems():
+                if space_type in info['space_type']:
+                    index_each = info['index']
+                    offset_matrix_node_each = info['offset_matrix_node']
+                    enum_name += ('{}={}:'.format(space, index_each))
+                    attributes.connect_attrs(offset_matrix_node_each+'.matrixSum', ['{}.input[{}]'.format(choice_a,
+                                                                                                          index_each),
+                                                                                    '{}.input[{}]'.format(choice_b,
+                                                                                                          index_each)])
+                    break
+
+            # create blend set up
+            # add attr
+            attributes.separator(ctrl, space_type+'Space')
+            attributes.add_attrs(ctrl, [space_type + 'SpaceA', space_type + 'SpaceB'], attribute_type='enum',
+                                 enum_name=enum_name[:-1], default_value=index_each, keyable=True,
+                                 channel_box=True)
+            cmds.addAttr(ctrl, longName=space_type + 'SpaceBlend', attributeType='float', min=0, max=1, keyable=True)
+            # reverse blend attr
+            rvs_blend_attr = nodeUtils.equation('~{}.{}SpaceBlend'.format(ctrl, space_type), side=ctrl_obj.side,
+                                                description='{}{}SpaceBlend'.format(ctrl_obj.description,
+                                                                                    space_type.title()),
+                                                index=ctrl_obj.index)
+
+            # connect attr
+            attributes.connect_attrs(['{}.{}SpaceA'.format(ctrl, space_type), '{}.{}SpaceB'.format(ctrl, space_type)],
+                                     [choice_a + '.selector', choice_b + '.selector'], force=True)
+
+            # constraint blend setup
+            constraints.matrix_blend_constraint([choice_a + '.output', choice_b + '.output'], ctrl_obj.space,
+                                                translate=attrs_connect[space_type]['translate'],
+                                                rotate=attrs_connect[space_type]['rotate'],
+                                                scale=attrs_connect[space_type]['scale'],
+                                                weights=[rvs_blend_attr, '{}.{}SpaceBlend'.format(ctrl, space_type)],
+                                                addition_constraint_description=space_type.title() + 'SpaceBlend',
+                                                addition_decompose_description='Blend')
+
+            # remove direct connect offset and decompose node since they are no longer connect with ctrl
+            offset_node = cmds.listConnections(input_node, source=True, destination=False, plugs=False,
+                                               skipConversionNodes=True)[0]
+            cmds.delete([input_node, offset_node])
+
+        # plug offset matrix node to choices
+        attributes.connect_attrs([offset_matrix_node + '.matrixSum', offset_matrix_node + '.matrixSum'],
+                                 ['{}.input[{}]'.format(choice_a, space_index),
+                                  '{}.input[{}]'.format(choice_b, space_index)], force=True)
+        # add to enum
+        enum_name = cmds.attributeQuery(space_type + 'SpaceA', node=ctrl, listEnum=True)[0]
+        enum_name += ':{}={}'.format(space_name, space_index)
+        cmds.addAttr('{}.{}SpaceA'.format(ctrl, space_type), edit=True, enumName=enum_name)
+        cmds.addAttr('{}.{}SpaceB'.format(ctrl, space_type), edit=True, enumName=enum_name)
+
+        # update info
+        ctrl_space_info[space_name]['space_type'].append(space_type)
+        if space_type not in ctrl_space_type:
+            ctrl_space_type.append(space_type)
+
+    # override space info and space type attr
+    attributes.set_attrs(['spaceInfo', 'spaceType'], [str(ctrl_space_info), str(ctrl_space_type)], node=ctrl,
+                         type='string')
+    return True
 
 
 def get_space_info(ctrl):
     """
     get given control's space info
+    {space_name: {'input_matrix_attr': input matrix attribute name,
+                  'space_type': space type list}}
 
     Args:
         ctrl(str): control name
@@ -667,21 +883,15 @@ def get_space_info(ctrl):
         space_info(dict)
     """
     space_info = {}
-    for space_attr, space_type in zip({'parentSpaces', 'pointSpaces', 'orientSpaces', 'scaleSpaces'},
-                                      {'parent', 'point', 'orient', 'scale'}):
-        space_attr_str = attributes.get_attr(space_attr, node=ctrl, warn=False)
-        if space_attr_str:
-            # convert to dict
-            space_attr_val = ast.literal_eval([space_attr_str])
-            if len(space_attr_val) > 1:
-                # it has blend set up, get current space as default value
-                space_a = cmds.getAttr('{}.{}SpaceA'.format(ctrl, space_type))
-                space_b = cmds.getAttr('{}.{}SpaceB'.format(ctrl, space_type))
-                default_info = [space_a, space_b]
-            else:
-                default_info = []
-            space_info.update({space_type: {'space': space_attr_val,
-                                            'default': default_info}})
+
+    ctrl_space_info_str = attributes.get_attr('spaceInfo', node=ctrl, warn=False)
+    if ctrl_space_info_str:
+        ctrl_space_info = ast.literal_eval(ctrl_space_info_str)
+        # remove unused info
+        for space, info in ctrl_space_info.iteritems():
+            space_info.update({space: {'input_matrix_attr': info['input_matrix_attr'],
+                                       'space_type': info['space_type']}})
+
     return space_info
 
 
@@ -740,11 +950,8 @@ def build_spaces_from_info(space_info, control_list=None, exception_list=None):
             elif exception_list and ctrl in exception_list:
                 pass
             else:
-                ctrl_space_info = {}
-                for key, item in space_info.iteritems():
-                    ctrl_space_info.update({key: item['space'],
-                                            key+'_default': item['default']})
-                add_space(ctrl, **ctrl_space_info)
+                for space_name, info in space_info.iteritems():
+                    add_space(ctrl, space_name, info['input_matrix_attr'], info['space_type'])
                 # log info
                 logger.info("build spaces for {} base on the given information".format(ctrl))
         else:
@@ -817,6 +1024,68 @@ def transform_ctrl_shape(ctrl_shapes, **kwargs):
 
         else:
             logger.warning('{} does not exist'.format(shape))
+
+
+def mirror_ctrl_shape(ctrl_source, ctrl_target, mirror_space=None):
+    """
+    get source ctrl shape info, and mirror to target ctrl shape
+    Args:
+        ctrl_source(str): source control's name
+        ctrl_target(str): target control's name
+    Keyword Args:
+        mirror_space(list): mirror space, control shape point world position will multiply this as vector to get the
+                            mirrored position, default is [-1, 1, 1]
+    Returns:
+        True/False
+    """
+    if not mirror_space:
+        mirror_space = [-1, 1, 1]
+    if not cmds.objExists(ctrl_source):
+        logger.error("source control '{}' can't be found".format(ctrl_source))
+        return False
+    elif not cmds.objExists(ctrl_target):
+        logger.error("target control '{}' can't be found".format(ctrl_target))
+        return False
+    else:
+        # do mirror
+        mirror_space_matrix = apiUtils.compose_matrix(scale=mirror_space)
+        # get ctrl objects
+        ctrl_obj_source = Control(ctrl_source)
+        ctrl_obj_target = Control(ctrl_target)
+
+        mirror_source = [ctrl_source]
+        mirror_target = [ctrl_target]
+
+        # check if has sub
+        if ctrl_obj_source.sub and ctrl_obj_target.sub:
+            mirror_source.append(ctrl_obj_source.sub)
+            mirror_target.append(ctrl_obj_target.sub)
+
+        # mirror shapes
+        for ctrl_source, ctrl_target in zip(mirror_source, mirror_target):
+            # get source ctrl shape info
+            ctrl_shape_info_source = get_ctrl_shape_info(ctrl_source)
+            # get target ctrl shape info
+            ctrl_shape_info_target = get_ctrl_shape_info(ctrl_target)
+            # get source cv position
+            cv_pos_source = ctrl_shape_info_source[ctrl_source]['shape_info']['control_vertices']
+            # loop in each cv pos
+            cv_pos_target = []
+            for cv_pos in cv_pos_source:
+                # compose matrix
+                cv_pos_matrix_source = apiUtils.compose_matrix(translate=cv_pos)
+                ctrl_matrix_source = cmds.getAttr(ctrl_source+'.worldMatrix[0]')
+                ctrl_inverse_matrix_target = cmds.getAttr(ctrl_target+'.worldInverseMatrix[0]')
+                cv_pos_matrix_target = mathUtils.mult_matrix([cv_pos_matrix_source, ctrl_matrix_source,
+                                                              mirror_space_matrix, ctrl_inverse_matrix_target])
+                # get pos
+                cv_pos = apiUtils.decompose_matrix(cv_pos_matrix_target)[0]
+                cv_pos_target.append(cv_pos)
+            # update ctrl shape info
+            ctrl_shape_info_target[ctrl_target]['shape_info']['control_vertices'] = cv_pos_target
+            # add ctrl shape
+            add_ctrls_shape(ctrl_target, **ctrl_shape_info_target[ctrl_target])
+        return True
 
 
 def add_ctrls_shape(ctrls, **kwargs):
@@ -952,345 +1221,6 @@ def build_ctrl_shape_from_info(ctrl_shape_info, control_list=None, exception_lis
 
 
 # SUB FUNCTION
-def _add_single_space_to_ctrl(ctrl, space_info, space_type='parent', default=None):
-    """
-    add single space to the given control
-    it will directly connect with offset if this is the first space,
-    will create blend set up if this is the second
-    and will add to the existing set up if it's already had the blend setup
-
-    it will also create the space info attribute and add on for further query
-
-    Args:
-        ctrl(str): control's name
-        space_info(dict): {space: matrix_attr}
-    Keyword Args:
-        space_type(str): parent/point/orient/scale,
-                        if it had parent space already, will skip point and orient,
-                        and if it had point/orient, will skip parent
-        default(list): default value for space, default is None
-
-    Returns:
-        True/False
-    """
-    parent_space_attr = 'parentSpaces'
-    point_space_attr = 'pointSpaces'
-    orient_space_attr = 'orientSpaces'
-    scale_space_attr = 'scaleSpaces'
-
-    # check if space has any exist space
-    parent_info_str = attributes.get_attr(parent_space_attr, node=ctrl, warn=False)
-    point_info_str = attributes.get_attr(point_space_attr, node=ctrl, warn=False)
-    orient_info_str = attributes.get_attr(orient_space_attr, node=ctrl, warn=False)
-    scale_info_str = attributes.get_attr(scale_space_attr, node=ctrl, warn=False)
-
-    # convert space info string to dict
-    spaces_all_info = {}
-    # we need to store input matrix attr and offset matrix node because some spaces may share the same input,
-    # in this way, we can avoid to create lots of matrix node doing the same thing
-    input_attr_info = {}
-    # we need to store all spaces, because we may add some custom space for different type,
-    # and they should share the same index to keep consistent
-    spaces_indexes = {}
-
-    if parent_info_str:
-        # ctrl has parent spaces, which means it doesn't have point/orient spaces
-        parent_info = ast.literal_eval(parent_info_str)
-        spaces_all_info.update({'parent': parent_info})
-        # loop in each space to get input attr
-        for key, info in parent_info.iteritems():
-            input_attr_info.update({info['attr']: info['offset']})
-            spaces_indexes.update({key: info['index']})
-    else:
-        if point_info_str:
-            # add point spaces info
-            point_info = ast.literal_eval(point_info_str)
-            spaces_all_info.update({'point': point_info})
-            # loop in each space to get input attr
-            for key, info in point_info.iteritems():
-                input_attr_info.update({info['attr']: info['offset']})
-                spaces_indexes.update({key: info['index']})
-        if orient_info_str:
-            # add orient spaces info
-            orient_info = ast.literal_eval(orient_info_str)
-            spaces_all_info.update({'orient': orient_info})
-            # loop in each space to get input attr
-            for key, info in orient_info.iteritems():
-                input_attr_info.update({info['attr']: info['offset']})
-                spaces_indexes.update({key: info['index']})
-
-    if scale_info_str:
-        # add scale spaces info
-        scale_info = ast.literal_eval(scale_info_str)
-        spaces_all_info.update({'scale': scale_info})
-        # loop in each space to get input attr
-        for key, info in scale_info.iteritems():
-            input_attr_info.update({info['attr']: info['offset']})
-            spaces_indexes.update({key: info['index']})
-
-    # check if it has parent vs point/orient clash
-    if 'parent' in spaces_all_info and (space_type == 'point' or space_type == 'orient'):
-        # ctrl already had parent spaces, can't add point/orient space, skipped
-        return False
-    elif ('point' in spaces_all_info or 'orient' in spaces_all_info) and space_type == 'parent':
-        # ctrl already had point/orient spaces, can't add parent space, skipped
-        return False
-
-    # get control object
-    ctrl_obj = Control(ctrl)
-    space_node = ctrl_obj.space
-
-    # check if has existing offset matrix node, create new one if not
-    matrix_attr = space_info.values()[0]
-    if matrix_attr in input_attr_info:
-        offset_matrix_node = input_attr_info[matrix_attr]
-    else:
-        # create offset matrix node
-        offset_matrix_node = nodeUtils.node(type=naming.Type.multMatrix, side=ctrl_obj.side,
-                                            description=ctrl_obj.description+'Space', index=ctrl_obj.index,
-                                            auto_suffix=True)
-        # get offset matrix value
-        # get control's world matrix
-        ctrl_world_matrix = cmds.getAttr(ctrl+'.worldMatrix[0]')
-        # get input inverse matrix
-        input_matrix = cmds.getAttr(matrix_attr)
-        input_inverse_matrix = mathUtils.inverse_matrix(input_matrix)
-        # get offset matrix
-        offset_matrix = mathUtils.mult_matrix([ctrl_world_matrix, input_inverse_matrix])
-        # set attr for offset matrix node
-        cmds.setAttr(offset_matrix_node+'.matrixIn[0]', offset_matrix, type='matrix')
-        # connect input
-        cmds.connectAttr(matrix_attr, offset_matrix_node+'.matrixIn[1]')
-
-    # get space index
-    space_name = space_info.keys()[0]
-    if space_name in spaces_indexes:
-        space_index = spaces_indexes[space_name]
-    else:
-        # get from config
-        if space_name in SPACE_CONFIG:
-            space_index = SPACE_CONFIG[space_name]
-        else:
-            # assign a custom index
-            # get the max index from previous spaces
-            indexes = spaces_indexes.values()
-            if indexes and max(indexes) >= CUSTOM_SPACE_INDEX:
-                space_index = max(indexes) + 1
-            else:
-                space_index = CUSTOM_SPACE_INDEX
-
-    # get previous space info
-    space_info_pre = spaces_all_info.get(space_type, None)
-
-    # get constraint info
-    if space_type == 'parent':
-        skip_attrs = attributes.Attr.scale
-        attr_save = parent_space_attr
-        translate = True
-        rotate = True
-        scale = False
-        attr_query = '.translateX'
-    elif space_type == 'point':
-        skip_attrs = attributes.Attr.rotateScale
-        attr_save = point_space_attr
-        translate = True
-        rotate = False
-        scale = False
-        attr_query = '.translateX'
-    elif space_type == 'orient':
-        skip_attrs = attributes.Attr.translate + attributes.Attr.scale
-        attr_save = orient_space_attr
-        translate = False
-        rotate = True
-        scale = False
-        attr_query = '.rotateX'
-    else:
-        skip_attrs = attributes.Attr.translate + attributes.Attr.rotate
-        attr_save = scale_space_attr
-        translate = False
-        rotate = False
-        scale = True
-        attr_query = '.scaleX'
-
-    # check if has previous space info
-    if not space_info_pre:
-        # this is the first space, directly connect to space node
-        # generate space info
-        space_info_save = {space_name: {'attr': matrix_attr,
-                                        'offset': offset_matrix_node,
-                                        'index': space_index}}
-
-        # create mult matrix node to plug parent inverse matrix
-        parent_inverse_matrix_attr = nodeUtils.mult_matrix([offset_matrix_node+'.matrixSum',
-                                                            space_node+'.parentInverseMatrix[0]'], side=ctrl_obj.side,
-                                                           description='{}{}OffsetSpaceA'.format(ctrl_obj.description,
-                                                                                                 space_type.title()),
-                                                           index=ctrl_obj.index)
-
-        decompose_matrix = nodeUtils.node(type=naming.Type.decomposeMatrix, side=ctrl_obj.side,
-                                          description='{}{}SpaceA'.format(ctrl_obj.description, space_type.title()),
-                                          index=ctrl_obj.index)
-
-        cmds.connectAttr(parent_inverse_matrix_attr, decompose_matrix+'.inputMatrix')
-
-        # get all attributes
-        attrs = attributes.Attr.transform[:]
-        for skip in skip_attrs:
-            attrs.remove(skip)
-
-        for attr in attrs:
-            cmds.connectAttr('{}.output{}{}'.format(decompose_matrix, attr[0].upper(), attr[1:]),
-                             '{}.{}'.format(space_node, attr))
-
-        # save space info to ctrl node
-        # we can't lock the attribute, because we may want to add more spaces in animation scene,
-        # the rig will be referenced into the scene, and we can't unlock attr in that case, so keep it unlock
-        attributes.add_attrs(ctrl, attr_save, attribute_type='string', default_value=str(space_info_save), lock=False)
-        return True
-
-    elif len(space_info_pre.keys()) == 1:
-        # this is the second space, need to create the blend space set up
-        # check if it's the same space as the first one, switch the input in that case
-        if space_name in space_info_pre:
-            # check if input attr is the same, skip if the same
-            if matrix_attr == space_info_pre[space_name]['attr']:
-                return False
-            else:
-                # get offset matrix node, because we plug space node's parent inverse matrix node for another offset
-                decompose_node = cmds.listConnections(space_node + attr_query, source=True, destination=False,
-                                                      plugs=False, skipConversionNodes=True)[0]
-                offset_node = cmds.listConnections(decompose_node + '.inputMatrix', source=True, destination=False,
-                                                   plugs=False, skipConversionNodes=True)[0]
-
-                # override input
-                # the previous offset matrix node may be useless after this, but generally we don't care,
-                # because we will save out the space data and it won't be created when we rebuild the rig
-                # and we can also clean it up by using maya delete unused nodes function after all
-                # it will give us less trouble than trying to delete the node on this stage
-                cmds.connectAttr(offset_matrix_node+'.matrixSum', offset_node+'.inputMatrix', force=True)
-
-                # generate space info
-                space_info_save = {space_name: {'attr': matrix_attr,
-                                                'offset': offset_matrix_node,
-                                                'index': space_index}}
-                # override space info to ctrl node
-                attributes.set_attrs(attr_save, str(space_info_save), node=ctrl, type='string')
-                return True
-        else:
-            # it's the second space, create the blend space set up
-            choice_a = nodeUtils.node(type=naming.Type.choice, side=ctrl_obj.side,
-                                      description='{}{}SpaceA'.format(ctrl_obj.description, space_type.title()),
-                                      index=ctrl_obj.index)
-            choice_b = nodeUtils.node(type=naming.Type.choice, side=ctrl_obj.side,
-                                      description='{}{}SpaceB'.format(ctrl_obj.description, space_type.title()),
-                                      index=ctrl_obj.index)
-            # connect input matrix attr to choice node
-            index_pre = space_info_pre.values()[0]['index']
-            offset_pre = space_info_pre.values()[0]['offset']
-
-            attributes.connect_attrs([offset_pre+'.matrixSum', offset_pre+'.matrixSum',
-                                      offset_matrix_node+'.matrixSum', offset_matrix_node+'.matrixSum'],
-                                     ['{}.input[{}]'.format(choice_a, index_pre),
-                                      '{}.input[{}]'.format(choice_b, index_pre),
-                                      '{}.input[{}]'.format(choice_a, space_index),
-                                      '{}.input[{}]'.format(choice_b, space_index)], force=True)
-
-            # get decompose matrix node A
-            decompose_node = cmds.listConnections(space_node + attr_query, source=True, destination=False,
-                                                  plugs=False, skipConversionNodes=True)[0]
-
-            # remove decompose node a
-            cmds.delete(decompose_node)
-
-            # add attributes
-            # get enum name
-            space_pre = space_info_pre.keys()[0]
-            enum_name = '{}={}:{}={}'.format(space_pre, index_pre, space_name, space_index)
-            # get save info
-            space_info_save = {space_name: {'attr': matrix_attr,
-                                            'offset': offset_matrix_node,
-                                            'index': space_index},
-                               space_pre: space_info_pre[space_pre]}
-            # get default
-            default_val = []
-            if default:
-                for space in default:
-                    if space in [space_pre, space_name]:
-                        default_index = space_info_save[space]['index']
-                        default_val.append(default_index)
-
-            if not default_val:
-                default_val = [index_pre, space_index]
-
-            attributes.separator(ctrl, space_type+'Space')
-            attributes.add_attrs(ctrl, [space_type+'SpaceA', space_type+'SpaceB'], attribute_type='enum',
-                                 enum_name=enum_name, default_value=[default_val[0], default_val[-1]], keyable=True,
-                                 channel_box=True)
-            cmds.addAttr(ctrl, longName=space_type+'SpaceBlend', attributeType='float', min=0, max=1, keyable=True)
-            # reverse blend attr
-            rvs_blend_attr = nodeUtils.equation('~{}.{}SpaceBlend'.format(ctrl, space_type), side=ctrl_obj.side,
-                                                description='{}{}SpaceBlend'.format(ctrl_obj.description,
-                                                                                    space_type.title()), index=ctrl_obj)
-
-            # connect attr
-            attributes.connect_attrs(['{}.{}SpaceA'.format(ctrl, space_type), '{}.{}SpaceB'.format(ctrl, space_type)],
-                                     [choice_a+'.selector', choice_b+'.selector'], force=True)
-
-            # constraint blend setup
-            constraints.matrix_blend_constraint([choice_a + '.output', choice_b + '.output'], space_node,
-                                                translate=translate, rotate=rotate, scale=scale,
-                                                weights=[rvs_blend_attr, '{}.{}SpaceBlend'.format(ctrl, space_type)],
-                                                addition_constraint_description=space_type.title() + 'SpaceBlend',
-                                                addition_decompose_description='Blend')
-
-            # override space info to ctrl node
-            attributes.set_attrs(attr_save, str(space_info_save), node=ctrl, type='string')
-            return True
-    else:
-        # ctrl already had blend set up, add more
-        # get choice nodes
-        choice_a = naming.Namer(type=naming.Type.choice, side=ctrl_obj.side,
-                                description='{}{}SpaceA'.format(ctrl_obj.description, space_type.title()),
-                                index=ctrl_obj.index).name
-        choice_b = naming.Namer(type=naming.Type.choice, side=ctrl_obj.side,
-                                description='{}{}SpaceB'.format(ctrl_obj.description, space_type.title()),
-                                index=ctrl_obj.index).name
-        # check if it's the same space as the first one, switch the input in that case
-        if space_name in space_info_pre and matrix_attr == space_info_pre[space_name]['attr']:
-            # input attr and space is the same with the existing one, skip if the same
-            return False
-        else:
-            # either new space or override the existing one
-            attributes.connect_attrs([offset_matrix_node+'.matrixSum', offset_matrix_node+'.matrixSum'],
-                                     ['{}.input[{}]'.format(choice_a, space_index),
-                                      '{}.input[{}]'.format(choice_b, space_index)], force=True)
-            # check if space already exist or not, if not, add to enum
-            if space_name not in space_info_pre:
-                # get enum name
-                enum_name = cmds.attributeQuery(space_type+'SpaceA', node=ctrl, listEnum=True)[0]
-                enum_name += ':{}={}'.format(space_name, space_index)
-                cmds.addAttr('{}.{}SpaceA'.format(ctrl, space_type), edit=True, enumName=enum_name)
-                cmds.addAttr('{}.{}SpaceB'.format(ctrl, space_type), edit=True, enumName=enum_name)
-
-            # update save info
-            space_info_pre.update({space_name: {'attr': matrix_attr,
-                                                'offset': offset_matrix_node,
-                                                'index': space_index}})
-
-            # check if need to change default value
-            if default:
-                for default_val, space in zip([default[0], default[-1]], ['A', 'B']):
-                    if default_val in space_info_pre:
-                        index = space_info_pre[default_val]['index']
-                        # set default value and also the current value
-                        cmds.addAttr('{}.{}Space{}'.format(ctrl, space_type, space), edit=True, defaultValue=index)
-                        cmds.setAttr('{}.{}Space{}'.format(ctrl, space_type, space), index)
-
-            # override space info to ctrl node
-            attributes.set_attrs(attr_save, str(space_info_pre), node=ctrl, type='string')
-            return True
-
-
 def _add_ctrl_shape(ctrl, **kwargs):
     """
     add shape node to controller

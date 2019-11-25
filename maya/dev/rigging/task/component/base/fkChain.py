@@ -20,6 +20,13 @@ class FkChain(component.Component):
         description suffix(str): [description_suffix] if the component nodes description need additional suffix,
                                                       like Ik, Fk etc, put it here, default is Fk
         blueprint joints(list): [bp_jnts] component's blueprint joints
+        control space(dict): [ctrl_space] add spaces for controls after loading space data
+                                          template is {control_name: [{space_name: {'input_matrix_attr': matrix_attr,
+                                                                                    'space_type': []}}}]
+                                          control name can be transform node name in maya, or component's control attr
+                                          input matrix attr can be maya node's attribute name, or component's attr
+                                          space types has 'parent', 'point', 'orient', 'scale'
+                                          parent and point/orient can't be added on top if the other exist already
         offsets(int): [ctrl_offsets] component's controls' offset groups number
         control_size(float): [ctrl_size] component's controls' size
         input connection(str):  [input_connect] component's input connection, should be a component's joint's output
@@ -33,6 +40,7 @@ class FkChain(component.Component):
 
         component(str): component node name
         controls(list): component's controls names
+        control_objects(list): component's control objects
         joints(list): component's joints names
         input_matrix_attr(str): component's input matrix attribute
         input_matrix(list): component's input matrix

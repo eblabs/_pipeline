@@ -23,6 +23,7 @@ ATTR_CONFIG = {'all': ['translateX', 'translateY', 'translateZ',
                'scale': ['scaleX', 'scaleY', 'scaleZ'],
                'vis': ['visibility'],
                'scaleVis': ['scaleX', 'scaleY', 'scaleZ', 'visibility'],
+               'translateRotate': ['translateX', 'translateY', 'translateZ', 'rotateX', 'rotateY', 'rotateZ'],
                'rotateScale': ['rotateX', 'rotateY', 'rotateZ', 'scaleX', 'scaleY', 'scaleZ'],
                'rotateOrder': ['rotateOrder']}
 

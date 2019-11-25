@@ -41,6 +41,7 @@ class Blueprint(rigData.RigData):
 
     def pre_build(self):
         super(Blueprint, self).pre_build()
+        self.load_data()
 
     def load_data(self):
         super(Blueprint, self).load_data()

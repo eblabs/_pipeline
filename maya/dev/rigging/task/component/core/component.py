@@ -12,6 +12,7 @@ import utils.common.attributes as attributes
 import utils.common.hierarchy as hierarchy
 import utils.common.nodeUtils as nodeUtils
 import utils.common.mathUtils as mathUtils
+import utils.rigging.controls as controls
 import utils.rigging.constraints as constraints
 
 # import task
@@ -36,20 +37,15 @@ class Component(task.Task):
         description suffix(str): [description_suffix] if the component nodes description need additional suffix,
                                                       like Ik, Fk etc, put it here
         blueprint joints(list): [bp_jnts] component's blueprint joints
+        control space(dict): [ctrl_space] add spaces for controls after loading space data
+                                          template is {control_name: [{space_name: {'input_matrix_attr': matrix_attr,
+                                                                                    'space_type': []}}}]
+                                          control name can be transform node name in maya, or component's control attr
+                                          input matrix attr can be maya node's attribute name, or component's attr
+                                          space types has 'parent', 'point', 'orient', 'scale'
+                                          parent and point/orient can't be added on top if the other exist already
         offsets(int): [ctrl_offsets] component's controls' offset groups number, default is 1
         control size(float): [ctrl_size] component's controls' size, default is 1.0
-        control space(dict): [ctrl_space] component's controls' spaces, it will create the space blend set up for given
-                                          space types.
-                                          template is {control_name: {space_name: {'input_matrix_attr': matrix_attr,
-                                                                                   'space_type': []}}}
-                                          control name can be control's transform node in maya,
-                                          or current component control attr
-                                          input matrix attr can be component's matrix attribute, or maya matrix attr
-                                          space type has 'parent', 'point', 'orient', 'scale'
-                                          point/orient won't be added if control already had parent space,
-                                          same for the opposite way, all depends on which one will be added first
-                                          there are check boxes for control and space,
-                                          user can turn it off if don't want to add it
         input connection(str):  [input_connect] component's input connection, should be a component's joint's output
                                                 matrix, or an existing maya node's matrix attribute
 
@@ -59,6 +55,7 @@ class Component(task.Task):
 
         component(str): component node name
         controls(list): component's controls names
+        control_objects(list): component's control objects
         joints(list): component's joints names
         input_matrix_attr(str): component's input matrix attribute
         input_matrix(list): component's input matrix
@@ -77,6 +74,7 @@ class Component(task.Task):
         self.description = None
         self.description_suffix = None
         self.bp_jnts = None
+        self.ctrl_space = None
         self.ctrl_offsets = None
         self.ctrl_size = None
         self.input_connect = None
@@ -128,40 +126,48 @@ class Component(task.Task):
         if args:
             self.get_component_info(args[0])
 
-    @property
+    @ property
     def component(self):
         return self._component
 
-    @property
+    @ property
     def controls(self):
         return self._ctrls
 
-    @property
+    @ property
+    def control_objects(self):
+        ctrl_objs = []
+        for ctrl in self._ctrls:
+            ctrl_obj = controls.Control(ctrl)
+            ctrl_objs.append(ctrl_obj)
+        return ctrl_objs
+
+    @ property
     def joints(self):
         return self._jnts
 
-    @property
+    @ property
     def input_matrix_attr(self):
         return self._input_matrix_attr
 
-    @property
+    @ property
     def input_matrix(self):
         return cmds.getAttr(self._input_matrix_attr)
 
-    @property
+    @ property
     def offset_matrix_attr(self):
         return self._offset_matrix_attr
 
-    @property
+    @ property
     def offset_matrix(self):
         return cmds.getAttr(self._offset_matrix_attr)
 
-    @property
+    @ property
     def output_matrix_attr(self):
         # attribute registered in get_component_info
         return self._output_matrix_attr
 
-    @property
+    @ property
     def output_matrix(self):
         return self._get_attr(self._output_matrix_attr)
 
@@ -184,6 +190,7 @@ class Component(task.Task):
     def post_build(self):
         super(Component, self).post_build()
         self.connect_component()
+        self.add_spaces()
         if self.mirror:
             self.mirror_post_build()
 
@@ -264,15 +271,22 @@ class Component(task.Task):
         self.register_attribute('blueprint joints', [], attr_name='bp_jnts', attr_type='list', select=True,
                                 hint="component's blueprint joints")
 
+        self.register_attribute('control spaces', {}, attr_name='ctrl_space', attr_typ='dict', template='space_list',
+                                key_edit=True,
+                                hint="add spaces for controls after loading space data\n"
+                                     "template is {control_name: [{space_name: {'input_matrix_attr': matrix_attr,\n"
+                                     "                                          'space_type': []}}}]\n"
+                                     "control name can be transform node name in maya, or component's control attr\n"
+                                     "input matrix attr can be maya node's attribute name, or component's attr"
+                                     "space types has 'parent', 'point', 'orient', 'scale'\n"
+                                     "parent and point/orient can't be added on top if the other exist already\n"
+                                )
+
         self.register_attribute('offsets', 1, attr_name='ctrl_offsets', attr_type='int', skippable=False, min=1,
                                 hint="component's controls' offset groups number")
 
         self.register_attribute('control size', 1.0, attr_name='ctrl_size', attr_type='float', min=0.001,
                                 hint="component's controls' size")
-
-        self.register_attribute('control space', {}, attr_name='ctrl_space', attr_type='dict', key_edit=True,
-                                template='space_list', checkable=True, val_edit=False,
-                                hint='add spaces for each controller')
 
         self.register_attribute('input connection', '', attr_name='input_connect', attr_type='str', select=False,
                                 hint=("component's input connection,\nshould be a component's joint's output matrix,\n"
@@ -493,7 +507,7 @@ class Component(task.Task):
 
             if not input_matrix_attr:
                 # check if base node in the scene, connect to base node
-                input_matrix_attr_obj = self._get_attr_from_base_node('world_pos_attr.matrix_attr')
+                input_matrix_attr_obj = self._get_attr_from_base_node('world_matrix_attr')
                 if input_matrix_attr_obj:
                     input_matrix_attr = input_matrix_attr_obj
 
@@ -518,6 +532,44 @@ class Component(task.Task):
 
         attributes.set_attrs([self._input_matrix_attr, self._offset_matrix_attr], mathUtils.MATRIX_DEFAULT,
                              type='matrix', force=True)
+
+    def add_spaces(self):
+        """
+        add spaces for controllers
+        """
+        if self.ctrl_space:
+            # in case if we remove the add space attr for some component
+            for ctrl, space_list in self.ctrl_space.iteritems():
+                # check if ctrl is this component's attr
+                ctrl_name = self._get_obj_attr(ctrl)
+                if not ctrl_name:
+                    # check it may be the component attr attached to builder or a maya node
+                    ctrl_name = self._get_node_name(ctrl)
+                    if ctrl_name not in self._ctrls:
+                        # it's not this component's ctrl
+                        ctrl_name = None
+
+                if ctrl_name:
+                    # add space for current control
+                    for space_info in space_list:
+                        for space_name, space_data in space_info.iteritems():
+                            # get input matrix attr
+                            input_matrix_attr = space_data['input_matrix_attr']
+                            # check if it is this component's attr
+                            input_matrix_attr_name = self._get_obj_attr(input_matrix_attr)
+                            if not input_matrix_attr_name:
+                                # check if it's the builder's attr or a maya attr
+                                input_matrix_attr_name = self._get_node_name(input_matrix_attr)
+                            # make sure it's a matrix attribute
+                            if (input_matrix_attr_name and '.' in input_matrix_attr_name and
+                                    cmds.getAttr(input_matrix_attr_name, type=True) == 'matrix'):
+                                controls.add_space(ctrl_name, space_name, input_matrix_attr_name,
+                                                   space_data['space_type'])
+                            else:
+                                logger.warning("given input matrix attr: {} doesn't exist,"
+                                               " skipped".format(input_matrix_attr))
+                else:
+                    logger.warning("given control: {} doesn't exist, skipped".format(ctrl_name))
 
     def _flip_val(self, attr_value):
         """

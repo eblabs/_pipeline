@@ -115,7 +115,7 @@ class SplineIk(limb.Limb):
                                              parent=ctrl_trans)
 
             # connect control with transform
-            constraints.matrix_connect(ctrl.world_matrix_attr, ctrl_trans, skip=attributes.Attr.scale)
+            constraints.matrix_connect(ctrl.object_matrix_attr, ctrl_trans, skip=attributes.Attr.scale)
 
             self.ctrls.append(ctrl.name)
             ctrl_objs.append(ctrl)
@@ -189,7 +189,7 @@ class SplineIk(limb.Limb):
             ctrl.add_attrs('twistOffset', attribute_type='float', keyable=True, channel_box=True)
             ctrl.add_attrs('twistStart', attribute_type='float', keyable=True, range=[0, 1], default_value=param)
 
-            twist_extract_attr = self.extract_twist(ctrl.name, ctrl.world_matrix_attr, crv_ik, self._rot_up_vector,
+            twist_extract_attr = self.extract_twist(ctrl.name, ctrl.object_matrix_attr, crv_ik, self._rot_up_vector,
                                                     flip_check_vector=z_vec)
 
             # connect to twist

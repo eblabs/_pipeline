@@ -41,6 +41,10 @@ class BaseNode(task.Task):
                     - local_control
         - nodes
         - skeleton
+
+    Properties:
+        world_matrix_attr(str): global mover's position matrix output attribute
+        world_matrix_transform_attrs(list): global mover's position attributes, ['translate', 'rotate', 'scale']
     """
 
     def __init__(self, **kwargs):
@@ -56,6 +60,18 @@ class BaseNode(task.Task):
         self.world_control = None
         self.layout_control = None
         self.local_control = None
+
+    @ property
+    def world_matrix_attr(self):
+        return self.master + '.matrixWorld'
+
+    @ property
+    def world_matrix_transform_attrs(self):
+        attrs = []
+        for attr in ['translate', 'rotate', 'scale']:
+            world_attr = 'world' + attr.title()
+            attrs.append('{}.{}'.format(self.master, world_attr))
+        return attrs
 
     def pre_build(self):
         super(BaseNode, self).pre_build()
@@ -220,14 +236,14 @@ class BaseNode(task.Task):
                              'rigScale', attribute_type='float', range=[0, None], default_value=1, keyable=True,
                              channel_box=True)
         for control in [self.world_control, self.layout_control, self.local_control]:
-            attributes.connect_attrs(control.name+'.rigScale', ['scaleX', 'scaleY', 'scaleZ'], driven=control.name,
+            attributes.connect_attrs(control.name+'.rigScale', attributes.Attr.scale, driven=control.name,
                                      force=True)
 
         # world matrix
         attributes.add_attrs(self.master, 'matrixWorld', attribute_type='matrix', keyable=False)
-        mult_matrix_world_output = nodeUtils.mult_matrix([self.local_control.world_matrix_attr,
-                                                          self.layout_control.world_matrix_attr,
-                                                          self.world_control.world_matrix_attr],
+        mult_matrix_world_output = nodeUtils.mult_matrix([self.local_control.object_matrix_attr,
+                                                          self.layout_control.object_matrix_attr,
+                                                          self.world_control.object_matrix_attr],
                                                          attrs=self.master+'.matrixWorld', side=naming.Side.middle,
                                                          description='masterWorldMatrix')
 
@@ -236,13 +252,12 @@ class BaseNode(task.Task):
                                                 description='masterWorldTransform')
         cmds.connectAttr(mult_matrix_world_output, decompose_matrix_world+'.inputMatrix')
 
-        transform_attr_info = {'matrix_attr': self.master+'.matrixWorld',
-                               'transform_attr': []}
+        transform_attr = []
 
         for attr in ['translate', 'rotate', 'scale']:
             world_attr = 'world' + attr.title()
             cmds.addAttr(self.master, longName=world_attr, attributeType='float3')
-            transform_attr_info['transform_attr'].append('{}.{}'.format(self.master, world_attr))
+            transform_attr.append('{}.{}'.format(self.master, world_attr))
             for axis in 'XYZ':
                 cmds.addAttr(self.master, longName=world_attr+axis, attributeType='float', parent=world_attr)
             for axis in 'XYZ':
@@ -251,15 +266,12 @@ class BaseNode(task.Task):
                                  '{}.{}{}'.format(self.master, world_attr, axis))
 
         # connect transform attr with res transform group
-        for res in naming.Resolution.all:
+        for res in naming.Resolution.Key.all:
             grp_trans = self._get_obj_attr(res+'.transform')
-            for pos_attr, trans_attr in zip(transform_attr_info['transform_attr'], ['translate', 'rotate', 'scale']):
+            for pos_attr, trans_attr in zip(transform_attr, ['translate', 'rotate', 'scale']):
                 attributes.connect_attrs([pos_attr+'X', pos_attr+'Y', pos_attr+'Z'],
                                          [trans_attr+'X', trans_attr+'Y', trans_attr+'Z'],
                                          driven=grp_trans, force=True)
-
-        # add transform attr info to class as attribute
-        self._add_obj_attr('world_pos_attr', transform_attr_info)
 
     def auto_scale_controls(self):
         """

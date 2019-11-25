@@ -117,7 +117,7 @@ class PropertyEditor(QTreeView):
             kwarg_data = task_kwargs[key]
 
             # add row item
-            row_items = self._add_row_item(key, item_kwargs=kwarg_data, key_edit=False, val_edit=True)
+            row_items = self._add_row_item(key, item_kwargs=kwarg_data, key_edit=False)
             # add row item function
             self._model.appendRow(row_items)
 
@@ -135,8 +135,7 @@ class PropertyEditor(QTreeView):
         # give it a initial width so it can fit most kwargs keys
         self.setColumnWidth(0, 130)
 
-    def _add_row_item(self, key, val=None, item_kwargs=None, key_edit=False, val_edit=True, checkable=False,
-                      check_state=True):
+    def _add_row_item(self, key, val=None, item_kwargs=None, key_edit=False):
         """
         add row for property
         Args:
@@ -145,9 +144,6 @@ class PropertyEditor(QTreeView):
             val: property default value
             item_kwargs(dict): property item's ui kwargs
             key_edit(bool): if the key name can be changed by user, normally used for sth like adding space
-            val_edit(bool): if the value can be changed by user, normally off if need to check inheritance
-            checkable(bool): if the property is checkable, normally used for inherit attr so user can turn it off
-            check_state(bool): check state if the property is checkable
         Returns:
             row_items(list): key_item, value_item
         """
@@ -168,16 +164,6 @@ class PropertyEditor(QTreeView):
         else:
             column_key.setEditable(False)
 
-        # check if checkable
-        if checkable:
-            column_key.setCheckable(True)
-            if check_state:
-                column_key.setCheckState(Qt.Checked)
-            else:
-                column_key.setCheckState(Qt.Unchecked)
-        else:
-            column_key.setCheckable(False)
-
         column_key.setData(self._size, role=Qt.SizeHintRole)  # set column size
 
         # add ui kwargs info from template in case sth missing
@@ -196,12 +182,6 @@ class PropertyEditor(QTreeView):
             item_kwargs.update({'value': val})  # override the value
 
         column_val = PropertyItem(data_info=item_kwargs)  # create property item with given item kwargs info
-
-        # set editable
-        if val_edit:
-            column_val.setEditable(True)
-        else:
-            column_val.setEditable(False)
 
         # set height, normally for call back
         if 'height' in item_kwargs:
@@ -258,16 +238,8 @@ class PropertyEditor(QTreeView):
                 if custom:
                     attr_kwargs.update({'custom': True})
 
-                # get check info
-                checkable = val_data.get('checkable', False)
-                check_state = val_data.get('check_state', True)
-
-                # get editable
-                val_edit = val_data.get('val_edit', True)
-
                 # create row items
-                items_add = self._add_row_item(str(i), val=v, item_kwargs=attr_kwargs, val_edit=val_edit,
-                                               checkable=checkable, check_state=check_state)
+                items_add = self._add_row_item(str(i), val=v, item_kwargs=attr_kwargs)
 
                 # add row attached to key column item
                 items[0].appendRow(items_add)
@@ -307,16 +279,8 @@ class PropertyEditor(QTreeView):
                 if custom:
                     attr_kwargs.update({'custom': True})
 
-                # get check info
-                checkable = val_data.get('checkable', False)
-                check_state = val_data.get('check_state', True)
-
-                # get editable
-                val_edit = val_data.get('val_edit', True)
-
                 # create row items
-                items_add = self._add_row_item(k, val=v, item_kwargs=attr_kwargs, key_edit=key_edit, val_edit=val_edit,
-                                               checkable=checkable, check_state=check_state)
+                items_add = self._add_row_item(k, val=v, item_kwargs=attr_kwargs, key_edit=key_edit)
 
                 # add row attached to key column item
                 items[0].appendRow(items_add)
@@ -834,7 +798,6 @@ class PropertyDelegate(QItemDelegate):
                 else:
                     # change back to previous
                     item.setText(value)
-                    save_value = False
 
             # if dict
             elif isinstance(value_default, dict):
@@ -844,7 +807,6 @@ class PropertyDelegate(QItemDelegate):
                 else:
                     # change back to previous
                     item.setText(value)
-                    save_value = False
 
         elif custom:
             # get changed value
