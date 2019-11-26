@@ -280,7 +280,7 @@ class RotatePlaneIk(limb.Limb):
 
         # get ik handle's parent inverse matrix so we can plug into pole vector constraint
         # get ik handle's parent nodes util rig node group
-        parent_nodes_ik = hierarchy.get_all_parents(self.iks[0], root=self.nodes_hide)
+        parent_nodes_ik = hierarchy.get_all_parents(self.iks[0], root=self._nodes_hide_grp)
         # check nodes count, if only one, use inverse matrix attr
         if len(parent_nodes_ik) == 1:
             pv_inverse_matrix_attr = parent_nodes_ik[0]+'.inverseMatrix'

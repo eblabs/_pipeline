@@ -47,7 +47,62 @@ CUSTOM_SPACE_INDEX = 50
 
 # CLASS
 class Control(object):
-    """class to get control information"""
+    """
+    class to get control information
+
+    Hierarchy:
+        -zero
+        --drive
+        ---space
+        ----offset_001
+        -----offset_002
+        ------offset_...
+        -------control
+        --------sub control
+        --------output
+
+    Args:
+        ctrl(str): control transform name
+
+    Properties:
+        side/s(str)
+        resolution/res(str)
+        description/des(str)
+        index/i(str)
+        suffix/sfx(str)
+        name/n(str)
+        zero(str): control's zero group, use this group to move the controller
+        drive(str): control's drive group, use this group to make constraint
+        space(str): control's space group, use this group to add spaces
+        offsets(list): control's offsets groups, use these groups to do costum offset, connect attr, sdk etc..
+        output(str): control's output node
+        control_shape(str): control's shape node
+        sub(str): control's sub control name, return None if not have
+        sub_control_shape(str): sub control's shape node
+        local_matrix(list): control's local matrix, from output node to drive node,
+                            any changes on zero group won't affect the matrix
+        local_matrix_attr(str): control's local matrix attribute
+        object_matrix(list): control's object matrix, from output node to zero node,
+                             any changes on upper groups won't affect the matrix
+        object_matrix_attr(str): control's object matrix attribute
+        world_matrix(list): control's world matrix
+        world_matrix_info(str): control's world matrix attribute
+        space_info(dict): control's space information, will return an empty dict if doesn't have any
+
+    Methods:
+        match_sub_ctrl_shape(): match sub control shape to control's shape
+        replace_ctrl_shape(shape, size=1): replace control shape with the given shape, only affect main control
+        transform_ctrl_shape(**kwargs): offset control shape node, only affect main control
+                                        Keyword Args are the same with controls.transform_ctrl_shape function
+        lock_hide_attrs(attrs): lock and hide given attributes for control, it will affect all controls in this object
+        unlock_attrs(attrs, **kwargs): unlock attributes for control, it will affect all controls in this object
+                                       Keyword Args are the same with attributes.unlock_attrs function
+        add_attrs(attrs, **kwargs): add attributes for control, only affect the main control in this object
+                                    Keyword Args are the same with attributes.add_attrs function
+        add_space(space_name, input_matrix_attr, space_type): add space for control
+
+
+    """
     def __init__(self, ctrl):
         super(Control, self).__init__()
         self._name = None
@@ -410,7 +465,7 @@ class Control(object):
         if self._sub:
             ctrl_shape_info = curves.get_curve_shape_info(self._ctrl_shape)  # get curve info
             color = cmds.getAttr(self._ctrl_shape+'.overrideColor')  # get color
-            _add_ctrl_shape(self._sub, shapeInfo=ctrl_shape_info, size=0.9, color=color)
+            _add_ctrl_shape(self._sub, shape_info=ctrl_shape_info, size=0.9, color=color)
 
     def lock_hide_attrs(self, attrs):
         """
@@ -471,6 +526,28 @@ class Control(object):
                                   parent and point/orient can't be added on top if the other exist already
         """
         add_space(self._name, space_name, input_matrix_attr, space_type)
+
+    def transform_ctrl_shape(self, **kwargs):
+        """
+        offset control shape node
+
+        Keyword Args:
+            translate(float/list): translate
+            rotate(float/list): rotate
+            scale(float/list): scale
+            pivot(str): transform/shape, define the offset pivot, default is 'transform'
+        """
+        transform_ctrl_shape(self._ctrl_shape, **kwargs)
+
+    def replace_ctrl_shape(self, shape, size=1):
+        """
+        replace control shape node to the given shape
+        Args:
+            shape(str): control shape name, like 'cube', 'circle' ect.. base on config's CONTROL_SHAPE.cfg
+        Keyword Args:
+            size(float): uniformly scale the control shape, default is 1
+        """
+        replace_ctrl_shape(self._name, shape, size=size)
 
 
 # FUNCTION
@@ -1026,6 +1103,26 @@ def transform_ctrl_shape(ctrl_shapes, **kwargs):
             logger.warning('{} does not exist'.format(shape))
 
 
+def replace_ctrl_shape(ctrl, shape, size=1):
+    """
+    replace given controls shapes to the given shape
+    Args:
+        ctrl(str/list): controls names
+        shape(str): control shape name, like 'cube', 'circle' ect.. base on config's CONTROL_SHAPE.cfg
+    Keyword Args:
+        size(float): uniformly scale the control shape, default is 1
+    """
+    if isinstance(ctrl, basestring):
+        ctrl = [ctrl]
+
+    # get control color info
+    for c in ctrl:
+        color = get_ctrl_shape_info(c)[c]['color']
+
+        # add shape
+        _add_ctrl_shape(c, shape=shape, size=size, color=color)
+
+
 def mirror_ctrl_shape(ctrl_source, ctrl_target, mirror_space=None):
     """
     get source ctrl shape info, and mirror to target ctrl shape
@@ -1082,7 +1179,8 @@ def mirror_ctrl_shape(ctrl_source, ctrl_target, mirror_space=None):
                 cv_pos = apiUtils.decompose_matrix(cv_pos_matrix_target)[0]
                 cv_pos_target.append(cv_pos)
             # update ctrl shape info
-            ctrl_shape_info_target[ctrl_target]['shape_info']['control_vertices'] = cv_pos_target
+            ctrl_shape_info_source[ctrl_source]['shape_info']['control_vertices'] = cv_pos_target
+            ctrl_shape_info_target[ctrl_target]['shape_info'] = ctrl_shape_info_source[ctrl_source]['shape_info']
             # add ctrl shape
             add_ctrls_shape(ctrl_target, **ctrl_shape_info_target[ctrl_target])
         return True
@@ -1145,7 +1243,6 @@ def get_ctrl_shape_info(ctrl):
         curve_info = curves.get_curve_shape_info(ctrl_shape)
         ctrl_name = curve_info['name']
         color = cmds.getAttr(ctrl_shape+'.overrideColor')
-
         ctrl_shape_info = {ctrl_name: {'color': color,
                                        'shape_info': curve_info}}
     else:
@@ -1284,14 +1381,23 @@ def _add_ctrl_shape(ctrl, **kwargs):
         # size
         transform_ctrl_shape(crv_shape, scale=size)  # scale control shape
 
+        # because maya expand the latest shape by default, we want the latest be shape control
+        # we need to reorder the shape nodes, control shape node should be on top
+        # save the parameter for reorder
+        reorder = True
+
     else:
         # curve shape as control
         crv_shape = cmds.rename(crv_shape, ctrl)  # rename shape node as control
         attributes.set_attrs(crv_shape+'.v', 0, force=True)  # hide shape node
 
+        # control node need to be the latest
+        reorder = False
+
     # assign shape
     for trans in transform:
         cmds.parent(crv_shape, trans, shape=True, addObject=True)  # parent shape node under transform
+        cmds.reorder(crv_shape, front=reorder)  # reorder the shape nodes
 
     cmds.delete('TEMP_CRV')  # delete the temp transform node
 

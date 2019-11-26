@@ -156,10 +156,11 @@ def get_curve_shape_info(curve):
         curve_info(dict): curve shape node information
                           include: {name, control_vertices, knots, degree, form}
     """
+    curve_shape = curve
     if cmds.objectType(curve) == 'nurbsCurve':
         curve = cmds.listRelatives(curve, parent=True)[0]
 
-    MFnCurve = _get_MFnNurbsCurve(curve)
+    MFnCurve = _get_MFnNurbsCurve(curve_shape)
 
     MPntArray_cvs = MFnCurve.cvPositions(OpenMaya.MSpace.kObject)
     MDoubleArray_knots = MFnCurve.knots()

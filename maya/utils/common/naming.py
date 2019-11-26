@@ -75,6 +75,29 @@ class Namer(object):
     """
     class to compose/decompose name base on naming convention
 
+    Args:
+        name(str): decompose the given name
+
+    Keyword Args:
+        compose name with given parts
+
+        type/t(str): name's type
+        side/s(str): name's side
+        resolution/res(str): name's resolution
+        description/des(str): name's description
+        index/i(str): name's index
+        suffix/sfx(str): name's suffix
+
+        warn(bool): will error out if name is not follow the naming convention, default is True
+
+    Properties:
+        type/t(str)
+        side/s(str)
+        resolution/res(str)
+        description/des(str)
+        index/i(str)
+        suffix/sfx(str)
+        name/n(str)
     """
 
     # shortcuts for inputs
@@ -86,31 +109,6 @@ class Namer(object):
                  'suffix':      'sfx'}
 
     def __init__(self, *args, **kwargs):
-        """
-        Args:
-            name(str): decompose the given name
-
-        Keyword Args:
-            compose name with given parts
-
-            type/t(str): name's type
-            side/s(str): name's side
-            resolution/res(str): name's resolution
-            description/des(str): name's description
-            index/i(str): name's index
-            suffix/sfx(str): name's suffix
-
-            warn(bool): will error out if name is not follow the naming convention, default is True
-
-        Properties:
-            type/t(str)
-            side/s(str)
-            resolution/res(str)
-            description/des(str)
-            index/i(str)
-            suffix/sfx(str)
-            name(str)
-        """
 
         self._name = ''
         self._type = None
@@ -138,144 +136,149 @@ class Namer(object):
             self._compose_name()
 
     # property
-    @property
+    @ property
     def type(self):
         return self._get_name(self._type,
                               'type',
                               return_type='long')
 
-    @property
+    @ property
     def t(self):
         return self._get_name(self._type,
                               'type',
                               return_type='long')
 
-    @property
+    @ property
     def side(self):
         return self._get_name(self._side,
                               'side',
                               return_type='long')
 
-    @property
+    @ property
     def s(self):
         return self._get_name(self._side,
                               'side',
                               return_type='long')
 
-    @property
+    @ property
     def resolution(self):
         return self._get_name(self._resolution,
                               'resolution',
                               return_type='long')
 
-    @property
+    @ property
     def res(self):
         return self._get_name(self._resolution,
                               'resolution',
                               return_type='long')
 
-    @property
+    @ property
     def description(self):
         return self._description
 
-    @property
+    @ property
     def des(self):
         return self._description
 
-    @property
+    @ property
     def index(self):
         return self._index
 
-    @property
+    @ property
     def i(self):
         return self._index
 
-    @property
+    @ property
     def suffix(self):
         return self._suffix
 
-    @property
+    @ property
     def sfx(self):
         return self._suffix
 
-    @property
+    @ property
     def name(self):
         self._compose_name()
         return self._name
 
+    @ property
+    def n(self):
+        self._compose_name()
+        return self._name
+
     # set attrs
-    @type.setter
+    @ type.setter
     def type(self, key_value):
         self._type = self._get_name(key_value,
                                     'type',
                                     return_type='long')
 
-    @t.setter
+    @ t.setter
     def t(self, key_value):
         self._type = self._get_name(key_value,
                                     'type',
                                     return_type='long')
 
-    @side.setter
+    @ side.setter
     def side(self, key_value):
         self._side = self._get_name(key_value,
                                     'side',
                                     return_type='long')
 
-    @s.setter
+    @ s.setter
     def s(self, key_value):
         self._side = self._get_name(key_value,
                                     'side',
                                     return_type='long')
 
-    @resolution.setter
+    @ resolution.setter
     def resolution(self, key_value):
         self._resolution = self._get_name(key_value,
                                           'resolution',
                                           return_type='long')
 
-    @res.setter
+    @ res.setter
     def res(self, key_value):
         self._resolution = self._get_name(key_value,
                                           'resolution',
                                           return_type='long')
 
-    @description.setter
+    @ description.setter
     def description(self, key_value):
         if key:
             self._description = key_value
         else:
             self._description = None
 
-    @des.setter
+    @ des.setter
     def des(self, key_value):
         if key:
             self._description = key_value
         else:
             self._description = None
 
-    @index.setter
+    @ index.setter
     def index(self, num):
         if isinstance(num, int) and num >= 0:
             self._index = int(num)
         else:
             self._index = None
 
-    @i.setter
+    @ i.setter
     def i(self, num):
         if isinstance(num, int) and num >= 0:
             self._index = int(num)
         else:
             self._index = None
 
-    @suffix.setter
+    @ suffix.setter
     def suffix(self, num):
         if isinstance(num, int) and num >= 0:
             self._suffix = int(num)
         else:
             self._suffix = None
 
-    @sfx.setter
+    @ sfx.setter
     def sfx(self, num):
         if isinstance(num, int) and num >= 0:
             self._suffix = int(num)
