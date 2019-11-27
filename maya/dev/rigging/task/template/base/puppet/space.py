@@ -94,7 +94,7 @@ class Space(controlData.ControlData):
             for ctrl, ctrl_space_info in self.ctrl_space.iteritems():
                 # get ctrl name fist
                 # check if ctrl is an object attr first
-                ctrl_name = modules.get_obj_attr(self._builder, ctrl)
+                ctrl_name = modules.get_obj_attr(self._parent, ctrl)
                 if not ctrl_name:
                     # check if it's a maya node in scene
                     if cmds.objExists(ctrl):
@@ -110,7 +110,7 @@ class Space(controlData.ControlData):
                             space_name = ctrl_space_data.keys()[0]
                             input_attr = ctrl_space_data[space_name]['input_matrix_attr']
                             # check input attr
-                            input_attr_name = modules.get_obj_attr(self._builder, input_attr)
+                            input_attr_name = modules.get_obj_attr(self._parent, input_attr)
                             if not input_attr_name and attributes.check_attr_exists(input_attr):
                                 # check if it's a maya attribute
                                 input_attr_name = input_attr

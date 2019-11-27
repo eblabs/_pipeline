@@ -1078,7 +1078,7 @@ class TaskTree(QTreeWidget):
             save_data = False
         else:
             # task class
-            task_obj = task(name=attr_name, builder=self.builder)
+            task_obj = task(name=attr_name, parent=self.builder)
             task_kwargs = task_obj.kwargs_ui
             save_data = task_obj.save
             task_type = task_obj.task_type

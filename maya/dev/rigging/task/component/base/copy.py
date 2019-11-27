@@ -71,10 +71,10 @@ class Copy(component.Component):
 
         self.register_inputs()  # register inputs to class
         # get component object we want to duplicate
-        component_orig = modules.get_obj_attr(self.builder, self.duplicate_component)
+        component_orig = modules.get_obj_attr(self.parent, self.duplicate_component)
         if not component_orig:
-            logger.error("can't find given component '{}' in the builder".format(self.duplicate_component))
-            raise KeyError("can't find given component '{}' in the builder".format(self.duplicate_component))
+            logger.error("can't find given component '{}' in the parent object".format(self.duplicate_component))
+            raise KeyError("can't find given component '{}' in the parent object".format(self.duplicate_component))
 
         # get component path
         component_path = component_orig.task
@@ -100,14 +100,14 @@ class Copy(component.Component):
 
         # get component object
         component_import, component_function = modules.import_module(component_path)
-        component_duplicate = getattr(component_import, component_function)(name=self._name, builder=self._builder)
+        component_duplicate = getattr(component_import, component_function)(name=self._name, parent=self._parent)
 
         # set kwargs
         component_duplicate.kwargs_input = kwargs_input
 
-        # attach the duplicate component to builder, override current component
-        setattr(self._builder, self._name, component_duplicate)
+        # attach the duplicate component to parent object, override current component
+        setattr(self._parent, self._name, component_duplicate)
 
-        # call duplicate component's pre build, and because we replaced the component object in the builder,
+        # call duplicate component's pre build, and because we replaced the component object in the parent object,
         # it should call the duplication's build and post build function later
         component_duplicate.pre_build()

@@ -88,14 +88,13 @@ class Pack(component.Component):
     def pre_build(self):
         super(Pack, self).pre_build()
         self.pack_override_kwargs_registration()
-        self.set_override_kwargs_to_builder()
+        self.set_override_kwargs_to_parent()
 
     def in_class_attributes_mirror_registration(self):
         super(Pack, self).in_class_attributes_mirror_registration()
         self.set_attribute_for_mirror('sub_components_attrs')
 
     def create_hierarchy(self):
-        super(Pack, self).create_hierarchy()
         """
         create component group hierarchy
 
@@ -109,6 +108,7 @@ class Pack(component.Component):
                 -- nodesWorldGroup
             -- subComponentsGroup
         """
+        super(Pack, self).create_hierarchy()
         namer = naming.Namer(type=naming.Type.subComponentsGroup, side=self.side,
                              description=self.description+self.description_suffix, index=1)
 
@@ -125,7 +125,7 @@ class Pack(component.Component):
         and we don't want the user to set each separately and keep those the same by themselves
         the problem is because the pack object register before its sub components,
         especially when we do mirror, there won't be sub components when we do pack's pre build
-        so we register those override kwargs back to the builder as a dict, with sub components attr name as key,
+        so we register those override kwargs back to the parent object as a dict, with sub components attr name as key,
         and in each component, we will search the dict to see if anything need to be override before set kwargs
         """
         # mirror behavior should keep consistent
@@ -136,7 +136,7 @@ class Pack(component.Component):
 
     def register_override_kwarg(self, attr, value):
         """
-        register each  pack override kwarg to the builder
+        register each  pack override kwarg to the parent object
 
         Args:
             attr(str): attribute name
@@ -144,25 +144,19 @@ class Pack(component.Component):
         """
         self._pack_kwargs_override.update({attr: value})
 
-    def set_override_kwargs_to_builder(self):
+    def set_override_kwargs_to_parent(self):
         """
-        set override kwargs back to builder, with sub components attr names as key
+        set override kwargs back to parent object, with sub components attr names as key
         """
-        pack_kwargs_override = modules.get_obj_attr(self.builder, 'pack_kwargs_override')
+        pack_kwargs_override = self._get_parent_obj_attr('pack_kwargs_override')
         if pack_kwargs_override is not None and self._pack_kwargs_override:
             for sub_attr_name in self.sub_components_attrs:
-                self._builder.pack_kwargs_override.update({sub_attr_name: self._pack_kwargs_override})
+                self._parent.pack_kwargs_override.update({sub_attr_name: self._pack_kwargs_override})
 
     def create_component(self):
         super(Pack, self).create_component()
-        # get sub objects
-        for sub_attr in self.sub_components_attrs:
-            sub_obj = modules.get_obj_attr(self.builder, sub_attr)
-            if sub_obj:
-                self._sub_components_objs.append(sub_obj)
-            else:
-                logger.error("can't find given component '{}' in the builder".format(sub_attr))
-                raise RuntimeError()
+
+        self.get_sub_components_objects()
 
         # connect input and some attr, keep them consistent with pack
         # parent sub components to sub group
@@ -173,6 +167,16 @@ class Pack(component.Component):
             attributes.connect_attrs(['rigNodesVis', 'inputMatrix', 'offsetMatrix'],
                                      ['rigNodesVis', 'inputMatrix', 'offsetMatrix'],
                                      driver=self._component, driven=sub_component_obj.component, force=True)
+
+    def get_sub_components_objects(self):
+        # get sub objects
+        for sub_attr in self.sub_components_attrs:
+            sub_obj = self._get_parent_obj_attr(sub_attr)
+            if sub_obj:
+                self._sub_components_objs.append(sub_obj)
+            else:
+                logger.error("can't find given component '{}' in the parent object".format(sub_attr))
+                raise RuntimeError()
 
     def register_component_info(self):
         """
@@ -197,3 +201,5 @@ class Pack(component.Component):
             sub_obj_name = cmds.getAttr(sub_node+'.inClassName')
             self._sub_components_nodes.append(sub_obj_name)
             self._sub_components_objs.append(sub_obj)
+            # attach sub obj to pack
+            setattr(self, sub_obj_name, sub_obj)

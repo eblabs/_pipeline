@@ -7,9 +7,10 @@ import os
 import utils.common.logUtils as logUtils
 import utils.common.modules as modules
 import utils.common.files as files
+import utils.common.naming as naming
 
-# import task
-import task
+# import pack
+import pack
 
 # ICON
 import dev.rigging.builder.ui.widgets.icons as icons
@@ -24,9 +25,9 @@ MODULE_INFO_FORMAT = '.moduleInfo'
 
 
 # CLASS
-class Module(task.Task):
+class Module(pack.Pack):
     """
-    base class for Task
+    base class for module
     """
     def __init__(self, **kwargs):
         # get module info file before anything, because we need the info to register kwargs
@@ -40,7 +41,7 @@ class Module(task.Task):
 
         super(Module, self).__init__(**kwargs)
 
-        self._task = 'dev.rigging.task.core.module'
+        self._task = 'dev.rigging.task.component.core.module'
         self._task_type = 'module'
         self._save = self._module_info.get('save', False)  # set this attr to True if we want to save module data
 
@@ -49,33 +50,26 @@ class Module(task.Task):
         self._icon_lock = icons.module_lock
         self._icon_warn = icons.module_warn
 
-        # task objects
-        self._task_objs = []  # store all task objects here for further use
-
     def register_kwargs(self):
-        super(Module, self).register_kwargs()
+        """
+        we need to override this function, because module doesn't need that many attributes as normal component
+        """
+        # register the basic info
+
+        self.register_attribute('mirror', False, attr_name='mirror', attr_type='bool', hint="mirror component")
+
+        self.register_attribute('side', naming.Side.Key.m, attr_name='side', short_name='s', attr_type='enum',
+                                enum=naming.Side.Key.all, hint="component's side")
+
+        self.register_attribute('description', '', attr_name='description', short_name='des', attr_type='str',
+                                hint="component's description", skippable=False)
+
+        self.register_attribute('input connection', '', attr_name='input_connect', attr_type='str', select=False,
+                                hint=("component's input connection,\nshould be a component's joint's output matrix,\n"
+                                      "or an existing maya node's matrix attribute"))
+
+        # load kwargs from module info file
         self.register_kwargs_from_module_info()
-
-    def pre_build(self):
-        super(Module, self).pre_build()
-        self.create_hierarchy()
-        self.create_sub_task_from_module_info()
-        self.connect_module_attrs_to_sub_task()
-        # run each task's pre build
-        for task_obj in self._task_objs:
-            task_obj.pre_build()
-
-    def build(self):
-        super(Module, self).build()
-        # run each task's build
-        for task_obj in self._task_objs:
-            task_obj.build()
-
-    def post_build(self):
-        super(Module, self).post_build()
-        # run each task's post build
-        for task_obj in self._task_objs:
-            task_obj.post_build()
 
     def register_kwargs_from_module_info(self):
         """
@@ -91,6 +85,34 @@ class Module(task.Task):
                 attr_info = kwargs[attr]
                 value = attr_info.get('default', None)
                 self.register_attribute(attr, value, **attr_info)
+
+    def pre_build(self):
+        super(Module, self).pre_build()
+        self.create_hierarchy()
+        self.create_sub_task_from_module_info()
+        self.connect_module_attrs_to_sub_task()
+        # run each task's pre build
+        for task_obj in self._sub_components_objs:
+            task_obj.pre_build()
+
+    def build(self):
+        super(Module, self).build()
+        # run each task's build
+        for task_obj in self._sub_components_objs:
+            task_obj.build()
+
+    def post_build(self):
+        super(Module, self).post_build()
+        # run each task's post build
+        for task_obj in self._sub_components_objs:
+            task_obj.post_build()
+
+    def pack_override_kwargs_registration(self):
+        """
+        empty this function, let user decide which component should be connect with the main input,
+        module should allow sub components to mirror
+        """
+        pass
 
     def create_sub_task_from_module_info(self):
         """
@@ -109,7 +131,7 @@ class Module(task.Task):
             task_import, task_function = modules.import_module(task_path)
             task_func = getattr(task_import, task_function)
 
-            task_obj = task_func(name=task_name, builder=self._builder)
+            task_obj = task_func(name=task_name, parent=self._parent)
             # set task data name to module name
             task_obj.task_data_name = self._name
             # attach to module
@@ -117,7 +139,7 @@ class Module(task.Task):
             # register input attrs
             task_obj.kwargs_input = task_kwargs
             # add to task object list
-            self._task_objs.append(task_obj)
+            self._sub_components_objs.append(task_obj)
 
     def connect_module_attrs_to_sub_task(self):
         """
@@ -136,9 +158,3 @@ class Module(task.Task):
                     kwargs_update.update({attr_update: val})
                 task_obj = getattr(self, task_name)
                 task_obj.kwargs_input.update(kwargs_update)
-
-    def create_hierarchy(self):
-        """
-        create module hierarchy
-        """
-        pass

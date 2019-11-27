@@ -143,7 +143,7 @@ class Builder(object):
                 _task_type = 'callback'
             else:
                 # task class
-                task_obj = _task(name=_name, builder=self)
+                task_obj = _task(name=_name, parent=self)
                 _task_kwargs = task_obj.kwargs_ui
                 _save_data = task_obj.save
                 _task_type = task_obj.task_type

@@ -75,9 +75,9 @@ class BaseNode(task.Task):
 
     def pre_build(self):
         super(BaseNode, self).pre_build()
-        if self._builder:
+        if self._parent:
             # plug self object as base node
-            setattr(self._builder, 'base_node', self)
+            setattr(self._parent, 'base_node', self)
         self.create_hierarchy()
         self.connect_vis()
         self.set_rig_info()
@@ -208,13 +208,9 @@ class BaseNode(task.Task):
         """
         add project, asset and rig type attribute to the master node
         """
-        if self.builder:
-            project = self.builder.project
-            asset = self.builder.asset
-            rig_type = self.builder.rig_type
-
+        if self._parent:
             attributes.add_attrs(self.master, ['project', 'asset', 'rigType'], attribute_type='string',
-                                 default_value=[project, asset, rig_type], lock=True)
+                                 default_value=[self.project, self.asset, self.rig_type], lock=True)
 
     def create_controllers(self):
         """

@@ -198,7 +198,7 @@ class Component(task.Task):
         """
         pre build function for mirrored component,
         1. create component object
-        2. attached to builder and current component
+        2. attached to parent object and current component
         3. get mirrored kwargs
         4. create component in the scene
         """
@@ -207,17 +207,17 @@ class Component(task.Task):
         # create component object
         component_import, component_function = modules.import_module(self._task)
         self.component_mirror = getattr(component_import, component_function)(name=attr_name_mirror,
-                                                                              builder=self._builder)
+                                                                              parent=self._parent)
 
-        # attach to builder
-        if self._builder:
+        # attach to parent object
+        if self._parent:
             # check if build has the attr, in case it has name clash
-            component_exist = self._get_obj_attr('builder.' + attr_name_mirror)
+            component_exist = self._get_parent_obj_attr(attr_name_mirror)
             if component_exist:
-                logger.error("builder already has component '{}' exists".format(attr_name_mirror))
-                raise KeyError("builder already has component '{}' exists".format(attr_name_mirror))
+                logger.error("parent object already has component '{}' exists".format(attr_name_mirror))
+                raise KeyError("parent object already has component '{}' exists".format(attr_name_mirror))
             else:
-                setattr(self._builder, attr_name_mirror, self.component_mirror)
+                setattr(self._parent, attr_name_mirror, self.component_mirror)
 
         # get mirrored kwargs plug into the component
         # make sure we turn mirror off, otherwise it will try to mirror again
@@ -342,11 +342,11 @@ class Component(task.Task):
 
     def get_override_kwargs(self):
         """
-        check if there is any kwarg need to be override from builder, normally because the component is under a pack
+        check if there is any kwarg need to be override from parent object, normally because the component is under a pack
         """
-        pack_kwargs_override = modules.get_obj_attr(self.builder, 'pack_kwargs_override')
+        pack_kwargs_override = self._get_parent_obj_attr('pack_kwargs_override')
         if pack_kwargs_override:
-            override_kwargs = self._builder.pack_kwargs_override.get(self._name, {})
+            override_kwargs = self._parent.pack_kwargs_override.get(self._name, {})
             if override_kwargs:
                 # update the kwargs
                 self.kwargs_input.update(override_kwargs)
@@ -543,7 +543,7 @@ class Component(task.Task):
                 # check if ctrl is this component's attr
                 ctrl_name = self._get_obj_attr(ctrl)
                 if not ctrl_name:
-                    # check it may be the component attr attached to builder or a maya node
+                    # check it may be the component attr attached to parent object or a maya node
                     ctrl_name = self._get_node_name(ctrl)
                     if ctrl_name not in self._ctrls:
                         # it's not this component's ctrl
@@ -558,7 +558,7 @@ class Component(task.Task):
                             # check if it is this component's attr
                             input_matrix_attr_name = self._get_obj_attr(input_matrix_attr)
                             if not input_matrix_attr_name:
-                                # check if it's the builder's attr or a maya attr
+                                # check if it's the parent object's attr or a maya attr
                                 input_matrix_attr_name = self._get_node_name(input_matrix_attr)
                             # make sure it's a matrix attribute
                             if (input_matrix_attr_name and '.' in input_matrix_attr_name and

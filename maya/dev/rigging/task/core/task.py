@@ -33,22 +33,19 @@ class Task(object):
     """
     def __init__(self, **kwargs):
         super(Task, self).__init__()
-        # get name and builder
+        # get name and parent object
         name = variables.kwargs('name', None, kwargs, short_name='n')
-        builder = variables.kwargs('builder', None, kwargs)
+        parent = variables.kwargs('parent', None, kwargs)
         if not name:
             name = self.__class__.__name__
         self._name = name
         self._task = 'dev.rigging.task.core.task'
         self._task_type = 'task'
-        self._builder = builder  # plug builder in to get builder's variables
-        self.project = None
-        self.asset = None
-        self.rig_type = None
-        if self._builder:
-            self.project = self._builder.project
-            self.asset = self._builder.asset
-            self.rig_type = self._builder.rig_type
+        self._parent = parent  # plug object in to get parent's variables
+        self.project = self._get_parent_obj_attr('project')
+        self.asset = self._get_parent_obj_attr('asset')
+        self.rig_type = self._get_parent_obj_attr('rig_type')
+
         self._save = False  # attr to check if has save function
         self.save_data_path = None  # store saving path for further use
 
@@ -84,8 +81,8 @@ class Task(object):
         return self._task_type
 
     @ property
-    def builder(self):
-        return self._builder
+    def parent(self):
+        return self._parent
 
     @ property
     def save(self):
@@ -99,13 +96,13 @@ class Task(object):
     def name(self, task_name):
         self._name = task_name
 
-    @ builder.setter
-    def builder(self, builder_obj):
-        self._builder = builder_obj
-        if self._builder:
-            self.project = self._builder.project
-            self.asset = self._builder.asset
-            self.rig_type = self._builder.rig_type
+    @ parent.setter
+    def parent(self, parent_obj):
+        self._parent = parent_obj
+
+        self.project = self._get_parent_obj_attr('project')
+        self.asset = self._get_parent_obj_attr('asset')
+        self.rig_type = self._get_parent_obj_attr('rig_type')
 
     @ save.setter
     def save(self, save_check):
@@ -301,21 +298,34 @@ class Task(object):
         attr_value = modules.get_obj_attr(self, attr)
         return attr_value
 
+    def _get_parent_obj_attr(self, attr):
+        """
+        get parent object's attribute
+
+        Args:
+            attr(str): parent object's attr
+
+        Returns:
+            attr_value
+        """
+        attr_value = self._get_obj_attr('parent.' + attr)
+        return attr_value
+
     def _get_node_name(self, node_name):
         """
         get the given name as the name in the scene.
-        given name could be builder's attribute, maya node's attribute or maya node
+        given name could be parent object's attribute, maya node's attribute or maya node
 
         Args:
-            node_name(str): builder's attribute, maya node's attribute or maya node
+            node_name(str): parent object's attribute, maya node's attribute or maya node
 
         Returns:
             node_name_return(str): maya node name or maya node's attribute
         """
         # check if the node name is an component attribute
-        builder_attr = self._get_obj_attr('builder.' + node_name)
-        if builder_attr:
-            node_name_return = builder_attr
+        parent_obj_attr = self._get_parent_obj_attr(node_name)
+        if parent_obj_attr:
+            node_name_return = parent_obj_attr
         else:
             # check if it's a node in scene
             attr_split = node_name.split('.')  # split if it's an attribute
@@ -351,14 +361,14 @@ class Task(object):
 
     def _get_attr_from_base_node(self, attr_name):
         """
-        get attr from builder's base node
+        get attr from base node
         Args:
             attr_name(str): base node's attribute name
 
         Returns:
             attr_val: attribute's value, None if attribute doesn't exist
         """
-        attr_val = modules.get_obj_attr(self.builder, 'base_node.'+attr_name)
+        attr_val = modules.get_obj_attr(self.parent, 'base_node.'+attr_name)
         return attr_val
 
     @ staticmethod
