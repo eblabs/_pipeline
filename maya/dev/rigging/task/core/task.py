@@ -54,6 +54,11 @@ class Task(object):
         # to get data from module's data folder instead
         self.task_data_name = self._name
 
+        # this attr is mainly for pack and module, but we put in the bottom level because in this way,
+        # we don't need to check the task type to collect children items in ui,
+        # we will feed in all children for all items, and let the task object to decide if it gonna use it or not
+        self.sub_tasks = []
+
         # icon
         self._icon_new = icons.task_new
         self._icon_lock = icons.task_lock

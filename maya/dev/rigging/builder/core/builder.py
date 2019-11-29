@@ -6,6 +6,9 @@ import os
 # import inspect
 import inspect
 
+# import traceback
+import traceback
+
 # import utils
 import utils.common.variables as variables
 import utils.common.modules as modules
@@ -22,6 +25,7 @@ class Builder(object):
     """
     base template for all the build script
     """
+
     def __init__(self):
         super(Builder, self).__init__()
         self._project = None
@@ -175,7 +179,7 @@ class Builder(object):
         self._tasks_info.update({_name: _task_info})
 
         if _level is not None:
-            self.tasks_level_list[-1-_level].append(_name)
+            self.tasks_level_list[-1 - _level].append(_name)
 
     def update_task(self, name, **kwargs):
         """
@@ -336,6 +340,51 @@ class Builder(object):
         for task in self._tasks:
             self._add_child(hierarchy, task)
         return hierarchy
+
+    def run_task(self, task_info, section=None, check=True, sub_tasks=None):
+        """
+        run the given task, both ui and code will trigger this function to each run task
+
+        Args:
+            task_info(dict): given task information
+
+        Keyword Args:
+            section(str): pre_build/build/post_build, default is pre_build
+            check(bool): if the item is checked or not, will skip if it is not checked
+            sub_tasks(list): tasks names parented to the given item, mainly for pack and module
+        """
+        # get section
+        if not section:
+            section = 'pre_build'
+        # get sub_tasks
+        if not sub_tasks:
+            sub_tasks = []
+
+        # task result template for return
+        # state: 1 (success), 2 (warning), 0 (error)
+        # message: any info need to show in ui
+        state = 1,
+        message = ''
+
+        if check:
+            task_info.update({'sub_tasks': sub_tasks})
+            task_type = task_info['task_type']
+            # get task running function
+            # in class method
+            if task_type == 'method':
+                task_func = self._run_in_class_method
+            elif task_type == 'callback':
+                task_func = self._run_callback
+            else:
+                task_func = self._run_task_object
+
+            try:
+                state, message = task_func(task_info, section)
+            except:
+                # this exception has to be board, because we need to catch all errors here
+                state = 0
+                message = traceback.format_exc()
+        return state, message
 
     def export_tasks_info(self, tasks_info, save_file=True):
         """
@@ -513,6 +562,49 @@ class Builder(object):
             for a in attr_split[:-1]:
                 attr_parent = getattr(attr_parent, a)
         setattr(attr_parent, attr_split[-1], ObjectView(attr_dict))
+
+    def _run_task_object(self, task_info, section):
+        task_name = task_info['attr_name']
+        task_kwargs = task_info['task_kwargs']
+        sub_tasks = task_info['sub_tasks']
+        task_obj = getattr(self, task_name)
+
+        if section == 'pre_build':
+            # register input data
+            task_obj.kwargs_input = task_kwargs
+            # register sub tasks
+            task_obj.sub_tasks = sub_tasks
+
+        # run task
+        func = getattr(task_obj, section)
+        func()
+        state = task_obj.signal
+        message = task_obj.message
+        return state, message
+
+    @staticmethod
+    def _run_in_class_method(task_info, section):
+        task_func = task_info['task']
+        task_kwargs = task_info['task_kwargs']
+        section_init = task_info['section']
+        state = 1
+        message = ''
+        if section == section_init:
+            task_return = task_func(**task_kwargs)
+            if isinstance(task_return, basestring):
+                message = task_return
+        return state, message
+
+    @staticmethod
+    def _run_callback(task_info, section):
+        task_kwargs = task_info['task_kwargs']
+        state = 1
+        message = ''
+        if task_kwargs[section]:
+            # if section has callback code
+            task_func = task_info['task']
+            task_func(task_kwargs[section])
+        return state, message
 
 
 # SUB FUNCTION

@@ -887,11 +887,10 @@ class TaskTree(QTreeWidget):
             for j, item in enumerate(items_run):
                 # get task info
                 task_info = item.data(0, ROLE_TASK_INFO)
-                task_type = item.data(0, ROLE_TASK_TYPE)
                 task_display = item.text(0)
                 check_state = item.checkState(0)
                 # reduce task kwargs, because original one contains lots of ui info we don't need
-                task_kwargs = self._reduce_task_kwargs(task_info['task_kwargs'])
+                task_info['task_kwargs'] = self._reduce_task_kwargs(task_info['task_kwargs'])
 
                 # check if the item is unchecked
                 if check_state == Qt.Checked or ignore_check:
@@ -907,89 +906,25 @@ class TaskTree(QTreeWidget):
                             break_checker = True
                             break
 
-                        # check item type
-                        if task_type == 'method':
-                            # get section registered
-                            section_init = task_info['section']
+                        # get sub tasks
+                        # get child count
+                        child_count = item.childCount()
+                        # children tasks attr name
+                        sub_tasks = []
+                        # loop downstream
+                        for index_child in range(child_count):
+                            # get item
+                            child_item = item.child(index_child)
+                            # get child task info
+                            child_task_info = child_item.data(0, ROLE_TASK_INFO)
+                            # get check state
+                            child_check_state = child_item.checkState(0)
+                            # add to pack if checked
+                            if child_check_state == Qt.Checked:
+                                sub_tasks.append(child_task_info['attr_name'])
 
-                            if sec != section_init:
-                                # skip
-                                item.setData(0, role, 1)
-                            else:
-                                # try to run in class method
-                                try:
-                                    task_func = task_info['task']
-                                    task_return = task_func(**task_kwargs)
-                                    message = ''
-                                    task_return_state = 1  # success
-                                    if isinstance(task_return, basestring):
-                                        message = task_return  # override message to store in icon
-                                    self._execute_setting(item, task_return_state, 'method', task_display, role, sec,
-                                                          message)
-                                except Exception:
-                                    traceback_str = traceback.format_exc()
-                                    self._error_setting(item, traceback_str, role)
-
-                        # check if registered function is a function (mainly for callback)
-                        elif task_type == 'callback':
-                            # try to run function
-                            try:
-                                if task_kwargs[sec]:
-                                    # if section has callback code
-                                    task_func = task_info['task']
-                                    task_func(task_kwargs[sec])
-                                self._execute_setting(item, 1, 'function', task_display, role, sec, '')
-                            except Exception:
-                                traceback_str = traceback.format_exc()
-                                self._error_setting(item, traceback_str, role)
-                        else:
-                            # Task is an imported task
-                            # try to run task
-                            try:
-                                # get task name
-                                task_name = task_info['attr_name']
-                                task_obj = getattr(self.builder, task_name)
-
-                                if sec == 'pre_build':
-                                    # register input data
-                                    task_obj.kwargs_input = task_kwargs
-                                    # check if task is duplicate
-                                    if task_type == 'copy':
-                                        # check target task is a pack or not
-                                        attr_name_target = task_kwargs.get('duplicate_component', None)
-                                        if attr_name_target:
-                                            task_target = modules.get_obj_attr(self.builder, attr_name_target)
-                                            if task_target:
-                                                # check if the target is pack, override the parameter if so
-                                                task_type = task_target.task_type
-
-                                    # check if task is pack
-                                    if task_type == 'pack':
-                                        # get child count
-                                        child_count = item.childCount()
-                                        # loop downstream
-                                        for index_child in range(child_count):
-                                            # get item
-                                            child_item = item.child(index_child)
-                                            # get child task info
-                                            child_task_info = child_item.data(0, ROLE_TASK_INFO)
-                                            # get check state
-                                            child_check_state = child_item.checkState(0)
-                                            # add to pack if checked
-                                            if child_check_state == Qt.Checked:
-                                                task_obj.sub_components_attrs.append(child_task_info['attr_name'])
-                                # run task
-                                func = getattr(task_obj, sec)
-                                func()
-                                return_signal = task_obj.signal
-                                message = task_obj.message
-
-                                self._execute_setting(item, return_signal, 'task', task_display, role, sec, message)
-
-                            except Exception:
-                                traceback_str = traceback.format_exc()
-                                self._error_setting(item, traceback_str, role)
-
+                        state, message = self.builder.run_task(task_info, section=sec, check=True, sub_tasks=sub_tasks)
+                        self._set_state_setting(item, state, message, role, task_display, sec)
                 # progress bar grow
                 cmds.progressBar(self.maya_progress_bar, edit=True, step=1)
 
@@ -1002,37 +937,29 @@ class TaskTree(QTreeWidget):
         # emit reset signal
         self.SIGNAL_RESET.emit()
 
-    def _error_setting(self, item, exc, role):
-        # error raises
-        item.setData(0, role, 3)
-        # emit error signal
-        self.SIGNAL_ERROR.emit()
-        # emit reset signal
-        self.SIGNAL_RESET.emit()
-        logger.error(exc)
-
-        # save log info for display
-        self._save_log_status_info(item, exc, role)
-
-        # end maya progress bar
-        cmds.progressBar(self.maya_progress_bar, edit=True, endProgress=True)
-
-        raise RuntimeError()
-
-    def _execute_setting(self, item, task_return, function_name, display, role, section, message):
-        if task_return == 2:
-            # warning raises
-            item.setData(0, role, 2)
-        else:
-            # run successfully
-            item.setData(0, role, 1)
-
-        if message:
-            # save log info for display
+    def _set_state_setting(self, item, state, message, role, display, section):
+        if state == 0:
+            # error
+            item.setData(0, role, 3)
+            # emit error signal
+            self.SIGNAL_ERROR.emit()
+            # emit reset signal
+            self.SIGNAL_RESET.emit()
+            # log error
+            logger.error(message)
+            # save to icon for display
             self._save_log_status_info(item, message, role)
-
-        # log
-        logger.info('[{}] -- Run {} "{}" successfully'.format(section, function_name, display))
+            # end maya progress bar
+            cmds.progressBar(self.maya_progress_bar, edit=True, endProgress=True)
+            # raise error to stop code
+            raise RuntimeError(message)
+        else:
+            item.setData(0, role, state)
+            if message:
+                # save to icon for display
+                self._save_log_status_info(item, message, role)
+            # log info
+            logger.info('[{}] -- Run "{}" successfully'.format(section, display))
 
     def _collect_items(self, item=None):
         """

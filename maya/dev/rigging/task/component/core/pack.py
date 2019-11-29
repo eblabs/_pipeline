@@ -66,9 +66,6 @@ class Pack(component.Component):
         self._icon_warn = icons.pack_warn
 
         # vars
-        # the sub components attr name in builder, use this var in widget to assign sub components
-        self.sub_components_attrs = variables.kwargs('sub_components_attrs', [], kwargs)
-
         self._pack_kwargs_override = {}
 
         self._sub_components_grp = None
@@ -92,7 +89,7 @@ class Pack(component.Component):
 
     def in_class_attributes_mirror_registration(self):
         super(Pack, self).in_class_attributes_mirror_registration()
-        self.set_attribute_for_mirror('sub_components_attrs')
+        self.set_attribute_for_mirror('sub_tasks')
 
     def create_hierarchy(self):
         """
@@ -150,7 +147,7 @@ class Pack(component.Component):
         """
         pack_kwargs_override = self._get_parent_obj_attr('pack_kwargs_override')
         if pack_kwargs_override is not None and self._pack_kwargs_override:
-            for sub_attr_name in self.sub_components_attrs:
+            for sub_attr_name in self.sub_tasks:
                 self._parent.pack_kwargs_override.update({sub_attr_name: self._pack_kwargs_override})
 
     def create_component(self):
@@ -170,7 +167,7 @@ class Pack(component.Component):
 
     def get_sub_components_objects(self):
         # get sub objects
-        for sub_attr in self.sub_components_attrs:
+        for sub_attr in self.sub_tasks:
             sub_obj = self._get_parent_obj_attr(sub_attr)
             if sub_obj:
                 self._sub_components_objs.append(sub_obj)

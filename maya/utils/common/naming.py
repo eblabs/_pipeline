@@ -28,7 +28,7 @@ logger = logUtils.logger
 class Type(object):
     """Type class to access type variables"""
     class Key(object):
-        """Key object to access each variables fullname by giving the short name"""
+        """Key object to access each variables fullname by giving either the short name or the long name"""
         def __init__(self):
             pass
 
@@ -39,7 +39,7 @@ class Type(object):
 class Side(object):
     """Side class to access side variables"""
     class Key(object):
-        """Key object to access each variables fullname by giving the short name"""
+        """Key object to access each variables fullname by giving either the short name or the long name"""
         def __init__(self):
             pass
 
@@ -50,7 +50,7 @@ class Side(object):
 class Resolution(object):
     """Resolution class to access resolution variables"""
     class Key(object):
-        """Key object to access each variables fullname by giving the short name"""
+        """Key object to access each variables fullname by giving either the short name or the long name"""
         def __init__(self):
             pass
 
@@ -67,6 +67,7 @@ for key, item in DATA_CONFIG.iteritems():
         val_all.append(name_short)
         setattr(obj, name_long, name_short)
         setattr(obj_key, name_short, name_long)
+        setattr(obj_key, name_long, name_long)
     setattr(obj, 'all', val_all)
     setattr(obj_key, 'all', item.keys())
 

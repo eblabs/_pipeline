@@ -86,6 +86,7 @@ class BaseNode(task.Task):
     def post_build(self):
         super(BaseNode, self).post_build()
         self.auto_scale_controls()
+        self.set_default_resolution()
 
     def create_hierarchy(self):
         """
@@ -294,3 +295,20 @@ class BaseNode(task.Task):
             scale_multiplier = geo_length/float(control_length)
             controls.transform_ctrl_shape([self.world_control.control_shape, self.layout_control.control_shape,
                                            self.local_control.control_shape], scale=scale_multiplier)
+
+    def set_default_resolution(self):
+        """
+        because high may not have model, we need to check model groups to set the highest resolution as default
+        """
+        res_order = [naming.Resolution.Key.high, naming.Resolution.Key.middle, naming.Resolution.Key.low,
+                     naming.Resolution.Key.proxy, naming.Resolution.Key.simulation]
+        for res in res_order:
+            res_grp = self._get_obj_attr(res+'.group')
+            # get meshes in group
+            meshes_nodes = meshes.get_meshes_from_node(res_grp)
+            if meshes_nodes:
+                res_index = RES_CONFIG[res]
+                # set this resolution as default
+                cmds.setAttr(self.master+'.resolution', res_index)
+                # break loop, no need to check others, this is the highest res
+                break
