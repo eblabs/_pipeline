@@ -170,7 +170,6 @@ class TaskLabel(QLabel):
         super(TaskLabel, self).__init__()
 
         self._tool_tip = tool_tip
-        self.menu = None
 
         # set stylesheet
         self.setStyleSheet("""border: 1.3px solid black; border-radius: 2px""")

@@ -583,6 +583,29 @@ class Builder(object):
         return state, message
 
     @staticmethod
+    def reduce_task_kwargs(task_kwargs):
+        """
+        because task's kwargs has too many information we don't need (like ui info), this function will reduce to
+        only have value and attr name, so later on we can plug into task's kwargs_input
+
+        Args:
+            task_kwargs(dict): task's kwargs
+
+        Returns:
+            task_kwargs_reduce(dict)
+
+        """
+        task_kwargs_reduce = {}
+        for key, data in task_kwargs.iteritems():
+            if 'value' in data and data['value'] is not None:
+                val = data['value']
+            else:
+                val = data['default']
+            attr_name = data['attr_name']
+            task_kwargs_reduce.update({attr_name: val})
+        return task_kwargs_reduce
+
+    @staticmethod
     def _run_in_class_method(task_info, section):
         task_func = task_info['task']
         task_kwargs = task_info['task_kwargs']

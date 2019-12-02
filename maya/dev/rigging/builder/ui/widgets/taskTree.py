@@ -31,9 +31,6 @@ except ImportError:
     from PySide import __version__
     from shiboken import wrapInstance
 
-# import traceback
-import traceback
-
 # import utils
 import utils.common.logUtils as logUtils
 import utils.common.modules as modules
@@ -701,7 +698,7 @@ class TaskTree(QTreeWidget):
         # try close window in case it's opened
         self.task_create_window.close()
         self.task_create_window.refresh_widgets()
-        self.task_create_window.widget_task_creation.rebuild_list_model(task_folders)
+        self.task_create_window.widget_task_creation.rebuild_list_model(task_folders=task_folders)
         self.task_create_window.move(QCursor.pos())
         self.task_create_window.show()
 
@@ -729,7 +726,7 @@ class TaskTree(QTreeWidget):
             task_folders.append(self._get_project_task_folder(self.builder))
 
             self.task_switch_window.refresh_widgets()
-            self.task_switch_window.widget_task_creation.rebuild_list_model(task_folders)
+            self.task_switch_window.widget_task_creation.rebuild_list_model(task_folders=task_folders)
             self.task_switch_window.move(QCursor.pos())
             self.task_switch_window.show()
 
@@ -774,6 +771,24 @@ class TaskTree(QTreeWidget):
 
         # shoot signal to reset task info
         self.itemPressed.emit(items[-1], 0)
+
+    def get_task_info_for_module(self):
+        """
+        get all tasks info for module builder
+        """
+        module_task_info = {}
+        items = self._collect_items()
+        for item in items:
+            task_info = item.data(0, ROLE_TASK_INFO)
+            task_type = item.data(0, ROLE_TASK_TYPE)
+            if task_type != 'method':
+                # either task object or callback
+                task_name = task_info['attr_name']
+                task_path = task_info['task_path']
+                task_kwargs = task_info['task_kwargs']
+                module_task_info.update({task_name: {'task_path': task_path,
+                                            'task_kwargs': task_kwargs}})
+        return module_task_info
 
     def _add_child_item(self, item, data):
         for d in data:
@@ -890,7 +905,7 @@ class TaskTree(QTreeWidget):
                 task_display = item.text(0)
                 check_state = item.checkState(0)
                 # reduce task kwargs, because original one contains lots of ui info we don't need
-                task_info['task_kwargs'] = self._reduce_task_kwargs(task_info['task_kwargs'])
+                task_info['task_kwargs'] = self.builder.reduce_task_kwargs(task_info['task_kwargs'])
 
                 # check if the item is unchecked
                 if check_state == Qt.Checked or ignore_check:
@@ -1108,7 +1123,7 @@ class TaskTree(QTreeWidget):
         if task_save:
             task_info = item.data(0, ROLE_TASK_INFO)
             task_name = task_info['attr_name']
-            task_kwargs = self._reduce_task_kwargs(task_info['task_kwargs'])
+            task_kwargs = self.builder.reduce_task_kwargs(task_info['task_kwargs'])
 
             # get task obj from builder
             task_obj = getattr(self.builder, task_name)
@@ -1192,29 +1207,6 @@ class TaskTree(QTreeWidget):
                 attr_name_children.append(child_task_info['attr_name'])
 
         return attr_name_children
-
-    @ staticmethod
-    def _reduce_task_kwargs(task_kwargs):
-        """
-        because task's kwargs has too many information we don't need (like ui info), this function will reduce to
-        only have value and attr name, so later on we can plug into task's kwargs_input
-
-        Args:
-            task_kwargs(dict): task's kwargs
-
-        Returns:
-            task_kwargs_reduce(dict)
-
-        """
-        task_kwargs_reduce = {}
-        for key, data in task_kwargs.iteritems():
-            if 'value' in data and data['value'] is not None:
-                val = data['value']
-            else:
-                val = data['default']
-            attr_name = data['attr_name']
-            task_kwargs_reduce.update({attr_name: val})
-        return task_kwargs_reduce
 
     @ staticmethod
     def _transfer_task_kwargs(kwargs_orig, kwargs_target, transfer_keys=None, info=None):

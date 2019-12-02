@@ -193,7 +193,7 @@ class RigInfo(RigInfoBase):
             assets.remove_rig(rig, asset, project)
             self.check_rig()
 
-    def show_menu(self, pos):
+    def show_menu(self):
         # check if typed rig available
         if self.rig_checker:
             # disable create, enable remove

@@ -161,6 +161,32 @@ def get_project_path(project, warning=True):
         return None
 
 
+def get_project_task_path(project, warning=True):
+    """
+    get given project task folder's path
+
+    Args:
+        project(str): project's name
+
+    Keyword Args:
+        warning(bool): will warn if not exist, default is True
+
+    Returns:
+        project_task_path(str): project task folder's path, return None if not exist
+    """
+    project_path = get_project_path(project, warning=warning)
+    if project_path:
+        project_task_path = os.path.join(project_path, 'scripts', 'tasks')
+        if os.path.exists(project_task_path):
+            return project_task_path
+        else:
+            if warning:
+                logger.warning('project {} does not contain a task folder'.format(project))
+            return None
+    else:
+        return None
+
+
 # asset
 def create_asset(name, project):
     """

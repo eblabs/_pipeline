@@ -8,6 +8,7 @@ import utils.common.logUtils as logUtils
 import utils.common.modules as modules
 import utils.common.files as files
 import utils.common.naming as naming
+import utils.common.assets as assets
 
 # import pack
 import pack
@@ -158,3 +159,54 @@ class Module(pack.Pack):
                     kwargs_update.update({attr_update: val})
                 task_obj = getattr(self, task_name)
                 task_obj.kwargs_input.update(kwargs_update)
+
+
+# functions
+def get_module_info(project, module_name):
+    """
+    get module information from given project and module name, will return None if not exist
+
+    Args:
+        project(str)
+        module_name(str)
+
+    Returns:
+        module_info(dict)
+    """
+    # get project
+    task_folder_path = assets.get_project_task_path(project, warning=False)
+
+    if task_folder_path:
+        # get module task info file path
+        module_info_path = os.path.join(task_folder_path, module_name+MODULE_INFO_FORMAT)
+        # check if exist
+        if os.path.exists(module_info_path):
+            module_info = files.read_json_file(module_info_path)
+        else:
+            module_info = None
+    else:
+        module_info = None
+
+    return module_info
+
+
+def get_all_module_in_folder(folder):
+    """
+    get all module from folders
+
+    Args:
+        folder(str): module folder path
+
+    Returns:
+        module_names(list)
+    """
+    module_names = []
+    # list all module info files
+    module_info_files = files.get_files_from_path(folder, extension=MODULE_INFO_FORMAT, full_paths=False)
+    if module_info_files:
+        for module_info in module_info_files:
+            name = module_info.replace(MODULE_INFO_FORMAT, '')
+            module_names.append(name)
+        module_names.sort()
+
+    return module_names

@@ -56,7 +56,6 @@ class RigBuilder(uiUtils.BaseWindow):
 
         # rig layout
         frame_right = QFrame()
-        # frame_right.setMinimumSize(550, 550)
         layout_right = QVBoxLayout(frame_right)
 
         # log layout

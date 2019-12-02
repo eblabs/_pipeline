@@ -57,10 +57,11 @@ class TaskCreator(QWidget):
 
         self.setFocus()  # remove focus when open
 
-    def rebuild_list_model(self, task_folders):
+    def rebuild_list_model(self, task_folders=None, tasks=None):
         self.sourceModel.clear()
 
-        tasks = get_tasks_from_folders(task_folders)
+        if task_folders:
+            tasks = get_tasks_from_folders(task_folders)
 
         for tsk in tasks:
             tsk_item = QStandardItem(tsk)
@@ -175,7 +176,7 @@ class TaskName(QWidget):
 class TaskCreate(QDialog):
     """widget to create task"""
 
-    def __init__(self, parent=None, title='', button='', set_name=True):
+    def __init__(self, parent=None, title='', button='', set_name=True, display=True):
         super(TaskCreate, self).__init__(parent)
 
         self.setWindowTitle(title)
@@ -189,7 +190,7 @@ class TaskCreate(QDialog):
 
             # ask user to set side and description, so we can force the user follow the naming convention
             # this will make us easier to mirror the component
-            self.task_name_widget = TaskName()
+            self.task_name_widget = TaskName(display=display)
             layout_base.addWidget(self.task_name_widget)
 
         # get task creator widget

@@ -40,3 +40,9 @@ copy_warn = os.path.join(dirname, 'copy_warn.png')
 module_new = os.path.join(dirname, 'module.png')
 module_lock = os.path.join(dirname, 'module_lock.png')
 module_warn = os.path.join(dirname, 'module_warn.png')
+
+# module
+create_module = os.path.join(dirname, 'create_module.png')
+load_module = os.path.join(dirname, 'load_module.png')
+save_module = os.path.join(dirname, 'save_module.png')
+delete_module = os.path.join(dirname, 'delete_module.png')
