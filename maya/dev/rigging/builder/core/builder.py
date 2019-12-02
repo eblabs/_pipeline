@@ -14,7 +14,6 @@ import utils.common.variables as variables
 import utils.common.modules as modules
 import utils.common.files as files
 import utils.common.logUtils as logUtils
-import utils.common.naming as naming
 
 # CONSTANT
 logger = logUtils.logger

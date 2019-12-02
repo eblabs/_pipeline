@@ -12,6 +12,9 @@ import ast
 # import json
 import json
 
+# import OrderedDict
+from collections import OrderedDict
+
 # import PySide
 try:
     from PySide2.QtCore import *
@@ -64,6 +67,10 @@ class ModuleCreator(QWidget):
     """
     def __init__(self):
         super(ModuleCreator, self).__init__()
+
+        self.project = None
+        self.module_name = None
+
         self.setWindowTitle('Create/Edit Module')
         self.setGeometry(100, 100, 250, 300)
         self.setMinimumSize(800, 600)
@@ -122,6 +129,7 @@ class ModuleCreator(QWidget):
         # button connection
         self.button_shelf.button_create.clicked.connect(self.open_create_module_window)
         self.button_shelf.button_load.clicked.connect(self.open_load_module_window)
+        self.button_shelf.button_save.clicked.connect(self.save_module_info)
         # set module info
         self.window_create_module.SIGNAL_MODULE_INFO.connect(self.set_module_info)
         self.window_load_module.SIGNAL_MODULE_INFO.connect(self.set_module_info)
@@ -161,6 +169,33 @@ class ModuleCreator(QWidget):
         self.module_info.label_name.setText(module_name)
 
         self.sub_task_info.sub_tasks.project = project
+
+        self.project = project
+        self.module_name = module_name
+
+    def save_module_info(self):
+        if self.project and self.module_name:
+            save = True
+            # try to get module info
+            module_info = module_tsk.get_module_info(self.project, self.module_name)
+            if module_info:
+                # ask user if want to override
+                title = "Module Already Exists"
+                text = ("Module {} already exists in project {}\n"
+                        "Are you sure you want to override existing module?".format(self.module_name, self.project))
+                reply = QMessageBox.warning(self, title, text, QMessageBox.Yes | QMessageBox.Cancel,
+                                            defaultButton=QMessageBox.Cancel)
+                if reply != QMessageBox.Yes:
+                    save = False
+
+            if save:
+                # save module info
+                # get module attr info
+                module_attrs_info = self.module_attrs.get_attrs_info()
+                # get sub tasks info
+                sub_tasks_info = self.sub_task_info.sub_tasks.get_sub_tasks_info()
+                # save module info
+                module_tsk.export_module_info(self.project, self.module_name, module_attrs_info, sub_tasks_info)
 
 
 class CreateModule(QDialog):
@@ -653,6 +688,18 @@ class ModuleAttrs(QTreeView):
         kwarg_info.update({'output': output_attrs})
         item_display.setData(kwarg_info, role=ROLE_TASK_KWARGS_INFO)
 
+    def get_attrs_info(self):
+        """
+        get module attrs information
+        """
+        attrs_info = OrderedDict()
+        for row in self._model.rowCount():
+            item = self._model.itemFromIndex(row, 0)
+            display_name = item.text()
+            kwarg_info = item.data(role=ROLE_TASK_KWARGS_INFO)
+            attrs_info.update({display_name: kwarg_info})
+        return attrs_info
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape and event.modifiers() == Qt.NoModifier:
             self.clearSelection()
@@ -799,6 +846,26 @@ class SubTasks(QTreeView):
     def remove_sub_task(self):
         index = self.selectedIndexes()[0]
         self._model.removeRow(index.row())
+
+    def get_sub_tasks_info(self):
+        """
+        get module sub tasks information
+        """
+        sub_tasks_info = {}
+        for row in self._model.rowCount():
+            item = self._model.itemFromIndex(row, 0)
+            task_name = item.text()
+            task_kwargs_info = item.data(role=ROLE_TASK_KWARGS_INFO)
+            # reduce task kwargs
+            task_kwargs_info_reduce = {}
+            for key, info in task_kwargs_info.iteritems():
+                value = info.get('value', None)
+                if value is None:
+                    value = info.get('default', None)
+                task_kwargs_info_reduce.update({key: value})
+            sub_tasks_info.update({task_name: {'task_path': task_kwargs_info['task_path'],
+                                               'task_kwargs': task_kwargs_info_reduce}})
+        return sub_tasks_info
 
     def item_pressed(self):
         # get current index

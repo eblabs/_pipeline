@@ -120,12 +120,12 @@ class Module(pack.Pack):
         create tasks base on module info
         """
         # get all tasks info
-        tasks_info = self._module_info.get('tasks', [])
+        tasks_info = self._module_info.get('sub_tasks', [])
 
         # create task objects
         for task_info in tasks_info:
             task_name = task_info.keys[0]
-            task_path = task_info[task_name]['path']
+            task_path = task_info[task_name]['task_path']
             task_kwargs = task_info[task_name]['task_kwargs']
 
             # import task
@@ -173,7 +173,7 @@ def get_module_info(project, module_name):
     Returns:
         module_info(dict)
     """
-    # get project
+    # get task folder
     task_folder_path = assets.get_project_task_path(project, warning=False)
 
     if task_folder_path:
@@ -210,3 +210,56 @@ def get_all_module_in_folder(folder):
         module_names.sort()
 
     return module_names
+
+
+def export_module_info(project, module_name, module_attrs_info, sub_tasks_info):
+    """
+    export module info
+
+    Args:
+        project(str)
+        module_name(str)
+        module_attrs_info(dict)
+        sub_tasks_info(dict)
+
+    Returns:
+        module_info_path(str)
+    """
+    # compose module info
+    module_info = {}
+    # kwargs keys
+    module_info.update({'kwargs_keys': module_attrs_info.keys()})
+    # kwargs
+    module_info.update({'kwargs': dict(module_attrs_info)})
+    # sub tasks info
+    module_info.update({'sub_tasks': sub_tasks_info})
+    # get connect info
+    connect_info = {}
+    for kwarg_info in module_attrs_info.values():
+        attr_name = kwarg_info['attr_name']
+        connect = kwarg_info.get('output', [])
+        connect_info_attr = {}
+        for output_attr in connect:
+            output_attr_split = output_attr.split('.')  # split to task and task attr
+            sub_task = output_attr_split[0]
+            task_attr = output_attr_split[1]
+            if sub_task not in connect_info_attr:
+                connect_info_attr.update({sub_task: [task_attr]})
+            else:
+                connect_info_attr[sub_task].append(task_attr)
+        connect_info.update({attr_name: connect_info_attr})
+    module_info.update({'connect_info': connect_info})
+
+    # get task folder
+    task_folder_path = assets.get_project_task_path(project, warning=False)
+
+    # generate module python script
+
+    if os.path.exists(task_folder_path):
+        module_info_path = os.path.join(task_folder_path, module_name+MODULE_INFO_FORMAT)
+        files.write_json_file(module_info_path, module_info)
+        logger.info("save module info for module '{}' at {} successfully".format(module_name, module_info_path))
+        return module_info_path
+    else:
+        logger.warning("no task folder found for module '{}' at '{}', skipped".format(module_name, project))
+        return None
