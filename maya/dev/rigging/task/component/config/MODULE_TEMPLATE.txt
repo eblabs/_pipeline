@@ -1,0 +1,21 @@
+"""
+# IMPORT PACKAGES
+
+# import module
+import dev.rigging.task.component.core.module as module_tsk
+
+# import utils
+import utils.common.logUtils as logUtils
+
+# CONSTANT
+logger = logUtils.logger
+MODULE_PATH = TEMP_MODULE_PATH
+
+
+# CLASS
+class TEMP_CLASS_NAME(module_tsk.Module):
+    def __init__(self, **kwargs):
+        super(TEMP_CLASS_NAME, self).__init__(**kwargs)
+
+        self._task = MODULE_PATH
+"""

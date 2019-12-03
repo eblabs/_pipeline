@@ -13,6 +13,9 @@ import utils.common.assets as assets
 # import pack
 import pack
 
+# config
+import dev.rigging.task.component.config as config
+
 # ICON
 import dev.rigging.builder.ui.widgets.icons as icons
 
@@ -23,6 +26,11 @@ PROPERTY_ITEMS = PROPERTY_ITEMS.PROPERTY_ITEMS
 logger = logUtils.logger
 
 MODULE_INFO_FORMAT = '.moduleInfo'
+
+text_path = os.path.join(os.path.dirname(config.__file__), 'MODULE_TEMPLATE.txt')
+infile = open(text_path, 'r')
+MODULE_TEMPLATE = infile.read()
+infile.close()
 
 
 # CLASS
@@ -212,6 +220,40 @@ def get_all_module_in_folder(folder):
     return module_names
 
 
+def generate_module_script_file(project, module_name):
+    # get script file path
+    task_folder_path = assets.get_project_task_path(project, warning=False)
+    if task_folder_path:
+        module_script_path = os.path.join(task_folder_path, module_name+'.py')
+        if os.path.exists(module_script_path):
+            # module script already exist, return
+            return None
+        else:
+            # remove template docstring
+            template = MODULE_TEMPLATE[5:]
+            template = template[:-4]
+
+            # get args in docstring
+            module_path = "'{}.scripts.task.{}'".format(project, module_name)
+            module_class_name = module_name[0].upper() + module_name[1:]
+
+            # replace keywords with args
+            module_script = template
+            for input_arg, temp_keyword in zip([module_path, module_class_name],
+                                               ['TEMP_MODULE_PATH', 'TEMP_CLASS_NAME']):
+                module_script = module_script.replace(temp_keyword, input_arg)
+
+            # write file
+            outfile = open(module_script_path, 'w')
+            outfile.write(module_script)
+            outfile.close()
+
+            logger.info('create module script successfully at {}'.format(module_script_path))
+            return module_script_path
+    else:
+        return None
+
+
 def export_module_info(project, module_name, module_attrs_info, sub_tasks_info):
     """
     export module info
@@ -254,8 +296,10 @@ def export_module_info(project, module_name, module_attrs_info, sub_tasks_info):
     task_folder_path = assets.get_project_task_path(project, warning=False)
 
     # generate module python script
+    generate_module_script_file(project, module_name)
 
-    if os.path.exists(task_folder_path):
+    # save module info
+    if task_folder_path:
         module_info_path = os.path.join(task_folder_path, module_name+MODULE_INFO_FORMAT)
         files.write_json_file(module_info_path, module_info)
         logger.info("save module info for module '{}' at {} successfully".format(module_name, module_info_path))

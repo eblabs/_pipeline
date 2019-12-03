@@ -43,6 +43,7 @@ import icons
 # import widget
 import taskCreator
 import transferAttr
+import moduleCreator
 
 # import config
 import config
@@ -190,6 +191,10 @@ class TaskTree(QTreeWidget):
 
         self.menu.addSeparator()
 
+        self.action_module_create = self.menu.addAction('Create Module on Selection')
+
+        self.menu.addSeparator()
+
         self.action_task_info = self.menu.addAction('Task Info')
 
         self.menu.addSeparator()
@@ -199,7 +204,8 @@ class TaskTree(QTreeWidget):
 
         # set enable/disable
         self._menu_widgets = [self.menu_execute_sel, self.action_duplicate, self.action_remove, self.action_task_info,
-                              self.action_display, self.action_color_background, self.action_color_reset]
+                              self.action_display, self.action_color_background, self.action_color_reset,
+                              self.action_module_create]
 
         for widget in self._menu_widgets:
             widget.setEnabled(False)
@@ -226,6 +232,8 @@ class TaskTree(QTreeWidget):
         self.action_color_background.triggered.connect(self.set_background_color)
         self.action_color_reset.triggered.connect(self.reset_background_color)
 
+        self.action_module_create.triggered.connect(self.module_create_window_open)
+
         self.action_task_info.triggered.connect(self._show_task_info)
 
         self.action_expand.triggered.connect(self.expand_collapse)
@@ -243,6 +251,10 @@ class TaskTree(QTreeWidget):
         self.transfer_attr_window = transferAttr.TransferAttr()
         self.action_transfer.triggered.connect(self.transfer_attr_window_open)
         self.transfer_attr_window.SIGNAL_ATTR_TRANSFER.connect(self.transfer_attrs)
+
+        # module create window
+        self.module_create_window = moduleCreator.ModuleCreator()
+        self.module_create_window.sub_task_info.sub_tasks.task_tree = self
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_menu)
@@ -393,16 +405,8 @@ class TaskTree(QTreeWidget):
         # selectedItems return items in selection order as a list, but we need in tree's order,
         # so we need to get all tasks in tree order from ui later on, and re order the selection
         # because list doesn't support getting index from object element, we need to convert list to set
-        items = set(self.selectedItems())
-        if items:
-            # get all items
-            items_all = self._collect_items()
-
-            items_sel = []
-            for itm in items_all:
-                if itm in items:
-                    # if the item in the selection set, add to the list
-                    items_sel.append(itm)
+        if self.selectedItems():
+            items_sel = self._re_order_select_tasks(self.selectedItems())
 
             self._run_task(items=items_sel, section=section, skip_build=self.action_skip.isChecked())
             self.SIGNAL_EXECUTE.emit()
@@ -787,8 +791,48 @@ class TaskTree(QTreeWidget):
                 task_path = task_info['task_path']
                 task_kwargs = task_info['task_kwargs']
                 module_task_info.update({task_name: {'task_path': task_path,
-                                            'task_kwargs': task_kwargs}})
+                                                     'task_kwargs': task_kwargs}})
         return module_task_info
+
+    def module_create_window_open(self):
+        self.module_create_window.close()
+
+        # let user set module name
+        module_name, ok = QInputDialog.getText(self, 'Create Module', 'Enter module name:')
+        if ok and module_name:
+            # set module info (project and module name)
+            self.module_create_window.set_module_info(self.builder.project, module_name, {})
+            # add selections to sub tasks
+            # get builder task info
+            builder_task_info = self.get_task_info_for_module()
+            self.module_create_window.sub_task_info.sub_tasks.builder_tasks_info = builder_task_info
+            # get selection
+            items_sel = self._re_order_select_tasks(self.selectedItems())
+            for item in items_sel:
+                task_info = item.data(0, ROLE_TASK_INFO)
+                task_name = task_info['attr_name']
+                if task_name in builder_task_info:
+                    # add sub task
+                    self.module_create_window.sub_task_info.sub_tasks.add_sub_task_from_builder(task_name)
+            self.module_create_window.move(QCursor.pos())
+            self.module_create_window.show()
+
+    def _re_order_select_tasks(self, tasks):
+        # selectedItems return items in selection order as a list, but we need in tree's order,
+        # so we need to get all tasks in tree order from ui later on, and re order the selection
+        # because list doesn't support getting index from object element, we need to convert list to set
+        items = set(tasks)
+
+        # get all items
+        items_all = self._collect_items()
+
+        items_sel = []
+        for itm in items_all:
+            if itm in items:
+                # if the item in the selection set, add to the list
+                items_sel.append(itm)
+
+        return items_sel
 
     def _add_child_item(self, item, data):
         for d in data:
