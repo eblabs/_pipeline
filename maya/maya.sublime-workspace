@@ -594,6 +594,8 @@
 	],
 	"file_history":
 	[
+		"/C/_works/maya/projects/template/scripts/tasks/fkIkSpine.py",
+		"/C/_works/maya/projects/template/scripts/tasks/fkIkSpine.moduleInfo",
 		"/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/data/task_m_ctrlShape/control_shapes.ctrlShapeInfo",
 		"/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/build/tasks.tsk",
 		"/C/_works/maya/projects/template/assets/baseBiped/rigs/puppet/data/task_m_ctrlShape/ctrlShapes.ctrlShapeInfo",
@@ -719,9 +721,7 @@
 		"/C/_pipeline/maya_oldCodes/lib/rigging/joints.py",
 		"/C/_pipeline/maya_oldCodes/lib/common/transforms.py",
 		"/C/_pipeline/maya_oldCodes/lib/modeling/curves.py",
-		"/C/_pipeline/maya_oldCodes/lib/common/apiUtils.py",
-		"/C/_pipeline/maya_oldCodes/lib/common/packages.py",
-		"/C/_pipeline/maya_oldCodes/rigSys/components/core/componentsPackage.py"
+		"/C/_pipeline/maya_oldCodes/lib/common/apiUtils.py"
 	],
 	"find":
 	{

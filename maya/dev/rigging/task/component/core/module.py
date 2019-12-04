@@ -3,6 +3,9 @@
 # import os
 import os
 
+# import inspect
+import inspect
+
 # import utils
 import utils.common.logUtils as logUtils
 import utils.common.modules as modules
@@ -41,7 +44,8 @@ class Module(pack.Pack):
     def __init__(self, **kwargs):
         # get module info file before anything, because we need the info to register kwargs
         # module info file locate the same place with the py file
-        module_path = os.path.dirname(self.__file__)
+        class_file_path = inspect.getfile(self.__class__)
+        module_path = os.path.dirname(class_file_path)
         module_info_path = os.path.join(module_path, self.__class__.__name__ + MODULE_INFO_FORMAT)
         if os.path.exists(module_info_path):
             self._module_info = files.read_json_file(module_info_path)
@@ -297,7 +301,7 @@ def export_module_info(project, module_name, module_attrs_info, sub_tasks_info):
 
     # generate module python script
     generate_module_script_file(project, module_name)
-
+    print module_info
     # save module info
     if task_folder_path:
         module_info_path = os.path.join(task_folder_path, module_name+MODULE_INFO_FORMAT)

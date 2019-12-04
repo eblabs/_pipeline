@@ -23,6 +23,9 @@ class BaseWindow(QWidget):
     """class for Base Window in maya"""
     def __init__(self, **kwargs):
         super(BaseWindow, self).__init__()
+        top = kwargs.get('top', True)  # if set the window on top of maya
+        if top:
+            self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
         # get kwargs
         self._parent = kwargs.get('parent', None)

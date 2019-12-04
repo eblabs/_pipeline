@@ -693,10 +693,12 @@ class ModuleAttrs(QTreeView):
         get module attrs information
         """
         attrs_info = OrderedDict()
-        for row in self._model.rowCount():
-            item = self._model.itemFromIndex(row, 0)
+        for row in range(self._model.rowCount()):
+            index = self._model.index(row, 0)
+            item = self._model.itemFromIndex(index)
             display_name = item.text()
             kwarg_info = item.data(role=ROLE_TASK_KWARGS_INFO)
+            kwarg_info.pop('widget', None)  # this is a pySide object, can't save into JSON
             attrs_info.update({display_name: kwarg_info})
         return attrs_info
 
@@ -833,7 +835,9 @@ class SubTasks(QTreeView):
         # add to task model list
         item_task_name = QStandardItem(task_name)
         item_task_path = QStandardItem(task_path)
-        item_task_name.setData(task_kwargs, role=ROLE_TASK_KWARGS_INFO)
+        task_kwargs_info = {'task_path': task_path,
+                            'task_kwargs': task_kwargs}
+        item_task_name.setData(task_kwargs_info, role=ROLE_TASK_KWARGS_INFO)
         item_task_name.setData(task_kwargs.keys(), role=ROLE_TASK_KWARGS_KEYS)
         item_task_path.setEditable(False)
         self._model.appendRow([item_task_name, item_task_path])
@@ -852,19 +856,20 @@ class SubTasks(QTreeView):
         get module sub tasks information
         """
         sub_tasks_info = {}
-        for row in self._model.rowCount():
-            item = self._model.itemFromIndex(row, 0)
+        for row in range(self._model.rowCount()):
+            index = self._model.index(row, 0)
+            item = self._model.itemFromIndex(index)
             task_name = item.text()
             task_kwargs_info = item.data(role=ROLE_TASK_KWARGS_INFO)
             # reduce task kwargs
-            task_kwargs_info_reduce = {}
-            for key, info in task_kwargs_info.iteritems():
+            task_kwargs_reduce = {}
+            for key, info in task_kwargs_info['task_kwargs'].iteritems():
                 value = info.get('value', None)
                 if value is None:
                     value = info.get('default', None)
-                task_kwargs_info_reduce.update({key: value})
+                task_kwargs_reduce.update({key: value})
             sub_tasks_info.update({task_name: {'task_path': task_kwargs_info['task_path'],
-                                               'task_kwargs': task_kwargs_info_reduce}})
+                                               'task_kwargs': task_kwargs_reduce}})
         return sub_tasks_info
 
     def item_pressed(self):
@@ -881,7 +886,7 @@ class SubTasks(QTreeView):
             kwargs_info = item.data(role=ROLE_TASK_KWARGS_INFO)
             kwargs_keys = item.data(role=ROLE_TASK_KWARGS_KEYS)
             # shoot signal
-            self.SIGNAL_TASK_ATTRS.emit(kwargs_keys, kwargs_info, item)
+            self.SIGNAL_TASK_ATTRS.emit(kwargs_keys, kwargs_info['task_kwargs'], item)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape and event.modifiers() == Qt.NoModifier:
@@ -1083,7 +1088,7 @@ class SubTaskAttrs(QTreeView):
         item_display.setData(kwarg_info, role=ROLE_TASK_KWARGS_INFO)
         display_name = item_display.text()
         kwargs_info_task = self.sub_task_item.data(role=ROLE_TASK_KWARGS_INFO)
-        kwargs_info_task.update({display_name: kwarg_info})
+        kwargs_info_task['task_kwargs'].update({display_name: kwarg_info})
         self.sub_task_item.setData(kwargs_info_task, role=ROLE_TASK_KWARGS_INFO)
 
     def refresh_list(self):
