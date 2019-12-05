@@ -189,14 +189,7 @@ class Pack(component.Component):
         get component information from component node
         """
         super(Pack, self).get_component_info(component_node)
-        sub_component_nodes = self._get_attr(self._component+'.subComponents')
-
-        # get sub component obj
-        for sub_node in sub_component_nodes:
-            sub_node_type = cmds.getAttr(sub_node+'.componentType')
-            sub_obj = modules.import_module(sub_node_type)
+        for sub_component in self.sub_components_objs:
+            sub_node = sub_component.component
             sub_obj_name = cmds.getAttr(sub_node+'.inClassName')
-            self._sub_components_nodes.append(sub_obj_name)
-            self._sub_components_objs.append(sub_obj)
-            # attach sub obj to pack
-            setattr(self, sub_obj_name, sub_obj)
+            setattr(self, sub_obj_name, sub_component)

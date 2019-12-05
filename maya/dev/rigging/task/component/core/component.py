@@ -72,7 +72,7 @@ class Component(task.Task):
         self.mirror = None
         self.side = None
         self.description = None
-        self.description_suffix = None
+        self.description_suffix = ''
         self.bp_jnts = None
         self.ctrl_space = None
         self.ctrl_offsets = None

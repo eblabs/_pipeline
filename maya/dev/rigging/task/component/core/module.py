@@ -101,7 +101,6 @@ class Module(pack.Pack):
 
     def pre_build(self):
         super(Module, self).pre_build()
-        self.create_hierarchy()
         self.create_sub_task_from_module_info()
         self.connect_module_attrs_to_sub_task()
         # run each task's pre build
@@ -132,19 +131,18 @@ class Module(pack.Pack):
         create tasks base on module info
         """
         # get all tasks info
-        tasks_info = self._module_info.get('sub_tasks', [])
+        tasks_info = self._module_info.get('sub_tasks', {})
 
         # create task objects
-        for task_info in tasks_info:
-            task_name = task_info.keys[0]
-            task_path = task_info[task_name]['task_path']
-            task_kwargs = task_info[task_name]['task_kwargs']
+        for task_name, task_info in tasks_info.iteritems():
+            task_path = task_info['task_path']
+            task_kwargs = task_info['task_kwargs']
 
             # import task
             task_import, task_function = modules.import_module(task_path)
             task_func = getattr(task_import, task_function)
 
-            task_obj = task_func(name=task_name, parent=self._parent)
+            task_obj = task_func(name=task_name, parent=self)
             # set task data name to module name
             task_obj.task_data_name = self._name
             # attach to module
@@ -214,7 +212,9 @@ def get_all_module_in_folder(folder):
     """
     module_names = []
     # list all module info files
+    print folder
     module_info_files = files.get_files_from_path(folder, extension=MODULE_INFO_FORMAT, full_paths=False)
+    print module_info_files
     if module_info_files:
         for module_info in module_info_files:
             name = module_info.replace(MODULE_INFO_FORMAT, '')

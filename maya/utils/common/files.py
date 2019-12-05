@@ -143,7 +143,7 @@ def get_files_from_path(path, extension=None, exceptions=None, full_paths=True):
         for f in files:
             path_file = os.path.join(path, f)
             if os.path.isfile(path_file):
-                ext = os.path.splitext(path_file)[-1].lower()
+                ext = os.path.splitext(path_file)[-1]
                 if not extension or ext in extension:
                     # check exceptions
                     add = True

@@ -137,7 +137,7 @@ class Task(object):
 
     def register_inputs(self):
         for key, val in self.kwargs_task.iteritems():
-            attr_val = variables.kwargs(val[0], val[1], self.kwargs_input, short_name=val[2])
+            attr_val = variables.kwargs(val[0], val[1], self.kwargs_input, short_name=val[2], connect_name=key)
             self.__setattr__(val[0], attr_val)
 
     def register_attribute(self, name, value, attr_name=None, short_name=None, attr_type=None, **kwargs):

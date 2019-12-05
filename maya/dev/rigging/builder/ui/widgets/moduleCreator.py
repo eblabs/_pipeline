@@ -865,9 +865,10 @@ class SubTasks(QTreeView):
             task_kwargs_reduce = {}
             for key, info in task_kwargs_info['task_kwargs'].iteritems():
                 value = info.get('value', None)
+                attr_name = info.get('attr_name', None)
                 if value is None:
                     value = info.get('default', None)
-                task_kwargs_reduce.update({key: value})
+                task_kwargs_reduce.update({attr_name: value})
             sub_tasks_info.update({task_name: {'task_path': task_kwargs_info['task_path'],
                                                'task_kwargs': task_kwargs_reduce}})
         return sub_tasks_info
